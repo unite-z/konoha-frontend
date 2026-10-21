@@ -5,8 +5,10 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Proxy de desarrollo hacia Django: evita configurar CORS en el back-end.
+    // MOD-05 en Spring Boot; MOD-06 conserva Django. Orden: ruta específica primero.
     proxy: {
+      '/api/tercerizados': 'http://localhost:8080',
+      '/swagger-ui': 'http://localhost:8080',
       '/api': 'http://localhost:8000',
     },
   },

@@ -1,5 +1,5 @@
 /**
- * Contexto de la sesión de MOD-05 (usuario Django autenticado con HTTP Basic).
+ * Contexto de la sesión de MOD-05 (usuario Spring Security autenticado con HTTP Basic).
  * MOD-06 sigue usando la sesión simulada de `config/sesion.ts`.
  */
 import { createContext, useContext } from 'react'

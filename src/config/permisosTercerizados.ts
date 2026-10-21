@@ -1,5 +1,5 @@
 /**
- * Acciones de MOD-05 por rol y estado (`backend/tercerizados/permisos.py` y `servicios.py`).
+ * Acciones de MOD-05 por rol y estado (Spring Boot: `backend-mod05/`).
  *
  * La interfaz oculta lo que el rol no puede hacer y deshabilita, con su motivo, lo que el estado aún no
  * permite. El back-end vuelve a comprobarlo todo: estas reglas nunca sustituyen su respuesta.

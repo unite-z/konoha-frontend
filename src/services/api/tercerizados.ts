@@ -1,5 +1,5 @@
 /**
- * Servicios de MOD-05 «Atenciones tercerizadas» (`backend/tercerizados/api/urls.py`).
+ * Servicios de MOD-05 «Atenciones tercerizadas» (`backend-mod05/`).
  * Las páginas no llaman a `fetch`: usan estas funciones.
  *
  * Las operaciones devuelven la atención completa y actualizada: la página debe reemplazar su copia con la

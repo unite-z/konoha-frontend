@@ -1,6 +1,6 @@
 /**
  * Rutas de la aplicación web de oficina. Todas dentro de `LayoutOficina`.
- * Las de MOD-05 pasan por `RutaSesionTercerizados` (sesión con usuario Django).
+ * Las de MOD-05 pasan por `RutaSesionTercerizados` (sesión con usuario Spring Security).
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
       { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
       { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
       { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
-      // MOD-05 «Servicios tercerizados»: requiere sesión con usuario Django (excepto el ingreso).
+      // MOD-05 «Servicios tercerizados»: requiere sesión con usuario Spring Security (excepto el ingreso).
       { path: RUTAS_TERCERIZADOS.ingreso, element: <IngresoTercerizadosPage /> },
       {
         path: PREFIJO_TERCERIZADOS,

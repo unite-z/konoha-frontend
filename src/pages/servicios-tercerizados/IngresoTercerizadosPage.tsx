@@ -1,7 +1,7 @@
 /**
  * Ingreso a Servicios tercerizados (MOD-05).
  *
- * El back-end de MOD-05 exige usuarios Django reales (HTTP Basic). MOD-06 sigue con su sesión simulada.
+ * El back-end de MOD-05 exige usuarios reales de Spring Security (HTTP Basic). MOD-06 sigue con su sesión simulada.
  * TODO: sustituir por el inicio de sesión común de MOD-01 (RF-T-001) cuando exista.
  *
  * - Valida campos obligatorios al enviar; el foco va al primer campo con error.

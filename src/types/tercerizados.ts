@@ -1,10 +1,10 @@
 /**
- * Contrato de la API de MOD-05 «Atenciones tercerizadas» (`backend/tercerizados/api/serializers.py`).
+ * Contrato de la API de MOD-05 «Atenciones tercerizadas» (`backend-mod05/`).
  * Base: `/api/tercerizados/`. Fechas sin hora en `AAAA-MM-DD`; instantes ISO 8601 con zona.
  */
 import type { FechaIso, InstanteIso } from './comun'
 
-/** Grupos Django del módulo (`tercerizados/permisos.py`). Distintos de los roles simulados de MOD-06. */
+/** Roles del módulo Spring Boot. Distintos de los roles simulados de MOD-06. */
 export type RolTercerizados = 'Jefe de sección' | 'Ingeniero de campo' | 'Practicante autorizado'
 
 /** `GET me/`. `rol` es `null` si el usuario es válido pero no tiene acceso al módulo. */
@@ -15,7 +15,7 @@ export interface UsuarioActual {
   rol: RolTercerizados | null
 }
 
-/** Listados paginados de DRF (25 por página). */
+/** Listados paginados compatibles con la API original (25 por página). */
 export interface Paginado<T> {
   count: number
   next: string | null
@@ -43,7 +43,7 @@ export type CategoriaDocumento =
   | 'EvidenciaEspacio'
   | 'RutaRecorrida'
 
-/** Decimal serializado por DRF como texto («120.00»). */
+/** Decimal serializado como texto («120.00»). */
 export type DecimalTexto = string
 
 export interface Alcance {
