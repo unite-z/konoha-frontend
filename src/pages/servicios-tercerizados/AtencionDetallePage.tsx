@@ -2,9 +2,9 @@
 /**
  * Ficha de una atención (mockup, pantalla 6; Guía Web 6: ficha de detalle con historial).
  *
- * Acciones según rol y estado: OC, inicio y fin (`acciones/`). Tras cada operación la ficha se actualiza con
+ * Acciones según rol y estado: OC, inicio, fin y reporte (`acciones/`). Tras cada operación la ficha se actualiza con
  * la atención que devuelve el servidor (nunca con un resultado supuesto) y se confirma con un aviso temporal.
- * TODO (pasos 7 y 8 del plan): reporte, origen y acuerdo de la unidad.
+ * TODO (paso 8 del plan): origen y acuerdo de la unidad.
  * No se muestran conformidad ni seguridad y salud: están fuera de esta entrega.
  */
 import { useCallback, useState, type ReactNode } from 'react'
@@ -72,7 +72,7 @@ function textoUnidad(atencion: Atencion): string | null {
     : atencion.unidad_solicitante_nombre
 }
 
-function Ficha({ atencion, acciones }: { atencion: Atencion; acciones: ReactNode }) {
+function Ficha({ atencion, acciones, versionDocumentos }: { atencion: Atencion; acciones: ReactNode; versionDocumentos: number }) {
   const acuerdo = insigniaAcuerdo(atencion.acuerdo_unidad)
   const duracion = duracionMinutos(atencion)
   const esSolicitudUnidad = atencion.origen === 'SolicitudUnidad'
@@ -181,7 +181,7 @@ function Ficha({ atencion, acciones }: { atencion: Atencion; acciones: ReactNode
         />
       </section>
 
-      <DocumentosProveedor atencion={atencion} />
+      <DocumentosProveedor atencion={atencion} version={versionDocumentos} />
 
       <section className={estilos.superficie} aria-labelledby="titulo-historial">
         <h2 id="titulo-historial" className={estilos.tituloSeccion}>
@@ -224,6 +224,7 @@ export default function AtencionDetallePage() {
   // Aviso que deja el asistente al registrar la atención.
   const [aviso, setAviso] = useState<string | null>(() => (state as { aviso?: string } | null)?.aviso ?? null)
   const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
+  const [versionDocumentos, setVersionDocumentos] = useState(0)
 
   usePaginaActual(atencion ? `Atención ${codigoCorto(atencion.codigo)}` : 'Atención tercerizada', [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
@@ -264,7 +265,16 @@ export default function AtencionDetallePage() {
     contenido = (
       <Ficha
         atencion={atencion}
-        acciones={<AccionesAtencion atencion={atencion} rol={rol} onActualizada={setLocal} onExito={setAviso} />}
+        versionDocumentos={versionDocumentos}
+        acciones={
+          <AccionesAtencion
+            atencion={atencion}
+            rol={rol}
+            onActualizada={setLocal}
+            onExito={setAviso}
+            onReporteAdjunto={() => setVersionDocumentos((v) => v + 1)}
+          />
+        }
       />
     )
   }

@@ -53,3 +53,64 @@ describe('validarEjecucion', () => {
     expect(validarEjecucion('fin', '2026-10-21T07:59', '2026-10-21T13:00:45Z', ahora).error).toBeDefined()
   })
 })
+
+describe('validarReporte', async () => {
+  const { validarReporte, hayErroresReporte, problemaArchivo, categoriaSugerida } = await import('./validacionTercerizados')
+  const doc = (clave: string, cambios = {}) => ({
+    clave,
+    archivo: { name: 'informe.pdf', size: 1200 },
+    categoria: 'InformeFinal',
+    alcance_id: '',
+    descripcion: '',
+    ...cambios,
+  })
+
+  it('acepta una revisión con informe final', () => {
+    expect(hayErroresReporte(validarReporte({ fecha: '2026-10-21', documentos: [doc('a')] }, '2026-10-20'))).toBe(false)
+  })
+
+  it('la recepción no precede al fin', () => {
+    expect(validarReporte({ fecha: '2026-10-19', documentos: [doc('a')] }, '2026-10-20').fecha).toMatch(/anterior/)
+    expect(validarReporte({ fecha: '2026-10-20', documentos: [doc('a')] }, '2026-10-20').fecha).toBeUndefined()
+    expect(validarReporte({ fecha: '', documentos: [doc('a')] }, null).fecha).toBeDefined()
+  })
+
+  it('exige archivos y al menos un informe final', () => {
+    expect(validarReporte({ fecha: '2026-10-21', documentos: [] }, null).general).toMatch(/al menos/)
+    expect(validarReporte({ fecha: '2026-10-21', documentos: [doc('a', { categoria: 'Metrado' })] }, null).general).toMatch(/Informe final/)
+  })
+
+  it('valida cada documento', () => {
+    const errores = validarReporte(
+      {
+        fecha: '2026-10-21',
+        documentos: [
+          doc('a'),
+          doc('b', { categoria: '' }),
+          doc('c', { categoria: 'EvidenciaEspacio' }),
+          doc('d', { categoria: 'EvidenciaEspacio', alcance_id: '4', descripcion: 'x'.repeat(201) }),
+          doc('e', { archivo: { name: 'virus.exe', size: 10 } }),
+        ],
+      },
+      null,
+    )
+    expect(Object.keys(errores.porDocumento)).toEqual(['b', 'c', 'd', 'e'])
+    expect(errores.porDocumento.b.categoria).toBeDefined()
+    expect(errores.porDocumento.c.alcance).toBeDefined()
+    expect(errores.porDocumento.d.descripcion).toMatch(/200/)
+    expect(errores.porDocumento.e.archivo).toMatch(/no admitido/)
+  })
+
+  it('revisa tipo, tamaño y nombre del archivo', () => {
+    expect(problemaArchivo({ name: 'FOTO.JPEG', size: 5 })).toBeUndefined()
+    expect(problemaArchivo({ name: 'metrado.xlsx', size: 0 })).toMatch(/vacío/)
+    expect(problemaArchivo({ name: 'sin-extension', size: 5 })).toMatch(/no admitido/)
+    expect(problemaArchivo({ name: `${'a'.repeat(200)}.pdf`, size: 5 })).toMatch(/200/)
+  })
+
+  it('sugiere la categoría por el nombre', () => {
+    expect(categoriaSugerida('Informe final octubre.pdf')).toBe('InformeFinal')
+    expect(categoriaSugerida('metrado.xlsx')).toBe('Metrado')
+    expect(categoriaSugerida('IMG_2031.jpg')).toBe('')
+  })
+})

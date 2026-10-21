@@ -4,7 +4,8 @@
  * completa; las anteriores se conservan. Descarga autenticada de cada documento.
  *
  * Tiene su propio estado de carga, vacío y error: si falla, el resto de la ficha sigue disponible.
- * TODO (paso 7 del plan): «Adjuntar reporte» (nueva revisión).
+ * La carga de revisiones está en las acciones de la ficha (`acciones/DialogoReporte.tsx`); `version` cambia
+ * al registrar una para recargar la lista.
  */
 import { useState } from 'react'
 import Badge from '../../components/ui/Badge'
@@ -119,9 +120,9 @@ function RevisionReporte({
   )
 }
 
-export default function DocumentosProveedor({ atencion }: { atencion: Atencion }) {
+export default function DocumentosProveedor({ atencion, version = 0 }: { atencion: Atencion; version?: number }) {
   const consulta = useConsulta(
-    `reportes|${atencion.id}|${atencion.estado}`,
+    `reportes|${atencion.id}|${atencion.estado}|${version}`,
     (signal) => listarReportes(atencion.id, 1, signal),
     (datos) => datos.results.length === 0,
   )

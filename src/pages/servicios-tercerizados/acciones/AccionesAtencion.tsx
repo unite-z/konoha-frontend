@@ -1,38 +1,42 @@
-// RF-SER-004 y RF-SER-005 · Acciones de la ficha
+// RF-SER-004, RF-SER-005 y RF-SER-006 · Acciones de la ficha
 /**
  * Botones de las acciones disponibles según rol y estado (`config/permisosTercerizados.ts`) y sus diálogos.
  * Una sola acción primaria: el siguiente paso del ciclo; las demás, secundarias. Lo que el estado aún no
  * permite se muestra deshabilitado con su motivo.
  *
- * TODO (pasos 7 y 8 del plan): adjuntar reporte, corregir origen y acuerdo de la unidad.
+ * TODO (paso 8 del plan): corregir origen y acuerdo de la unidad.
  */
 import { useId, useState } from 'react'
 import Boton from '../../../components/ui/Boton'
 import { disponibilidad } from '../../../config/permisosTercerizados'
-import type { Atencion, RolTercerizados } from '../../../types/tercerizados'
+import type { Atencion, ReporteProveedor, RolTercerizados } from '../../../types/tercerizados'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'
+import DialogoReporte from './DialogoReporte'
 import estilos from '../Tercerizados.module.css'
 
-type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | null
+type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | null
 
 export interface AccionesAtencionProps {
   atencion: Atencion
   rol: RolTercerizados | null
   onActualizada: (atencion: Atencion) => void
   onExito: (mensaje: string) => void
+  /** Se registró una revisión del reporte (la sección de documentos se recarga). */
+  onReporteAdjunto: (reporte: ReporteProveedor | null) => void
 }
 
-export default function AccionesAtencion({ atencion, rol, onActualizada, onExito }: AccionesAtencionProps) {
+export default function AccionesAtencion({ atencion, rol, onActualizada, onExito, onReporteAdjunto }: AccionesAtencionProps) {
   const [abierto, setAbierto] = useState<Dialogo>(null)
   const idMotivos = useId()
 
   const oc = disponibilidad('ordenCompra', rol, atencion)
   const inicio = disponibilidad('inicio', rol, atencion)
   const fin = disponibilidad('fin', rol, atencion)
+  const reporte = disponibilidad('adjuntarReporte', rol, atencion)
   const tieneOc = Boolean(atencion.numero_orden_compra)
 
-  if (!oc.visible && !inicio.visible && !fin.visible) return null
+  if (!oc.visible && !inicio.visible && !fin.visible && !reporte.visible) return null
 
   const cerrar = () => setAbierto(null)
   const exito = (mensaje: string) => {
@@ -43,6 +47,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
   // Motivos de las acciones deshabilitadas: debajo de los botones (no ensanchan la fila) y enlazados con ellos.
   const motivos = [
     { clave: 'fin', d: fin },
+    { clave: 'reporte', d: reporte },
     { clave: 'inicio', d: inicio },
     { clave: 'oc', d: oc },
   ].filter(({ d }) => d.visible && !d.habilitada && d.motivo)
@@ -51,6 +56,14 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
   // La primaria (siguiente paso del ciclo) va primero; luego las secundarias y al final las deshabilitadas.
   const botones = [
     { clave: 'fin', d: fin, texto: 'Registrar fin', dialogo: 'fin' as const, primaria: fin.habilitada },
+    {
+      clave: 'reporte',
+      d: reporte,
+      texto: atencion.estado === 'Reporte adjunto' ? 'Adjuntar nueva revisión' : 'Adjuntar reporte',
+      dialogo: 'reporte' as const,
+      // Primaria solo si aún falta el reporte; una nueva revisión es secundaria.
+      primaria: reporte.habilitada && atencion.estado === 'Ejecutado pendiente de reporte',
+    },
     { clave: 'inicio', d: inicio, texto: 'Registrar inicio', dialogo: 'inicio' as const, primaria: inicio.habilitada },
     {
       clave: 'oc',
@@ -91,6 +104,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
       <DialogoOrdenCompra abierto={abierto === 'ordenCompra'} {...comunes} />
       <DialogoEjecucion modo="inicio" abierto={abierto === 'inicio'} {...comunes} />
       <DialogoEjecucion modo="fin" abierto={abierto === 'fin'} {...comunes} />
+      <DialogoReporte abierto={abierto === 'reporte'} {...comunes} onReporteAdjunto={onReporteAdjunto} />
     </div>
   )
 }

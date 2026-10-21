@@ -67,3 +67,100 @@ export function validarEjecucion(
   }
   return {}
 }
+
+// --- RF-SER-006: reporte y documentación ----------------------------------------------------------------
+
+/** Extensiones admitidas por el back-end (PDF, JPEG, PNG, DOCX y XLSX). */
+export const EXTENSIONES_DOCUMENTO = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.xlsx'] as const
+
+/** Valor de `accept` del selector de archivos. */
+export const ACEPTA_DOCUMENTOS = EXTENSIONES_DOCUMENTO.join(',')
+
+/** Largo máximo de la descripción de un documento. */
+export const LARGO_MAXIMO_DESCRIPCION_DOCUMENTO = 200
+
+/** Largo máximo del nombre de archivo que guarda el back-end. */
+export const LARGO_MAXIMO_NOMBRE_ARCHIVO = 200
+
+export interface DocumentoBorrador {
+  /** Clave local de la fila. */
+  clave: string
+  archivo: { name: string; size: number }
+  categoria: string
+  /** Id del alcance como texto (valor del selector); vacío si no aplica. */
+  alcance_id: string
+  descripcion: string
+}
+
+export interface ErroresReporte {
+  fecha?: string
+  /** Error general del conjunto (sin archivos, sin informe final). */
+  general?: string
+  porDocumento: Record<string, { archivo?: string; categoria?: string; alcance?: string; descripcion?: string }>
+}
+
+function extension(nombre: string): string {
+  const punto = nombre.lastIndexOf('.')
+  return punto < 0 ? '' : nombre.slice(punto).toLowerCase()
+}
+
+/** Problema del archivo en sí (tipo, vacío o nombre), o `undefined` si se puede enviar. */
+export function problemaArchivo(archivo: { name: string; size: number }): string | undefined {
+  if (!(EXTENSIONES_DOCUMENTO as readonly string[]).includes(extension(archivo.name))) {
+    return 'Tipo de archivo no admitido. Usa PDF, JPEG, PNG, DOCX o XLSX'
+  }
+  if (archivo.size <= 0) return 'El archivo está vacío. Elige otro'
+  if (archivo.name.length > LARGO_MAXIMO_NOMBRE_ARCHIVO) {
+    return `El nombre del archivo supera ${LARGO_MAXIMO_NOMBRE_ARCHIVO} caracteres. Renómbralo antes de adjuntarlo`
+  }
+  return undefined
+}
+
+/**
+ * Valida una revisión del reporte. `finLima`: fecha de fin del servicio en Lima (`AAAA-MM-DD`); la recepción
+ * del informe final no puede ser anterior.
+ */
+export function validarReporte(
+  valores: { fecha: string; documentos: DocumentoBorrador[] },
+  finLima: string | null,
+): ErroresReporte {
+  const errores: ErroresReporte = { porDocumento: {} }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valores.fecha)) errores.fecha = 'Indica la fecha en que se recibió el informe'
+  else if (finLima && valores.fecha < finLima) {
+    errores.fecha = 'La recepción no puede ser anterior al fin del servicio. Revisa la fecha'
+  }
+  if (valores.documentos.length === 0) errores.general = 'Adjunta al menos el informe final del proveedor'
+  else if (!valores.documentos.some((d) => d.categoria === 'InformeFinal')) {
+    errores.general = 'Cada revisión debe incluir un documento con la categoría «Informe final»'
+  }
+  for (const d of valores.documentos) {
+    const propios: ErroresReporte['porDocumento'][string] = {}
+    const problema = problemaArchivo(d.archivo)
+    if (problema) propios.archivo = problema
+    if (!d.categoria) propios.categoria = 'Elige la categoría del documento'
+    if (d.categoria === 'EvidenciaEspacio' && !d.alcance_id) propios.alcance = 'Indica el espacio o ejemplar de la evidencia'
+    if (d.descripcion.trim().length > LARGO_MAXIMO_DESCRIPCION_DOCUMENTO) {
+      propios.descripcion = `Usa como máximo ${LARGO_MAXIMO_DESCRIPCION_DOCUMENTO} caracteres`
+    }
+    if (Object.keys(propios).length > 0) errores.porDocumento[d.clave] = propios
+  }
+  return errores
+}
+
+export function hayErroresReporte(errores: ErroresReporte): boolean {
+  return Boolean(errores.fecha || errores.general) || Object.keys(errores.porDocumento).length > 0
+}
+
+/** Categoría propuesta por el nombre del archivo (el usuario la confirma). */
+export function categoriaSugerida(nombre: string): string {
+  const n = nombre.toLowerCase()
+  if (/informe|reporte/.test(n)) return 'InformeFinal'
+  if (/metrado/.test(n)) return 'Metrado'
+  if (/ruta/.test(n)) return 'RutaRecorrida'
+  if (/ficha/.test(n)) return 'FichasDiarias'
+  if (/charla/.test(n)) return 'CharlasTecnicas'
+  if (/plaga/.test(n)) return 'PlagasAtendidas'
+  if (/producto/.test(n)) return 'ProductosAplicados'
+  if (/planta/.test(n)) return 'PlantasAtendidas'
+  return ''
+}

@@ -1,0 +1,78 @@
+/* Diálogos de acciones de la ficha (MOD-05). */
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-error);
+}
+
+.filaCampos {
+  display: grid;
+  grid-template-columns: minmax(0, 16rem);
+}
+
+/* --- Reporte ---------------------------------------------------------------------------------------- */
+
+.documentos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tituloDocumentos {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.listaDocumentos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.documento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.cabeceraDocumento {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.archivo {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.camposDocumento {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 1023px) {
+  .camposDocumento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

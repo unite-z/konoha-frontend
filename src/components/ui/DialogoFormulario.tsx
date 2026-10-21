@@ -31,6 +31,8 @@ export interface DialogoFormularioProps {
   conObligatorios?: boolean
   onEnviar: () => void
   onCerrar: () => void
+  /** Si se indica, mientras envía se ofrece interrumpir el envío (por ejemplo, una subida larga). */
+  onCancelarEnvio?: () => void
   children: ReactNode
 }
 
@@ -46,6 +48,7 @@ export default function DialogoFormulario({
   conObligatorios = true,
   onEnviar,
   onCerrar,
+  onCancelarEnvio,
   children,
 }: DialogoFormularioProps) {
   const referencia = useRef<HTMLDialogElement>(null)
@@ -157,9 +160,15 @@ export default function DialogoFormulario({
           </div>
         ) : (
           <div className={estilos.acciones}>
-            <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando}>
-              Cancelar
-            </Boton>
+            {enviando && onCancelarEnvio ? (
+              <Boton variante="secundario" onClick={onCancelarEnvio}>
+                Cancelar envío
+              </Boton>
+            ) : (
+              <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando}>
+                Cancelar
+              </Boton>
+            )}
             <Boton type="submit" cargando={enviando}>
               {textoConfirmar}
             </Boton>
