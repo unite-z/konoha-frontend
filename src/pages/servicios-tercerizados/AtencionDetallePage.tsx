@@ -2,13 +2,16 @@
 /**
  * Ficha de una atención (mockup, pantalla 6; Guía Web 6: ficha de detalle con historial).
  *
- * Solo lectura en este paso. TODO (pasos 5, 7 y 8 del plan): acciones de OC, inicio, fin, reporte, origen
- * y acuerdo de la unidad, según `config/permisosTercerizados.ts`.
+ * Acciones según rol y estado: OC, inicio y fin (`acciones/`). Tras cada operación la ficha se actualiza con
+ * la atención que devuelve el servidor (nunca con un resultado supuesto) y se confirma con un aviso temporal.
+ * TODO (pasos 7 y 8 del plan): reporte, origen y acuerdo de la unidad.
  * No se muestran conformidad ni seguridad y salud: están fuera de esta entrega.
  */
+import { useCallback, useState, type ReactNode } from 'react'
 import { useLocation, useParams } from 'react-router'
 import LineaEstados from '../../components/tercerizados/LineaEstados'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
+import AvisoTemporal from '../../components/ui/AvisoTemporal'
 import Badge from '../../components/ui/Badge'
 import { BotonEnlace } from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
@@ -29,6 +32,8 @@ import {
   textoOrigen,
 } from '../../utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, SIN_VALOR } from '../../utils/formato'
+import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import AccionesAtencion from './acciones/AccionesAtencion'
 import DocumentosProveedor from './DocumentosProveedor'
 import type { EstadoNavegacionBandeja } from './AtencionesPage'
 import estilos from './Tercerizados.module.css'
@@ -54,6 +59,12 @@ function duracionMinutos(atencion: Atencion): number | null {
   return Number.isFinite(minutos) && minutos >= 0 ? minutos : null
 }
 
+/** La versión más reciente entre la consultada y la recibida de una operación (misma atención). */
+function masReciente(consultada: Atencion | null, local: Atencion | null): Atencion | null {
+  if (!local || !consultada || local.id !== consultada.id) return consultada
+  return Date.parse(local.fecha_modificacion) >= Date.parse(consultada.fecha_modificacion) ? local : consultada
+}
+
 function textoUnidad(atencion: Atencion): string | null {
   if (!atencion.unidad_solicitante_nombre) return null
   return atencion.unidad_solicitante_provisional
@@ -61,7 +72,7 @@ function textoUnidad(atencion: Atencion): string | null {
     : atencion.unidad_solicitante_nombre
 }
 
-function Ficha({ atencion }: { atencion: Atencion }) {
+function Ficha({ atencion, acciones }: { atencion: Atencion; acciones: ReactNode }) {
   const acuerdo = insigniaAcuerdo(atencion.acuerdo_unidad)
   const duracion = duracionMinutos(atencion)
   const esSolicitudUnidad = atencion.origen === 'SolicitudUnidad'
@@ -100,6 +111,7 @@ function Ficha({ atencion }: { atencion: Atencion }) {
           ]}
         />
         <LineaEstados estado={atencion.estado} historial={atencion.historial} />
+        {acciones}
       </section>
 
       <div className={estilos.columnas}>
@@ -202,8 +214,15 @@ export default function AtencionDetallePage() {
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = RUTAS_TERCERIZADOS.atenciones + ((state as EstadoNavegacionBandeja | null)?.volverA ?? '')
 
+  const { estado: sesion } = useSesionTercerizados()
+  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+
   const consulta = useConsulta(id === null ? null : `atencion|${id}`, (signal) => obtenerAtencion(id as number, signal))
-  const atencion = consulta.datos
+  // Última versión recibida de una operación o recarga; se usa si es tan reciente como la consultada.
+  const [local, setLocal] = useState<Atencion | null>(null)
+  const atencion = masReciente(consulta.datos, local)
+  const [aviso, setAviso] = useState<string | null>(null)
+  const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
 
   usePaginaActual(atencion ? `Atención ${codigoCorto(atencion.codigo)}` : 'Atención tercerizada', [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
@@ -241,13 +260,19 @@ export default function AtencionDetallePage() {
   } else if (!atencion) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
   } else {
-    contenido = <Ficha atencion={atencion} />
+    contenido = (
+      <Ficha
+        atencion={atencion}
+        acciones={<AccionesAtencion atencion={atencion} rol={rol} onActualizada={setLocal} onExito={setAviso} />}
+      />
+    )
   }
 
   return (
     <div className={estilos.pagina}>
       <div>{volver}</div>
       {contenido}
+      <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
   )
 }
