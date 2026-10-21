@@ -1,0 +1,46 @@
+/* Ingreso a Servicios tercerizados: tarjeta centrada (Guía Web 5.3). */
+.tarjeta {
+  --ingreso-ancho: 440px;
+  width: 100%;
+  max-width: var(--ingreso-ancho);
+  margin: var(--space-8) auto;
+  padding: var(--space-8);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--web-elev-1);
+}
+
+.titulo {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+.texto {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  .tarjeta {
+    margin: var(--space-4) auto;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .acciones > * {
+    width: 100%;
+  }
+}

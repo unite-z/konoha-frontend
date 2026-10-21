@@ -1,32 +1,24 @@
-# React + TypeScript + Vite
+# Front-end · Gestión de Áreas Verdes
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Vite. Estilos con CSS Modules y los tokens de `src/styles/tokens.css` (Guía de Estilo Web).
 
-Currently, two official plugins are available:
+## Comandos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm install
+cp .env.example .env
+npm run dev      # Vite reenvía /api a http://localhost:8000
+npm run build    # tsc -b + vite build
+npm run lint     # oxlint
+npm test         # pruebas unitarias de lógica pura (Vitest)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Módulos
+
+- **MOD-06 «Reportes e indicadores»** (`/reportes-indicadores/…`): usa `VITE_API_BASE_URL` y la sesión simulada de `src/config/sesion.ts`.
+- **MOD-05 «Servicios tercerizados»** (`/servicios-tercerizados/…`): usa `VITE_API_TERCERIZADOS_URL` (por defecto `/api/tercerizados`) y requiere el back-end con `TERCERIZADOS_ENABLED=True`.
+  - Ingreso propio con usuarios Django (HTTP Basic), comprobado con `GET me/`. Las credenciales se guardan en `sessionStorage` (duran lo que la pestaña) y se borran con «Cerrar sesión». TODO: sustituir por la sesión de MOD-01.
+  - `src/sesion/`: proveedor, guardián de rutas y almacenamiento de la sesión.
+  - `src/services/api/clienteTercerizados.ts` y `tercerizados.ts`: cliente (GET/POST/PATCH, multipart, descarga autenticada) y servicios.
+  - `src/config/permisosTercerizados.ts`: acciones por rol y estado (la interfaz oculta; el back-end decide).
+  - `src/utils/instanteLima.ts`: fechas y horas en America/Lima (UTC-05:00) independientes de la zona del navegador.

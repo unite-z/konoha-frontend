@@ -12,7 +12,7 @@
 export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL
 
 /** Mensaje cuando el servidor no responde (texto propio, sin equivalente en el back-end). */
-const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo'
+export const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo'
 
 /** Mensaje cuando el servidor responde con un error sin cuerpo reconocible. */
 const MENSAJE_ERROR_INESPERADO = 'El servidor no pudo atender la solicitud. Vuelve a intentarlo en unos minutos'
@@ -71,8 +71,8 @@ function construirUrl(ruta: string, parametros?: Record<string, ValorParametro>)
   return `${API_BASE_URL}/${ruta}${texto ? `?${texto}` : ''}`
 }
 
-/** Interpreta el cuerpo de una respuesta de error. */
-function interpretarError(estado: number, cuerpo: unknown): ErrorApi {
+/** Interpreta el cuerpo de una respuesta de error (también lo usa el cliente de MOD-05). */
+export function interpretarError(estado: number, cuerpo: unknown): ErrorApi {
   if (cuerpo && typeof cuerpo === 'object') {
     const objeto = cuerpo as Record<string, unknown>
     // Error de dominio: {codigo, detalle}.
