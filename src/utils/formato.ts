@@ -126,3 +126,17 @@ export function semanaActual(hoy: Date = new Date()): Periodo {
 export function anioActualHastaHoy(hoy: Date = new Date()): Periodo {
   return { desde: `${hoy.getFullYear()}-01-01`, hasta: fechaAIso(hoy) }
 }
+
+const UNIDADES_TAMANO = ['B', 'KB', 'MB', 'GB']
+
+/** Tamaño de archivo: «820 B», «12,4 KB», «3,1 MB» (base 1024, un decimal). */
+export function formatearTamanoArchivo(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined || !Number.isFinite(bytes) || bytes < 0) return SIN_VALOR
+  let valor = bytes
+  let unidad = 0
+  while (valor >= 1024 && unidad < UNIDADES_TAMANO.length - 1) {
+    valor /= 1024
+    unidad++
+  }
+  return `${formatearNumero(unidad === 0 ? valor : Math.round(valor * 10) / 10)} ${UNIDADES_TAMANO[unidad]}`
+}

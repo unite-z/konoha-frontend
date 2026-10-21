@@ -1,0 +1,108 @@
+/* Línea de estados (mockup, pantalla 6; Guía Web 5.13). */
+.linea {
+  --marca: 32px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+/* Conector con el paso siguiente. */
+.paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--marca) / 2);
+  left: calc(50% + var(--marca) / 2 + var(--space-1));
+  right: calc(-50% + var(--marca) / 2 + var(--space-1));
+  height: 2px;
+  background: var(--neutral-300);
+}
+
+.completado:not(:last-child)::after {
+  background: var(--green-700);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--marca);
+  height: var(--marca);
+  border: 2px solid var(--neutral-500);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  color: var(--neutral-700);
+  font-size: var(--type-label-md-size);
+  font-weight: 600;
+}
+
+.completado .marca {
+  border-color: var(--green-700);
+  background: var(--green-700);
+  color: var(--color-bg-surface);
+}
+
+.actual .marca {
+  border-color: var(--green-700);
+  color: var(--green-900);
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nombre {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+.actual .nombre {
+  font-weight: 600;
+}
+
+.pendiente .nombre {
+  color: var(--color-text-secondary);
+}
+
+.fecha {
+  min-height: var(--type-body-sm-line);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+/* Pantallas estrechas: lista vertical. */
+@media (max-width: 1023px) {
+  .linea {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .paso {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .paso:not(:last-child)::after {
+    top: calc(var(--marca) + var(--space-1));
+    bottom: calc(-1 * var(--space-2) + var(--space-1));
+    left: calc(var(--marca) / 2 - 1px);
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+}

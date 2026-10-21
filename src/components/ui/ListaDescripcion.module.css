@@ -1,0 +1,29 @@
+/* ListaDescripcion: etiqueta en body-sm atenuada sobre el valor (mockup, pantalla 6). */
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+
+.una {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ancho {
+  grid-column: 1 / -1;
+}
+
+.etiqueta {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.valor {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}

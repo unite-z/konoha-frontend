@@ -1,0 +1,209 @@
+/* Pantallas de MOD-05 «Servicios tercerizados»: espaciado de la Guía Web 4.1. */
+
+/* Entre grupos: 24px. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Dentro de un grupo: 16px. */
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.superficie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.cabeceraSeccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.tituloSeccion {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.tituloPrincipal {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+  overflow-wrap: anywhere;
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.atenuado {
+  color: var(--color-text-muted);
+}
+
+.enLinea {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.textoLargo {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* --- Bandeja ---------------------------------------------------------------------------------------- */
+
+.barraFiltros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.barraFiltros > .busqueda {
+  flex: 2 1 18rem;
+}
+
+.barraFiltros > :not(.busqueda):not(.accionFiltros) {
+  flex: 1 1 12rem;
+}
+
+/* El botón se alinea con los campos: deja el espacio de la etiqueta encima. */
+.accionFiltros {
+  padding-top: calc(var(--type-label-md-line) + var(--space-1));
+}
+
+.filaEstados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.rotulo {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+.resumenResultados {
+  color: var(--color-text-secondary);
+}
+
+.celdaDescripcion {
+  display: -webkit-box;
+  max-width: 28rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.celdaCodigo {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- Ficha ------------------------------------------------------------------------------------------ */
+
+.cabeceraFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.listaSinVinetas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+.revision:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.nombreArchivo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historial li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--green-100);
+}
+
+@media (max-width: 1023px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .superficie {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 767px) {
+  .accionFiltros {
+    padding-top: 0;
+  }
+
+  .barraFiltros > * {
+    flex-basis: 100%;
+  }
+}

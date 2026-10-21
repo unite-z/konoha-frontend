@@ -31,6 +31,9 @@ export interface OpcionesTercerizados {
 
 let autorizacionActual: string | null = null
 
+/** Espera antes de liberar el blob de una descarga. */
+const REVOCAR_DESCARGA_MS = 60_000
+
 /** Fija (o quita, con `null`) la cabecera `Authorization` de las peticiones de MOD-05. */
 export function establecerAutorizacion(valor: string | null): void {
   autorizacionActual = valor
@@ -149,7 +152,7 @@ export async function descargarArchivoTercerizados(ruta: string, nombre: string,
     enlace.click()
     enlace.remove()
   } finally {
-    // Se libera después de que el navegador inicie la descarga.
-    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    // Se libera cuando el navegador ya tomó el archivo (revocarlo de inmediato puede cancelar la descarga).
+    window.setTimeout(() => URL.revokeObjectURL(url), REVOCAR_DESCARGA_MS)
   }
 }

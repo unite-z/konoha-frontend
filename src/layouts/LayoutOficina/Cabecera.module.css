@@ -115,3 +115,26 @@
   line-height: var(--type-body-sm-line);
   color: var(--color-text-muted);
 }
+
+/*
+ * Tablet (extensión de la Guía Web 3.1, menos de 1024px): la búsqueda global (deshabilitada, de otro módulo)
+ * se oculta para que el usuario y «Cerrar sesión» quepan sin desplazamiento horizontal.
+ */
+@media (max-width: 1023px) {
+  .cabecera {
+    padding: var(--space-2) var(--space-6);
+  }
+
+  .busqueda {
+    display: none;
+  }
+
+  .derecha,
+  .usuario {
+    gap: var(--space-2);
+  }
+
+  .usuario {
+    padding-left: var(--space-4);
+  }
+}

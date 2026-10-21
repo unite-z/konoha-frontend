@@ -143,6 +143,23 @@ export function listarContratos(consulta: ConsultaCatalogo & { vigente?: boolean
   return catalogo<Contrato>('contratos', { ...consulta }, signal)
 }
 
+/** Máximo de páginas que se recorren para llenar un selector completo (25 por página). */
+const PAGINAS_MAXIMAS_SELECTOR = 20
+
+/**
+ * Todos los contratos (para el filtro de la bandeja). Recorre las páginas hasta `PAGINAS_MAXIMAS_SELECTOR`;
+ * `completo` es `false` si quedaron contratos sin cargar.
+ */
+export async function listarTodosLosContratos(signal?: AbortSignal): Promise<{ contratos: Contrato[]; completo: boolean }> {
+  const contratos: Contrato[] = []
+  for (let pagina = 1; pagina <= PAGINAS_MAXIMAS_SELECTOR; pagina++) {
+    const respuesta = await listarContratos({ page: pagina > 1 ? pagina : undefined }, signal)
+    contratos.push(...respuesta.results)
+    if (!respuesta.next) return { contratos, completo: true }
+  }
+  return { contratos, completo: false }
+}
+
 export function listarProveedores(consulta: ConsultaCatalogo & { activo?: boolean } = {}, signal?: AbortSignal) {
   return catalogo<Proveedor>('proveedores', { ...consulta }, signal)
 }

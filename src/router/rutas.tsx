@@ -13,6 +13,7 @@ import AtencionesEspacioSectorPage from '../pages/reportes-indicadores/reportes/
 import CumplimientoCortePage from '../pages/reportes-indicadores/reportes/CumplimientoCortePage'
 import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/DistribucionPersonalPage'
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
+import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
 import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
@@ -38,7 +39,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace /> },
           { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
-          // TODO: nueva atención y detalle (pasos 4 a 8 del plan).
+          { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
+          // TODO: nueva atención (paso 6 del plan).
         ],
       },
       { path: '*', element: <PaginaNoEncontrada /> },
