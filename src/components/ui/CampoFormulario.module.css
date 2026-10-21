@@ -1,0 +1,108 @@
+/* Controles de formulario: Guía Web 5.3 y 5.4. */
+.campo {
+  --control-height: 40px; /* Guía Web 5.3: campo de 40px de alto */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.etiqueta {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--color-text-primary);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--neutral-500);
+  border-radius: var(--radius-md);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--color-text-primary);
+  transition: border-color var(--duracion-transicion);
+}
+
+.control::placeholder {
+  color: var(--neutral-500);
+}
+
+.control:focus,
+.control:focus-visible {
+  border-color: var(--web-focus-ring-color);
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: 0;
+}
+
+.area {
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+
+.conError {
+  border-color: var(--color-error);
+}
+
+.bloqueado {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-error);
+}
+
+.error svg {
+  margin-top: var(--space-1);
+}
+
+.leyenda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.resumen {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-error-bg);
+  border: 1px solid var(--web-error-border);
+  border-radius: var(--radius-md);
+}
+
+.resumenTitulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.resumen ul {
+  margin-top: var(--space-1);
+  padding-left: var(--space-6);
+}
+
+.resumen a {
+  color: var(--color-error);
+}

@@ -1,0 +1,24 @@
+/* AvisoTemporal: Guía Web 5.10. */
+.region {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: 10;
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--web-success-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-2);
+  color: var(--color-text-primary);
+}
+
+.icono {
+  display: flex;
+  color: var(--color-success);
+}

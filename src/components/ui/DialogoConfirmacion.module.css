@@ -1,0 +1,36 @@
+/* DialogoConfirmacion: Guía Web 5.10. */
+.dialogo {
+  width: min(32rem, calc(100vw - 2 * var(--space-6)));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--web-elev-3);
+}
+
+.dialogo::backdrop {
+  background: var(--web-scrim);
+}
+
+.titulo {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+.consecuencia {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.contenido {
+  margin-top: var(--space-4);
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}

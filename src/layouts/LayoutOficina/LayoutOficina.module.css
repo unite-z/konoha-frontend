@@ -1,0 +1,40 @@
+/* Layout de oficina: Guía Web 3.2. */
+.layout {
+  display: grid;
+  grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.contenido {
+  width: 100%;
+  max-width: var(--web-content-max);
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+.contenido:focus {
+  outline: none;
+}
+
+/* «Saltar al contenido»: visible solo al recibir el foco. */
+.saltar {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 20;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  box-shadow: var(--web-elev-2);
+  color: var(--green-700);
+  transform: translateY(-200%);
+}
+.saltar:focus {
+  transform: none;
+}

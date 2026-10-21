@@ -1,26 +1,32 @@
+/**
+ * Rutas de la aplicación web de oficina. Todas dentro de `LayoutOficina`.
+ * Las rutas con nombre y las migas están en `rutasApp.ts`.
+ */
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
+import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
+import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
+import ExtraccionReporteProveedorPage from '../pages/reportes-indicadores/asistencia-ia/ExtraccionReporteProveedorPage'
+import RevisionExtraccionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionExtraccionPage'
+import AtencionesEspacioSectorPage from '../pages/reportes-indicadores/reportes/AtencionesEspacioSectorPage'
 import CumplimientoCortePage from '../pages/reportes-indicadores/reportes/CumplimientoCortePage'
 import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/DistribucionPersonalPage'
-import AtencionesEspacioSectorPage from '../pages/reportes-indicadores/reportes/AtencionesEspacioSectorPage'
-import ExtraccionReporteProveedorPage from '../pages/reportes-indicadores/asistencia-ia/ExtraccionReporteProveedorPage'
-
-export const RUTAS = {
-  cumplimientoCorte: '/reportes-indicadores/reportes/cumplimiento-corte', // RF-REP-002
-  distribucionPersonal: '/reportes-indicadores/reportes/distribucion-personal', // RF-REP-004
-  atencionesEspacioSector: '/reportes-indicadores/reportes/atenciones-espacio-sector', // RF-REP-006
-  extraccionReportes: '/reportes-indicadores/asistencia-ia/extraccion-reportes', // RF-IA-001
-} as const
+import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
+import { RUTAS } from './rutasApp'
 
 export const router = createBrowserRouter([
   {
     element: <LayoutOficina />,
     children: [
-      { path: '/', element: <Navigate to={RUTAS.cumplimientoCorte} replace /> },
-      { path: RUTAS.cumplimientoCorte, element: <CumplimientoCortePage /> },
-      { path: RUTAS.distribucionPersonal, element: <DistribucionPersonalPage /> },
-      { path: RUTAS.atencionesEspacioSector, element: <AtencionesEspacioSectorPage /> },
-      { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> },
+      { path: '/', element: <Navigate to={RUTAS.reportes} replace /> },
+      { path: RUTAS.reportes, element: <ReportesIndexPage /> },
+      { path: RUTAS.cumplimientoCorte, element: <CumplimientoCortePage /> }, // RF-REP-002
+      { path: RUTAS.distribucionPersonal, element: <DistribucionPersonalPage /> }, // RF-REP-004
+      { path: RUTAS.atencionesEspacioSector, element: <AtencionesEspacioSectorPage /> }, // RF-REP-006
+      { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
+      { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
+      { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
+      { path: '*', element: <PaginaNoEncontrada /> },
     ],
   },
 ])

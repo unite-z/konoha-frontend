@@ -1,0 +1,114 @@
+/* Boton: Guía Web 5.2. */
+.boton {
+  --boton-height: 40px; /* Guía Web 5.2: control estándar */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--boton-height);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion),
+    border-color var(--duracion-transicion);
+}
+
+.compacto {
+  min-height: var(--web-control-compact);
+  padding: 0 var(--space-3);
+}
+
+.contenido {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.primario {
+  background: var(--color-action-primary);
+  color: var(--color-bg-surface);
+}
+.primario:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.secundario {
+  background: var(--color-bg-surface);
+  border-color: var(--green-700);
+  color: var(--green-700);
+}
+.secundario:hover {
+  background: var(--green-50);
+}
+
+.terciario {
+  background: transparent;
+  color: var(--green-700);
+}
+.terciario:hover {
+  background: var(--color-bg-subtle);
+}
+
+.destructivo {
+  background: var(--color-error);
+  color: var(--color-bg-surface);
+}
+.destructivo:hover {
+  background: var(--web-error-hover);
+}
+
+/* Deshabilitado (Guía Web 5.2). */
+.boton[data-deshabilitado],
+.boton[data-deshabilitado]:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--neutral-300);
+  color: var(--neutral-500);
+  cursor: not-allowed;
+}
+
+/* Cargando: mantiene el ancho y muestra el indicador en lugar de la etiqueta. */
+.boton[data-cargando] {
+  cursor: progress;
+}
+.boton[data-cargando] .contenido {
+  visibility: hidden;
+}
+
+.indicador {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--space-4);
+  height: var(--space-4);
+  border: var(--focus-ring-width) solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: girar 800ms linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.conAyuda {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}

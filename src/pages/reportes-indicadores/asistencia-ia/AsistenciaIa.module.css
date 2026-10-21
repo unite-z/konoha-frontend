@@ -1,0 +1,178 @@
+/* Páginas de asistencia IA (RF-IA-001): espaciado de la Guía Web 4.1. */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.filaFormulario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.filaFormulario > :first-child {
+  flex: 0 1 22rem;
+}
+
+/* Alinea los botones con el campo: deja el espacio de la etiqueta y de la ayuda encima. */
+.accionesFormulario {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: calc(var(--type-label-md-line) + var(--type-body-sm-line) + 2 * var(--space-1));
+}
+
+/* Cabecera de identificación de la propuesta (mockup, pantalla 6). */
+.cabeceraPropuesta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.datosPropuesta {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: var(--space-2) var(--space-8);
+  margin: 0;
+}
+
+.datosPropuesta dt {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.datosPropuesta dd {
+  margin: 0;
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+/* Bloque «Documento analizado» (mockup, pantalla 6: «Reporte y documentos del proveedor»). */
+.documento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.nombreDocumento {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.nombreDocumento svg {
+  color: var(--green-700);
+}
+
+.cobertura {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+/* Revisión campo por campo. */
+.celdaDato {
+  display: flex;
+  flex-direction: column;
+}
+
+.tipoDato {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+.celdaValor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 12rem;
+  white-space: normal;
+}
+
+.noEncontrado {
+  color: var(--color-text-muted);
+}
+
+.listaJson {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.decision {
+  min-width: 16rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--web-control-compact);
+  cursor: pointer;
+}
+
+.opcion input {
+  accent-color: var(--green-700);
+  margin: 0;
+}
+
+.opcionDeshabilitada {
+  color: var(--neutral-500);
+  cursor: not-allowed;
+}
+
+.ayudaDecision {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.correccion {
+  margin-top: var(--space-2);
+}
+
+.errorDecision {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-error);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

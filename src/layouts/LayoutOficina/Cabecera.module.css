@@ -1,0 +1,117 @@
+/* Cabecera y migas de pan: Guía Web 3.2 y 4.2. */
+.cabecera {
+  --busqueda-ancho: 420px; /* Guía Web 3.2: campo de búsqueda global */
+  --busqueda-alto: 40px; /* Guía Web 5.3: control estándar */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  min-height: var(--web-header-height);
+  padding: var(--space-2) var(--space-8);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--neutral-300);
+}
+
+.titulos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-heading-lg-size);
+  line-height: var(--type-heading-lg-line);
+  font-weight: var(--type-heading-lg-weight);
+  color: var(--color-text-primary);
+}
+
+.migas {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.migas li + li::before {
+  content: '/';
+  padding: 0 var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.migas a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+.migas a:hover {
+  text-decoration: underline;
+}
+
+.migaActual {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex: none;
+}
+
+.busqueda {
+  /* 420px a partir de 1920px; más estrecho en pantallas menores para no partir el título. */
+  width: min(var(--busqueda-ancho), 20vw);
+  min-height: var(--busqueda-alto);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  font-size: var(--type-body-md-size);
+}
+
+.busqueda::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-6);
+  border-left: 1px solid var(--neutral-300);
+}
+
+.iniciales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-control-compact);
+  height: var(--web-control-compact);
+  border-radius: var(--radius-full);
+  background: var(--green-100);
+  color: var(--green-900);
+  font-size: var(--type-label-sm-size);
+  font-weight: 600;
+}
+
+.datosUsuario {
+  display: flex;
+  flex-direction: column;
+}
+
+.nombre {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: 600;
+}
+
+.rol {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}

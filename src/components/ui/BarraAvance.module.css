@@ -1,0 +1,19 @@
+/* BarraAvance: barra de avance de 8px (mockup, pantalla 2; Guía Web 5.7). */
+.barra {
+  --barra-avance-height: 8px; /* Guía Web 5.7 */
+  width: 100%;
+  height: var(--barra-avance-height);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-subtle);
+  overflow: hidden;
+}
+
+.relleno {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--green-700);
+}
+
+.alerta {
+  background: var(--color-error);
+}

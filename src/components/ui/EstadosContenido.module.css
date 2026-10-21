@@ -1,0 +1,109 @@
+/* EstadoVacio, EstadoCarga y EstadoError: Guía Web 5.12. */
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.icono {
+  display: flex;
+  padding: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+
+.iconoError {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.titulo {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.descripcion {
+  max-width: 60ch;
+  color: var(--color-text-secondary);
+}
+
+.accion {
+  margin-top: var(--space-2);
+}
+
+/* Esqueletos (sin animación llamativa). */
+.carga {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.textoCarga {
+  color: var(--color-text-secondary);
+}
+
+.bloque {
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+}
+
+.lineaCorta {
+  height: var(--type-label-md-line);
+  width: 50%;
+}
+
+.lineaValor {
+  height: var(--type-display-sm-line);
+  width: 35%;
+}
+
+.lineaLarga {
+  height: var(--type-body-md-line);
+  width: 100%;
+}
+
+.esqueletoTarjetas {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-4);
+}
+
+.esqueletoTarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.esqueletoTabla {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.esqueletoCabecera {
+  height: var(--web-table-head);
+  background: var(--color-bg-subtle);
+}
+
+.esqueletoFila {
+  display: flex;
+  align-items: center;
+  height: var(--web-row-height);
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--web-border-subtle);
+}

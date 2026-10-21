@@ -1,0 +1,135 @@
+/* Páginas de reporte y de asistencia IA: espaciado de la Guía Web 4.1. */
+
+/* Entre grupos: 24px. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Dentro de un grupo: 16px. */
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tituloSeccion {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.atenuado {
+  color: var(--color-text-muted);
+}
+
+.textoPequeno {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+
+.listaSimple {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.listaSinVinetas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.enLinea {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.celdaAvance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 6rem;
+}
+
+/* Superficie (tarjeta) de un grupo, por ejemplo un sector. */
+.superficie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.cabeceraGrupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.tituloGrupo {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.totalesGrupo {
+  color: var(--color-text-secondary);
+}
+
+/* Índices: tarjetas de enlace. */
+.indice {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjetaEnlace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: border-color var(--duracion-transicion);
+}
+.tarjetaEnlace:hover {
+  border-color: var(--green-700);
+}
+
+.tituloEnlace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+  color: var(--green-700);
+}
+
+.descripcionEnlace {
+  color: var(--color-text-secondary);
+}

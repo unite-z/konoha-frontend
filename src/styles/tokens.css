@@ -69,3 +69,35 @@
   --web-table-head: 40px;
   --web-control-compact: 32px;
 }
+
+/* Tabla 16 de la Guía Web: escala tipográfica (Inter) */
+:root {
+  --type-display-sm-size: 30px;
+  --type-display-sm-line: 38px;
+  --type-display-sm-weight: 600;
+  --type-heading-lg-size: 24px;
+  --type-heading-lg-line: 32px;
+  --type-heading-lg-weight: 600;
+  --type-heading-md-size: 20px;
+  --type-heading-md-line: 28px;
+  --type-heading-md-weight: 600;
+  --type-heading-sm-size: 16px;
+  --type-heading-sm-line: 24px;
+  --type-heading-sm-weight: 600;
+  --type-body-lg-size: 16px;
+  --type-body-lg-line: 24px;
+  --type-body-lg-weight: 400;
+  --type-body-md-size: 14px;
+  --type-body-md-line: 20px;
+  --type-body-md-weight: 400;
+  --type-body-sm-size: 12px;
+  --type-body-sm-line: 18px;
+  --type-body-sm-weight: 400;
+  --type-label-md-size: 14px;
+  --type-label-md-line: 20px;
+  --type-label-md-weight: 500;
+  /* Extensión propuesta (texto de insignias y chips) */
+  --type-label-sm-size: 12px;
+  --type-label-sm-line: 16px;
+  --type-label-sm-weight: 500;
+}

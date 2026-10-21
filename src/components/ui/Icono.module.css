@@ -1,0 +1,18 @@
+/* Icono: Guía Web 8 (iconos de 20 a 24px) y 5.6 (icono de 13px en las insignias). */
+.icono {
+  --icono-md: 20px; /* Guía Web 8 */
+  --icono-sm: 13px; /* Guía Web 5.6 */
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.md {
+  width: var(--icono-md);
+  height: var(--icono-md);
+}
+
+.sm {
+  width: var(--icono-sm);
+  height: var(--icono-sm);
+}

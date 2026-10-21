@@ -1,8 +1,132 @@
 @import './tokens.css';
 
+/*
+ * Estilos globales de la aplicación web de oficina.
+ * Solo usan los tokens de tokens.css, salvo las medidas de la guía sin token, declaradas una vez aquí.
+ */
+:root {
+  --focus-ring-width: 2px; /* Guía Web 5.2: contorno de foco de 2px con 2px de separación */
+  --focus-ring-offset: 2px; /* Guía Web 5.2 */
+  --duracion-transicion: 150ms; /* Guía Web 4.1: transiciones de 120 a 200 ms */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: var(--font-family-base);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
   background: var(--color-bg-page);
   color: var(--color-text-primary);
   margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--green-700);
+}
+
+/* Foco visible en todo elemento interactivo (Guía Web 8). */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Movimiento reducido (Guía Web 4.1). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Texto solo para lectores de pantalla. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Cifras alineadas en tablas y tarjetas (Guía Web 4.1). */
+.cifra {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabla 16 de la Guía Web: clases utilitarias de la escala tipográfica. */
+.t-display-sm {
+  font-size: var(--type-display-sm-size);
+  line-height: var(--type-display-sm-line);
+  font-weight: var(--type-display-sm-weight);
+}
+.t-heading-lg {
+  font-size: var(--type-heading-lg-size);
+  line-height: var(--type-heading-lg-line);
+  font-weight: var(--type-heading-lg-weight);
+}
+.t-heading-md {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+.t-heading-sm {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+.t-body-lg {
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line);
+  font-weight: var(--type-body-lg-weight);
+}
+.t-body-md {
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  font-weight: var(--type-body-md-weight);
+}
+.t-body-sm {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  font-weight: var(--type-body-sm-weight);
+}
+.t-label-md {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+.t-label-sm {
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  font-weight: var(--type-label-sm-weight);
 }

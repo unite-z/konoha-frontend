@@ -1,0 +1,41 @@
+/* Badge: Guía Web 5.6. */
+.badge {
+  --badge-height: 24px; /* Guía Web 5.6 */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--badge-height);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  font-weight: var(--type-label-sm-weight);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.neutral {
+  color: var(--color-neutral-text);
+  background: var(--color-neutral-bg);
+}
+
+.info {
+  color: var(--color-info);
+  background: var(--color-info-bg);
+}
+
+.exito {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.advertencia {
+  /* El par de la guía general no cumple AA: se usa el texto de advertencia de la Guía Web. */
+  color: var(--web-warning-text);
+  background: var(--color-warning-bg);
+}
+
+.error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}

@@ -1,0 +1,112 @@
+/* Menú lateral: Guía Web 3.2 y 4.2. */
+.lateral {
+  --menu-item-height: 44px; /* Guía Web 3.2: ítems de 44px de alto */
+  --menu-barra-activa: 3px; /* Guía Web 4.2: barra izquierda del ítem activo */
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--neutral-300);
+  overflow-y: auto;
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--web-header-height);
+  padding: var(--space-2) var(--space-6);
+}
+
+.nombreMarca {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.oficina {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.navegacion {
+  flex: 1;
+  padding: var(--space-4) var(--space-3);
+}
+
+.rotulo {
+  padding: 0 var(--space-3) var(--space-2);
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  font-weight: var(--type-label-sm-weight);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.segundoNivel {
+  margin-top: var(--space-1);
+  padding-left: var(--space-6);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--menu-item-height);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background-color var(--duracion-transicion);
+}
+
+a.item:hover {
+  background: var(--color-bg-subtle);
+  color: var(--neutral-950);
+}
+
+.activo,
+a.activo:hover {
+  background: var(--green-100);
+  color: var(--green-900);
+  font-weight: 600;
+}
+
+.activo::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  width: var(--menu-barra-activa);
+  border-radius: var(--radius-full);
+  background: var(--green-700);
+}
+
+/* Entradas de otros módulos: sin enlace. */
+.sinEnlace {
+  cursor: default;
+}
+
+.pie {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--neutral-300);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
