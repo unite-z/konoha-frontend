@@ -46,7 +46,8 @@ export default function SelectorBuscable<T>(props: SelectorBuscableProps<T>) {
   const busqueda = useDemora(texto.trim(), 300)
 
   const consulta = useConsulta(abierto && !valor ? `${claveBusqueda}|${busqueda}` : null, (signal) => buscar(busqueda, signal))
-  const resultados = consulta.estado === 'exito' ? (consulta.datos?.results ?? []) : []
+  // Mientras busca de nuevo se mantienen los resultados anteriores (sin parpadeo de la lista).
+  const resultados = consulta.estado === 'error' ? [] : (consulta.datos?.results ?? [])
   const total = consulta.datos?.count ?? 0
 
   function elegir(elemento: T) {
@@ -149,7 +150,7 @@ export default function SelectorBuscable<T>(props: SelectorBuscableProps<T>) {
         />
         {listaVisible && (
           <div className={estilos.panel}>
-            <ul id={idLista} role="listbox" aria-label={marco.etiqueta} className={estilos.lista}>
+            <ul id={idLista} role="listbox" aria-label={marco.etiqueta} aria-busy={consulta.estado === 'cargando' || undefined} className={estilos.lista}>
               {resultados.map((elemento, indice) => (
                 <li
                   key={String(claveDe(elemento))}

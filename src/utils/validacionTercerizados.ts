@@ -164,3 +164,92 @@ export function categoriaSugerida(nombre: string): string {
   if (/planta/.test(n)) return 'PlantasAtendidas'
   return ''
 }
+
+// --- RF-SER-011: origen y acuerdo de la unidad ----------------------------------------------------------
+
+/** Largo máximo del nombre de una unidad provisional. */
+export const LARGO_MAXIMO_UNIDAD_PROVISIONAL = 150
+
+export interface ValoresOrigen {
+  origen: string
+  unidadModo: 'existente' | 'provisional'
+  unidadId: number | null
+  unidadProvisional: string
+  motivo: string
+}
+
+export interface ErroresOrigen {
+  origen?: string
+  unidad?: string
+  unidadProvisional?: string
+  motivo?: string
+}
+
+/**
+ * Corrección del origen (antes del inicio). `actual`: origen y unidad registrados, para detectar que no cambió
+ * nada. El motivo queda en la auditoría.
+ */
+export function validarOrigen(v: ValoresOrigen, actual: { origen: string; unidadId: number | null }): ErroresOrigen {
+  const errores: ErroresOrigen = {}
+  if (!v.origen) errores.origen = 'Indica el origen de la atención'
+  if (v.origen === 'SolicitudUnidad') {
+    if (v.unidadModo === 'existente' && !v.unidadId) errores.unidad = 'Selecciona la unidad que solicita el trabajo'
+    if (v.unidadModo === 'provisional') {
+      const nombre = v.unidadProvisional.trim()
+      if (!nombre) errores.unidadProvisional = 'Escribe el nombre de la unidad que solicita el trabajo'
+      else if (nombre.length > LARGO_MAXIMO_UNIDAD_PROVISIONAL) {
+        errores.unidadProvisional = `Usa como máximo ${LARGO_MAXIMO_UNIDAD_PROVISIONAL} caracteres`
+      }
+    }
+  }
+  const mismaUnidad = v.origen !== 'SolicitudUnidad' || (v.unidadModo === 'existente' && v.unidadId === actual.unidadId)
+  if (!errores.origen && v.origen === actual.origen && mismaUnidad) {
+    errores.origen = 'El origen y la unidad son los registrados. Cámbialos o cierra sin guardar'
+  }
+  if (!v.motivo.trim()) errores.motivo = 'Explica por qué se corrige el origen'
+  return errores
+}
+
+export type RespuestaUnidad = 'pendiente' | 'acuerdo' | 'desacuerdo'
+
+export interface ValoresAcuerdo {
+  respuesta: RespuestaUnidad
+  fecha: string
+  comentarios: string
+}
+
+export interface ErroresAcuerdo {
+  respuesta?: string
+  fecha?: string
+  comentarios?: string
+}
+
+export function respuestaDeAcuerdo(acuerdo: boolean | null): RespuestaUnidad {
+  return acuerdo === null ? 'pendiente' : acuerdo ? 'acuerdo' : 'desacuerdo'
+}
+
+/**
+ * Acuerdo de la unidad (tras el fin). Comunicado: fecha obligatoria y no anterior al fin (Lima). Pendiente: sin
+ * fecha. En desacuerdo se piden comentarios (qué observa la unidad). `actual`: lo registrado, para avisar si
+ * no hay cambios.
+ */
+export function validarAcuerdo(
+  v: ValoresAcuerdo,
+  finLima: string | null,
+  actual: { acuerdo: boolean | null; fecha: string | null; comentarios: string },
+): ErroresAcuerdo {
+  const errores: ErroresAcuerdo = {}
+  if (v.respuesta !== 'pendiente') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v.fecha)) errores.fecha = 'Indica la fecha en que la unidad comunicó su respuesta'
+    else if (finLima && v.fecha < finLima) errores.fecha = 'La fecha no puede ser anterior al fin del servicio'
+  }
+  if (v.respuesta === 'desacuerdo' && !v.comentarios.trim()) {
+    errores.comentarios = 'Anota qué observa la unidad sobre el trabajo realizado'
+  }
+  const sinCambios =
+    respuestaDeAcuerdo(actual.acuerdo) === v.respuesta &&
+    (v.respuesta === 'pendiente' || (actual.fecha ?? '') === v.fecha) &&
+    actual.comentarios.trim() === v.comentarios.trim()
+  if (sinCambios && !errores.fecha && !errores.comentarios) errores.respuesta = 'No hay cambios respecto a lo registrado'
+  return errores
+}

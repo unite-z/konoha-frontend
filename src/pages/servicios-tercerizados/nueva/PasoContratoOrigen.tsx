@@ -1,14 +1,13 @@
 // RF-SER-003 y RF-SER-011 · Paso 1: contrato, descripción y origen
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import CampoFormulario, { AreaTexto } from '../../../components/ui/CampoFormulario'
-import Icono from '../../../components/ui/Icono'
+import { AreaTexto } from '../../../components/ui/CampoFormulario'
 import ListaDescripcion from '../../../components/ui/ListaDescripcion'
 import SelectorBuscable from '../../../components/ui/SelectorBuscable'
-import { listarContratos, listarUnidadesInstitucionales } from '../../../services/api/tercerizados'
-import type { Contrato, TipoServicio, UnidadInstitucional } from '../../../types/tercerizados'
-import { OPCIONES_ORIGEN } from '../../../utils/estadosTercerizados'
+import { listarContratos } from '../../../services/api/tercerizados'
+import type { Contrato, TipoServicio } from '../../../types/tercerizados'
 import { formatearFecha } from '../../../utils/formato'
-import { LARGO_MAXIMO_UNIDAD, type BorradorAtencion, type ErroresPaso1 } from '../../../utils/nuevaAtencion'
+import type { BorradorAtencion, ErroresPaso1 } from '../../../utils/nuevaAtencion'
+import CamposOrigen from '../CamposOrigen'
 import { IDS_PASO1 } from './idsCampos'
 import estilos from './NuevaAtencion.module.css'
 
@@ -26,7 +25,6 @@ function detalleContrato(c: Contrato) {
 
 export default function PasoContratoOrigen({ borrador, cambiar, errores, servicio }: PasoContratoOrigenProps) {
   const riesgoCatalogo = Boolean(servicio?.es_riesgo)
-  const esUnidad = borrador.origen === 'SolicitudUnidad'
 
   return (
     <div className={estilos.paso}>
@@ -100,89 +98,21 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
         <h2 id="titulo-origen" className={estilos.tituloGrupo}>
           Origen
         </h2>
-        <fieldset className={estilos.opciones} aria-describedby={errores.origen ? 'nueva-origen-error' : undefined}>
-          <legend className={estilos.leyenda}>
-            ¿Por qué surge la atención?
-            <span className={estilos.asterisco} aria-hidden="true">
-              {' '}
-              *
-            </span>
-          </legend>
-          {OPCIONES_ORIGEN.map((opcion) => (
-            <label key={opcion.valor} className={estilos.radio}>
-              <input
-                id={`nueva-origen-${opcion.valor}`}
-                type="radio"
-                name="nueva-origen"
-                value={opcion.valor}
-                checked={borrador.origen === opcion.valor}
-                onChange={() => cambiar({ origen: opcion.valor })}
-              />
-              {opcion.texto}
-            </label>
-          ))}
-          {errores.origen && (
-            <p id="nueva-origen-error" className={estilos.error}>
-              <Icono nombre="aspa" tamano="sm" />
-              <span>{errores.origen}</span>
-            </p>
-          )}
-        </fieldset>
-
-        {esUnidad && (
-          <div className={estilos.subgrupo}>
-            <fieldset className={estilos.opciones}>
-              <legend className={estilos.leyenda}>Unidad solicitante</legend>
-              <label className={estilos.radio}>
-                <input
-                  type="radio"
-                  name="nueva-unidad-modo"
-                  checked={borrador.unidadModo === 'existente'}
-                  onChange={() => cambiar({ unidadModo: 'existente' })}
-                />
-                Unidad registrada
-              </label>
-              <label className={estilos.radio}>
-                <input
-                  type="radio"
-                  name="nueva-unidad-modo"
-                  checked={borrador.unidadModo === 'provisional'}
-                  onChange={() => cambiar({ unidadModo: 'provisional' })}
-                />
-                No figura en la lista
-              </label>
-            </fieldset>
-            {borrador.unidadModo === 'existente' ? (
-              <SelectorBuscable<UnidadInstitucional>
-                id={IDS_PASO1.unidad}
-                etiqueta="Unidad"
-                obligatorio
-                error={errores.unidad}
-                valor={borrador.unidad}
-                claveDe={(u) => u.id}
-                textoDe={(u) => u.nombre}
-                detalleDe={(u) => (u.provisional ? 'Unidad provisional' : 'Unidad registrada')}
-                buscar={(q, signal) => listarUnidadesInstitucionales({ activo: true, q: q || undefined }, signal)}
-                onCambiar={(unidad) => cambiar({ unidad })}
-              />
-            ) : (
-              <CampoFormulario
-                id={IDS_PASO1.unidadProvisional}
-                etiqueta="Nombre de la unidad"
-                obligatorio
-                maxLength={LARGO_MAXIMO_UNIDAD}
-                ayuda="Se registrará como unidad provisional hasta que exista la lista oficial. Si ya existe con ese nombre, se reutiliza."
-                value={borrador.unidadProvisional}
-                onChange={(e) => cambiar({ unidadProvisional: e.target.value })}
-                error={errores.unidadProvisional}
-              />
-            )}
+        <CamposOrigen
+          prefijo="nueva"
+          origen={borrador.origen}
+          unidadModo={borrador.unidadModo}
+          unidad={borrador.unidad}
+          unidadProvisional={borrador.unidadProvisional}
+          errores={errores}
+          onCambiar={cambiar}
+          notaUnidad={
             <AvisoEnLinea tono="info">
               Cuando termine el servicio podrás registrar si la unidad está de acuerdo con el trabajo. Ese acuerdo no
               sustituye la conformidad del jefe de sección.
             </AvisoEnLinea>
-          </div>
-        )}
+          }
+        />
       </section>
     </div>
   )

@@ -2,9 +2,9 @@
 /**
  * Ficha de una atención (mockup, pantalla 6; Guía Web 6: ficha de detalle con historial).
  *
- * Acciones según rol y estado: OC, inicio, fin y reporte (`acciones/`). Tras cada operación la ficha se actualiza con
- * la atención que devuelve el servidor (nunca con un resultado supuesto) y se confirma con un aviso temporal.
- * TODO (paso 8 del plan): origen y acuerdo de la unidad.
+ * Acciones según rol y estado: OC, inicio, fin, reporte, origen y acuerdo de la unidad (`acciones/`). Tras
+ * cada operación la ficha se actualiza con la atención que devuelve el servidor (nunca con un resultado
+ * supuesto) y se confirma con un aviso temporal.
  * No se muestran conformidad ni seguridad y salud: están fuera de esta entrega.
  */
 import { useCallback, useState, type ReactNode } from 'react'

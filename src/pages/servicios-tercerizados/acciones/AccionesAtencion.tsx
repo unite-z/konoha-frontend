@@ -1,21 +1,23 @@
-// RF-SER-004, RF-SER-005 y RF-SER-006 · Acciones de la ficha
+// RF-SER-004, 005, 006 y 011 · Acciones de la ficha
 /**
  * Botones de las acciones disponibles según rol y estado (`config/permisosTercerizados.ts`) y sus diálogos.
  * Una sola acción primaria: el siguiente paso del ciclo; las demás, secundarias. Lo que el estado aún no
  * permite se muestra deshabilitado con su motivo.
  *
- * TODO (paso 8 del plan): corregir origen y acuerdo de la unidad.
+ * Corregir origen y registrar el acuerdo de la unidad son exclusivos del jefe de sección.
  */
 import { useId, useState } from 'react'
 import Boton from '../../../components/ui/Boton'
 import { disponibilidad } from '../../../config/permisosTercerizados'
 import type { Atencion, ReporteProveedor, RolTercerizados } from '../../../types/tercerizados'
+import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'
+import DialogoOrigen from './DialogoOrigen'
 import DialogoReporte from './DialogoReporte'
 import estilos from '../Tercerizados.module.css'
 
-type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | null
+type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | null
 
 export interface AccionesAtencionProps {
   atencion: Atencion
@@ -34,9 +36,11 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
   const inicio = disponibilidad('inicio', rol, atencion)
   const fin = disponibilidad('fin', rol, atencion)
   const reporte = disponibilidad('adjuntarReporte', rol, atencion)
+  const origen = disponibilidad('corregirOrigen', rol, atencion)
+  const acuerdo = disponibilidad('acuerdoUnidad', rol, atencion)
   const tieneOc = Boolean(atencion.numero_orden_compra)
 
-  if (!oc.visible && !inicio.visible && !fin.visible && !reporte.visible) return null
+  if (![oc, inicio, fin, reporte, origen, acuerdo].some((d) => d.visible)) return null
 
   const cerrar = () => setAbierto(null)
   const exito = (mensaje: string) => {
@@ -50,6 +54,8 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
     { clave: 'reporte', d: reporte },
     { clave: 'inicio', d: inicio },
     { clave: 'oc', d: oc },
+    { clave: 'origen', d: origen },
+    { clave: 'acuerdo', d: acuerdo },
   ].filter(({ d }) => d.visible && !d.habilitada && d.motivo)
   const describir = (clave: string, habilitada: boolean) => (habilitada ? undefined : `${idMotivos}-${clave}`)
 
@@ -71,6 +77,14 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
       texto: tieneOc ? 'Corregir orden de compra' : 'Registrar orden de compra',
       dialogo: 'ordenCompra' as const,
       primaria: oc.habilitada && !tieneOc,
+    },
+    { clave: 'origen', d: origen, texto: 'Corregir origen', dialogo: 'origen' as const, primaria: false },
+    {
+      clave: 'acuerdo',
+      d: acuerdo,
+      texto: atencion.acuerdo_unidad === null ? 'Registrar acuerdo de la unidad' : 'Actualizar acuerdo de la unidad',
+      dialogo: 'acuerdo' as const,
+      primaria: false,
     },
   ]
     .filter((b) => b.d.visible)
@@ -105,6 +119,8 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
       <DialogoEjecucion modo="inicio" abierto={abierto === 'inicio'} {...comunes} />
       <DialogoEjecucion modo="fin" abierto={abierto === 'fin'} {...comunes} />
       <DialogoReporte abierto={abierto === 'reporte'} {...comunes} onReporteAdjunto={onReporteAdjunto} />
+      <DialogoOrigen abierto={abierto === 'origen'} {...comunes} />
+      <DialogoAcuerdo abierto={abierto === 'acuerdo'} {...comunes} />
     </div>
   )
 }

@@ -114,3 +114,53 @@ describe('validarReporte', async () => {
     expect(categoriaSugerida('IMG_2031.jpg')).toBe('')
   })
 })
+
+describe('validarOrigen', async () => {
+  const { validarOrigen } = await import('./validacionTercerizados')
+  const base = { origen: 'Demanda', unidadModo: 'existente' as const, unidadId: null, unidadProvisional: '', motivo: 'Error al registrar' }
+  const actual = { origen: 'ProgramacionEstacional', unidadId: null }
+
+  it('acepta un cambio con motivo', () => {
+    expect(validarOrigen(base, actual)).toEqual({})
+  })
+
+  it('exige motivo y algún cambio', () => {
+    expect(validarOrigen({ ...base, motivo: ' ' }, actual).motivo).toBeDefined()
+    expect(validarOrigen({ ...base, origen: 'ProgramacionEstacional' }, actual).origen).toMatch(/registrados/)
+    expect(validarOrigen({ ...base, origen: 'SolicitudUnidad', unidadId: 4 }, { origen: 'SolicitudUnidad', unidadId: 4 }).origen).toMatch(/registrados/)
+    expect(validarOrigen({ ...base, origen: 'SolicitudUnidad', unidadId: 5 }, { origen: 'SolicitudUnidad', unidadId: 4 })).toEqual({})
+  })
+
+  it('la solicitud de una unidad exige unidad', () => {
+    expect(validarOrigen({ ...base, origen: 'SolicitudUnidad' }, actual).unidad).toBeDefined()
+    expect(validarOrigen({ ...base, origen: 'SolicitudUnidad', unidadModo: 'provisional' }, actual).unidadProvisional).toBeDefined()
+    expect(validarOrigen({ ...base, origen: 'SolicitudUnidad', unidadModo: 'provisional', unidadProvisional: 'Letras' }, actual)).toEqual({})
+  })
+})
+
+describe('validarAcuerdo', async () => {
+  const { validarAcuerdo, respuestaDeAcuerdo } = await import('./validacionTercerizados')
+  const pendiente = { acuerdo: null, fecha: null, comentarios: '' }
+
+  it('traduce el valor registrado', () => {
+    expect([null, true, false].map((v) => respuestaDeAcuerdo(v))).toEqual(['pendiente', 'acuerdo', 'desacuerdo'])
+  })
+
+  it('el acuerdo comunicado exige fecha no anterior al fin', () => {
+    expect(validarAcuerdo({ respuesta: 'acuerdo', fecha: '', comentarios: '' }, '2026-10-20', pendiente).fecha).toBeDefined()
+    expect(validarAcuerdo({ respuesta: 'acuerdo', fecha: '2026-10-19', comentarios: '' }, '2026-10-20', pendiente).fecha).toMatch(/anterior/)
+    expect(validarAcuerdo({ respuesta: 'acuerdo', fecha: '2026-10-20', comentarios: '' }, '2026-10-20', pendiente)).toEqual({})
+  })
+
+  it('el desacuerdo pide comentarios', () => {
+    expect(validarAcuerdo({ respuesta: 'desacuerdo', fecha: '2026-10-21', comentarios: '' }, null, pendiente).comentarios).toBeDefined()
+    expect(validarAcuerdo({ respuesta: 'desacuerdo', fecha: '2026-10-21', comentarios: 'Restos de césped' }, null, pendiente)).toEqual({})
+  })
+
+  it('avisa si no hay cambios', () => {
+    expect(validarAcuerdo({ respuesta: 'pendiente', fecha: '', comentarios: '' }, null, pendiente).respuesta).toBeDefined()
+    const registrado = { acuerdo: true, fecha: '2026-10-21', comentarios: 'Bien' }
+    expect(validarAcuerdo({ respuesta: 'acuerdo', fecha: '2026-10-21', comentarios: 'Bien' }, null, registrado).respuesta).toBeDefined()
+    expect(validarAcuerdo({ respuesta: 'pendiente', fecha: '', comentarios: 'Bien' }, null, registrado)).toEqual({})
+  })
+})
