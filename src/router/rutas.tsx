@@ -16,6 +16,7 @@ import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIn
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
+import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
 import { PREFIJO_TERCERIZADOS, RUTAS, RUTAS_TERCERIZADOS } from './rutasApp'
 
@@ -39,8 +40,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace /> },
           { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
+          { path: RUTAS_TERCERIZADOS.nuevaAtencion, element: <NuevaAtencionPage /> }, // RF-SER-003 y 011
           { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
-          // TODO: nueva atención (paso 6 del plan).
         ],
       },
       { path: '*', element: <PaginaNoEncontrada /> },

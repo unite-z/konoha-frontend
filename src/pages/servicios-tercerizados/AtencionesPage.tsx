@@ -7,12 +7,12 @@
  * - Paginación del servidor (25 por página).
  * - Estados: carga (> 300 ms), vacío (con o sin filtros), error con «Reintentar» y página inexistente.
  *
- * TODO (paso 6 del plan): acción primaria «Registrar atención» (solo jefe de sección) al crear la pantalla.
+ * Acción primaria «Registrar atención»: solo el jefe de sección.
  */
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import Badge from '../../components/ui/Badge'
-import Boton from '../../components/ui/Boton'
+import Boton, { BotonEnlace } from '../../components/ui/Boton'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import { ChipsFiltrosActivos, GrupoChips, type FiltroActivo } from '../../components/ui/ChipsFiltro'
 import EstadoVacio from '../../components/ui/EstadoVacio'
@@ -21,7 +21,9 @@ import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, rutaDetalleAtencion } from '../../router/rutasApp'
+import { puedeRegistrarAtencion } from '../../config/permisosTercerizados'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '../../router/rutasApp'
+import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import { listarAtenciones, listarTodosLosContratos } from '../../services/api/tercerizados'
 import type { Atencion, Contrato } from '../../types/tercerizados'
 import {
@@ -128,6 +130,8 @@ export default function AtencionesPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, { texto: 'Atenciones' }])
   const navegar = useNavigate()
   const { search } = useLocation()
+  const { estado: sesion } = useSesionTercerizados()
+  const esJefe = puedeRegistrarAtencion(sesion.tipo === 'activa' ? sesion.usuario.rol : null)
 
   const { filtros: url, establecer } = useFiltrosUrl<ClaveFiltroBandeja>(FILTROS_BANDEJA_VACIOS)
   const { filtros, pagina } = leerFiltrosBandeja(url)
@@ -189,6 +193,13 @@ export default function AtencionesPage() {
 
   return (
     <div className={estilos.pagina}>
+      {esJefe && (
+        <div className={estilos.barraAcciones}>
+          <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="primario">
+            Registrar atención
+          </BotonEnlace>
+        </div>
+      )}
       <form role="search" aria-label="Filtrar atenciones" className={estilos.barraFiltros} onSubmit={buscar}>
         <div className={estilos.busqueda}>
           <CampoFormulario
@@ -300,6 +311,11 @@ export default function AtencionesPage() {
               : {
                   titulo: 'Aún no hay atenciones tercerizadas',
                   descripcion: 'Aparecerán aquí cuando el jefe de sección registre la primera.',
+                  accion: esJefe ? (
+                    <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="secundario">
+                      Registrar atención
+                    </BotonEnlace>
+                  ) : undefined,
                 }
           }
           error={{

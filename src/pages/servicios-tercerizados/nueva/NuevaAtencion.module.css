@@ -1,0 +1,255 @@
+/* Asistente «Nueva atención»: Guía Web 5.13 y 5.3. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.contenedorPaso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.subgrupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--green-100);
+}
+
+.cabeceraGrupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tituloGrupo {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-error);
+}
+
+.textoLargo {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Casillas y opciones: control nativo con el verde de acción, objetivo de 20px. */
+.casilla,
+.radio,
+.opcionCasilla {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.casilla input,
+.radio input,
+.opcionCasilla input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--green-700);
+}
+
+.casilla label {
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.leyenda {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+/* --- Paso 2 ---------------------------------------------------------------------------------------- */
+
+.columnasAlcances {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.buscador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.filtrosBuscador {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.filtrosBuscador > :only-child {
+  grid-column: 1 / -1;
+}
+
+.listaOpciones {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.listaOpciones[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.opcionCasilla {
+  align-items: center;
+  min-height: var(--web-row-height);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--web-border-subtle);
+}
+
+.opcionCasilla:last-child {
+  border-bottom: 0;
+}
+
+.opcionCasilla label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.seleccionados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seleccionado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.cabeceraSeleccionado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.metrado {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* --- Paso 3 ---------------------------------------------------------------------------------------- */
+
+.listaRevision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.errorRegistro:focus {
+  outline: none;
+}
+
+/* --- Navegación del asistente ----------------------------------------------------------------------- */
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+}
+
+@media (max-width: 1023px) {
+  .columnasAlcances {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grupo {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 767px) {
+  .filtrosBuscador,
+  .metrado {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

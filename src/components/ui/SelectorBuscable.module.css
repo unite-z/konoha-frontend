@@ -1,0 +1,106 @@
+/* SelectorBuscable: Guía Web 5.4. */
+.contenedor {
+  position: relative;
+}
+
+.panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  right: 0;
+  max-height: 18rem;
+  overflow-y: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-2);
+}
+
+.lista {
+  margin: 0;
+  padding: var(--space-1) 0;
+  list-style: none;
+}
+
+.opcion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.opcion:hover,
+.activa {
+  background: var(--green-50);
+}
+
+.activa {
+  box-shadow: inset 3px 0 0 var(--green-700);
+}
+
+.detalle {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.estado {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.estado:empty {
+  display: none;
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--type-body-sm-size);
+  color: var(--color-error);
+}
+
+.reintentar {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--green-700);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.elegido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--green-50);
+}
+
+.elegidoError {
+  border-color: var(--color-error);
+}
+
+.textoElegido {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.textoElegido > :first-child:focus {
+  outline: none;
+}

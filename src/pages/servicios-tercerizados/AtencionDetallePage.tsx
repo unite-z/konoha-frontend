@@ -221,7 +221,8 @@ export default function AtencionDetallePage() {
   // Última versión recibida de una operación o recarga; se usa si es tan reciente como la consultada.
   const [local, setLocal] = useState<Atencion | null>(null)
   const atencion = masReciente(consulta.datos, local)
-  const [aviso, setAviso] = useState<string | null>(null)
+  // Aviso que deja el asistente al registrar la atención.
+  const [aviso, setAviso] = useState<string | null>(() => (state as { aviso?: string } | null)?.aviso ?? null)
   const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
 
   usePaginaActual(atencion ? `Atención ${codigoCorto(atencion.codigo)}` : 'Atención tercerizada', [

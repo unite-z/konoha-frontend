@@ -147,17 +147,25 @@ export function listarContratos(consulta: ConsultaCatalogo & { vigente?: boolean
 const PAGINAS_MAXIMAS_SELECTOR = 20
 
 /**
- * Todos los contratos (para el filtro de la bandeja). Recorre las páginas hasta `PAGINAS_MAXIMAS_SELECTOR`;
- * `completo` es `false` si quedaron contratos sin cargar.
+ * Todas las páginas de un catálogo, hasta `PAGINAS_MAXIMAS_SELECTOR` (para selectores pequeños: contratos,
+ * tipos de servicio, unidades de medida, áreas verdes). `completo` es `false` si quedaron sin cargar.
  */
-export async function listarTodosLosContratos(signal?: AbortSignal): Promise<{ contratos: Contrato[]; completo: boolean }> {
-  const contratos: Contrato[] = []
-  for (let pagina = 1; pagina <= PAGINAS_MAXIMAS_SELECTOR; pagina++) {
-    const respuesta = await listarContratos({ page: pagina > 1 ? pagina : undefined }, signal)
-    contratos.push(...respuesta.results)
-    if (!respuesta.next) return { contratos, completo: true }
+export async function listarTodo<T>(
+  pagina: (numero: number | undefined) => Promise<Paginado<T>>,
+): Promise<{ resultados: T[]; completo: boolean }> {
+  const resultados: T[] = []
+  for (let numero = 1; numero <= PAGINAS_MAXIMAS_SELECTOR; numero++) {
+    const respuesta = await pagina(numero > 1 ? numero : undefined)
+    resultados.push(...respuesta.results)
+    if (!respuesta.next) return { resultados, completo: true }
   }
-  return { contratos, completo: false }
+  return { resultados, completo: false }
+}
+
+/** Todos los contratos (para el filtro de la bandeja). */
+export async function listarTodosLosContratos(signal?: AbortSignal): Promise<{ contratos: Contrato[]; completo: boolean }> {
+  const { resultados, completo } = await listarTodo((page) => listarContratos({ page }, signal))
+  return { contratos: resultados, completo }
 }
 
 export function listarProveedores(consulta: ConsultaCatalogo & { activo?: boolean } = {}, signal?: AbortSignal) {

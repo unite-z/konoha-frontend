@@ -70,6 +70,11 @@
 
 /* --- Bandeja ---------------------------------------------------------------------------------------- */
 
+.barraAcciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .barraFiltros {
   display: flex;
   flex-wrap: wrap;

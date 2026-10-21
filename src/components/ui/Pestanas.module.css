@@ -1,0 +1,45 @@
+/* Pestanas: Guía Web 4.2 (subrayado verde en la activa). */
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.lista {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border-default);
+  overflow-x: auto;
+}
+
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pestana:hover {
+  color: var(--color-text-primary);
+}
+
+.activa {
+  border-bottom-color: var(--green-700);
+  color: var(--green-900);
+  font-weight: 600;
+}
+
+.panel {
+  min-width: 0;
+}
