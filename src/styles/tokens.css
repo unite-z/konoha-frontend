@@ -1,0 +1,71 @@
+:root {
+  --color-bg-page: #F9FAFB;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-subtle: #F3F4F6;
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6B7280;
+  --color-border-default: #D1D5DB;
+  --color-action-primary: #2E7D32;
+  --color-action-primary-hover: #1B5E20;
+  --color-info: #1565C0;
+  --color-success: #2E7D32;
+  --color-warning: #9A6700;
+  --color-error: #B42318;
+  --font-family-base: Inter, system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Tabla 16 de la Guía Web: tokens reutilizados no incluidos en el bloque anterior */
+:root {
+  --green-900: #1B5E20;
+  --green-700: #2E7D32;
+  --green-500: #43A047;
+  --green-100: #E8F5E9;
+  --green-50: #F3FAF4;
+  --neutral-950: #111827;
+  --neutral-700: #374151;
+  --neutral-500: #6B7280;
+  --neutral-300: #D1D5DB;
+  --neutral-50: #F9FAFB;
+  --color-info-bg: #EAF2FD;
+  --color-success-bg: #E8F5E9;
+  --color-warning-bg: #FFF4CC;
+  --color-error-bg: #FDECEC;
+  --color-neutral-text: #5F6B65;
+  --color-neutral-bg: #F3F4F6;
+  --radius-full: 999px;
+}
+
+/* Tabla 17 de la Guía Web: EXTENSIONES PROPUESTAS, pendientes de aprobación (Maria Fernanda Ramos) */
+:root {
+  --web-warning-text: #8A5D00;
+  --web-focus-ring-color: #1565C0;
+  --web-error-hover: #8F1C13;
+  --web-border-subtle: #E5E7EB;
+  --web-info-border: #B7D1F2;
+  --web-success-border: #B5DCB8;
+  --web-warning-border: #E8D48A;
+  --web-error-border: #F3B8B3;
+  --web-scrim: rgba(17, 24, 39, 0.50);
+  --web-elev-1: 0 1px 2px rgba(17, 24, 39, 0.08);
+  --web-elev-2: 0 4px 12px rgba(17, 24, 39, 0.12);
+  --web-elev-3: 0 12px 32px rgba(17, 24, 39, 0.20);
+  --web-header-height: 64px;
+  --web-sidebar-width: 256px;
+  --web-sidebar-rail: 72px;
+  --web-content-max: 1440px;
+  --web-row-height: 48px;
+  --web-row-height-compact: 40px;
+  --web-table-head: 40px;
+  --web-control-compact: 32px;
+}
