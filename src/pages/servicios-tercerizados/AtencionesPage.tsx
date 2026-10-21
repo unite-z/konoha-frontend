@@ -265,6 +265,8 @@ export default function AtencionesPage() {
         onLimpiar={limpiarFiltros}
       />
 
+      {/* Encabezado de la sección de resultados (orden de encabezados para lectores de pantalla). */}
+      <h2 className="sr-only">Resultados</h2>
       <p className={`${estilos.resumenResultados} cifra`} aria-live="polite">
         {consulta.estado === 'exito' || consulta.estado === 'vacio'
           ? `${formatearNumero(total)} ${total === 1 ? 'atención' : 'atenciones'}${conFiltros ? ' con estos filtros' : ''}`

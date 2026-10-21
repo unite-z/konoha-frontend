@@ -46,6 +46,11 @@
   overflow-wrap: anywhere;
 }
 
+/* Recibe foco por programa al llegar desde el asistente; el lector anuncia el título sin un contorno extra. */
+.tituloPrincipal:focus {
+  outline: none;
+}
+
 .ayuda {
   font-size: var(--type-body-sm-size);
   line-height: var(--type-body-sm-line);

@@ -7,7 +7,7 @@
  * supuesto) y se confirma con un aviso temporal.
  * No se muestran conformidad ni seguridad y salud: están fuera de esta entrega.
  */
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useParams } from 'react-router'
 import LineaEstados from '../../components/tercerizados/LineaEstados'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
@@ -72,7 +72,23 @@ function textoUnidad(atencion: Atencion): string | null {
     : atencion.unidad_solicitante_nombre
 }
 
-function Ficha({ atencion, acciones, versionDocumentos }: { atencion: Atencion; acciones: ReactNode; versionDocumentos: number }) {
+function Ficha({
+  atencion,
+  acciones,
+  versionDocumentos,
+  enfocarTitulo,
+}: {
+  atencion: Atencion
+  acciones: ReactNode
+  versionDocumentos: number
+  /** Al llegar desde el asistente, el foco pasa al título para no perderse en el documento. */
+  enfocarTitulo: boolean
+}) {
+  const titulo = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    if (enfocarTitulo) titulo.current?.focus()
+    // `enfocarTitulo` no cambia durante la vida de la página: el efecto corre una sola vez.
+  }, [enfocarTitulo])
   const acuerdo = insigniaAcuerdo(atencion.acuerdo_unidad)
   const duracion = duracionMinutos(atencion)
   const esSolicitudUnidad = atencion.origen === 'SolicitudUnidad'
@@ -81,7 +97,7 @@ function Ficha({ atencion, acciones, versionDocumentos }: { atencion: Atencion; 
     <>
       <section className={estilos.superficie} aria-labelledby="titulo-atencion">
         <div className={estilos.cabeceraFicha}>
-          <h2 id="titulo-atencion" className={`${estilos.tituloPrincipal} ${estilos.textoLargo}`}>
+          <h2 id="titulo-atencion" ref={titulo} tabIndex={-1} className={`${estilos.tituloPrincipal} ${estilos.textoLargo}`}>
             {atencion.descripcion}
           </h2>
           <span className={estilos.enLinea}>
@@ -225,6 +241,7 @@ export default function AtencionDetallePage() {
   const [aviso, setAviso] = useState<string | null>(() => (state as { aviso?: string } | null)?.aviso ?? null)
   const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
   const [versionDocumentos, setVersionDocumentos] = useState(0)
+  const [enfocarTitulo] = useState(() => Boolean((state as { aviso?: string } | null)?.aviso))
 
   usePaginaActual(atencion ? `Atención ${codigoCorto(atencion.codigo)}` : 'Atención tercerizada', [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
@@ -266,6 +283,7 @@ export default function AtencionDetallePage() {
       <Ficha
         atencion={atencion}
         versionDocumentos={versionDocumentos}
+        enfocarTitulo={enfocarTitulo}
         acciones={
           <AccionesAtencion
             atencion={atencion}
