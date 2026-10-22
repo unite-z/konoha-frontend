@@ -1,6 +1,6 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
 import type { FechaIso } from '../../types/comun'
-import type { DuracionEntrada, Estacion, FrecuenciaEntrada, Restriccion, ServicioPeriodico, TipoRestriccion } from '../../types/planificacion'
+import type { DuracionEntrada, Estacion, FrecuenciaEntrada, Restriccion, RestriccionEntrada, ServicioPeriodico, TipoRestriccion } from '../../types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 export function listarServiciosPeriodicos(signal?: AbortSignal) {
@@ -27,4 +27,9 @@ export function listarTiposRestriccion(signal?: AbortSignal) {
 /** `GET restricciones/?desde&hasta` (periodo máximo de 400 días). */
 export function listarRestricciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
   return solicitarPlanificacion<Restriccion[]>('restricciones/', { parametros: { desde, hasta }, signal })
+}
+
+/** `POST restricciones/` (solo jefe). Devuelve las restricciones creadas (varias si hay recurrencia). */
+export function crearRestriccion(cuerpo: RestriccionEntrada) {
+  return solicitarPlanificacion<Restriccion[]>('restricciones/', { metodo: 'POST', cuerpo })
 }

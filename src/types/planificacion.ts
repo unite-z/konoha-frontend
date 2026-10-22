@@ -70,3 +70,14 @@ export interface Restriccion {
   descripcion: string | null
   serie: string | null
 }
+
+/** Cuerpo de `POST restricciones/`. Pronto admitirá `recurrencia: {dias_semana, hasta}`. */
+export interface RestriccionEntrada {
+  tipo_restriccion_id: number
+  fecha_inicio: FechaIso
+  fecha_fin: FechaIso
+  hora_inicio?: string
+  hora_fin?: string
+  area_verde_id?: number
+  descripcion?: string
+}

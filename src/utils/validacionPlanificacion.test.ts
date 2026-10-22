@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validarDuracion, validarFrecuencia } from './validacionPlanificacion'
+import { validarDuracion, validarFrecuencia, validarRestriccion } from './validacionPlanificacion'
 
 describe('validarFrecuencia', () => {
   it('acepta solo la teórica', () => {
@@ -41,5 +41,30 @@ describe('validarDuracion', () => {
   it('rechaza horas mal formadas y fin no posterior al inicio', () => {
     expect(validarDuracion({ ...vacio, inicio: '25:00' }).errores.inicio).toBeDefined()
     expect(validarDuracion({ ...vacio, inicio: '10:00', fin: '10:00' }).errores.fin).toBeDefined()
+  })
+})
+
+describe('validarRestriccion', () => {
+  const base = { tipo: '2', fechaInicio: '2026-10-20', fechaFin: '2026-10-22', horaInicio: '', horaFin: '', descripcion: '' }
+
+  it('acepta lo mínimo', () => {
+    expect(validarRestriccion(base).entrada).toEqual({ tipo_restriccion_id: 2, fecha_inicio: '2026-10-20', fecha_fin: '2026-10-22' })
+  })
+
+  it('incluye horas y descripción recortada', () => {
+    const { entrada } = validarRestriccion({ ...base, horaInicio: '08:00', horaFin: '10:00', descripcion: ' Examen ' })
+    expect(entrada).toMatchObject({ hora_inicio: '08:00', hora_fin: '10:00', descripcion: 'Examen' })
+  })
+
+  it('exige tipo y fechas', () => {
+    const { errores } = validarRestriccion({ ...base, tipo: '', fechaInicio: '', fechaFin: '' })
+    expect(Object.keys(errores).sort()).toEqual(['fechaFin', 'fechaInicio', 'tipo'])
+  })
+
+  it('rechaza fin anterior al inicio y horas incoherentes en un solo día', () => {
+    expect(validarRestriccion({ ...base, fechaFin: '2026-10-19' }).errores.fechaFin).toBeDefined()
+    const mismoDia = { ...base, fechaFin: '2026-10-20', horaInicio: '10:00', horaFin: '09:00' }
+    expect(validarRestriccion(mismoDia).errores.horaFin).toBeDefined()
+    expect(validarRestriccion({ ...mismoDia, fechaFin: '2026-10-21' }).entrada).not.toBeNull()
   })
 })

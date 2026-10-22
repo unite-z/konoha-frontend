@@ -1,5 +1,5 @@
 /** Validación en cliente de MOD-03. El back-end vuelve a validar y su respuesta manda. */
-import type { DuracionEntrada, FrecuenciaEntrada } from '../types/planificacion'
+import type { DuracionEntrada, FrecuenciaEntrada, RestriccionEntrada } from '../types/planificacion'
 
 export interface BorradorFrecuencia {
   teorica: string
@@ -74,6 +74,52 @@ export function validarDuracion(borrador: BorradorDuracion): { errores: ErroresD
       ...(limpieza ? { dias_limpieza: limpieza } : {}),
       ...(borrador.inicio ? { hora_inicio: borrador.inicio } : {}),
       ...(borrador.fin ? { hora_fin: borrador.fin } : {}),
+    },
+  }
+}
+
+export interface BorradorRestriccion {
+  tipo: string
+  fechaInicio: string
+  fechaFin: string
+  horaInicio: string
+  horaFin: string
+  descripcion: string
+}
+
+export type ErroresRestriccion = Partial<Record<keyof BorradorRestriccion, string>>
+
+/** Tipo y fechas obligatorios; el fin no puede ser anterior al inicio; las horas, `HH:MM`. */
+export function validarRestriccion(borrador: BorradorRestriccion): {
+  errores: ErroresRestriccion
+  entrada: RestriccionEntrada | null
+} {
+  const errores: ErroresRestriccion = {}
+  const tipo = enteroPositivo(borrador.tipo)
+  if (tipo === null) errores.tipo = 'Elige el tipo de restricción'
+  if (!borrador.fechaInicio) errores.fechaInicio = 'Indica la fecha de inicio'
+  if (!borrador.fechaFin) errores.fechaFin = 'Indica la fecha de fin'
+  else if (borrador.fechaInicio && borrador.fechaFin < borrador.fechaInicio) {
+    errores.fechaFin = 'La fecha de fin no puede ser anterior a la de inicio'
+  }
+  if (borrador.horaInicio && !PATRON_HORA.test(borrador.horaInicio)) errores.horaInicio = 'Usa el formato HH:MM'
+  if (borrador.horaFin && !PATRON_HORA.test(borrador.horaFin)) errores.horaFin = 'Usa el formato HH:MM'
+  if (!errores.horaInicio && !errores.horaFin && borrador.horaInicio && borrador.horaFin) {
+    if (borrador.fechaInicio === borrador.fechaFin && borrador.horaFin <= borrador.horaInicio) {
+      errores.horaFin = 'La hora de fin debe ser posterior a la de inicio'
+    }
+  }
+  if (Object.keys(errores).length > 0 || tipo === null) return { errores, entrada: null }
+  const descripcion = borrador.descripcion.trim()
+  return {
+    errores,
+    entrada: {
+      tipo_restriccion_id: tipo,
+      fecha_inicio: borrador.fechaInicio,
+      fecha_fin: borrador.fechaFin,
+      ...(borrador.horaInicio ? { hora_inicio: borrador.horaInicio } : {}),
+      ...(borrador.horaFin ? { hora_fin: borrador.horaFin } : {}),
+      ...(descripcion ? { descripcion } : {}),
     },
   }
 }
