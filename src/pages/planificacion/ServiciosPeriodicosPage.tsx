@@ -8,6 +8,7 @@ import Boton from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
+import ListaDescripcion from '../../components/ui/ListaDescripcion'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
 import { puedeEditarPlanificacion } from '../../config/permisosPlanificacion'
 import { useConsulta } from '../../hooks/useConsulta'
@@ -17,7 +18,7 @@ import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import { listarServiciosPeriodicos } from '../../services/api/planificacion'
 import type { FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
 import { formatearFechaHora } from '../../utils/formato'
-import { ordenarPorEstacion, textoDias } from '../../utils/planificacion'
+import { ordenarPorEstacion, textoDias, textoHorario } from '../../utils/planificacion'
 import DialogoFrecuencia from './DialogoFrecuencia'
 import estilos from './Planificacion.module.css'
 
@@ -48,6 +49,7 @@ function columnas(servicio: ServicioPeriodico, editar?: (f: FrecuenciaEstacion) 
 }
 
 function TarjetaServicio({ servicio, editar }: { servicio: ServicioPeriodico; editar?: (f: FrecuenciaEstacion) => void }) {
+  const { duracion } = servicio
   return (
     <section className={estilos.superficie} aria-labelledby={`servicio-${servicio.id}`}>
       <div className={estilos.cabeceraSeccion}>
@@ -63,6 +65,22 @@ function TarjetaServicio({ servicio, editar }: { servicio: ServicioPeriodico; ed
         claveFila={(f) => f.estacion}
         compacta
       />
+      <h3 className={estilos.subtitulo}>Duración</h3>
+      {duracion ? (
+        <ListaDescripcion
+          elementos={[
+            { etiqueta: 'Duración máxima', valor: textoDias(duracion.duracion_maxima_dias) },
+            { etiqueta: 'Días de limpieza', valor: textoDias(duracion.dias_limpieza) },
+            { etiqueta: 'Horario', valor: textoHorario(duracion.hora_inicio, duracion.hora_fin) },
+            {
+              etiqueta: 'Última modificación',
+              valor: `${duracion.modificado_por}, ${formatearFechaHora(duracion.fecha_modificacion)}`,
+            },
+          ]}
+        />
+      ) : (
+        <p>Sin duración definida.</p>
+      )}
     </section>
   )
 }

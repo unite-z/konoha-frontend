@@ -30,3 +30,8 @@
   line-height: var(--type-heading-sm-line);
   font-weight: var(--type-heading-sm-weight);
 }
+
+.subtitulo {
+  font-size: var(--type-body-md-size);
+  font-weight: var(--type-heading-sm-weight);
+}
