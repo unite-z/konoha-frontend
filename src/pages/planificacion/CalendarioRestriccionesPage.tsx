@@ -3,15 +3,18 @@
  * Todos los roles consultan. El efecto se distingue con texto e icono, no solo con color.
  */
 import { useState } from 'react'
+import AvisoTemporal from '../../components/ui/AvisoTemporal'
 import Badge from '../../components/ui/Badge'
 import Boton from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
+import { puedeEditarPlanificacion } from '../../config/permisosPlanificacion'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_PLANIFICACION } from '../../router/rutasApp'
+import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import { listarRestricciones } from '../../services/api/planificacion'
 import type { Restriccion } from '../../types/planificacion'
 import {
@@ -25,6 +28,7 @@ import {
 import { formatearFecha } from '../../utils/formato'
 import { hoyLima } from '../../utils/instanteLima'
 import { textoHorario } from '../../utils/planificacion'
+import DialogoRestriccion from './DialogoRestriccion'
 import estilos from './Planificacion.module.css'
 
 function textoPeriodo(r: Restriccion): string {
@@ -56,6 +60,10 @@ const COLUMNAS: ColumnaTabla<Restriccion>[] = [
 export default function CalendarioRestriccionesPage() {
   usePaginaActual('Calendario de restricciones', [MIGAS_PLANIFICACION.planificacion])
   const [mes, setMes] = useState(() => mesDeFecha(hoyLima()))
+  const { estado } = useSesionTercerizados()
+  const puedeEditar = estado.tipo === 'activa' && puedeEditarPlanificacion(estado.usuario.rol)
+  const [registrando, setRegistrando] = useState(false)
+  const [aviso, setAviso] = useState<string | null>(null)
   const { desde, hasta } = rangoDelMes(mes)
   const consulta = useConsulta(
     `restricciones-${desde}`,
@@ -100,7 +108,24 @@ export default function CalendarioRestriccionesPage() {
           Mes siguiente
         </Boton>
       </div>
+      {puedeEditar && (
+        <div>
+          <Boton onClick={() => setRegistrando(true)}>Registrar restricción</Boton>
+        </div>
+      )}
       {contenido}
+      {registrando && (
+        <DialogoRestriccion
+          fechaInicial={desde}
+          onCerrar={() => setRegistrando(false)}
+          onCreadas={(creadas) => {
+            setRegistrando(false)
+            setAviso(creadas.length === 1 ? 'Restricción registrada.' : `${creadas.length} restricciones registradas.`)
+            consulta.reintentar()
+          }}
+        />
+      )}
+      <AvisoTemporal mensaje={aviso} onCerrar={() => setAviso(null)} />
     </div>
   )
 }
