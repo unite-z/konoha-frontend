@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FrecuenciaEstacion } from '../types/planificacion'
-import { ordenarPorEstacion, textoDias } from './planificacion'
+import { ordenarPorEstacion, textoDias, textoHorario } from './planificacion'
 
 function frecuencia(estacion: FrecuenciaEstacion['estacion']): FrecuenciaEstacion {
   return {
@@ -28,5 +28,14 @@ describe('textoDias', () => {
   })
   it('muestra raya larga sin valor', () => {
     expect(textoDias(null)).toBe('—')
+  })
+})
+
+describe('textoHorario', () => {
+  it('cubre los casos', () => {
+    expect(textoHorario('08:00', '12:00')).toBe('08:00 a 12:00')
+    expect(textoHorario('08:00', null)).toBe('Desde 08:00')
+    expect(textoHorario(null, '12:00')).toBe('Hasta 12:00')
+    expect(textoHorario(null, null)).toBe('—')
   })
 })

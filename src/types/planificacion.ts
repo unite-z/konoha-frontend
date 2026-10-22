@@ -39,3 +39,10 @@ export interface FrecuenciaEntrada {
   frecuencia_practica_dias?: number
   frecuencia_maxima_dias?: number
 }
+
+export interface DuracionEntrada {
+  duracion_maxima_dias: number
+  dias_limpieza?: number
+  hora_inicio?: string
+  hora_fin?: string
+}

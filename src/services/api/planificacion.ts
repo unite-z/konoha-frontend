@@ -1,5 +1,5 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
-import type { Estacion, FrecuenciaEntrada, ServicioPeriodico } from '../../types/planificacion'
+import type { DuracionEntrada, Estacion, FrecuenciaEntrada, ServicioPeriodico } from '../../types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 export function listarServiciosPeriodicos(signal?: AbortSignal) {
@@ -12,4 +12,9 @@ export function actualizarFrecuencia(servicioId: number, estacion: Estacion, cue
     metodo: 'PUT',
     cuerpo,
   })
+}
+
+/** `PUT servicios/{id}/duracion/` (solo jefe). Devuelve el servicio actualizado. */
+export function actualizarDuracion(servicioId: number, cuerpo: DuracionEntrada) {
+  return solicitarPlanificacion<ServicioPeriodico>(`servicios/${servicioId}/duracion/`, { metodo: 'PUT', cuerpo })
 }

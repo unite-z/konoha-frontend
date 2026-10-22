@@ -12,3 +12,11 @@ export function textoDias(dias: number | null | undefined): string {
   if (dias === null || dias === undefined) return SIN_VALOR
   return `${formatearNumero(dias)} ${dias === 1 ? 'día' : 'días'}`
 }
+
+/** «08:00 a 12:00», «Desde 08:00», «Hasta 12:00» o «—». */
+export function textoHorario(inicio: string | null, fin: string | null): string {
+  if (inicio && fin) return `${inicio} a ${fin}`
+  if (inicio) return `Desde ${inicio}`
+  if (fin) return `Hasta ${fin}`
+  return SIN_VALOR
+}
