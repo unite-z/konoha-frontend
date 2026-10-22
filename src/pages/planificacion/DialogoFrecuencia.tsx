@@ -4,23 +4,25 @@ import CampoFormulario from '../../components/ui/CampoFormulario'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import { aErrorApi } from '../../services/api/cliente'
 import { actualizarFrecuencia } from '../../services/api/planificacion'
-import type { FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
+import type { Estacion, FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
 import { validarFrecuencia, type BorradorFrecuencia, type ErroresFrecuencia } from '../../utils/validacionPlanificacion'
 
 export interface DialogoFrecuenciaProps {
   servicio: ServicioPeriodico
-  frecuencia: FrecuenciaEstacion
+  estacion: Estacion
+  /** `null` si la estación aún no tiene frecuencia: el diálogo la crea. */
+  frecuencia: FrecuenciaEstacion | null
   onCerrar: () => void
   onGuardado: (servicio: ServicioPeriodico) => void
 }
 
 const CAMPOS = { teorica: 'frecuencia_teorica_dias', practica: 'frecuencia_practica_dias', maxima: 'frecuencia_maxima_dias' } as const
 
-export default function DialogoFrecuencia({ servicio, frecuencia, onCerrar, onGuardado }: DialogoFrecuenciaProps) {
+export default function DialogoFrecuencia({ servicio, estacion, frecuencia, onCerrar, onGuardado }: DialogoFrecuenciaProps) {
   const inicial: BorradorFrecuencia = {
-    teorica: String(frecuencia.frecuencia_teorica_dias),
-    practica: frecuencia.frecuencia_practica_dias?.toString() ?? '',
-    maxima: frecuencia.frecuencia_maxima_dias?.toString() ?? '',
+    teorica: frecuencia?.frecuencia_teorica_dias.toString() ?? '',
+    practica: frecuencia?.frecuencia_practica_dias?.toString() ?? '',
+    maxima: frecuencia?.frecuencia_maxima_dias?.toString() ?? '',
   }
   const [borrador, setBorrador] = useState(inicial)
   const [errores, setErrores] = useState<ErroresFrecuencia>({})
@@ -41,7 +43,7 @@ export default function DialogoFrecuencia({ servicio, frecuencia, onCerrar, onGu
     enCurso.current = true
     setEnviando(true)
     try {
-      onGuardado(await actualizarFrecuencia(servicio.id, frecuencia.estacion, entrada))
+      onGuardado(await actualizarFrecuencia(servicio.id, estacion, entrada))
     } catch (causa) {
       const fallo = aErrorApi(causa)
       const delServidor: ErroresFrecuencia = {}
@@ -76,7 +78,7 @@ export default function DialogoFrecuencia({ servicio, frecuencia, onCerrar, onGu
   return (
     <DialogoFormulario
       abierto
-      titulo={`Frecuencia de ${servicio.nombre} en ${frecuencia.estacion}`}
+      titulo={`Frecuencia de ${servicio.nombre} en ${estacion}`}
       descripcion="Días entre dos atenciones. La máxima no puede ser menor que la habitual (la práctica o, si no hay, la teórica)."
       textoConfirmar="Guardar frecuencia"
       enviando={enviando}

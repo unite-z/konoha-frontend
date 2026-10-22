@@ -5,6 +5,7 @@ import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import { aErrorApi } from '../../services/api/cliente'
 import { actualizarDuracion } from '../../services/api/planificacion'
 import type { ServicioPeriodico } from '../../types/planificacion'
+import { horaCorta } from '../../utils/planificacion'
 import { validarDuracion, type BorradorDuracion, type ErroresDuracion } from '../../utils/validacionPlanificacion'
 
 export interface DialogoDuracionProps {
@@ -25,8 +26,8 @@ export default function DialogoDuracion({ servicio, onCerrar, onGuardado }: Dial
   const inicial: BorradorDuracion = {
     duracion: actual?.duracion_maxima_dias.toString() ?? '',
     limpieza: actual?.dias_limpieza?.toString() ?? '',
-    inicio: actual?.hora_inicio ?? '',
-    fin: actual?.hora_fin ?? '',
+    inicio: horaCorta(actual?.hora_inicio) ?? '',
+    fin: horaCorta(actual?.hora_fin) ?? '',
   }
   const [borrador, setBorrador] = useState(inicial)
   const [errores, setErrores] = useState<ErroresDuracion>({})
