@@ -1,7 +1,7 @@
 /**
  * Tipos del contrato con la API de MOD-03 «Planificación» (`/api/v1/planificacion`). Claves en snake_case.
  */
-import type { InstanteIso } from './comun'
+import type { FechaIso, InstanteIso } from './comun'
 
 export type Estacion = 'Verano' | 'Otoño' | 'Invierno' | 'Primavera'
 
@@ -45,4 +45,28 @@ export interface DuracionEntrada {
   dias_limpieza?: number
   hora_inicio?: string
   hora_fin?: string
+}
+
+export type EfectoRestriccion = 'Prohibicion' | 'Advertencia' | 'Favorable'
+
+export interface TipoRestriccion {
+  id: number
+  nombre: string
+  efecto: EfectoRestriccion
+  aplica_servicios_ruidosos: boolean
+}
+
+export interface Restriccion {
+  id: number
+  tipo_restriccion_id: number
+  tipo: string
+  efecto: EfectoRestriccion
+  aplica_servicios_ruidosos: boolean
+  fecha_inicio: FechaIso
+  fecha_fin: FechaIso
+  hora_inicio: string | null
+  hora_fin: string | null
+  area_verde_id: number | null
+  descripcion: string | null
+  serie: string | null
 }
