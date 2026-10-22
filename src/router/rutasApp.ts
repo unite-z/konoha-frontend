@@ -54,8 +54,34 @@ export function esRutaTercerizados(ruta: string): boolean {
   return ruta === BASE_TERCERIZADOS || ruta.startsWith(`${BASE_TERCERIZADOS}/`)
 }
 
+// --- MOD-03 «Planificación» (comparte la sesión de MOD-05) ------------------------------------------------
+
+const BASE_PLANIFICACION = '/planificacion'
+
+/** Prefijo de las rutas de MOD-03 (menú, cabecera y sesión). */
+export const PREFIJO_PLANIFICACION = BASE_PLANIFICACION
+
+export const RUTAS_PLANIFICACION = {
+  servicios: `${BASE_PLANIFICACION}/servicios-periodicos`, // HU-MOD03-001 y 002
+  restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`, // HU-MOD03-003
+} as const
+
+/** `true` si la ruta pertenece a MOD-03. */
+export function esRutaPlanificacion(ruta: string): boolean {
+  return ruta === BASE_PLANIFICACION || ruta.startsWith(`${BASE_PLANIFICACION}/`)
+}
+
+export const MIGAS_PLANIFICACION = {
+  planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.servicios },
+} satisfies Record<string, Miga>
+
+/** `true` si la ruta exige la sesión compartida de MOD-05 y MOD-03. */
+export function esRutaConSesion(ruta: string): boolean {
+  return esRutaTercerizados(ruta) || esRutaPlanificacion(ruta)
+}
+
 /**
- * Destino seguro tras ingresar: solo rutas internas de MOD-05 distintas del ingreso (evita redirecciones
+ * Destino seguro tras ingresar: solo rutas internas de MOD-05 o MOD-03 distintas del ingreso (evita redirecciones
  * abiertas a otros sitios con `?volver=`). Si no es válido, la bandeja de atenciones.
  */
 export function destinoTrasIngreso(volver: string | null | undefined): string {
@@ -64,7 +90,7 @@ export function destinoTrasIngreso(volver: string | null | undefined): string {
   }
   const ruta = volver.split(/[?#]/)[0]
   const tieneControl = [...volver].some((caracter) => caracter.charCodeAt(0) < 0x20)
-  if (!esRutaTercerizados(ruta) || ruta === RUTAS_TERCERIZADOS.ingreso || tieneControl) {
+  if (!esRutaConSesion(ruta) || ruta === RUTAS_TERCERIZADOS.ingreso || tieneControl) {
     return RUTAS_TERCERIZADOS.atenciones
   }
   return volver

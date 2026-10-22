@@ -17,7 +17,7 @@ export const API_TERCERIZADOS_URL: string = import.meta.env.VITE_API_TERCERIZADO
 type ValorParametro = string | number | boolean | null | undefined
 
 export interface OpcionesTercerizados {
-  metodo?: 'GET' | 'POST' | 'PATCH'
+  metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH'
   /** Parámetros de consulta; se omiten los vacíos (`null`, `undefined` o cadena vacía). */
   parametros?: Record<string, ValorParametro>
   /** Cuerpo JSON. */
@@ -25,6 +25,8 @@ export interface OpcionesTercerizados {
   /** Cuerpo multipart. Excluye `cuerpo`. */
   formulario?: FormData
   signal?: AbortSignal
+  /** Base de la API si no es la de MOD-05 (MOD-03 comparte la sesión HTTP Basic). */
+  base?: string
   /** Cabecera `Authorization` para esta petición (al ingresar, antes de guardar la sesión). */
   autorizacion?: string
 }
@@ -48,14 +50,18 @@ export function cabeceraBasic(usuario: string, clave: string): string {
 }
 
 /** URL absoluta de la ruta (relativa a la base de MOD-05), con los parámetros no vacíos. */
-export function construirUrlTercerizados(ruta: string, parametros?: Record<string, ValorParametro>): string {
+export function construirUrlTercerizados(
+  ruta: string,
+  parametros?: Record<string, ValorParametro>,
+  baseApi: string = API_TERCERIZADOS_URL,
+): string {
   const consulta = new URLSearchParams()
   for (const [clave, valor] of Object.entries(parametros ?? {})) {
     if (valor === null || valor === undefined || valor === '') continue
     consulta.set(clave, String(valor))
   }
   const texto = consulta.toString()
-  const base = API_TERCERIZADOS_URL.replace(/\/+$/, '')
+  const base = baseApi.replace(/\/+$/, '')
   return `${base}/${ruta.replace(/^\/+/, '')}${texto ? `?${texto}` : ''}`
 }
 
@@ -68,9 +74,9 @@ function cabeceras(opciones: OpcionesTercerizados, acepta: string): Headers {
 }
 
 async function enviar(ruta: string, opciones: OpcionesTercerizados, acepta: string): Promise<Response> {
-  const { metodo = 'GET', parametros, cuerpo, formulario, signal } = opciones
+  const { metodo = 'GET', parametros, cuerpo, formulario, signal, base } = opciones
   try {
-    return await fetch(construirUrlTercerizados(ruta, parametros), {
+    return await fetch(construirUrlTercerizados(ruta, parametros, base), {
       method: metodo,
       headers: cabeceras(opciones, acepta),
       body: formulario ?? (cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined),

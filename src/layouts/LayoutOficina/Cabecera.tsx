@@ -10,7 +10,7 @@
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router'
 import { obtenerSesion } from '../../config/sesion'
-import { esRutaTercerizados } from '../../router/rutasApp'
+import { esRutaConSesion } from '../../router/rutasApp'
 import Boton from '../../components/ui/Boton'
 import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import BarraContexto from './BarraContexto'
@@ -63,10 +63,10 @@ function BloqueUsuario({ usuario, onCerrarSesion }: { usuario: DatosUsuarioVisib
 export default function Cabecera({ titulo, migas }: CabeceraProps) {
   const { pathname } = useLocation()
   const sesionTercerizados = useSesionTercerizados()
-  const enTercerizados = esRutaTercerizados(pathname)
+  const conSesion = esRutaConSesion(pathname)
 
   let bloque: ReactNode = <BloqueUsuario usuario={obtenerSesion()} />
-  if (enTercerizados) {
+  if (conSesion) {
     const { estado, cerrarSesion } = sesionTercerizados
     bloque =
       estado.tipo === 'activa' ? (

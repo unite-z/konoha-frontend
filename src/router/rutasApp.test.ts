@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { RUTAS_TERCERIZADOS, destinoTrasIngreso, esRutaTercerizados, rutaDetalleAtencion, rutaIngreso } from './rutasApp'
+import { RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, destinoTrasIngreso, esRutaPlanificacion, esRutaTercerizados, rutaDetalleAtencion, rutaIngreso } from './rutasApp'
 
 const BANDEJA = RUTAS_TERCERIZADOS.atenciones
 
@@ -44,5 +44,20 @@ describe('rutaIngreso', () => {
   it('omite destinos no válidos o vacíos', () => {
     expect(rutaIngreso()).toBe(RUTAS_TERCERIZADOS.ingreso)
     expect(rutaIngreso('//otro.example')).toBe(RUTAS_TERCERIZADOS.ingreso)
+  })
+})
+
+describe('rutas de MOD-03', () => {
+  it('reconoce el prefijo exacto', () => {
+    expect(esRutaPlanificacion('/planificacion')).toBe(true)
+    expect(esRutaPlanificacion(RUTAS_PLANIFICACION.restricciones)).toBe(true)
+    expect(esRutaPlanificacion('/planificacionX')).toBe(false)
+  })
+
+  it('permite volver a una ruta de planificación tras ingresar', () => {
+    expect(destinoTrasIngreso(`${RUTAS_PLANIFICACION.servicios}?x=1`)).toBe(`${RUTAS_PLANIFICACION.servicios}?x=1`)
+    expect(rutaIngreso(RUTAS_PLANIFICACION.restricciones)).toBe(
+      `/servicios-tercerizados/ingreso?volver=${encodeURIComponent(RUTAS_PLANIFICACION.restricciones)}`,
+    )
   })
 })
