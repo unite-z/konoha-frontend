@@ -2,7 +2,13 @@
 
 PWA en React 19, TypeScript y Vite del sistema de gestión de áreas verdes del campus PUCP (DP2). Consume la API de `konoha-backend`.
 
-Estándares comunes (nombres, git y PR, seguridad) y ADR: en el repo `konoha-infra`, en `docs/estandares/` y `docs/adr/`.
+Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en el repo `konoha-infra` (`docs/estandares/` y `docs/adr/`).
+
+## Estado
+
+- Sprint 0 (en curso): repos, estándares, CI y despliegue preparados. Aún sin EC2: `deploy-uat.yml` se salta hasta que `DESPLIEGUE_ACTIVO=true`.
+- MOD-05 y MOD-06: pantallas del borrador importadas y funcionando en local contra el backend.
+- Pendiente de arranque: manifiesto y service worker (PWA), cola sin conexión y sesión de MOD-01.
 
 ## Mapa
 
@@ -16,7 +22,8 @@ Estándares comunes (nombres, git y PR, seguridad) y ADR: en el repo `konoha-inf
 | `src/config/` | Permisos de interfaz por rol |
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
 | `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía |
-| `docs/estandares/` | TypeScript y React, pruebas, PWA y modo sin conexión |
+| `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
+| `.github/workflows/` | `ci.yml`, `deploy-uat.yml` y `limpiar-imagenes.yml` |
 
 ## Comandos
 
@@ -28,7 +35,16 @@ npm run typecheck  # tsc -b
 npm run build
 ```
 
-Antes de abrir un PR tienen que pasar las cuatro últimas, que es lo que corre CI.
+## Gates: lo que tiene que pasar antes de pushear
+
+Es lo mismo que exige `ci-ok`:
+
+```sh
+npm run typecheck && npm run lint && npm test && npm run build
+```
+
+- El hook `pre-push` ya ejecuta typecheck y oxlint. Actívalo con `git config core.hooksPath .githooks`.
+- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks).
 
 ## Reglas no negociables
 
@@ -49,12 +65,58 @@ Antes de abrir un PR tienen que pasar las cuatro últimas, que es lo que corre C
 - Accesibilidad: `label` en cada control, encabezados en orden, uso completo con teclado.
 - Todo en español de España: interfaz, código de dominio, docs y commits.
 
+## Decisiones cerradas (no se re-discuten)
+
+Cambiarlas exige un ADR nuevo que sustituya al anterior.
+
+| Decisión | Dónde |
+|---|---|
+| Backend en Spring Boot; este repo solo consume su API | `konoha-infra`: `docs/adr/0001-backend-spring-boot.md` |
+| Tres repos: backend, frontend e infra | `konoha-infra`: `docs/adr/0002-repos-backend-frontend-infra.md` |
+| Una EC2 con Docker Compose; entornos UAT y prod, sin DEV en la nube | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
+| Alertas solo dentro de la aplicación | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
+| Cola sin conexión con idempotencia; Background Sync solo como mejora | `docs/estandares/pwa-offline.md` |
+| Prefijo de tickets `AV` (provisional, en un solo sitio) | `konoha-infra`: `docs/estandares/git-y-prs.md` |
+
+Pendientes de decisión (no las cambies por tu cuenta): nombres de ficheros TS que no son componentes (hoy camelCase) y claves JSON de la API (ADR 0005).
+
+## Seguridad abierta: no empeorar
+
+- Las credenciales de MOD-05 (HTTP Basic) se guardan en `sessionStorage` hasta que exista la sesión de MOD-01.
+- MOD-06 usa una sesión simulada (`src/config/sesion.ts`).
+
+Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `localStorage`). Cerrarlas va en tickets propios.
+
 ## Deuda conocida (no la arregles de paso: tiene ticket propio)
 
 - Aún no es PWA: faltan el manifiesto, el service worker y la cola sin conexión.
 - La API devuelve claves en snake_case. Cuando el backend migre a camelCase (ADR 0005), se actualizan los tipos.
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
 - No hay Testing Library: los componentes no tienen pruebas.
+
+## Qué no entra al repo
+
+- `.env` (solo `.env.example`), credenciales y tokens.
+- Datos reales de la sección y capturas con datos personales.
+- PDF de entregables del curso.
+- `node_modules/`, `dist/` y binarios de más de 5 MB.
+
+## Planes y artefactos de sesión
+
+Los planes, notas y borradores de trabajo de personas y agentes van en `.notas/` (ignorada por git) o fuera del repo. Nunca se commitean. Lo que deba perdurar se pasa a uno de los documentos de abajo.
+
+## Mapa de documentos
+
+| Documento | Para qué |
+|---|---|
+| `AGENTS.md` | Esta guía: estado, gates, reglas y decisiones |
+| `CLAUDE.md` | Solo importa `AGENTS.md` |
+| `README.md` | Qué es y cómo arrancarlo |
+| `CONTRIBUTING.md` | Ciclo de trabajo y checklist de revisión del frontend |
+| `SECURITY.md` | Cómo avisar de una vulnerabilidad |
+| `docs/estandares/*.md` | TypeScript y React, pruebas, PWA y modo sin conexión |
+
+**No se crean documentos nuevos** sin fusionar antes su contenido en uno existente o justificar en el PR por qué no cabe.
 
 ## Flujo de trabajo
 

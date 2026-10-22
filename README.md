@@ -32,7 +32,7 @@ Usuarios de prueba de MOD-05: `mod05_jefe`, `mod05_ingeniero` y `mod05_practican
 
 ## Documentación
 
-- [CLAUDE.md](CLAUDE.md): mapa del repo y reglas, para personas y agentes.
+- [AGENTS.md](AGENTS.md): estado, mapa, gates y reglas, para personas y agentes.
 - [CONTRIBUTING.md](CONTRIBUTING.md): cómo contribuir.
 - [docs/estandares/](docs/estandares/): TypeScript y React, pruebas, PWA y modo sin conexión.
 - Estándares comunes y ADR: en `konoha-infra`.
