@@ -1,7 +1,7 @@
 # Imagen web: la PWA compilada servida por Caddy. Se construye en CI y se publica en GHCR por SHA (konoha-web:<sha>).
 # Las rutas de la API son relativas (/api/...), así que la misma imagen sirve para UAT y prod.
 
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
