@@ -19,6 +19,7 @@ import { listarServiciosPeriodicos } from '../../services/api/planificacion'
 import type { FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
 import { formatearFechaHora } from '../../utils/formato'
 import { ordenarPorEstacion, textoDias, textoHorario } from '../../utils/planificacion'
+import DialogoDuracion from './DialogoDuracion'
 import DialogoFrecuencia from './DialogoFrecuencia'
 import estilos from './Planificacion.module.css'
 
@@ -48,7 +49,13 @@ function columnas(servicio: ServicioPeriodico, editar?: (f: FrecuenciaEstacion) 
   return [...base, accion]
 }
 
-function TarjetaServicio({ servicio, editar }: { servicio: ServicioPeriodico; editar?: (f: FrecuenciaEstacion) => void }) {
+interface PropsTarjeta {
+  servicio: ServicioPeriodico
+  editar?: (f: FrecuenciaEstacion) => void
+  editarDuracion?: () => void
+}
+
+function TarjetaServicio({ servicio, editar, editarDuracion }: PropsTarjeta) {
   const { duracion } = servicio
   return (
     <section className={estilos.superficie} aria-labelledby={`servicio-${servicio.id}`}>
@@ -65,7 +72,15 @@ function TarjetaServicio({ servicio, editar }: { servicio: ServicioPeriodico; ed
         claveFila={(f) => f.estacion}
         compacta
       />
-      <h3 className={estilos.subtitulo}>Duración</h3>
+      <div className={estilos.cabeceraSeccion}>
+        <h3 className={estilos.subtitulo}>Duración</h3>
+        {editarDuracion && (
+          <Boton variante="terciario" compacto onClick={editarDuracion}>
+            <span aria-hidden="true">Editar</span>
+            <span className="sr-only">{`Editar la duración de ${servicio.nombre}`}</span>
+          </Boton>
+        )}
+      </div>
       {duracion ? (
         <ListaDescripcion
           elementos={[
@@ -90,6 +105,7 @@ export default function ServiciosPeriodicosPage() {
   const { estado } = useSesionTercerizados()
   const puedeEditar = estado.tipo === 'activa' && puedeEditarPlanificacion(estado.usuario.rol)
   const [editando, setEditando] = useState<{ servicio: ServicioPeriodico; frecuencia: FrecuenciaEstacion } | null>(null)
+  const [editandoDuracion, setEditandoDuracion] = useState<ServicioPeriodico | null>(null)
   const [cambios, setCambios] = useState<Record<number, ServicioPeriodico>>({})
   const [aviso, setAviso] = useState<string | null>(null)
   const consulta = useConsulta('servicios', listarServiciosPeriodicos, (servicios) => servicios.length === 0)
@@ -117,6 +133,7 @@ export default function ServiciosPeriodicosPage() {
             key={servicio.id}
             servicio={servicio}
             editar={puedeEditar ? (frecuencia) => setEditando({ servicio, frecuencia }) : undefined}
+            editarDuracion={puedeEditar ? () => setEditandoDuracion(servicio) : undefined}
           />
         )
       })}
@@ -128,6 +145,17 @@ export default function ServiciosPeriodicosPage() {
             setCambios((previos) => ({ ...previos, [actualizado.id]: actualizado }))
             setAviso(`Frecuencia de ${editando.servicio.nombre} en ${editando.frecuencia.estacion} guardada.`)
             setEditando(null)
+          }}
+        />
+      )}
+      {editandoDuracion && (
+        <DialogoDuracion
+          servicio={editandoDuracion}
+          onCerrar={() => setEditandoDuracion(null)}
+          onGuardado={(actualizado) => {
+            setCambios((previos) => ({ ...previos, [actualizado.id]: actualizado }))
+            setAviso(`Duración de ${actualizado.nombre} guardada.`)
+            setEditandoDuracion(null)
           }}
         />
       )}
