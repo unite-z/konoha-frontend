@@ -2,8 +2,8 @@
  * Menú lateral (Arquitectura de la Información 1.3 y 1.4.1; Guía Web 3.2 y 4.2).
  *
  * Primer nivel con las 8 etiquetas de negocio. «Reportes e indicadores» (MOD-06) y «Servicios tercerizados»
- * (MOD-05) tienen enlaces; el resto pertenece a otros módulos y se muestra sin enlace (`aria-disabled`).
- * «Configuración» solo es visible en la vista de Administrador.
+ * (MOD-05) tienen enlaces; el resto aún no está disponible y se muestra sin enlace (`aria-disabled`), atenuado
+ * y con «Próximamente» bajo el nombre. «Configuración» solo es visible en la vista de Administrador.
  *
  * Segundo nivel de «Servicios tercerizados»: Atenciones (con enlace), Proveedores y contratos y Control
  * fitosanitario (sin enlace: fuera de esta entrega).
@@ -52,11 +52,13 @@ function claseItem({ isActive }: { isActive: boolean }) {
   return `${estilos.item} ${isActive ? estilos.activo : ''}`
 }
 
+/** Entrada que aún no está disponible: sin enlace y con «Próximamente» bajo el nombre. */
 function SinEnlace({ texto }: { texto: string }) {
   return (
     <li>
-      <span className={`${estilos.item} ${estilos.sinEnlace}`} aria-disabled="true">
-        {texto}
+      <span className={`${estilos.item} ${estilos.sinEnlace}`} aria-disabled="true" title="Disponible próximamente">
+        <span>{texto}</span>
+        <span className={estilos.proximamente}>Próximamente</span>
       </span>
     </li>
   )
@@ -133,13 +135,7 @@ export default function MenuLateral() {
           </li>
 
           {/* Pertenece a otros módulos; solo en la vista de Administrador. */}
-          {rol === ROL_ADMINISTRADOR && (
-            <li>
-              <span className={`${estilos.item} ${estilos.sinEnlace}`} aria-disabled="true">
-                Configuración
-              </span>
-            </li>
-          )}
+          {rol === ROL_ADMINISTRADOR && <SinEnlace texto="Configuración" />}
         </ul>
       </nav>
 
