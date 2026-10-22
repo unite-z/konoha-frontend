@@ -59,7 +59,8 @@ npm run typecheck && npm run lint && npm test && npm run build
 - Nombres:
   - componentes y su CSS en PascalCase;
   - hooks `useAlgo.ts`;
-  - otros ficheros TS en camelCase;
+  - otros ficheros TS en camelCase (nunca kebab-case);
+  - claves de los tipos de la API en snake_case, como el contrato (ADR 0005);
   - carpetas en kebab-case, salvo las de componente;
   - el resto, en kebab-case.
 - Accesibilidad: `label` en cada control, encabezados en orden, uso completo con teclado.
@@ -76,9 +77,11 @@ Cambiarlas exige un ADR nuevo que sustituya al anterior.
 | Una EC2 con Docker Compose; entornos UAT y prod, sin DEV en la nube | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
 | Alertas solo dentro de la aplicación | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
 | Cola sin conexión con idempotencia; Background Sync solo como mejora | `docs/estandares/pwa-offline.md` |
-| Prefijo de tickets `AV` (provisional, en un solo sitio) | `konoha-infra`: `docs/estandares/git-y-prs.md` |
+| Ficheros TS que no son componentes en camelCase | `konoha-infra`: `docs/estandares/nombres.md` |
+| Claves JSON de la API en snake_case: los tipos de `src/types/` las reflejan tal cual | `konoha-infra`: `docs/adr/0005-claves-json-snake-case.md` |
+| Prefijo de tickets `AV`; el primer issue es AV-1 | `konoha-infra`: `docs/estandares/git-y-prs.md` |
 
-Pendientes de decisión (no las cambies por tu cuenta): nombres de ficheros TS que no son componentes (hoy camelCase) y claves JSON de la API (ADR 0005).
+Pendiente de decisión (no la cambies por tu cuenta): formato de errores del backend (ADR 0004, propuesto).
 
 ## Seguridad abierta: no empeorar
 
@@ -90,7 +93,6 @@ Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `lo
 ## Deuda conocida (no la arregles de paso: tiene ticket propio)
 
 - Aún no es PWA: faltan el manifiesto, el service worker y la cola sin conexión.
-- La API devuelve claves en snake_case. Cuando el backend migre a camelCase (ADR 0005), se actualizan los tipos.
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
 - No hay Testing Library: los componentes no tienen pruebas.
 

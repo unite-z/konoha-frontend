@@ -26,7 +26,7 @@
 ## Nombres
 
 - Componentes y su CSS en PascalCase: `BarraAvance.tsx` y `BarraAvance.module.css`.
-- Hooks: `useAlgo.ts`. Resto de ficheros TS en camelCase, como ya hace el repo (`clienteTercerizados.ts`).
+- Hooks: `useAlgo.ts`. Resto de ficheros TS en camelCase, como ya hace el repo (`clienteTercerizados.ts`). Nunca en kebab-case (`cliente-tercerizados.ts` no vale).
 - Carpetas en kebab-case, salvo la carpeta de un componente con varios ficheros (`LayoutOficina/`).
 - Pruebas junto al fichero que prueban: `instanteLima.test.ts`.
 - Dominio en español: `AtencionTercerizada`, `registrarInicio`.
@@ -35,7 +35,7 @@
 
 - Nada de `any`. Si el tipo es desconocido, se usa `unknown` y se acota.
 - Nada de `!` (non-null assertion) salvo con un comentario que explique por qué es seguro.
-- Los tipos de la API viven en `types/` y reflejan el contrato de OpenAPI. Si el backend cambia el contrato, se cambian aquí en el mismo ticket.
+- Los tipos de la API viven en `types/` y reflejan el contrato de OpenAPI, con sus claves en snake_case (ADR 0005). Es la única excepción a camelCase. Si el backend cambia el contrato, se cambian aquí en el mismo ticket.
 - `import type` para lo que solo es tipo (`verbatimModuleSyntax` lo exige).
 
 ## React
