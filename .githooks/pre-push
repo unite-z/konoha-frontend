@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Hook local antes de cada push: tipos y oxlint (unos segundos).
+# Se activa con: git config core.hooksPath .githooks. Compatible con el bash 3.2 de macOS.
+# CI repite todo y además las pruebas y el build.
+set -euo pipefail
+
+if [[ ! -d node_modules ]]; then
+  echo "pre-push: falta node_modules. Ejecuta: npm install" >&2
+  exit 1
+fi
+
+echo "pre-push: typecheck y oxlint..." >&2
+if ! npm run --silent typecheck || ! npm run --silent lint; then
+  echo "" >&2
+  echo "pre-push: algo falla. Reprodúcelo con: npm run typecheck && npm run lint" >&2
+  echo "Si tienes un motivo justificado, puedes saltarte el hook con: git push --no-verify (CI lo comprobará igual)." >&2
+  exit 1
+fi
