@@ -7,6 +7,8 @@
  *   Sin sesión, no se muestra nadie.
  * - En el resto (MOD-06): el usuario simulado de `config/sesion.ts`, como hasta ahora.
  */
+import { esRutaCampo } from '../../router/rutasCampo'
+import { useSesionCampo } from '../../sesion/ContextoSesionCampo'
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router'
 import { obtenerSesion } from '../../config/sesion'
@@ -61,6 +63,7 @@ function BloqueUsuario({ usuario, onCerrarSesion }: { usuario: DatosUsuarioVisib
 }
 
 export default function Cabecera({ titulo, migas }: CabeceraProps) {
+  const sesionCampo=useSesionCampo()
   const { pathname } = useLocation()
   const sesionTercerizados = useSesionTercerizados()
   const conSesion = esRutaConSesion(pathname)
@@ -76,6 +79,8 @@ export default function Cabecera({ titulo, migas }: CabeceraProps) {
         />
       ) : null
   }
+
+  if(esRutaCampo(pathname)) bloque=sesionCampo.usuario ? <BloqueUsuario usuario={sesionCampo.usuario} onCerrarSesion={sesionCampo.cerrarSesion}/> : null
 
   return (
     <header className={estilos.cabecera}>

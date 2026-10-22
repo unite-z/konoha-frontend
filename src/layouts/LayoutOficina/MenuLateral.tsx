@@ -17,6 +17,7 @@
 import { NavLink, useLocation } from 'react-router'
 import { obtenerSesion, type Rol } from '../../config/sesion'
 import { PREFIJO_MODULO, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, esRutaPlanificacion, esRutaTercerizados } from '../../router/rutasApp'
+import { RUTAS_CAMPO, esRutaCampo } from '../../router/rutasCampo'
 import estilos from './MenuLateral.module.css'
 
 /** Rol de la vista de Administrador (todavía no existe en el catálogo de roles del MOD-01). */
@@ -26,7 +27,7 @@ const ROL_ADMINISTRADOR = 'Administrador'
 const OTROS_MODULOS_ANTES = ['Inicio']
 
 /** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
-const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa', 'Operación de campo']
+const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -133,6 +134,11 @@ export default function MenuLateral() {
           {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
+
+          <li>
+            <NavLink to={RUTAS_CAMPO.cuadrillas} className={() => `${estilos.item} ${esRutaCampo(pathname)?estilos.activo:''}`} end={false}>Operación de campo</NavLink>
+            <ListaSegundoNivel entradas={[{texto:'Cuadrillas',ruta:RUTAS_CAMPO.cuadrillas},{texto:'Encargos',ruta:RUTAS_CAMPO.encargos},{texto:'Participantes por actividad',ruta:RUTAS_CAMPO.participantes}]}/>
+          </li>
 
           <li>
             <NavLink

@@ -1,0 +1,31 @@
+.pagina { display: flex; flex-direction: column; gap: var(--space-6); }
+.introduccion { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); flex-wrap: wrap; }
+.descripcion, .ayuda { color: var(--color-text-secondary); }
+.acciones { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+.filtros { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; padding: var(--space-4); background: var(--color-bg-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-md); }
+.filtros > * { min-width: 160px; }
+.buscar { display: flex; align-items: flex-end; gap: var(--space-3); flex: 1; }
+.buscar > :first-child { flex: 1; }
+.rejilla { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-4); }
+.formulario { display: flex; flex-direction: column; gap: var(--space-4); border: 0; margin: 0; padding: 0; min-width: 0; }
+.celdaPrincipal { font-weight: 500; }
+.secundario { display: block; font-size: var(--type-body-sm-size); color: var(--color-text-muted); margin-top: var(--space-1); }
+.seleccion { border: 1px solid var(--color-border-default); border-radius: var(--radius-md); margin: 0; padding: var(--space-4); min-width: 0; }
+.seleccion legend { padding: 0 var(--space-2); font-weight: 600; }
+.cantidad { color: var(--green-700); margin-left: var(--space-2); font-size: var(--type-body-sm-size); font-weight: 500; }
+.listaOperarios { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); max-height: 260px; overflow-y: auto; gap: var(--space-2); margin-top: var(--space-3); }
+.operario { display: flex; gap: var(--space-3); align-items: flex-start; min-height: 44px; border-radius: var(--radius-sm); padding: var(--space-2); cursor: pointer; }
+.operario:has(input:checked) { background: var(--green-50); }
+.operario:has(input:disabled) { color: var(--color-text-muted); cursor: default; }
+.operario input, .check input { width: 18px; height: 18px; accent-color: var(--green-700); flex-shrink: 0; }
+.operario small { display: block; font-size: var(--type-body-sm-size); }
+.check { display: flex; align-items: center; gap: var(--space-2); min-height: 40px; }
+.etiqueta { display: inline-block; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--color-bg-subtle); font-size: var(--type-body-sm-size); }
+.aviso { border-left: 3px solid var(--green-700); padding: var(--space-3) var(--space-4); background: var(--green-50); border-radius: var(--radius-sm); }
+.fecha { white-space: nowrap; }
+@media (max-width: 767px) {
+  .rejilla, .listaOperarios { grid-template-columns: 1fr; }
+  .introduccion, .acciones, .filtros { align-items: stretch; }
+  .introduccion > *, .filtros > *, .buscar { width: 100%; }
+  .buscar { flex-wrap: wrap; }
+}
