@@ -1,0 +1,6 @@
+# Fin de línea LF en el repo.
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary

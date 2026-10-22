@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Herramientas descargadas por CI
+.bin/
+
+# Notas y planes de trabajo locales (de personas y agentes): nunca se commitean
+.notas/
