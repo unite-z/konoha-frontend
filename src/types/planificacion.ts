@@ -33,3 +33,9 @@ export interface ServicioPeriodico {
   frecuencias: FrecuenciaEstacion[]
   duracion: DuracionServicio | null
 }
+
+export interface FrecuenciaEntrada {
+  frecuencia_teorica_dias: number
+  frecuencia_practica_dias?: number
+  frecuencia_maxima_dias?: number
+}
