@@ -1,5 +1,5 @@
 /**
- * HU-MOD03-001: frecuencia por estación de los servicios periódicos (duración y edición en cambios siguientes).
+ * HU-MOD03-001 y 002: frecuencia por estación (las cuatro, configuradas o no) y duración de los servicios periódicos.
  */
 import { useState } from 'react'
 import AvisoTemporal from '../../components/ui/AvisoTemporal'
@@ -16,33 +16,33 @@ import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_PLANIFICACION } from '../../router/rutasApp'
 import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import { listarServiciosPeriodicos } from '../../services/api/planificacion'
-import type { FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
+import type { ServicioPeriodico } from '../../types/planificacion'
 import { formatearFechaHora } from '../../utils/formato'
-import { ordenarPorEstacion, textoDias, textoHorario } from '../../utils/planificacion'
+import { filasPorEstacion, textoDias, textoHorario, type FilaFrecuencia } from '../../utils/planificacion'
 import DialogoDuracion from './DialogoDuracion'
 import DialogoFrecuencia from './DialogoFrecuencia'
 import estilos from './Planificacion.module.css'
 
-function columnas(servicio: ServicioPeriodico, editar?: (f: FrecuenciaEstacion) => void): ColumnaTabla<FrecuenciaEstacion>[] {
-  const base: ColumnaTabla<FrecuenciaEstacion>[] = [
+function columnas(servicio: ServicioPeriodico, editar?: (f: FilaFrecuencia) => void): ColumnaTabla<FilaFrecuencia>[] {
+  const base: ColumnaTabla<FilaFrecuencia>[] = [
   { clave: 'estacion', titulo: 'Estación' },
-  { clave: 'teorica', titulo: 'Teórica', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia_teorica_dias) },
-  { clave: 'practica', titulo: 'Práctica', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia_practica_dias) },
-  { clave: 'maxima', titulo: 'Máxima', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia_maxima_dias) },
+  { clave: 'teorica', titulo: 'Teórica', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia?.frecuencia_teorica_dias) },
+  { clave: 'practica', titulo: 'Práctica', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia?.frecuencia_practica_dias) },
+  { clave: 'maxima', titulo: 'Máxima', alineacion: 'derecha', render: (f) => textoDias(f.frecuencia?.frecuencia_maxima_dias) },
   {
     clave: 'modificado',
     titulo: 'Última modificación',
-    render: (f) => `${f.modificado_por}, ${formatearFechaHora(f.fecha_modificacion)}`,
+    render: (f) => (f.frecuencia ? `${f.frecuencia.modificado_por}, ${formatearFechaHora(f.frecuencia.fecha_modificacion)}` : 'Sin configurar'),
   },
   ]
   if (!editar) return base
-  const accion: ColumnaTabla<FrecuenciaEstacion> = {
+  const accion: ColumnaTabla<FilaFrecuencia> = {
     clave: 'acciones',
     titulo: 'Acciones',
     render: (f) => (
       <Boton variante="terciario" compacto onClick={() => editar(f)}>
-        <span aria-hidden="true">Editar</span>
-        <span className="sr-only">{`Editar la frecuencia de ${servicio.nombre} en ${f.estacion}`}</span>
+        <span aria-hidden="true">{f.frecuencia ? 'Editar' : 'Configurar'}</span>
+        <span className="sr-only">{`${f.frecuencia ? 'Editar' : 'Configurar'} la frecuencia de ${servicio.nombre} en ${f.estacion}`}</span>
       </Boton>
     ),
   }
@@ -51,7 +51,7 @@ function columnas(servicio: ServicioPeriodico, editar?: (f: FrecuenciaEstacion) 
 
 interface PropsTarjeta {
   servicio: ServicioPeriodico
-  editar?: (f: FrecuenciaEstacion) => void
+  editar?: (f: FilaFrecuencia) => void
   editarDuracion?: () => void
 }
 
@@ -68,7 +68,7 @@ function TarjetaServicio({ servicio, editar, editarDuracion }: PropsTarjeta) {
       <TablaDatos
         titulo={`Frecuencia por estación de ${servicio.nombre}`}
         columnas={columnas(servicio, editar)}
-        filas={ordenarPorEstacion(servicio.frecuencias)}
+        filas={filasPorEstacion(servicio.frecuencias)}
         claveFila={(f) => f.estacion}
         compacta
       />
@@ -104,7 +104,7 @@ export default function ServiciosPeriodicosPage() {
   usePaginaActual('Servicios periódicos', [MIGAS_PLANIFICACION.planificacion])
   const { estado } = useSesionTercerizados()
   const puedeEditar = estado.tipo === 'activa' && puedeEditarPlanificacion(estado.usuario.rol)
-  const [editando, setEditando] = useState<{ servicio: ServicioPeriodico; frecuencia: FrecuenciaEstacion } | null>(null)
+  const [editando, setEditando] = useState<{ servicio: ServicioPeriodico; fila: FilaFrecuencia } | null>(null)
   const [editandoDuracion, setEditandoDuracion] = useState<ServicioPeriodico | null>(null)
   const [cambios, setCambios] = useState<Record<number, ServicioPeriodico>>({})
   const [aviso, setAviso] = useState<string | null>(null)
@@ -132,18 +132,20 @@ export default function ServiciosPeriodicosPage() {
           <TarjetaServicio
             key={servicio.id}
             servicio={servicio}
-            editar={puedeEditar ? (frecuencia) => setEditando({ servicio, frecuencia }) : undefined}
+            editar={puedeEditar ? (fila) => setEditando({ servicio, fila }) : undefined}
             editarDuracion={puedeEditar ? () => setEditandoDuracion(servicio) : undefined}
           />
         )
       })}
       {editando && (
         <DialogoFrecuencia
-          {...editando}
+          servicio={editando.servicio}
+          estacion={editando.fila.estacion}
+          frecuencia={editando.fila.frecuencia}
           onCerrar={() => setEditando(null)}
           onGuardado={(actualizado) => {
             setCambios((previos) => ({ ...previos, [actualizado.id]: actualizado }))
-            setAviso(`Frecuencia de ${editando.servicio.nombre} en ${editando.frecuencia.estacion} guardada.`)
+            setAviso(`Frecuencia de ${editando.servicio.nombre} en ${editando.fila.estacion} guardada.`)
             setEditando(null)
           }}
         />

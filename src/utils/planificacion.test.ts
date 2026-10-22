@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FrecuenciaEstacion } from '../types/planificacion'
-import { ordenarPorEstacion, textoDias, textoHorario } from './planificacion'
+import { filasPorEstacion, horaCorta, textoDias, textoHorario } from './planificacion'
 
 function frecuencia(estacion: FrecuenciaEstacion['estacion']): FrecuenciaEstacion {
   return {
@@ -13,11 +13,18 @@ function frecuencia(estacion: FrecuenciaEstacion['estacion']): FrecuenciaEstacio
   }
 }
 
-describe('ordenarPorEstacion', () => {
-  it('ordena según el año sin mutar la entrada', () => {
-    const entrada = [frecuencia('Primavera'), frecuencia('Verano'), frecuencia('Invierno'), frecuencia('Otoño')]
-    expect(ordenarPorEstacion(entrada).map((f) => f.estacion)).toEqual(['Verano', 'Otoño', 'Invierno', 'Primavera'])
-    expect(entrada[0].estacion).toBe('Primavera')
+describe('filasPorEstacion', () => {
+  it('da las cuatro estaciones en orden aunque falten frecuencias', () => {
+    const filas = filasPorEstacion([frecuencia('Primavera'), frecuencia('Verano')])
+    expect(filas.map((f) => f.estacion)).toEqual(['Verano', 'Otoño', 'Invierno', 'Primavera'])
+    expect(filas.map((f) => f.frecuencia !== null)).toEqual([true, false, false, true])
+  })
+})
+
+describe('horaCorta', () => {
+  it('quita los segundos', () => {
+    expect(horaCorta('06:00:00')).toBe('06:00')
+    expect(horaCorta(null)).toBeNull()
   })
 })
 
@@ -34,7 +41,7 @@ describe('textoDias', () => {
 describe('textoHorario', () => {
   it('cubre los casos', () => {
     expect(textoHorario('08:00', '12:00')).toBe('08:00 a 12:00')
-    expect(textoHorario('08:00', null)).toBe('Desde 08:00')
+    expect(textoHorario('08:00:00', null)).toBe('Desde 08:00')
     expect(textoHorario(null, '12:00')).toBe('Hasta 12:00')
     expect(textoHorario(null, null)).toBe('—')
   })
