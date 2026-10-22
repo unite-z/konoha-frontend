@@ -98,9 +98,20 @@ a.activo:hover {
   background: var(--green-700);
 }
 
-/* Entradas de otros módulos: sin enlace. */
+/* Entradas aún no disponibles: sin enlace, atenuadas y con «Próximamente» bajo el nombre. */
 .sinEnlace {
-  cursor: default;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.proximamente {
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  font-weight: var(--type-label-sm-weight);
+  color: var(--color-text-muted);
 }
 
 .pie {
