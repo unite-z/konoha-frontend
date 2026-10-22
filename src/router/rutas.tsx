@@ -1,6 +1,6 @@
 /**
  * Rutas de la aplicación web de oficina. Todas dentro de `LayoutOficina`.
- * Las de MOD-05 pasan por `RutaSesionTercerizados` (sesión con usuario Spring Security).
+ * Las de MOD-05 y MOD-03 pasan por `RutaSesionTercerizados` (sesión con usuario Spring Security).
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
@@ -17,8 +17,10 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
+import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
+import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
-import { PREFIJO_TERCERIZADOS, RUTAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +44,16 @@ export const router = createBrowserRouter([
           { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
           { path: RUTAS_TERCERIZADOS.nuevaAtencion, element: <NuevaAtencionPage /> }, // RF-SER-003 y 011
           { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
+        ],
+      },
+      // MOD-03 «Planificación»: misma sesión que MOD-05.
+      {
+        path: PREFIJO_PLANIFICACION,
+        element: <RutaSesionTercerizados />,
+        children: [
+          { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
+          { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
+          { path: RUTAS_PLANIFICACION.restricciones, element: <CalendarioRestriccionesPage /> }, // HU-MOD03-003
         ],
       },
       { path: '*', element: <PaginaNoEncontrada /> },

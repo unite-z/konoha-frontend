@@ -1,5 +1,5 @@
 /**
- * Guardián de las rutas de MOD-05 (excepto el ingreso).
+ * Guardián de las rutas de MOD-05 y MOD-03 (excepto el ingreso, que es el de MOD-05).
  *
  * - Sin sesión → ingreso, con `?volver=` para regresar a la misma ruta (sin destino si el usuario la cerró).
  * - Comprobando la sesión guardada → esqueleto.
@@ -12,16 +12,18 @@ import EstadoCarga from '../components/ui/EstadoCarga'
 import EstadoError from '../components/ui/EstadoError'
 import EstadoVacio from '../components/ui/EstadoVacio'
 import { usePaginaActual } from '../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaIngreso } from '../router/rutasApp'
+import { MIGAS_PLANIFICACION, MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, esRutaPlanificacion, rutaIngreso } from '../router/rutasApp'
 import { useSesionTercerizados } from './ContextoSesionTercerizados'
 
 function SinAcceso() {
   const { cerrarSesion } = useSesionTercerizados()
-  usePaginaActual('Sin acceso', [MIGAS_TERCERIZADOS.serviciosTercerizados])
+  const planificacion = esRutaPlanificacion(useLocation().pathname)
+  const modulo = planificacion ? 'Planificación' : 'Servicios tercerizados'
+  usePaginaActual('Sin acceso', [planificacion ? MIGAS_PLANIFICACION.planificacion : MIGAS_TERCERIZADOS.serviciosTercerizados])
   return (
     <EstadoVacio
       icono="triangulo"
-      titulo="Tu usuario no tiene acceso a Servicios tercerizados"
+      titulo={`Tu usuario no tiene acceso a ${modulo}`}
       descripcion="Para usar este módulo necesitas el rol de jefe de sección, ingeniero de campo o practicante autorizado. Pide al administrador que te lo asigne o ingresa con otro usuario."
       accion={
         <Boton variante="secundario" onClick={cerrarSesion}>

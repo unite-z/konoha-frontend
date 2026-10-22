@@ -1,8 +1,8 @@
 /**
  * Menú lateral (Arquitectura de la Información 1.3 y 1.4.1; Guía Web 3.2 y 4.2).
  *
- * Primer nivel con las 8 etiquetas de negocio. «Reportes e indicadores» (MOD-06) y «Servicios tercerizados»
- * (MOD-05) tienen enlaces; el resto aún no está disponible y se muestra sin enlace (`aria-disabled`), atenuado
+ * Primer nivel con las 8 etiquetas de negocio. «Reportes e indicadores» (MOD-06), «Servicios tercerizados»
+ * (MOD-05) y «Planificación» (MOD-03) tienen enlaces; el resto aún no está disponible y se muestra sin enlace (`aria-disabled`), atenuado
  * y con «Próximamente» bajo el nombre. «Configuración» solo es visible en la vista de Administrador.
  *
  * Segundo nivel de «Servicios tercerizados»: Atenciones (con enlace), Proveedores y contratos y Control
@@ -16,14 +16,17 @@
  */
 import { NavLink, useLocation } from 'react-router'
 import { obtenerSesion, type Rol } from '../../config/sesion'
-import { PREFIJO_MODULO, RUTAS, RUTAS_TERCERIZADOS, esRutaTercerizados } from '../../router/rutasApp'
+import { PREFIJO_MODULO, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, esRutaPlanificacion, esRutaTercerizados } from '../../router/rutasApp'
 import estilos from './MenuLateral.module.css'
 
 /** Rol de la vista de Administrador (todavía no existe en el catálogo de roles del MOD-01). */
 const ROL_ADMINISTRADOR = 'Administrador'
 
 /** Entradas de primer nivel que pertenecen a otros módulos (sin enlace). */
-const OTROS_MODULOS_ANTES = ['Inicio', 'Planificación', 'Áreas verdes y mapa', 'Operación de campo']
+const OTROS_MODULOS_ANTES = ['Inicio']
+
+/** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
+const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa', 'Operación de campo']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -38,6 +41,14 @@ const SEGUNDO_NIVEL_TERCERIZADOS: EntradaSegundoNivel[] = [
   { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones }, // RF-SER-003 a 006 y 011
   { texto: 'Proveedores y contratos' }, // TODO: mantenimiento (CU-MOD05-001 y 002)
   { texto: 'Control fitosanitario' }, // otro requisito
+]
+
+/** Segundo nivel de «Planificación» (MOD-03). */
+const SEGUNDO_NIVEL_PLANIFICACION: EntradaSegundoNivel[] = [
+  { texto: 'Servicios periódicos', ruta: RUTAS_PLANIFICACION.servicios },
+  { texto: 'Calendario de restricciones', ruta: RUTAS_PLANIFICACION.restricciones },
+  { texto: 'Programación' }, // otro requisito
+  { texto: 'Calendario de actividades' }, // otro requisito
 ]
 
 const SEGUNDO_NIVEL: EntradaSegundoNivel[] = [
@@ -88,6 +99,7 @@ export default function MenuLateral() {
   const rol = obtenerSesion().rol as Rol | typeof ROL_ADMINISTRADOR
   const enModulo = pathname.startsWith(PREFIJO_MODULO)
   const enTercerizados = esRutaTercerizados(pathname)
+  const enPlanificacion = esRutaPlanificacion(pathname)
 
   return (
     <aside className={estilos.lateral}>
@@ -103,6 +115,22 @@ export default function MenuLateral() {
         <ul className={estilos.lista}>
           {/* Pertenecen a otros módulos. */}
           {OTROS_MODULOS_ANTES.map((texto) => (
+            <SinEnlace key={texto} texto={texto} />
+          ))}
+
+          <li>
+            <NavLink
+              to={RUTAS_PLANIFICACION.servicios}
+              className={() => `${estilos.item} ${enPlanificacion ? estilos.activo : ''}`}
+              aria-current={enPlanificacion ? 'true' : undefined}
+              end={false}
+            >
+              Planificación
+            </NavLink>
+            <ListaSegundoNivel entradas={SEGUNDO_NIVEL_PLANIFICACION} />
+          </li>
+
+          {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
 

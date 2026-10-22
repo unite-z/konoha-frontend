@@ -77,7 +77,12 @@ export function interpretarError(estado: number, cuerpo: unknown): ErrorApi {
     const objeto = cuerpo as Record<string, unknown>
     // Error de dominio: {codigo, detalle}.
     if (typeof objeto.codigo === 'string' && typeof objeto.detalle === 'string') {
-      return new ErrorApi(estado, objeto.codigo, objeto.detalle)
+      // Con `errores: {campo: [mensajes]}` (MOD-03) se conservan los mensajes por campo.
+      const erroresCampo: Record<string, string[]> = {}
+      if (objeto.errores && typeof objeto.errores === 'object') {
+        for (const [campo, mensajes] of Object.entries(objeto.errores)) erroresCampo[campo] = aplanarMensajes(mensajes)
+      }
+      return new ErrorApi(estado, objeto.codigo, objeto.detalle, erroresCampo)
     }
     // Error propio de DRF: {detail}.
     if (typeof objeto.detail === 'string') {
