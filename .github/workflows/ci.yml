@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# Un push nuevo cancela la ejecución anterior del mismo PR: ahorra minutos.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cambios:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      frontend: ${{ steps.filtro.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: filtro
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ -z "$BASE" ]]; then echo "frontend=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if git diff --name-only "$BASE"...HEAD | grep -qE '^(src/|public/|index\.html$|package(-lock)?\.json$|tsconfig.*\.json$|vite\.config\.ts$|\.oxlintrc\.json$|Dockerfile$|\.github/workflows/ci\.yml$)'; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  higiene:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: título del PR y rama
+        env:
+          TITULO: ${{ github.event.pull_request.title }}
+          RAMA: ${{ github.head_ref }}
+          AUTOR: ${{ github.event.pull_request.user.login }}
+          PREFIJO_TICKET: ${{ vars.PREFIJO_TICKET || 'AV' }}
+        run: .github/scripts/comprobar-pr.sh
+      - name: nombres, artefactos y marcas de no fusionar
+        run: .github/scripts/comprobar-higiene.sh "${{ github.event.pull_request.base.sha }}"
+      - name: gitleaks en los commits del PR
+        run: |
+          .github/scripts/instalar-gitleaks.sh
+          .bin/gitleaks git --redact --no-banner --log-opts="${{ github.event.pull_request.base.sha }}..HEAD" .
+
+  frontend:
+    needs: cambios
+    if: needs.cambios.outputs.frontend == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: tipos
+        run: npm run typecheck
+      - name: oxlint
+        run: npm run lint
+      - name: pruebas
+        run: npm test
+      - name: build
+        run: npm run build
+
+  # Único check obligatorio en main. Pasa si nada ha fallado; los jobs saltados cuentan como correctos.
+  ci-ok:
+    if: always()
+    needs: [cambios, higiene, frontend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - env:
+          RESULTADOS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Resultados: $RESULTADOS"
+          if [[ " $RESULTADOS " == *" failure "* || " $RESULTADOS " == *" cancelled "* ]]; then exit 1; fi

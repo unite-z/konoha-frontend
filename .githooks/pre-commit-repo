@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# oxlint sobre los ficheros TS y TSX del commit (rápido). Recibe la lista de ficheros en $1.
+set -euo pipefail
+[[ -x node_modules/.bin/oxlint ]] || exit 0
+ts=()
+while IFS= read -r f; do
+  [[ "$f" =~ \.(ts|tsx)$ ]] && ts+=("$f")
+done <<< "$1"
+if (( ${#ts[@]} )); then
+  node_modules/.bin/oxlint "${ts[@]}"
+fi
