@@ -1,0 +1,116 @@
+/* Proveedores, contratos y atención especial (MOD-05): mismo espaciado y tokens que la bandeja de atenciones. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.barraAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.descripcion {
+  color: var(--color-text-secondary);
+}
+
+.barraFiltros {
+  display: flex;
+  flex-wrap: wrap;
+  /* Los controles quedan en la misma línea aunque solo la búsqueda tenga texto de ayuda encima. */
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.barraFiltros > .busqueda {
+  flex: 2 1 18rem;
+}
+
+.barraFiltros > :not(.busqueda):not(.accionFiltros) {
+  flex: 1 1 12rem;
+}
+
+/* El botón queda en la línea de los controles (la barra alinea todo por abajo). */
+.accionFiltros {
+  padding-top: 0;
+}
+
+@media (max-width: 40rem) {
+  .barraFiltros > * {
+    flex-basis: 100%;
+  }
+}
+
+.resumenResultados {
+  color: var(--color-text-secondary);
+}
+
+.ayuda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.enLinea {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cifra {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- Formularios de registro ------------------------------------------------------------------------ */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 64rem;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.tituloGrupo {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+/* Hasta tres campos por fila; en pantallas angostas, uno por fila. */
+.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.cuadriculaAncha {
+  grid-column: 1 / -1;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}

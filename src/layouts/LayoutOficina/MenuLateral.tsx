@@ -5,8 +5,8 @@
  * (MOD-05) y «Planificación» (MOD-03) tienen enlaces; el resto aún no está disponible y se muestra sin enlace (`aria-disabled`), atenuado
  * y con «Próximamente» bajo el nombre. «Configuración» solo es visible en la vista de Administrador.
  *
- * Segundo nivel de «Servicios tercerizados»: Atenciones (con enlace), Proveedores y contratos y Control
- * fitosanitario (sin enlace: fuera de esta entrega).
+ * Segundo nivel de «Servicios tercerizados»: Atenciones, Proveedores y contratos y Control
+ * fitosanitario (con enlace).
  *
  * Segundo nivel de «Reportes e indicadores»: Panel, Reportes, Mapa de atenciones, Exportaciones y
  * Asistencia IA. Solo «Reportes» y «Asistencia IA» tienen enlace (los demás son otros requisitos).
@@ -39,8 +39,8 @@ interface EntradaSegundoNivel {
 /** Segundo nivel de «Servicios tercerizados» (MOD-05). */
 const SEGUNDO_NIVEL_TERCERIZADOS: EntradaSegundoNivel[] = [
   { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones }, // RF-SER-003 a 006 y 011
-  { texto: 'Proveedores y contratos' }, // TODO: mantenimiento (CU-MOD05-001 y 002)
-  { texto: 'Control fitosanitario' }, // otro requisito
+  { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos }, // RF-SER-001 y RF-SER-002
+  { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario }, // RF-INV-011
 ]
 
 /** Segundo nivel de «Planificación» (MOD-03). */
