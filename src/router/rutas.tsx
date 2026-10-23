@@ -19,6 +19,11 @@ import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTerc
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
+import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
+import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
+import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
+import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
+import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
 import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
 import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
 
@@ -44,6 +49,11 @@ export const router = createBrowserRouter([
           { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
           { path: RUTAS_TERCERIZADOS.nuevaAtencion, element: <NuevaAtencionPage /> }, // RF-SER-003 y 011
           { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
+          { path: RUTAS_TERCERIZADOS.proveedoresContratos, element: <ProveedoresContratosPage /> }, // RF-SER-001 y 002
+          { path: RUTAS_TERCERIZADOS.nuevoProveedor, element: <ProveedorNuevoPage /> }, // RF-SER-001
+          { path: RUTAS_TERCERIZADOS.nuevoContrato, element: <ContratoNuevoPage /> }, // RF-SER-002
+          { path: RUTAS_TERCERIZADOS.controlFitosanitario, element: <AtencionEspecialPage /> }, // RF-INV-011
+          { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> }, // RF-INV-011
         ],
       },
       // MOD-03 «Planificación»: misma sesión que MOD-05.
