@@ -42,6 +42,11 @@ export const RUTAS_TERCERIZADOS = {
   ingreso: `${BASE_TERCERIZADOS}/ingreso`,
   atenciones: `${BASE_TERCERIZADOS}/atenciones`,
   nuevaAtencion: `${BASE_TERCERIZADOS}/atenciones/nueva`, // RF-SER-003
+  proveedoresContratos: `${BASE_TERCERIZADOS}/proveedores-contratos`, // RF-SER-001 y RF-SER-002
+  nuevoProveedor: `${BASE_TERCERIZADOS}/proveedores-contratos/proveedores/nuevo`, // RF-SER-001
+  nuevoContrato: `${BASE_TERCERIZADOS}/proveedores-contratos/contratos/nuevo`, // RF-SER-002
+  controlFitosanitario: `${BASE_TERCERIZADOS}/control-fitosanitario`, // RF-INV-011
+  marcarEjemplar: `${BASE_TERCERIZADOS}/control-fitosanitario/marcar`, // RF-INV-011
 } as const
 
 /** Ficha de una atención tercerizada. */
@@ -105,4 +110,6 @@ export function rutaIngreso(destino?: string): string {
 export const MIGAS_TERCERIZADOS = {
   serviciosTercerizados: { texto: 'Servicios tercerizados', ruta: RUTAS_TERCERIZADOS.atenciones },
   atenciones: { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones },
+  proveedoresContratos: { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
+  controlFitosanitario: { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
 } satisfies Record<string, Miga>
