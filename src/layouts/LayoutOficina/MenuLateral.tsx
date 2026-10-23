@@ -39,8 +39,8 @@ interface EntradaSegundoNivel {
 /** Segundo nivel de «Servicios tercerizados» (MOD-05). */
 const SEGUNDO_NIVEL_TERCERIZADOS: EntradaSegundoNivel[] = [
   { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones }, // RF-SER-003 a 006 y 011
-  { texto: 'Proveedores y contratos' }, // TODO: mantenimiento (CU-MOD05-001 y 002)
-  { texto: 'Control fitosanitario' }, // otro requisito
+  { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos }, // RF-SER-001 y RF-SER-002
+  { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario }, // RF-INV-011
 ]
 
 /** Segundo nivel de «Planificación» (MOD-03). */
