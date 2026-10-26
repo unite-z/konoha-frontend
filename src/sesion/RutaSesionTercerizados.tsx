@@ -12,14 +12,15 @@ import EstadoCarga from '../components/ui/EstadoCarga'
 import EstadoError from '../components/ui/EstadoError'
 import EstadoVacio from '../components/ui/EstadoVacio'
 import { usePaginaActual } from '../hooks/usePaginaActual'
-import { MIGAS_PLANIFICACION, MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, esRutaPlanificacion, rutaIngreso } from '../router/rutasApp'
+import { MIGAS_INVENTARIO, MIGAS_PLANIFICACION, MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, esRutaInventario, esRutaPlanificacion, rutaIngreso } from '../router/rutasApp'
 import { useSesionTercerizados } from './ContextoSesionTercerizados'
 
 function SinAcceso() {
   const { cerrarSesion } = useSesionTercerizados()
   const planificacion = esRutaPlanificacion(useLocation().pathname)
-  const modulo = planificacion ? 'Planificación' : 'Servicios tercerizados'
-  usePaginaActual('Sin acceso', [planificacion ? MIGAS_PLANIFICACION.planificacion : MIGAS_TERCERIZADOS.serviciosTercerizados])
+  const inventario = esRutaInventario(useLocation().pathname)
+  const modulo = inventario ? 'Áreas verdes' : planificacion ? 'Planificación' : 'Servicios tercerizados'
+  usePaginaActual('Sin acceso', [inventario ? MIGAS_INVENTARIO.areasVerdes : planificacion ? MIGAS_PLANIFICACION.planificacion : MIGAS_TERCERIZADOS.serviciosTercerizados])
   return (
     <EstadoVacio
       icono="triangulo"
