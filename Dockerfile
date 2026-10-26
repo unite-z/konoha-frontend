@@ -11,7 +11,7 @@ ENV VITE_API_BASE_URL=/api/v1 \
     VITE_API_TERCERIZADOS_URL=/api/tercerizados
 RUN npm run build
 
-FROM caddy:2.10-alpine
+FROM caddy:2.11-alpine
 ARG REVISION=desconocida
 LABEL org.opencontainers.image.source="konoha-frontend" \
       org.opencontainers.image.revision="${REVISION}"
