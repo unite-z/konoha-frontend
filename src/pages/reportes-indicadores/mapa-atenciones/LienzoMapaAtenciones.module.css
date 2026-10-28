@@ -1,7 +1,7 @@
 /* Lienzo del mapa de atenciones: Guía Web 5.8. */
 .contenedor {
   --marcador-atencion: 14px; /* Guía Web 5.8: atención tercerizada, cuadrado de 14 px */
-  --alto-mapa: 480px; /* SUPUESTO: la guía no fija el alto del mapa */
+  --alto-mapa: 480px; /* SUPUESTO (pendiente de confirmar): la guía no fija el alto del mapa */
   --borde-espacio: 2px; /* Guía Web 5.8: borde del área verde (como `line-width: 2` del mapa) */
   position: relative;
   height: var(--alto-mapa);

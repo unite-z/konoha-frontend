@@ -212,18 +212,23 @@ export default function MaterialVegetalPage() {
         }
         return (
           <>
-            <Pestanas
-              etiqueta="Movimientos del mes"
-              valor={vista}
-              onCambiar={(valor) => establecer({ vista: valor })}
-              pestanas={VISTAS.map((v) => ({
-                valor: v.valor,
-                texto: v.texto,
-                extra: <span className="cifra"> ({formatearNumero(totales[v.valor])})</span>,
-              }))}
-            >
-              <TablaVista vista={vista} datos={datos} />
-            </Pestanas>
+            <section className={estilos.seccion} aria-labelledby="titulo-movimientos">
+              <h2 id="titulo-movimientos" className={estilos.tituloSeccion}>
+                Movimientos del mes
+              </h2>
+              <Pestanas
+                etiqueta="Movimientos del mes"
+                valor={vista}
+                onCambiar={(valor) => establecer({ vista: valor })}
+                pestanas={VISTAS.map((v) => ({
+                  valor: v.valor,
+                  texto: v.texto,
+                  extra: <span className="cifra"> ({formatearNumero(totales[v.valor])})</span>,
+                }))}
+              >
+                <TablaVista vista={vista} datos={datos} />
+              </Pestanas>
+            </section>
 
             {datos.comparacion.length > 0 && (
               <section className={estilos.seccion} aria-labelledby="titulo-comparacion">
@@ -255,7 +260,8 @@ export default function MaterialVegetalPage() {
                   descripcion={datos.productos_proveedor.mensaje_sin_datos ?? undefined}
                 />
               ) : (
-                // TODO: el back-end aún no envía estos productos (flujo 3a); su tabla se define cuando existan.
+                // TODO: definir su tabla cuando el back-end envíe los productos aplicados por proveedores (flujo 3a); hoy
+                // siempre llegan «sin datos».
                 <p className={estilos.ayuda}>Los productos aplicados por proveedores todavía no se pueden mostrar</p>
               )}
             </section>

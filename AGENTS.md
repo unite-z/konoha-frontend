@@ -16,6 +16,7 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 |---|---|
 | `src/pages/<modulo>/` | Pantallas: `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
 | `src/components/ui/` | Componentes base. Reutilízalos antes de crear otro |
+| `src/components/reportes-indicadores/` | Componentes propios del MOD-06 (filtros compartidos de los reportes de gestión) |
 | `src/services/api/` | Clientes y servicios tipados por módulo |
 | `src/types/` | Tipos del contrato de la API |
 | `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
@@ -86,7 +87,7 @@ Pendiente de decisión (no la cambies por tu cuenta): formato de errores del bac
 ## Seguridad abierta: no empeorar
 
 - Las credenciales de MOD-05 (HTTP Basic) se guardan en `sessionStorage` hasta que exista la sesión de MOD-01.
-- MOD-06 usa una sesión simulada (`src/config/sesion.ts`).
+- MOD-06 usa una sesión simulada (`src/config/sesion.ts`), salvo el panel, el mapa de atenciones y el material vegetal, que usan la sesión de MOD-05 porque su API exige HTTP Basic.
 
 Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `localStorage`). Cerrarlas va en tickets propios.
 
