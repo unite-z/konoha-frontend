@@ -6,10 +6,17 @@
  * 400 con el mensaje en el campo y la página lo muestra.
  */
 import type { Tono } from '../components/ui/Badge'
-import type { ClaveIndicadorPanel, ConsultaGestion, ResultadoIndicador, TipoAtencion } from '../types/reportesGestion'
+import type {
+  ClaveIndicadorPanel,
+  ComparacionMes,
+  ConsultaGestion,
+  ResultadoIndicador,
+  TipoAtencion,
+} from '../types/reportesGestion'
 import type { Modalidad } from '../types/reportes'
 import { ESTADOS_ATENCION, insigniaEstado } from './estadosTercerizados'
 import { formatearNumero } from './formato'
+import { hoyLima } from './instanteLima'
 
 /** Orden del CU-MOD06-001 (paso 4); el back-end devuelve el mismo (`PanelService.ORDEN`). */
 export const CLAVES_INDICADOR: readonly ClaveIndicadorPanel[] = [
@@ -119,4 +126,56 @@ export function insigniaEstadoAtencion(estado: string): { texto: string; tono: T
   const conocido = ESTADOS_ATENCION.find((e) => e === estado)
   if (conocido) return insigniaEstado(conocido)
   return { texto: estado, tono: TONO_ESTADO_POSTERIOR[estado] ?? 'neutral' }
+}
+
+// --- RF-REP-005: material vegetal ------------------------------------------------------------------------------
+
+/** Mismos textos que el back-end (`ErrorGestion.mensajeFalta("mes")` y `ParametrosGestion.MENSAJE_FORMATO_MES`). */
+export const MENSAJES_MES = {
+  falta: 'Indica el mes del reporte (mes), con el formato AAAA-MM',
+  formato: 'Usa el formato AAAA-MM',
+} as const
+
+/** Mismo patrón que `ParametrosGestion.MES`: año de 4 cifras y mes 01..12. */
+const PATRON_MES = /^[0-9]{4}-(0[1-9]|1[0-2])$/
+
+/** Error del campo mes, o `undefined` si es válido. */
+export function validarMes(mes: string): string | undefined {
+  if (!mes.trim()) return MENSAJES_MES.falta
+  return PATRON_MES.test(mes) ? undefined : MENSAJES_MES.formato
+}
+
+/** Mes actual en Lima (`AAAA-MM`). */
+export function mesActualLima(ahora: Date = new Date()): string {
+  return hoyLima(ahora).slice(0, 7)
+}
+
+export type MovimientoMaterial = 'Consumido' | 'Propagado' | 'Trasladado'
+
+/** Fila plana de la comparación (CU-MOD05-029, paso 4): un mes, un tipo de movimiento, un material y una unidad. */
+export interface FilaComparacion {
+  mes: string
+  movimiento: MovimientoMaterial
+  tipo_material: string
+  unidad: string
+  cantidad: string
+}
+
+/** Filas de la comparación en el orden de los meses y, dentro de cada mes, consumido, propagado y trasladado. */
+export function filasComparacion(comparacion: ComparacionMes[]): FilaComparacion[] {
+  return comparacion.flatMap((mes) => {
+    const grupos: [MovimientoMaterial, ComparacionMes['consumido']][] = [
+      ['Consumido', mes.consumido],
+      ['Propagado', mes.propagado],
+      ['Trasladado', mes.trasladado],
+    ]
+    return grupos.flatMap(([movimiento, totales]) =>
+      totales.map((t) => ({ mes: mes.mes, movimiento, tipo_material: t.tipo_material, unidad: t.unidad, cantidad: t.cantidad })),
+    )
+  })
+}
+
+/** Meses de la comparación sin movimientos (para avisarlo; nunca se muestran ceros). */
+export function mesesSinDatos(comparacion: ComparacionMes[]): string[] {
+  return comparacion.filter((m) => m.sin_datos).map((m) => m.mes)
 }

@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import type { ResultadoIndicador } from '../types/reportesGestion'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { ComparacionMes, ResultadoIndicador } from '../types/reportesGestion'
 import {
   aConsultaGestion,
+  MENSAJES_MES,
   esClaveIndicador,
+  filasComparacion,
+  mesActualLima,
+  mesesSinDatos,
+  validarMes,
   insigniaEstadoAtencion,
   notasUnicas,
   numeroDeDecimal,
@@ -96,5 +101,66 @@ describe('insigniaEstadoAtencion', () => {
     ['Otro', 'neutral'],
   ])('%s → %s', (estado, tono) => {
     expect(insigniaEstadoAtencion(estado)).toEqual({ texto: estado, tono })
+  })
+})
+
+describe('validarMes', () => {
+  it('acepta AAAA-MM', () => {
+    expect(validarMes('2026-10')).toBeUndefined()
+  })
+
+  it('pide el mes si falta', () => {
+    expect(validarMes('')).toBe(MENSAJES_MES.falta)
+  })
+
+  it.each(['2026-13', '2026-1', 'octubre'])('rechaza el formato de %j', (mes) => {
+    expect(validarMes(mes)).toBe(MENSAJES_MES.formato)
+  })
+})
+
+describe('mesActualLima', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('usa la fecha de Lima, no la UTC', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-11-01T03:00:00Z'))
+    expect(mesActualLima()).toBe('2026-10')
+  })
+})
+
+const COMPARACION: ComparacionMes[] = [
+  {
+    mes: '2026-07',
+    sin_datos: false,
+    consumido: [{ tipo_material: 'Abono', unidad: 'kg', cantidad: '12.50' }],
+    propagado: [{ tipo_material: 'Esquejes', unidad: 'unidad', cantidad: '30.00' }],
+    trasladado: [{ tipo_material: 'Plantas', unidad: 'unidad', cantidad: '4.00' }],
+  },
+  { mes: '2026-08', sin_datos: true, consumido: [], propagado: [], trasladado: [] },
+  {
+    mes: '2026-09',
+    sin_datos: false,
+    consumido: [],
+    propagado: [{ tipo_material: 'Esquejes', unidad: 'unidad', cantidad: '10.00' }],
+    trasladado: [],
+  },
+]
+
+describe('filasComparacion', () => {
+  it('ordena por mes y, dentro del mes, consumido, propagado y trasladado', () => {
+    expect(filasComparacion(COMPARACION).map((f) => `${f.mes} ${f.movimiento} ${f.tipo_material}`)).toEqual([
+      '2026-07 Consumido Abono',
+      '2026-07 Propagado Esquejes',
+      '2026-07 Trasladado Plantas',
+      '2026-09 Propagado Esquejes',
+    ])
+  })
+})
+
+describe('mesesSinDatos', () => {
+  it('devuelve solo los meses sin movimientos', () => {
+    expect(mesesSinDatos(COMPARACION)).toEqual(['2026-08'])
   })
 })
