@@ -5,8 +5,10 @@
  * No valida estados ni modalidades: si la URL trae un valor que el back-end no acepta, el back-end responde
  * 400 con el mensaje en el campo y la página lo muestra.
  */
+import type { Tono } from '../components/ui/Badge'
 import type { ClaveIndicadorPanel, ConsultaGestion, ResultadoIndicador, TipoAtencion } from '../types/reportesGestion'
 import type { Modalidad } from '../types/reportes'
+import { ESTADOS_ATENCION, insigniaEstado } from './estadosTercerizados'
 import { formatearNumero } from './formato'
 
 /** Orden del CU-MOD06-001 (paso 4); el back-end devuelve el mismo (`PanelService.ORDEN`). */
@@ -100,4 +102,21 @@ export function rutaDetalleConFiltros(rutaDetalle: string, busqueda: string): st
   parametros.delete('page')
   const texto = parametros.toString()
   return texto ? `${rutaDetalle}?${texto}` : rutaDetalle
+}
+
+/** Tono de los estados del ciclo que MOD-05 aún no implementa (Guía Web 5.6: observada en ámbar, conforme en verde). */
+const TONO_ESTADO_POSTERIOR: Record<string, Tono> = {
+  Observado: 'advertencia',
+  'Conforme / cerrado': 'exito',
+}
+
+/**
+ * Insignia del estado de una atención tercerizada. Reutiliza `insigniaEstado` de estadosTercerizados.ts para los
+ * cinco estados implementados en MOD-05; «Observado» → advertencia y «Conforme / cerrado» → éxito (Guía 5.6:
+ * observada en ámbar, conforme en verde; Tabla 2 del mockup), y cualquier otro → neutral con el texto tal cual.
+ */
+export function insigniaEstadoAtencion(estado: string): { texto: string; tono: Tono } {
+  const conocido = ESTADOS_ATENCION.find((e) => e === estado)
+  if (conocido) return insigniaEstado(conocido)
+  return { texto: estado, tono: TONO_ESTADO_POSTERIOR[estado] ?? 'neutral' }
 }

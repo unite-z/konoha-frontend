@@ -3,6 +3,7 @@ import type { ResultadoIndicador } from '../types/reportesGestion'
 import {
   aConsultaGestion,
   esClaveIndicador,
+  insigniaEstadoAtencion,
   notasUnicas,
   numeroDeDecimal,
   rutaDetalleConFiltros,
@@ -83,5 +84,17 @@ describe('esClaveIndicador', () => {
     expect(esClaveIndicador('consumo-materiales')).toBe(true)
     expect(esClaveIndicador('otro')).toBe(false)
     expect(esClaveIndicador(undefined)).toBe(false)
+  })
+})
+
+describe('insigniaEstadoAtencion', () => {
+  it.each([
+    ['En ejecución', 'info'],
+    ['Reporte adjunto', 'exito'],
+    ['Observado', 'advertencia'],
+    ['Conforme / cerrado', 'exito'],
+    ['Otro', 'neutral'],
+  ])('%s → %s', (estado, tono) => {
+    expect(insigniaEstadoAtencion(estado)).toEqual({ texto: estado, tono })
   })
 })
