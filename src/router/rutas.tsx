@@ -1,6 +1,7 @@
 /**
  * Rutas de la aplicación web de oficina. Todas dentro de `LayoutOficina`.
- * Las de MOD-05 y MOD-03 pasan por `RutaSesionTercerizados` (sesión con usuario Spring Security).
+ * Las de MOD-05, MOD-03 y los reportes de gestión del MOD-06 pasan por `RutaSesionTercerizados` (sesión con
+ * usuario Spring Security).
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
@@ -13,6 +14,10 @@ import AtencionesEspacioSectorPage from '../pages/reportes-indicadores/reportes/
 import CumplimientoCortePage from '../pages/reportes-indicadores/reportes/CumplimientoCortePage'
 import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/DistribucionPersonalPage'
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
+import MaterialVegetalPage from '../pages/reportes-indicadores/reportes/MaterialVegetalPage'
+import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
+import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
+import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
@@ -39,6 +44,17 @@ export const router = createBrowserRouter([
       { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
       { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
       { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
+      // MOD-06, reportes de gestión (RF-REP-001, 005 y 007): su API exige HTTP Basic → misma sesión que MOD-05.
+      // Ruta de layout sin `path`: comparte prefijo con reportes que no exigen sesión.
+      {
+        element: <RutaSesionTercerizados />,
+        children: [
+          { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
+          { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
+          { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
+          { path: RUTAS.mapaAtenciones, element: <MapaAtencionesPage /> }, // RF-REP-007
+        ],
+      },
       // MOD-05 «Servicios tercerizados»: requiere sesión con usuario Spring Security (excepto el ingreso).
       { path: RUTAS_TERCERIZADOS.ingreso, element: <IngresoTercerizadosPage /> },
       {

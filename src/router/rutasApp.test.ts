@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, destinoTrasIngreso, esRutaPlanificacion, esRutaTercerizados, rutaDetalleAtencion, rutaIngreso } from './rutasApp'
+import {
+  RUTAS,
+  RUTAS_PLANIFICACION,
+  RUTAS_TERCERIZADOS,
+  destinoTrasIngreso,
+  esRutaPlanificacion,
+  esRutaReportesGestion,
+  esRutaTercerizados,
+  rutaDetalleAtencion,
+  rutaDetalleIndicador,
+  rutaIngreso,
+} from './rutasApp'
 
 const BANDEJA = RUTAS_TERCERIZADOS.atenciones
 
@@ -59,5 +70,36 @@ describe('rutas de MOD-03', () => {
     expect(rutaIngreso(RUTAS_PLANIFICACION.restricciones)).toBe(
       `/servicios-tercerizados/ingreso?volver=${encodeURIComponent(RUTAS_PLANIFICACION.restricciones)}`,
     )
+  })
+})
+
+describe('reportes de gestión del MOD-06', () => {
+  it.each([
+    '/reportes-indicadores/panel',
+    '/reportes-indicadores/panel/atenciones-por-espacio',
+    '/reportes-indicadores/mapa-atenciones',
+    '/reportes-indicadores/reportes/material-vegetal',
+  ])('exige sesión en %s', (ruta) => {
+    expect(esRutaReportesGestion(ruta)).toBe(true)
+  })
+
+  it.each([
+    '/reportes-indicadores/reportes',
+    '/reportes-indicadores/reportes/cumplimiento-corte',
+    '/reportes-indicadores/panelX',
+    '/reportes-indicadores/asistencia-ia',
+  ])('no exige sesión en %s', (ruta) => {
+    expect(esRutaReportesGestion(ruta)).toBe(false)
+  })
+
+  it('permite volver al panel o al mapa tras ingresar', () => {
+    expect(destinoTrasIngreso(`${RUTAS.panel}?desde=2026-10-01`)).toBe(`${RUTAS.panel}?desde=2026-10-01`)
+    expect(rutaIngreso(RUTAS.mapaAtenciones)).toBe(
+      `/servicios-tercerizados/ingreso?volver=${encodeURIComponent(RUTAS.mapaAtenciones)}`,
+    )
+  })
+
+  it('construye la ruta del detalle de un indicador', () => {
+    expect(rutaDetalleIndicador('consumo-materiales')).toBe('/reportes-indicadores/panel/consumo-materiales')
   })
 })

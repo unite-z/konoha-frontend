@@ -13,7 +13,24 @@ export const RUTAS = {
   atencionesEspacioSector: `${BASE}/reportes/atenciones-espacio-sector`, // RF-REP-006
   asistenciaIa: `${BASE}/asistencia-ia`,
   extraccionReportes: `${BASE}/asistencia-ia/extraccion-reportes`, // RF-IA-001
+  panel: `${BASE}/panel`, // RF-REP-001
+  mapaAtenciones: `${BASE}/mapa-atenciones`, // RF-REP-007
+  materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
 } as const
+
+/** Detalle de un indicador del panel (RF-REP-001, criterio 3). */
+export function rutaDetalleIndicador(clave: string): string {
+  return `${RUTAS.panel}/${encodeURIComponent(clave)}`
+}
+
+/**
+ * `true` si la ruta es un reporte de gestión del MOD-06 (RF-REP-001, 005 y 007): su API exige HTTP Basic,
+ * así que usan la sesión de MOD-05, como MOD-03. Los demás reportes del MOD-06 siguen con la sesión simulada.
+ */
+export function esRutaReportesGestion(ruta: string): boolean {
+  const prefijos = [RUTAS.panel, RUTAS.mapaAtenciones, RUTAS.materialVegetal]
+  return prefijos.some((p) => ruta === p || ruta.startsWith(`${p}/`))
+}
 
 /** Prefijo de todas las rutas del módulo (para marcar el menú de primer nivel). */
 export const PREFIJO_MODULO = BASE
@@ -29,6 +46,8 @@ export const MIGAS = {
   reportes: { texto: 'Reportes', ruta: RUTAS.reportes },
   asistenciaIa: { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
   extraccionReportes: { texto: 'Extracción de informes de proveedores', ruta: RUTAS.extraccionReportes },
+  panel: { texto: 'Panel', ruta: RUTAS.panel },
+  mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
@@ -80,13 +99,13 @@ export const MIGAS_PLANIFICACION = {
   planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.servicios },
 } satisfies Record<string, Miga>
 
-/** `true` si la ruta exige la sesión compartida de MOD-05 y MOD-03. */
+/** `true` si la ruta exige la sesión compartida de MOD-05 (MOD-05, MOD-03 y los reportes de gestión del MOD-06). */
 export function esRutaConSesion(ruta: string): boolean {
-  return esRutaTercerizados(ruta) || esRutaPlanificacion(ruta)
+  return esRutaTercerizados(ruta) || esRutaPlanificacion(ruta) || esRutaReportesGestion(ruta)
 }
 
 /**
- * Destino seguro tras ingresar: solo rutas internas de MOD-05 o MOD-03 distintas del ingreso (evita redirecciones
+ * Destino seguro tras ingresar: solo rutas internas con sesión (`esRutaConSesion`) distintas del ingreso (evita redirecciones
  * abiertas a otros sitios con `?volver=`). Si no es válido, la bandeja de atenciones.
  */
 export function destinoTrasIngreso(volver: string | null | undefined): string {

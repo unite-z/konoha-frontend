@@ -1,5 +1,6 @@
 /**
- * Guardián de las rutas de MOD-05 y MOD-03 (excepto el ingreso, que es el de MOD-05).
+ * Guardián de las rutas de MOD-05, MOD-03 y los reportes de gestión del MOD-06 (excepto el ingreso, que es el
+ * de MOD-05).
  *
  * - Sin sesión → ingreso, con `?volver=` para regresar a la misma ruta (sin destino si el usuario la cerró).
  * - Comprobando la sesión guardada → esqueleto.
@@ -12,14 +13,29 @@ import EstadoCarga from '../components/ui/EstadoCarga'
 import EstadoError from '../components/ui/EstadoError'
 import EstadoVacio from '../components/ui/EstadoVacio'
 import { usePaginaActual } from '../hooks/usePaginaActual'
-import { MIGAS_PLANIFICACION, MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, esRutaPlanificacion, rutaIngreso } from '../router/rutasApp'
+import {
+  MIGAS,
+  MIGAS_PLANIFICACION,
+  MIGAS_TERCERIZADOS,
+  RUTAS_TERCERIZADOS,
+  esRutaPlanificacion,
+  esRutaReportesGestion,
+  rutaIngreso,
+} from '../router/rutasApp'
 import { useSesionTercerizados } from './ContextoSesionTercerizados'
 
 function SinAcceso() {
   const { cerrarSesion } = useSesionTercerizados()
-  const planificacion = esRutaPlanificacion(useLocation().pathname)
-  const modulo = planificacion ? 'Planificación' : 'Servicios tercerizados'
-  usePaginaActual('Sin acceso', [planificacion ? MIGAS_PLANIFICACION.planificacion : MIGAS_TERCERIZADOS.serviciosTercerizados])
+  const { pathname } = useLocation()
+  const planificacion = esRutaPlanificacion(pathname)
+  const reportesGestion = esRutaReportesGestion(pathname)
+  const modulo = reportesGestion ? 'Reportes e indicadores' : planificacion ? 'Planificación' : 'Servicios tercerizados'
+  const miga = reportesGestion
+    ? MIGAS.reportesIndicadores
+    : planificacion
+      ? MIGAS_PLANIFICACION.planificacion
+      : MIGAS_TERCERIZADOS.serviciosTercerizados
+  usePaginaActual('Sin acceso', [miga])
   return (
     <EstadoVacio
       icono="triangulo"
