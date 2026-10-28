@@ -52,7 +52,12 @@ function SinAcceso() {
 
 function ErrorSesion() {
   const { estado, reintentar } = useSesionTercerizados()
-  usePaginaActual('Servicios tercerizados', [MIGAS_TERCERIZADOS.serviciosTercerizados])
+  const { pathname } = useLocation()
+  // Mismo criterio que `SinAcceso`: los reportes de gestión llevan el título y la miga de su módulo.
+  const reportesGestion = esRutaReportesGestion(pathname)
+  usePaginaActual(reportesGestion ? 'Reportes e indicadores' : 'Servicios tercerizados', [
+    reportesGestion ? MIGAS.reportesIndicadores : MIGAS_TERCERIZADOS.serviciosTercerizados,
+  ])
   return (
     <EstadoError
       titulo="No pudimos comprobar tu sesión"

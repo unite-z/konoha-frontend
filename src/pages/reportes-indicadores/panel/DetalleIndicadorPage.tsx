@@ -173,47 +173,60 @@ function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetallePro
     )
   }
 
+  // Sin registros, `PlantillaReporte` solo muestra el vacío: las notas que explican el motivo van debajo.
+  const notasSinDatos =
+    consulta.estado !== 'error' && !consulta.cargaVisible && consulta.datos?.sin_datos
+      ? notasUnicas(consulta.datos.notas)
+      : []
+
   return (
-    <PlantillaReporte
-      consulta={consultaConCatalogos}
-      filtros={barra}
-      vacio={{ titulo: 'Sin registros para este indicador' }}
-    >
-      {(datos) => (
-        <>
-          <section className={estilos.seccion} aria-labelledby="titulo-calculo">
-            <h2 id="titulo-calculo" className={estilos.tituloSeccion}>
-              Cómo se calcula
-            </h2>
-            <p className={estilos.ayuda}>{datos.indicador.descripcion_calculo}</p>
-            <p className={estilos.ayuda}>Unidad: {datos.indicador.unidad}</p>
-          </section>
+    <div className={estilos.pagina}>
+      <PlantillaReporte
+        consulta={consultaConCatalogos}
+        filtros={barra}
+        vacio={{ titulo: 'Sin registros para este indicador' }}
+      >
+        {(datos) => (
+          <>
+            <section className={estilos.seccion} aria-labelledby="titulo-calculo">
+              <h2 id="titulo-calculo" className={estilos.tituloSeccion}>
+                Cómo se calcula
+              </h2>
+              <p className={estilos.ayuda}>{datos.indicador.descripcion_calculo}</p>
+              <p className={estilos.ayuda}>Unidad: {datos.indicador.unidad}</p>
+            </section>
 
-          {columnas ? (
-            <TablaDatos
-              titulo={`Registros de ${datos.indicador.nombre}`}
-              columnas={columnas}
-              filas={datos.results}
-              claveFila={claveFila}
-              paginacionServidor={{
-                pagina: Number(filtros.page) || 1,
-                total: datos.count,
-                porPagina: POR_PAGINA,
-                onCambiarPagina: (p) => establecer({ page: p > 1 ? String(p) : null }),
-              }}
-            />
-          ) : (
-            <AvisoEnLinea tono="info">El detalle de este indicador todavía no se puede mostrar</AvisoEnLinea>
-          )}
+            {columnas ? (
+              <TablaDatos
+                titulo={`Registros de ${datos.indicador.nombre}`}
+                columnas={columnas}
+                filas={datos.results}
+                claveFila={claveFila}
+                paginacionServidor={{
+                  pagina: Number(filtros.page) || 1,
+                  total: datos.count,
+                  porPagina: POR_PAGINA,
+                  onCambiarPagina: (p) => establecer({ page: p > 1 ? String(p) : null }),
+                }}
+              />
+            ) : (
+              <AvisoEnLinea tono="info">El detalle de este indicador todavía no se puede mostrar</AvisoEnLinea>
+            )}
 
-          {notasUnicas(datos.notas).map((nota) => (
-            <AvisoEnLinea key={nota} tono="info">
-              {nota}
-            </AvisoEnLinea>
-          ))}
-        </>
-      )}
-    </PlantillaReporte>
+            {notasUnicas(datos.notas).map((nota) => (
+              <AvisoEnLinea key={nota} tono="info">
+                {nota}
+              </AvisoEnLinea>
+            ))}
+          </>
+        )}
+      </PlantillaReporte>
+      {notasSinDatos.map((nota) => (
+        <AvisoEnLinea key={nota} tono="info">
+          {nota}
+        </AvisoEnLinea>
+      ))}
+    </div>
   )
 }
 
