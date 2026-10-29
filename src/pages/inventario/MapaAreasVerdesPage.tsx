@@ -20,6 +20,7 @@ import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '../../service
 import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import type { UsoFuenteMapa } from '../../types/mod02'
 import estilos from './MapaAreasVerdesPage.module.css'
+import MapaVectorialLocal from './MapaVectorialLocal'
 
 const ID_CAPA = 'areas-verdes-poligonos'
 const ID_FUENTE = 'areas-verdes-campus'
@@ -47,6 +48,14 @@ interface PoligonoSeleccionado {
   areaVerdeId: number | null
 }
 
+interface HoverMapa {
+  x: number
+  y: number
+  nombre: string
+  usoOriginal: string
+  tipoSistema: string
+}
+
 export default function MapaAreasVerdesPage() {
   usePaginaActual('Mapa del campus', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.mapa])
   const { estado: sesion } = useSesionTercerizados()
@@ -60,8 +69,9 @@ export default function MapaAreasVerdesPage() {
   const tiposUso = useConsulta('mapa-tipos-uso', (signal) => listarTiposUso(false, signal))
   const areas = useConsulta('mapa-inventario-areas', listarTodasLasAreasVerdes)
   const [usoSeleccionado, setUsoSeleccionado] = useState('')
-  const [tipoUsoSeleccionado, setTipoUsoSeleccionado] = useState('')
+  const [tipoUsoSeleccionado] = useState('')
   const [seleccion, setSeleccion] = useState<PoligonoSeleccionado | null>(null)
+  const [, setHoverMapa] = useState<HoverMapa | null>(null)
   const [guardando, setGuardando] = useState<'uso' | 'area' | null>(null)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
   const [mensajeAccion, setMensajeAccion] = useState<string | null>(null)
@@ -85,33 +95,26 @@ export default function MapaAreasVerdesPage() {
       container: contenedorMapa.current,
       style: {
         version: 8,
-        sources: {
-          openstreetmap: {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-          },
-        },
+        sources: {},
         layers: [
-          { id: 'fondo-campus', type: 'background', paint: { 'background-color': '#eef2ef' } },
-          { id: 'calles-openstreetmap', type: 'raster', source: 'openstreetmap' },
+          { id: 'fondo-campus', type: 'background', paint: { 'background-color': '#ffffff' } },
         ],
       },
       center: [(limites.oeste + limites.este) / 2, (limites.sur + limites.norte) / 2],
       zoom: 16,
       minZoom: 14,
-      maxZoom: 20,
+      maxZoom: 19,
       maxBounds: [
         [limites.oeste - 0.006, limites.sur - 0.006],
         [limites.este + 0.006, limites.norte + 0.006],
       ],
-      attributionControl: { compact: false },
+      attributionControl: false,
       cooperativeGestures: true,
     })
     mapaRef.current = instancia
     instancia.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     instancia.addControl(new ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left')
+    const capasPorUso = usos.map((_, indice) => `${ID_CAPA}-${indice}`)
 
     instancia.once('load', () => {
       instancia.addSource(ID_FUENTE, { type: 'geojson', data: mapa.datos as AreasVerdesGeoJSON })
@@ -124,7 +127,7 @@ export default function MapaAreasVerdesPage() {
           source: ID_FUENTE,
           filter: filtroUso,
           layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current, tipoUsoSeleccionadoRef.current) ? 'visible' : 'none' },
-          paint: { 'fill-color': uso.color, 'fill-opacity': 0.68, 'fill-outline-color': '#ffffff' },
+          paint: { 'fill-color': uso.color, 'fill-opacity': 1, 'fill-outline-color': uso.color },
         })
         instancia.addLayer({
           id: `${idCapaUso}-contorno`,
@@ -132,16 +135,35 @@ export default function MapaAreasVerdesPage() {
           source: ID_FUENTE,
           filter: filtroUso,
           layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current, tipoUsoSeleccionadoRef.current) ? 'visible' : 'none' },
-          paint: { 'line-color': '#ffffff', 'line-width': 0.8, 'line-opacity': 0.9 },
+          paint: { 'line-color': uso.color, 'line-width': 2, 'line-opacity': 1 },
         })
       }
+      instancia.on('mousemove', (evento) => {
+        const propiedad = instancia.queryRenderedFeatures(evento.point, { layers: capasPorUso })[0]
+        const propiedades = propiedad?.properties
+        if (!propiedades) {
+          instancia.getCanvas().style.cursor = ''
+          setHoverMapa(null)
+          return
+        }
+        const usoOriginal = texto(propiedades.Uso)
+        if (!usoOriginal) return
+        const clasificacion = categorias.datos?.find((categoria) => categoria.uso_fuente === usoOriginal)
+        instancia.getCanvas().style.cursor = 'pointer'
+        setHoverMapa({
+          x: evento.point.x,
+          y: evento.point.y,
+          nombre: texto(propiedades.Nombre) || 'Área verde del campus',
+          usoOriginal,
+          tipoSistema: clasificacion?.tipo_uso_nombre ?? 'Sin clasificar',
+        })
+      })
       instancia.fitBounds(
         [[limites.oeste, limites.sur], [limites.este, limites.norte]],
         { padding: 36, maxZoom: 16.5, duration: 0 },
       )
     })
 
-    const capasPorUso = usos.map((_, indice) => `${ID_CAPA}-${indice}`)
     instancia.on('click', capasPorUso, (evento) => {
       const propiedades = evento.features?.[0]?.properties
       if (!propiedades) return
@@ -180,10 +202,9 @@ export default function MapaAreasVerdesPage() {
       }
       new Popup({ maxWidth: '300px' }).setLngLat(evento.lngLat).setDOMContent(contenido).addTo(instancia)
     })
-    instancia.on('mouseenter', capasPorUso, () => { instancia.getCanvas().style.cursor = 'pointer' })
-    instancia.on('mouseleave', capasPorUso, () => { instancia.getCanvas().style.cursor = '' })
 
     return () => {
+      setHoverMapa(null)
       instancia.remove()
       mapaRef.current = null
     }
@@ -200,7 +221,7 @@ export default function MapaAreasVerdesPage() {
       if (instancia.getLayer(idCapaUso)) instancia.setLayoutProperty(idCapaUso, 'visibility', visibilidad)
       if (instancia.getLayer(`${idCapaUso}-contorno`)) instancia.setLayoutProperty(`${idCapaUso}-contorno`, 'visibility', visibilidad)
     }
-  }, [usoSeleccionado, tipoUsoSeleccionado, usos])
+  }, [mapa.datos, usoSeleccionado, tipoUsoSeleccionado, usos])
 
   if (consultaConError) {
     return (
@@ -275,16 +296,9 @@ export default function MapaAreasVerdesPage() {
         </div>
         <div className={estilos.filtrosMapa}>
           <label className={estilos.filtro}>
-            <span>Filtrar por tipo del sistema</span>
-            <select value={tipoUsoSeleccionado} onChange={(evento) => setTipoUsoSeleccionado(evento.target.value)}>
-              <option value="">Todos los tipos</option>
-              {catalogoTipos.map((tipo) => <option key={tipo.id} value={String(tipo.id)}>{tipo.nombre}</option>)}
-            </select>
-          </label>
-          <label className={estilos.filtro}>
-            <span>Filtrar por Uso original</span>
+            <span>Filtrar por uso</span>
             <select value={usoSeleccionado} onChange={(evento) => setUsoSeleccionado(evento.target.value)}>
-              <option value="">Todos los usos originales</option>
+              <option value="">Todos los usos</option>
               {usos.map((uso) => <option key={uso.nombre} value={uso.nombre}>{uso.nombre}</option>)}
             </select>
           </label>
@@ -292,14 +306,37 @@ export default function MapaAreasVerdesPage() {
       </div>
 
       <section className={estilos.panelMapa} aria-label="Mapa interactivo de áreas verdes del campus">
-        <div ref={contenedorMapa} className={estilos.mapa} role="application" aria-label="Mapa del campus PUCP. Usa las flechas para desplazarte y los controles para acercar o alejar." />
+        <MapaVectorialLocal
+          datos={mapa.datos}
+          usos={usos}
+          categorias={categorias.datos}
+          usoSeleccionado={usoSeleccionado}
+          tipoUsoSeleccionado={tipoUsoSeleccionado}
+          onSeleccionar={(feature) => {
+            const propiedades = feature.properties
+            const idFuente = texto(propiedades.mapa_id)
+            const usoFuente = texto(propiedades.Uso)
+            if (!idFuente || !usoFuente) return
+            const asignacion = poligonosPorId.get(idFuente)
+            const clasificacion = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)
+            setSeleccion({
+              idFuente,
+              usoFuente,
+              nombre: texto(propiedades.Nombre) || 'Área verde del campus',
+              tipoUsoId: clasificacion?.tipo_uso_id ?? null,
+              areaVerdeId: asignacion?.area_verde_id ?? null,
+            })
+            setErrorAccion(null)
+            setMensajeAccion(null)
+          }}
+        />
         <div className={estilos.panelFlotante}>
-          <h2>Usos originales</h2>
+          <h2>Usos</h2>
           <ul className={estilos.leyenda}>
             {usos.map((uso) => (
               <li key={uso.nombre}>
                 <span className={estilos.muestraColor} style={{ backgroundColor: uso.color }} aria-hidden="true" />
-                <span>{uso.nombre}<small>{uso.tipoUsoId === null ? ' · sin clasificar' : ` · ${catalogoTipos.find((tipo) => tipo.id === uso.tipoUsoId)?.nombre ?? 'tipo inactivo'}`}</small></span>
+                <span>{uso.nombre}{uso.tipoUsoId !== null && <small> · {catalogoTipos.find((tipo) => tipo.id === uso.tipoUsoId)?.nombre ?? 'tipo inactivo'}</small>}</span>
                 <span className={estilos.cantidad}>{uso.cantidad}</span>
               </li>
             ))}
@@ -350,7 +387,7 @@ export default function MapaAreasVerdesPage() {
           )}
         </div>
       </section>
-      <p className={estilos.fuente}>Fuente: geometrías del mapa proporcionado por el cliente; equivalencias y vínculos gestionados en el inventario. Mapa base © OpenStreetMap contributors.</p>
+      <p className={estilos.fuente}>Fuente: geometrías del mapa proporcionado por el cliente; equivalencias y vínculos gestionados en el inventario. Fondo cartográfico estático local basado en OpenStreetMap © OpenStreetMap contributors.</p>
     </main>
   )
 }

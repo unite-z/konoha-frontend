@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Áreas verdes · mapa vectorial</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: #17202a; background: #f5f7f6; }
+    body { max-width: 1500px; margin: 0 auto; padding: 28px; }
+    header { display: flex; justify-content: space-between; gap: 24px; align-items: end; flex-wrap: wrap; margin-bottom: 18px; }
+    h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 2.3rem); }
+    p { margin: 0; color: #52605b; }
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+    label { display: grid; gap: 5px; color: #34423c; font-size: .85rem; }
+    select, button { min-height: 40px; border: 1px solid #b9c4bf; border-radius: 8px; background: white; padding: 0 12px; font: inherit; }
+    button { cursor: pointer; font-weight: 650; }
+    button:hover { background: #eef5f0; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; }
+    .card { background: white; border: 1px solid #d3ddd8; border-radius: 14px; box-shadow: 0 8px 24px #27352b14; }
+    .map-card { position: relative; overflow: hidden; min-height: 650px; }
+    svg { display: block; width: 100%; height: min(72vh, 820px); background: #fff; }
+    .polygon { cursor: crosshair; vector-effect: non-scaling-stroke; transition: opacity .12s, stroke-width .12s; }
+    .polygon:hover { stroke: #111827; stroke-width: 3; opacity: 1; }
+    .toolbar { position: absolute; right: 16px; top: 16px; display: grid; gap: 6px; }
+    .toolbar button { width: 42px; padding: 0; font-size: 1.25rem; }
+    .tooltip { position: fixed; z-index: 5; pointer-events: none; max-width: 280px; padding: 10px 12px; border: 1px solid #9aa9a1; border-radius: 9px; background: #ffffffef; box-shadow: 0 8px 24px #27352b33; font-size: .82rem; }
+    .tooltip strong, .tooltip span { display: block; }
+    .tooltip span { color: #52605b; margin-top: 4px; }
+    aside { padding: 18px; }
+    aside h2 { margin: 0 0 14px; font-size: 1rem; }
+    .legend { display: grid; gap: 11px; padding: 0; margin: 0; list-style: none; }
+    .legend li { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: start; font-size: .82rem; }
+    .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #34423c66; }
+    .count { color: #52605b; }
+    .summary { padding-top: 14px; margin-top: 14px; border-top: 1px solid #d3ddd8; font-size: .84rem; }
+    @media (max-width: 900px) { body { padding: 14px; } .layout { grid-template-columns: 1fr; } .map-card { min-height: 470px; } svg { height: 62vh; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Áreas verdes · mapa vectorial</h1><p>Solo las geometrías del inventario, sin mapa base externo.</p></div>
+    <div class="controls">
+      <label>Filtrar por uso original<select id="filter"><option value="">Todos los usos</option></select></label>
+      <button id="reset" type="button">Restablecer</button>
+    </div>
+  </header>
+  <main class="layout">
+    <section class="card map-card" aria-label="Mapa vectorial de áreas verdes">
+      <svg id="map" viewBox="0 0 1000 700" role="img" aria-label="Polígonos de áreas verdes"></svg>
+      <div class="toolbar"><button id="zoomIn" type="button" aria-label="Acercar">+</button><button id="zoomOut" type="button" aria-label="Alejar">−</button><button id="zoomReset" type="button" aria-label="Restablecer zoom">⌂</button></div>
+    </section>
+    <aside class="card"><h2>Usos originales</h2><ul id="legend" class="legend"></ul><div id="summary" class="summary"></div></aside>
+  </main>
+  <div id="tooltip" class="tooltip" hidden></div>
+  <script>
+    const colors = {
+      'Áreas de conservación': '#1B5E20',
+      'Áreas de manejo sostenible y reducción de consumo de agua': '#1565C0',
+      'Áreas de uso administrativo': '#9A6700',
+      'Áreas de uso recreativo/descanso': '#6A1B9A',
+      'Áreas deportivas y recreación activa': '#00838F',
+      'Uso Institucional': '#AD3A16'
+    }
+    const svg = document.querySelector('#map'), filter = document.querySelector('#filter'), legend = document.querySelector('#legend'), summary = document.querySelector('#summary'), tooltip = document.querySelector('#tooltip')
+    let data, bounds, zoom = 1, selected = ''
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+    function walk(coords, fn) { if (Array.isArray(coords) && typeof coords[0] === 'number') return fn(coords); if (Array.isArray(coords)) coords.forEach(c => walk(c, fn)) }
+    function getBounds(features) { const b = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }; features.forEach(f => walk(f.geometry.coordinates, ([x,y]) => { b.minX=Math.min(b.minX,x); b.minY=Math.min(b.minY,y); b.maxX=Math.max(b.maxX,x); b.maxY=Math.max(b.maxY,y) })); return b }
+    function project([x,y]) { const w=bounds.maxX-bounds.minX, h=bounds.maxY-bounds.minY, scale=Math.min(940/w,640/h), ox=(1000-w*scale)/2, oy=(700-h*scale)/2; return [ox+(x-bounds.minX)*scale, oy+(bounds.maxY-y)*scale] }
+    function path(geometry) { return geometry.coordinates.flatMap(poly => poly.map(ring => { const p=ring.map(project); return p.length ? `M${p[0][0].toFixed(2)},${p[0][1].toFixed(2)} ${p.slice(1).map(([x,y])=>`L${x.toFixed(2)},${y.toFixed(2)}`).join(' ')}Z` : '' })).join(' ') }
+    function renderLegend() { const groups={}; data.features.forEach(f => { const u=f.properties?.Uso || 'Sin uso'; groups[u]=(groups[u]||0)+1 }); legend.innerHTML=Object.entries(groups).map(([u,n])=>`<li><span class="swatch" style="background:${colors[u]||'#777'}"></span><span>${esc(u)}</span><span class="count">${n}</span></li>`).join('') }
+    function render() { const visible=data.features.filter(f => !selected || f.properties?.Uso===selected); svg.innerHTML=visible.map((f,i)=>{ const u=f.properties?.Uso||'Sin uso', a=Number(f.properties?.['Área']), name=f.properties?.Nombre||'Sin nombre'; return `<path class="polygon" d="${path(f.geometry)}" fill="${colors[u]||'#777'}" fill-opacity=".72" stroke="${colors[u]||'#777'}" stroke-width="1.2" data-index="${data.features.indexOf(f)}"><title>${esc(name)} · ${esc(u)} · ${Number.isFinite(a)?a.toFixed(2)+' m²':'sin superficie'}</title></path>` }).join(''); summary.textContent=`${visible.length} polígonos visibles de ${data.features.length}`; svg.setAttribute('aria-label',`${visible.length} polígonos visibles`); applyZoom() }
+    function applyZoom() { const w=1000/zoom,h=700/zoom; svg.setAttribute('viewBox',`${(1000-w)/2} ${(700-h)/2} ${w} ${h}`) }
+    svg.addEventListener('mousemove', e => { const el=e.target.closest('.polygon'); if(!el){tooltip.hidden=true;return} const f=data.features[Number(el.dataset.index)], p=f.properties||{}, a=Number(p['Área']); tooltip.innerHTML=`<strong>${esc(p.Nombre||'Sin nombre')}</strong><span>Uso: ${esc(p.Uso||'Sin uso')}</span><span>Superficie: ${Number.isFinite(a)?a.toFixed(2)+' m²':'no disponible'}</span>`; tooltip.style.left=Math.min(e.clientX+14,innerWidth-300)+'px'; tooltip.style.top=Math.min(e.clientY+14,innerHeight-100)+'px'; tooltip.hidden=false })
+    svg.addEventListener('mouseleave', () => tooltip.hidden=true)
+    filter.addEventListener('change', () => { selected=filter.value; zoom=selected?1.35:1; render() }); document.querySelector('#reset').onclick=()=>{filter.value='';selected='';zoom=1;render()}; document.querySelector('#zoomIn').onclick=()=>{zoom=Math.min(8,zoom*1.35);applyZoom()}; document.querySelector('#zoomOut').onclick=()=>{zoom=Math.max(1,zoom/1.35);applyZoom()}; document.querySelector('#zoomReset').onclick=()=>{zoom=1;applyZoom()}
+    fetch('datos/areas-verdes.geojson').then(r=>r.json()).then(d=>{data=d;bounds=getBounds(d.features);[...new Set(d.features.map(f=>f.properties?.Uso).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es')).forEach(u=>filter.insertAdjacentHTML('beforeend',`<option value="${esc(u)}">${esc(u)}</option>`));renderLegend();render()}).catch(()=>{summary.textContent='No se pudo cargar el GeoJSON.'})
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BotonEnlace } from '../../components/ui/Boton'
+import Boton, { BotonEnlace } from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
@@ -43,11 +43,20 @@ export default function AreasVerdesPage() {
     (signal) => listarAreasVerdes({ q: busqueda, page: pagina, sector_id: sectorId ? Number(sectorId) : undefined, tipo_uso_id: usoId ? Number(usoId) : undefined, cuartel_id: cuartelId ? Number(cuartelId) : undefined }, signal),
     (resultado) => resultado.results.length === 0,
   )
+  const hayCriteriosConsulta = Boolean(busqueda.trim() || sectorId || usoId || cuartelId || pagina > 1)
+
+  function limpiarFiltros() {
+    setBusqueda('')
+    setSectorId('')
+    setUsoId('')
+    setCuartelId('')
+    setPagina(1)
+  }
 
   if (consulta.estado === 'error' && !consulta.datos) {
     return <EstadoError titulo="No pudimos cargar las áreas verdes" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
   }
-  if (consulta.estado === 'vacio') {
+  if (consulta.estado === 'vacio' && !hayCriteriosConsulta) {
     return (
       <div className={estilos.pagina}>
         <Acciones puedeRegistrar={sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)} />
@@ -105,16 +114,25 @@ export default function AreasVerdesPage() {
         {cuarteles.datos && <Selector id="filtro-cuartel" etiqueta="Cuartel histórico" valor={cuartelId} onCambiar={(valor) => { setCuartelId(valor); setPagina(1) }} opcionTodos="Todos" opciones={cuarteles.datos.map((cuartel) => ({ valor: String(cuartel.id), texto: `${cuartel.numero} · ${cuartel.nombre}` }))} />}
       </div>
       {errorAccion && <p role="alert">{errorAccion}</p>}
-      <TablaDatos
-        titulo="Inventario de áreas verdes"
-        tituloVisible
-        columnas={columnas}
-        filas={consulta.datos.results}
-        claveFila={(area) => String(area.id)}
-        estado={consulta.estado === 'cargando' ? 'cargando' : 'exito'}
-        compacta
-        paginacionServidor={{ pagina, total: consulta.datos.count, porPagina: 25, onCambiarPagina: setPagina }}
-      />
+      {consulta.estado === 'vacio' ? (
+        <EstadoVacio
+          nivel={3}
+          titulo="No hay áreas verdes con estos criterios"
+          descripcion="Prueba con otros criterios o limpia los filtros para volver a ver todo el inventario."
+          accion={<Boton variante="secundario" onClick={limpiarFiltros}>Limpiar filtros</Boton>}
+        />
+      ) : (
+        <TablaDatos
+          titulo="Inventario de áreas verdes"
+          tituloVisible
+          columnas={columnas}
+          filas={consulta.datos.results}
+          claveFila={(area) => String(area.id)}
+          estado={consulta.estado === 'cargando' ? 'cargando' : 'exito'}
+          compacta
+          paginacionServidor={{ pagina, total: consulta.datos.count, porPagina: 25, onCambiarPagina: setPagina }}
+        />
+      )}
     </div>
   )
 }
