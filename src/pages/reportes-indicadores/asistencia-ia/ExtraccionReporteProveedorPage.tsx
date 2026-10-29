@@ -17,7 +17,7 @@ import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_SOLICITAR_IA } from '../../../config/permisos'
-import { obtenerSesion } from '../../../config/sesion'
+import { useRolActual } from '../../../sesion/ContextoSesion'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
@@ -78,8 +78,8 @@ export default function ExtraccionReporteProveedorPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const sesion = obtenerSesion()
-  const puedeSolicitar = puede(sesion.rol, ROLES_SOLICITAR_IA)
+  const rol = useRolActual()
+  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
 
   // --- Bandeja -----------------------------------------------------------------
   const { filtros, establecer } = useFiltrosUrl({ estado: '', page: '1' })
