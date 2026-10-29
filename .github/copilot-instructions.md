@@ -5,7 +5,7 @@ Proyecto de curso (PUCP, DP2): gestión de las áreas verdes del campus. Fronten
 ## Cómo revisar
 
 - Escribe siempre en español.
-- Si el PR cambia más de 300 líneas sin contar pruebas, `package-lock.json`, mock-data ni documentación, no revises el detalle: deja un único comentario que diga que hay que partirlo en varios tickets AV, cada uno con su rama y su PR.
+- Si el PR cambia más de 400 líneas sin contar pruebas, `package-lock.json`, mock-data ni documentación, no revises el detalle: deja un único comentario que diga que hay que partirlo en varios tickets AV, cada uno con su rama y su PR.
 - Prioriza, por este orden: errores de lógica y casos sin manejar; seguridad y permisos; incumplimientos de estas normas y de `.github/instructions/`; legibilidad.
 - Solo problemas reales y concretos, cada uno con la corrección propuesta. Sin elogios ni resúmenes del PR.
 - No comentes el formato (lo revisan oxlint y tsc) ni el título o la rama del PR (los comprueba CI).

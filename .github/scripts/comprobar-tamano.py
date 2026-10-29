@@ -4,7 +4,7 @@
 Cuenta las líneas añadidas y borradas sin pruebas, lockfile, mock-data ni documentación.
 Si el PR vuelve a estar dentro del límite, borra el aviso.
 
-Variables: GH_TOKEN, REPO, PR, BASE y LIMITE (300).
+Variables: GH_TOKEN, REPO, PR, BASE y LIMITE (400).
 Con SECO=1 imprime el aviso en vez de publicarlo; CABEZA cambia el HEAD comparado.
 """
 import json
@@ -26,7 +26,7 @@ EXCLUIDOS = [
 
 entorno = os.environ
 seco = entorno.get("SECO") == "1"
-limite = int(entorno.get("LIMITE", "300"))
+limite = int(entorno.get("LIMITE", "400"))
 
 
 def tamano():
