@@ -1,36 +1,34 @@
-name: revision-ia
+name: tamano-pr
 
-# Revisión de cada PR con IA (GitHub Models). Solo comenta: no forma parte de ci-ok y nunca bloquea la fusión.
+# Avisa en el PR si pasa del tamaño recomendado. Solo comenta: no forma parte de ci-ok y nunca bloquea la fusión.
+# La revisión del contenido la hace Copilot con .github/copilot-instructions.md y .github/instructions/.
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
-  group: revision-ia-${{ github.event.pull_request.number }}
+  group: tamano-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 permissions:
   contents: read
   pull-requests: write
-  models: read
 
 jobs:
-  revision:
+  tamano:
     if: github.event.pull_request.draft == false && github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 3
     continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: revisión con IA
+      - name: tamaño del PR
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
-          TITULO: ${{ github.event.pull_request.title }}
           BASE: ${{ github.event.pull_request.base.sha }}
-          MODELO: ${{ vars.MODELO_REVISION_IA || 'openai/gpt-4.1' }}
           LIMITE: ${{ vars.LIMITE_LINEAS_PR || '300' }}
-        run: python3 .github/scripts/revision-ia.py
+        run: python3 .github/scripts/comprobar-tamano.py
