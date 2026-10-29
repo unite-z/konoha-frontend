@@ -35,6 +35,8 @@ import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
 import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
+import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
+import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
 export const router = createBrowserRouter([
   { path: RUTAS_CORE.ingreso, element: <IngresoPage /> }, // RF-T-001
@@ -49,6 +51,19 @@ export const router = createBrowserRouter([
         element: <LayoutOficina />,
         children: [
           { path: '/', element: <InicioRol /> },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
+            children: [
+              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+              {
+                path: BASE_CAMPO,
+                children: [
+                  { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+                  { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                ],
+              },
+            ],
+          },
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarIndicadores} />,
             children: [

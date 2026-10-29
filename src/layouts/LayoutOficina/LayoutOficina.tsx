@@ -6,13 +6,15 @@
  * 32px y ancho máximo de 1440px. Incluye el enlace «Saltar al contenido».
  */
 import { useMemo, useState } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
+import { esRutaCampo } from '../../router/rutasCampo'
 import Cabecera from './Cabecera'
 import { ContextoPagina, type DatosPagina } from './ContextoPagina'
 import MenuLateral from './MenuLateral'
 import estilos from './LayoutOficina.module.css'
 
 export default function LayoutOficina() {
+  const enCampo = esRutaCampo(useLocation().pathname)
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const valor = useMemo(() => ({ pagina, establecerPagina }), [pagina])
 
@@ -21,7 +23,7 @@ export default function LayoutOficina() {
       <a href="#contenido" className={estilos.saltar}>
         Saltar al contenido
       </a>
-      <div className={estilos.layout}>
+      <div className={`${estilos.layout} ${enCampo ? estilos.campo : ''}`}>
         <MenuLateral />
         <div className={estilos.columna}>
           <Cabecera titulo={pagina.titulo} migas={pagina.migas} />

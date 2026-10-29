@@ -36,3 +36,7 @@ Usuarios de prueba de MOD-05: `mod05_jefe`, `mod05_ingeniero` y `mod05_practican
 - [CONTRIBUTING.md](CONTRIBUTING.md): cómo contribuir.
 - [docs/estandares/](docs/estandares/): TypeScript y React, pruebas, PWA y modo sin conexión.
 - Estándares comunes y ADR: en `konoha-infra`.
+
+## MOD-04: operación de campo
+
+Entrega de cuadrillas, capataces y operarios, con sesión común de MOD-01. Entrada en `/operacion-campo/cuadrillas`, sin un segundo ingreso. Consume la API de operación de campo y conserva las secciones existentes. Participantes llega en el PR siguiente. El registro requiere conexión; la cola sin conexión queda fuera de estos requisitos.
