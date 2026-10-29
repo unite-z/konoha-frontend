@@ -20,7 +20,7 @@ import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { listarPlagas, marcarAtencionEspecial } from '../../../services/api/maestrosTercerizados'
 import { listarEjemplares, listarTodo } from '../../../services/api/tercerizados'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import type { Ejemplar } from '../../../types/tercerizados'
 import {
   BORRADOR_ESPECIAL_VACIO,
@@ -43,8 +43,7 @@ const ORDEN: (keyof ErroresEspecial)[] = ['ejemplar', 'plaga', 'aplicaciones']
 
 export default function MarcarEjemplarPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Marcar ejemplar' }])
-  const { estado: sesion } = useSesionTercerizados()
-  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+  const rol = useRolTercerizados()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorEspecial>(BORRADOR_ESPECIAL_VACIO)

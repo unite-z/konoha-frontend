@@ -39,7 +39,6 @@ const BASE_TERCERIZADOS = '/servicios-tercerizados'
 export const PREFIJO_TERCERIZADOS = BASE_TERCERIZADOS
 
 export const RUTAS_TERCERIZADOS = {
-  ingreso: `${BASE_TERCERIZADOS}/ingreso`,
   atenciones: `${BASE_TERCERIZADOS}/atenciones`,
   nuevaAtencion: `${BASE_TERCERIZADOS}/atenciones/nueva`, // RF-SER-003
   proveedoresContratos: `${BASE_TERCERIZADOS}/proveedores-contratos`, // RF-SER-001 y RF-SER-002
@@ -79,33 +78,6 @@ export function esRutaPlanificacion(ruta: string): boolean {
 export const MIGAS_PLANIFICACION = {
   planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.servicios },
 } satisfies Record<string, Miga>
-
-/** `true` si la ruta exige la sesión compartida de MOD-05 y MOD-03. */
-export function esRutaConSesion(ruta: string): boolean {
-  return esRutaTercerizados(ruta) || esRutaPlanificacion(ruta)
-}
-
-/**
- * Destino seguro tras ingresar: solo rutas internas de MOD-05 o MOD-03 distintas del ingreso (evita redirecciones
- * abiertas a otros sitios con `?volver=`). Si no es válido, la bandeja de atenciones.
- */
-export function destinoTrasIngreso(volver: string | null | undefined): string {
-  if (!volver || !volver.startsWith('/') || volver.startsWith('//') || volver.includes('\\')) {
-    return RUTAS_TERCERIZADOS.atenciones
-  }
-  const ruta = volver.split(/[?#]/)[0]
-  const tieneControl = [...volver].some((caracter) => caracter.charCodeAt(0) < 0x20)
-  if (!esRutaConSesion(ruta) || ruta === RUTAS_TERCERIZADOS.ingreso || tieneControl) {
-    return RUTAS_TERCERIZADOS.atenciones
-  }
-  return volver
-}
-
-/** Ruta de ingreso que vuelve a `destino` tras autenticarse. */
-export function rutaIngreso(destino?: string): string {
-  if (!destino || destinoTrasIngreso(destino) !== destino) return RUTAS_TERCERIZADOS.ingreso
-  return `${RUTAS_TERCERIZADOS.ingreso}?volver=${encodeURIComponent(destino)}`
-}
 
 export const MIGAS_TERCERIZADOS = {
   serviciosTercerizados: { texto: 'Servicios tercerizados', ruta: RUTAS_TERCERIZADOS.atenciones },

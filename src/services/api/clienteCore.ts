@@ -45,6 +45,11 @@ export function alPerderSesion(funcion: (() => void) | null): void {
   alPerder = funcion
 }
 
+/** Avisa de que la sesión se perdió (401). Lo usan también los clientes de MOD-05 y MOD-03. */
+export function avisarSesionPerdida(): void {
+  alPerder?.()
+}
+
 /** Valor de una cookie legible por scripts (solo `XSRF-TOKEN`; la de sesión es `HttpOnly`). */
 export function leerCookie(nombre: string, cookies: string = typeof document === 'undefined' ? '' : document.cookie): string | null {
   for (const parte of cookies.split(';')) {
@@ -85,7 +90,7 @@ async function enviar(ruta: string, opciones: OpcionesCore, acepta: string): Pro
     if (esCancelacion(error)) throw error
     throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
   }
-  if (respuesta.status === 401 && !ruta.startsWith('auth/login')) alPerder?.()
+  if (respuesta.status === 401 && !ruta.startsWith('auth/login')) avisarSesionPerdida()
   return respuesta
 }
 

@@ -2,15 +2,14 @@
  * Cliente de la API de MOD-05 (`/api/tercerizados/`).
  *
  * Diferencias con `cliente.ts` (MOD-06), que no cambia:
- * - Autenticación HTTP Basic: la sesión de MOD-05 fija la cabecera con `establecerAutorizacion`.
+ * - Sesión de MOD-01 (AV-234): la cookie `HttpOnly` viaja sola y las escrituras llevan el token CSRF.
+ *   La interfaz no guarda ninguna credencial. Un 401 avisa a la sesión de MOD-01 para volver al ingreso.
  * - Métodos GET, POST y PATCH; cuerpo JSON o `FormData` (multipart, el navegador pone el `boundary`).
  * - Descarga de archivos autenticada (blob).
  * Los errores se interpretan igual que en MOD-06 (`ErrorApi`), así las páginas los tratan del mismo modo.
- *
- * Nota: la API responde 403 tanto a credenciales inválidas como a falta de permisos. Solo `GET me/` (al
- * ingresar o al recuperar la sesión) distingue ambos casos; en el resto, 403 = «sin permiso».
  */
 import { ErrorApi, MENSAJE_SIN_CONEXION, esCancelacion, interpretarError } from './cliente'
+import { avisarSesionPerdida, leerCookie } from './clienteCore'
 
 export const API_TERCERIZADOS_URL: string = import.meta.env.VITE_API_TERCERIZADOS_URL || '/api/tercerizados'
 
@@ -25,29 +24,12 @@ export interface OpcionesTercerizados {
   /** Cuerpo multipart. Excluye `cuerpo`. */
   formulario?: FormData
   signal?: AbortSignal
-  /** Base de la API si no es la de MOD-05 (MOD-03 comparte la sesión HTTP Basic). */
+  /** Base de la API si no es la de MOD-05 (MOD-03 usa el mismo transporte). */
   base?: string
-  /** Cabecera `Authorization` para esta petición (al ingresar, antes de guardar la sesión). */
-  autorizacion?: string
 }
-
-let autorizacionActual: string | null = null
 
 /** Espera antes de liberar el blob de una descarga. */
 const REVOCAR_DESCARGA_MS = 60_000
-
-/** Fija (o quita, con `null`) la cabecera `Authorization` de las peticiones de MOD-05. */
-export function establecerAutorizacion(valor: string | null): void {
-  autorizacionActual = valor
-}
-
-/** Cabecera HTTP Basic. Codifica en UTF-8 (usuarios o contraseñas con tildes o «ñ»). */
-export function cabeceraBasic(usuario: string, clave: string): string {
-  const bytes = new TextEncoder().encode(`${usuario}:${clave}`)
-  let binario = ''
-  for (const byte of bytes) binario += String.fromCharCode(byte)
-  return `Basic ${btoa(binario)}`
-}
 
 /** URL absoluta de la ruta (relativa a la base de MOD-05), con los parámetros no vacíos. */
 export function construirUrlTercerizados(
@@ -67,28 +49,33 @@ export function construirUrlTercerizados(
 
 function cabeceras(opciones: OpcionesTercerizados, acepta: string): Headers {
   const resultado = new Headers({ Accept: acepta })
-  const autorizacion = opciones.autorizacion ?? autorizacionActual
-  if (autorizacion) resultado.set('Authorization', autorizacion)
+  if ((opciones.metodo ?? 'GET') !== 'GET') {
+    const token = leerCookie('XSRF-TOKEN')
+    if (token) resultado.set('X-XSRF-TOKEN', token)
+  }
   if (opciones.cuerpo !== undefined) resultado.set('Content-Type', 'application/json')
   return resultado
 }
 
 async function enviar(ruta: string, opciones: OpcionesTercerizados, acepta: string): Promise<Response> {
   const { metodo = 'GET', parametros, cuerpo, formulario, signal, base } = opciones
+  let respuesta: Response
   try {
-    return await fetch(construirUrlTercerizados(ruta, parametros, base), {
+    respuesta = await fetch(construirUrlTercerizados(ruta, parametros, base), {
       method: metodo,
       headers: cabeceras(opciones, acepta),
       body: formulario ?? (cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined),
       signal,
-      // Nunca enviar credenciales del navegador ni reutilizar respuestas privadas.
-      credentials: 'omit',
+      // Solo la cookie de sesión de este mismo origen; nunca reutilizar respuestas privadas.
+      credentials: 'same-origin',
       cache: 'no-store',
     })
   } catch (error) {
     if (esCancelacion(error)) throw error
     throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
   }
+  if (respuesta.status === 401) avisarSesionPerdida()
+  return respuesta
 }
 
 async function errorDe(respuesta: Response): Promise<ErrorApi> {

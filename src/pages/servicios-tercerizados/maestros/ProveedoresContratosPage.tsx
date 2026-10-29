@@ -15,7 +15,7 @@ import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMae
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import { avisoDeNavegacion, FILTROS_MAESTROS_VACIOS, type ClaveFiltroMaestros } from './filtrosMaestros'
 import ListaContratos from './ListaContratos'
 import ListaProveedores from './ListaProveedores'
@@ -31,8 +31,7 @@ const PESTANAS = [
 export default function ProveedoresContratosPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, { texto: TITULO }])
   const { state } = useLocation()
-  const { estado: sesion } = useSesionTercerizados()
-  const puedeRegistrar = puedeRegistrarProveedoresYContratos(sesion.tipo === 'activa' ? sesion.usuario.rol : null)
+  const puedeRegistrar = puedeRegistrarProveedoresYContratos(useRolTercerizados())
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

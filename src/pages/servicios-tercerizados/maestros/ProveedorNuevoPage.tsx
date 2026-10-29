@@ -19,7 +19,7 @@ import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMae
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { listarProveedoresMaestro, registrarProveedor } from '../../../services/api/maestrosTercerizados'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import type { ProveedorMaestro, TipoVinculo } from '../../../types/maestrosTercerizados'
 import {
   BORRADOR_PROVEEDOR_VACIO,
@@ -43,8 +43,7 @@ const ORDEN: (keyof ErroresProveedor)[] = ['razonSocial', 'ruc', 'relacionado']
 
 export default function ProveedorNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.proveedoresContratos, { texto: 'Registrar proveedor' }])
-  const { estado: sesion } = useSesionTercerizados()
-  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+  const rol = useRolTercerizados()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorProveedor>(BORRADOR_PROVEEDOR_VACIO)

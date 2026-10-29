@@ -89,8 +89,8 @@ Pendiente de decisión (no la cambies por tu cuenta): formato de errores del bac
 
 ## Seguridad abierta: no empeorar
 
-- Las credenciales de MOD-05 y MOD-03 (HTTP Basic) se guardan en `sessionStorage` hasta que pasen a la sesión de MOD-01 (consolidación de usuarios).
-- La sesión de MOD-01 viaja en una cookie `HttpOnly`: la interfaz no guarda ninguna credencial suya.
+- Toda la aplicación entra con la sesión de MOD-01 (cookie `HttpOnly`): la interfaz no guarda ninguna credencial (AV-234).
+- Una cuenta creada solo en MOD-01 entra en Servicios tercerizados, pero no puede registrar ahí hasta la consolidación de usuarios del backend.
 
 Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `localStorage`). Cerrarlas va en tickets propios.
 

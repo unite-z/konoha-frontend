@@ -3,7 +3,7 @@
  * - Sin sesión de MOD-01 solo se ve el ingreso (RF-T-001). El resto pasa por `RutaProtegida`.
  * - Las secciones con permiso propio pasan además por `RutaConPermiso` (RF-T-004): con enlace directo y
  *   sin permiso se ve el aviso, y la API responde 403 de todos modos.
- * - Las de MOD-05 y MOD-03 siguen pasando por `RutaSesionTercerizados` (HTTP Basic) hasta la consolidación.
+ * - MOD-05 y MOD-03 también entran con la sesión de MOD-01 (AV-234): ya no tienen ingreso propio.
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
@@ -18,7 +18,6 @@ import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/Dis
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
-import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
@@ -27,7 +26,6 @@ import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/Contrato
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
-import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
 import RutaProtegida, { InicioRol, RutaConPermiso } from '../sesion/RutaProtegida'
 import CambioContrasenaPage from '../pages/acceso/CambioContrasenaPage'
 import IngresoPage from '../pages/acceso/IngresoPage'
@@ -76,11 +74,11 @@ export const router = createBrowserRouter([
             element: <RutaConPermiso permiso={PERMISOS.consultarRepositorio} />,
             children: [{ path: RUTAS_CORE.repositorio, element: <RepositorioPage /> }], // RF-T-010
           },
-          // MOD-05 «Servicios tercerizados»: requiere sesión con usuario Spring Security (excepto el ingreso).
-          { path: RUTAS_TERCERIZADOS.ingreso, element: <IngresoTercerizadosPage /> },
+          // MOD-05 «Servicios tercerizados». El antiguo ingreso propio lleva al inicio.
+          { path: `${PREFIJO_TERCERIZADOS}/ingreso`, element: <Navigate to="/" replace /> },
           {
             path: PREFIJO_TERCERIZADOS,
-            element: <RutaSesionTercerizados />,
+            element: <RutaConPermiso permiso={PERMISOS.registrarAtencion} />,
             children: [
               { index: true, element: <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace /> },
               { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
@@ -93,10 +91,10 @@ export const router = createBrowserRouter([
               { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> }, // RF-INV-011
             ],
           },
-          // MOD-03 «Planificación»: misma sesión que MOD-05.
+          // MOD-03 «Planificación».
           {
             path: PREFIJO_PLANIFICACION,
-            element: <RutaSesionTercerizados />,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
             children: [
               { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
               { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
