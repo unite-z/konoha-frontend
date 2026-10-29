@@ -168,6 +168,7 @@ export default function MenuLateral() {
               <ListaSegundoNivel entradas={[
                 { texto: 'Cuadrillas', ruta: RUTAS_CAMPO.cuadrillas },
                 { texto: 'Encargos', ruta: RUTAS_CAMPO.encargos },
+                { texto: 'Participantes por actividad', ruta: RUTAS_CAMPO.participantes },
               ]} />
             </li>
           )}
