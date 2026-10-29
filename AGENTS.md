@@ -23,7 +23,8 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
 | `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía |
 | `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
-| `.github/workflows/` | `ci.yml`, `deploy-uat.yml` y `limpiar-imagenes.yml` |
+| `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
+| `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR |
 
 ## Comandos
 
