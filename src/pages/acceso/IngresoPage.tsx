@@ -105,6 +105,7 @@ export default function IngresoPage() {
           <CampoFormulario
             id={ID_CORREO}
             etiqueta="Correo institucional"
+            ayuda="Las cuentas que venían de Servicios tercerizados entran con su usuario."
             type="email"
             obligatorio
             autoComplete="username"
