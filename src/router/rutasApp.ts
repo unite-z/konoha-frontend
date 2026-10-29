@@ -113,3 +113,46 @@ export const MIGAS_TERCERIZADOS = {
   proveedoresContratos: { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
   controlFitosanitario: { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
 } satisfies Record<string, Miga>
+
+// --- MOD-01 «Core y seguridad» -------------------------------------------------------------------------
+
+const BASE_USUARIOS = '/usuarios-roles'
+
+export const RUTAS_CORE = {
+  ingreso: '/ingreso', // RF-T-001
+  cambiarContrasena: '/cambiar-contrasena', // HU-MOD01-003
+  usuarios: `${BASE_USUARIOS}/usuarios`, // RF-T-002 y RF-T-003
+  accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
+  repositorio: '/repositorio', // RF-T-010
+} as const
+
+/** Prefijo de «Usuarios y roles» (menú). */
+export const PREFIJO_USUARIOS = BASE_USUARIOS
+
+export function rutaDetalleUsuario(id: number | string): string {
+  return `${RUTAS_CORE.usuarios}/${id}`
+}
+
+export const MIGAS_CORE = {
+  usuariosRoles: { texto: 'Usuarios y roles', ruta: RUTAS_CORE.usuarios },
+  usuarios: { texto: 'Usuarios', ruta: RUTAS_CORE.usuarios },
+  repositorio: { texto: 'Repositorio', ruta: RUTAS_CORE.repositorio },
+} satisfies Record<string, Miga>
+
+/**
+ * Destino seguro tras iniciar sesión: cualquier ruta interna salvo el ingreso y el cambio de contraseña
+ * (evita redirecciones abiertas con `?volver=`). Si no es válido, `null`: se va al inicio del rol.
+ */
+export function destinoTrasIngresoCore(volver: string | null | undefined): string | null {
+  if (!volver || !volver.startsWith('/') || volver.startsWith('//') || volver.includes('\\')) return null
+  if ([...volver].some((caracter) => caracter.charCodeAt(0) < 0x20)) return null
+  const ruta = volver.split(/[?#]/)[0]
+  if (ruta === RUTAS_CORE.ingreso || ruta === RUTAS_CORE.cambiarContrasena) return null
+  return volver
+}
+
+/** Ruta de ingreso de MOD-01 que vuelve a `destino`. */
+export function rutaIngresoCore(destino?: string): string {
+  const seguro = destinoTrasIngresoCore(destino)
+  return seguro && seguro !== '/' ? `${RUTAS_CORE.ingreso}?volver=${encodeURIComponent(seguro)}` : RUTAS_CORE.ingreso
+}
