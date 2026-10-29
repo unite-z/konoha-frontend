@@ -2,17 +2,13 @@
  * Cabecera global (Guía Web 3.2 y mockup, pantalla 2): alto de 64px, fondo blanco y borde inferior.
  * Izquierda: migas de pan sobre el título de la página (h1). Derecha: búsqueda global y usuario con su rol.
  *
- * Usuario mostrado:
- * - En rutas de MOD-05: el usuario real de su sesión, con «Cerrar sesión» (el guardián lleva al ingreso).
- *   Sin sesión, no se muestra nadie.
- * - En el resto: el usuario de la sesión de MOD-01, con «Cambiar contraseña» y «Cerrar sesión».
+ * Usuario mostrado: el de la sesión de MOD-01, con «Cambiar contraseña» y «Cerrar sesión» (toda la aplicación
+ * entra por esa sesión desde AV-234).
  */
 import type { ReactNode } from 'react'
-import { useLocation } from 'react-router'
-import { RUTAS_CORE, esRutaConSesion } from '../../router/rutasApp'
+import { RUTAS_CORE } from '../../router/rutasApp'
 import Boton, { BotonEnlace } from '../../components/ui/Boton'
 import { useSesion } from '../../sesion/ContextoSesion'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
 import BarraContexto from './BarraContexto'
 import type { Miga } from './ContextoPagina'
 import estilos from './Cabecera.module.css'
@@ -32,9 +28,6 @@ export interface CabeceraProps {
   titulo: string
   migas: Miga[]
 }
-
-/** Texto del rol de un usuario de MOD-05 sin rol del módulo. */
-const SIN_ROL_MODULO = 'Sin acceso al módulo'
 
 interface DatosUsuarioVisible {
   nombre: string
@@ -74,12 +67,8 @@ function BloqueUsuario({
 }
 
 export default function Cabecera({ titulo, migas }: CabeceraProps) {
-  const { pathname } = useLocation()
-  const sesionTercerizados = useSesionTercerizados()
-  const conSesion = esRutaConSesion(pathname)
-
   const { estado: sesionCore, cerrarSesion: cerrarSesionCore } = useSesion()
-  let bloque: ReactNode =
+  const bloque: ReactNode =
     sesionCore.tipo === 'activa' ? (
       <BloqueUsuario
         usuario={{ nombre: sesionCore.sesion.usuario.nombre, rol: sesionCore.sesion.rol.nombre }}
@@ -87,16 +76,6 @@ export default function Cabecera({ titulo, migas }: CabeceraProps) {
         conCambioContrasena
       />
     ) : null
-  if (conSesion) {
-    const { estado, cerrarSesion } = sesionTercerizados
-    bloque =
-      estado.tipo === 'activa' ? (
-        <BloqueUsuario
-          usuario={{ nombre: estado.usuario.nombre, rol: estado.usuario.rol ?? SIN_ROL_MODULO }}
-          onCerrarSesion={cerrarSesion}
-        />
-      ) : null
-  }
 
   return (
     <header className={estilos.cabecera}>

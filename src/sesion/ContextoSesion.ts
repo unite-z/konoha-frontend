@@ -5,7 +5,8 @@
 import { createContext, useContext } from 'react'
 import type { Rol } from '../config/sesion'
 import type { ErrorApi } from '../services/api/cliente'
-import type { Credenciales, SesionCore } from '../types/core'
+import type { CodigoRol, Credenciales, SesionCore } from '../types/core'
+import type { RolTercerizados } from '../types/tercerizados'
 
 export type EstadoSesion =
   /** Comprobando si hay una sesión abierta (al cargar la aplicación). */
@@ -42,4 +43,22 @@ export function useSesionActiva(): SesionCore | null {
 /** Nombre del rol de la sesión (el que usan los permisos de interfaz de MOD-06), o `null` sin sesión. */
 export function useRolActual(): Rol | null {
   return (useSesionActiva()?.rol.nombre as Rol | undefined) ?? null
+}
+
+/**
+ * Rol con el que MOD-05 y MOD-03 deciden qué mostrar. Es el mismo que el servidor deriva de la sesión
+ * de MOD-01 (`SesionCompartida`): el capataz no tiene rol en esos módulos.
+ */
+const ROL_TERCERIZADOS: Partial<Record<CodigoRol, RolTercerizados>> = {
+  'jefe-seccion': 'Jefe de sección',
+  'ingeniero-campo': 'Ingeniero de campo',
+  practicante: 'Practicante autorizado',
+}
+
+export function rolTercerizados(sesion: SesionCore | null): RolTercerizados | null {
+  return sesion ? (ROL_TERCERIZADOS[sesion.rol.codigo] ?? null) : null
+}
+
+export function useRolTercerizados(): RolTercerizados | null {
+  return rolTercerizados(useSesionActiva())
 }
