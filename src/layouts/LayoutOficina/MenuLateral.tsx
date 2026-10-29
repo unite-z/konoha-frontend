@@ -16,7 +16,7 @@
  */
 import { NavLink, useLocation } from 'react-router'
 import { obtenerSesion, type Rol } from '../../config/sesion'
-import { PREFIJO_MODULO, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, esRutaPlanificacion, esRutaTercerizados } from '../../router/rutasApp'
+import { PREFIJO_MODULO, RUTAS, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, esRutaInventario, esRutaPlanificacion, esRutaTercerizados } from '../../router/rutasApp'
 import estilos from './MenuLateral.module.css'
 
 /** Rol de la vista de Administrador (todavía no existe en el catálogo de roles del MOD-01). */
@@ -26,7 +26,7 @@ const ROL_ADMINISTRADOR = 'Administrador'
 const OTROS_MODULOS_ANTES = ['Inicio']
 
 /** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
-const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa', 'Operación de campo']
+const OTROS_MODULOS_TRAS_INVENTARIO = ['Operación de campo']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -100,6 +100,7 @@ export default function MenuLateral() {
   const enModulo = pathname.startsWith(PREFIJO_MODULO)
   const enTercerizados = esRutaTercerizados(pathname)
   const enPlanificacion = esRutaPlanificacion(pathname)
+  const enInventario = esRutaInventario(pathname)
 
   return (
     <aside className={estilos.lateral}>
@@ -130,7 +131,19 @@ export default function MenuLateral() {
             <ListaSegundoNivel entradas={SEGUNDO_NIVEL_PLANIFICACION} />
           </li>
 
-          {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
+          <li>
+            <NavLink
+              to={RUTAS_INVENTARIO.areasVerdes}
+              className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
+              aria-current={enInventario ? 'true' : undefined}
+              end={false}
+            >
+              Áreas verdes y mapa
+            </NavLink>
+            <ListaSegundoNivel entradas={[{ texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes }, { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa }, { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos }]} />
+          </li>
+
+          {OTROS_MODULOS_TRAS_INVENTARIO.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
 

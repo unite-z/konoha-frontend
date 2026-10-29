@@ -19,13 +19,19 @@ import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTerc
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
+import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
+import MapaAreasVerdesPage from '../pages/inventario/MapaAreasVerdesPage'
+import CoberturasPage from '../pages/inventario/CoberturasPage'
+import CatalogosPage from '../pages/inventario/CatalogosPage'
+import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
+import EjemplaresPage from '../pages/inventario/EjemplaresPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
 import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +70,18 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
           { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
           { path: RUTAS_PLANIFICACION.restricciones, element: <CalendarioRestriccionesPage /> }, // HU-MOD03-003
+        ],
+      },
+      {
+        path: RUTAS_INVENTARIO.areasVerdes,
+        element: <RutaSesionTercerizados />,
+        children: [
+          { index: true, element: <AreasVerdesPage /> },
+          { path: 'nueva', element: <NuevaAreaVerdePage /> },
+          { path: 'mapa', element: <MapaAreasVerdesPage /> },
+          { path: 'coberturas', element: <CoberturasPage /> },
+          { path: 'catalogos', element: <CatalogosPage /> },
+          { path: 'ejemplares', element: <EjemplaresPage /> },
         ],
       },
       { path: '*', element: <PaginaNoEncontrada /> },
