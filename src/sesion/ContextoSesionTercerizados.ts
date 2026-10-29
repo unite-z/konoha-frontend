@@ -1,6 +1,6 @@
 /**
  * Contexto de la sesión de MOD-05 (usuario Spring Security autenticado con HTTP Basic).
- * MOD-06 sigue usando la sesión simulada de `config/sesion.ts`.
+ * El resto de la aplicación usa la sesión de MOD-01 (`ContextoSesion`); esta se retira con la consolidación.
  */
 import { createContext, useContext } from 'react'
 import type { ErrorApi } from '../services/api/cliente'

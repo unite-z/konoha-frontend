@@ -13,14 +13,24 @@
  *
  * Sin iconos: la librería de iconos de menú está pendiente de decisión y el menú expandido lleva siempre
  * etiqueta.
+ *
+ * RF-T-004 («Menú por rol»): cada entrada con enlace aparece solo si el rol tiene el permiso. El capataz no
+ * ve usuarios, contratos ni conformidades. Es usabilidad: el servidor vuelve a comprobarlo.
  */
 import { NavLink, useLocation } from 'react-router'
-import { obtenerSesion, type Rol } from '../../config/sesion'
-import { PREFIJO_MODULO, RUTAS, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, esRutaPlanificacion, esRutaTercerizados } from '../../router/rutasApp'
+import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import {
+  PREFIJO_MODULO,
+  PREFIJO_USUARIOS,
+  RUTAS,
+  RUTAS_CORE,
+  RUTAS_PLANIFICACION,
+  RUTAS_TERCERIZADOS,
+  esRutaPlanificacion,
+  esRutaTercerizados,
+} from '../../router/rutasApp'
 import estilos from './MenuLateral.module.css'
-
-/** Rol de la vista de Administrador (todavía no existe en el catálogo de roles del MOD-01). */
-const ROL_ADMINISTRADOR = 'Administrador'
 
 /** Entradas de primer nivel que pertenecen a otros módulos (sin enlace). */
 const OTROS_MODULOS_ANTES = ['Inicio']
@@ -49,6 +59,12 @@ const SEGUNDO_NIVEL_PLANIFICACION: EntradaSegundoNivel[] = [
   { texto: 'Calendario de restricciones', ruta: RUTAS_PLANIFICACION.restricciones },
   { texto: 'Programación' }, // otro requisito
   { texto: 'Calendario de actividades' }, // otro requisito
+]
+
+/** Segundo nivel de «Usuarios y roles» (MOD-01). */
+const SEGUNDO_NIVEL_USUARIOS: EntradaSegundoNivel[] = [
+  { texto: 'Usuarios', ruta: RUTAS_CORE.usuarios }, // RF-T-002 y RF-T-003
+  { texto: 'Registro de accesos', ruta: RUTAS_CORE.accesos }, // CU-MOD01-007
 ]
 
 const SEGUNDO_NIVEL: EntradaSegundoNivel[] = [
@@ -96,7 +112,9 @@ function ListaSegundoNivel({ entradas }: { entradas: EntradaSegundoNivel[] }) {
 
 export default function MenuLateral() {
   const { pathname } = useLocation()
-  const rol = obtenerSesion().rol as Rol | typeof ROL_ADMINISTRADOR
+  const sesion = useSesionActiva()
+  const entradas = entradasMenu(sesion)
+  const enUsuarios = pathname.startsWith(PREFIJO_USUARIOS)
   const enModulo = pathname.startsWith(PREFIJO_MODULO)
   const enTercerizados = esRutaTercerizados(pathname)
   const enPlanificacion = esRutaPlanificacion(pathname)
@@ -118,52 +136,80 @@ export default function MenuLateral() {
             <SinEnlace key={texto} texto={texto} />
           ))}
 
-          <li>
-            <NavLink
-              to={RUTAS_PLANIFICACION.servicios}
-              className={() => `${estilos.item} ${enPlanificacion ? estilos.activo : ''}`}
-              aria-current={enPlanificacion ? 'true' : undefined}
-              end={false}
-            >
-              Planificación
-            </NavLink>
-            <ListaSegundoNivel entradas={SEGUNDO_NIVEL_PLANIFICACION} />
-          </li>
+          {entradas.has('planificacion') && (
+            <li>
+              <NavLink
+                to={RUTAS_PLANIFICACION.servicios}
+                className={() => `${estilos.item} ${enPlanificacion ? estilos.activo : ''}`}
+                aria-current={enPlanificacion ? 'true' : undefined}
+                end={false}
+              >
+                Planificación
+              </NavLink>
+              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_PLANIFICACION} />
+            </li>
+          )}
 
           {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
 
-          <li>
-            <NavLink
-              to={RUTAS_TERCERIZADOS.atenciones}
-              className={() => `${estilos.item} ${enTercerizados ? estilos.activo : ''}`}
-              aria-current={enTercerizados ? 'true' : undefined}
-              end={false}
-            >
-              Servicios tercerizados
-            </NavLink>
-            <ListaSegundoNivel entradas={SEGUNDO_NIVEL_TERCERIZADOS} />
-          </li>
+          {entradas.has('tercerizados') && (
+            <li>
+              <NavLink
+                to={RUTAS_TERCERIZADOS.atenciones}
+                className={() => `${estilos.item} ${enTercerizados ? estilos.activo : ''}`}
+                aria-current={enTercerizados ? 'true' : undefined}
+                end={false}
+              >
+                Servicios tercerizados
+              </NavLink>
+              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_TERCERIZADOS} />
+            </li>
+          )}
 
           {OTROS_MODULOS_ENTRE.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
 
-          <li>
-            <NavLink
-              to={RUTAS.reportes}
-              className={() => `${estilos.item} ${enModulo ? estilos.activo : ''}`}
-              aria-current={enModulo ? 'true' : undefined}
-              end={false}
-            >
-              Reportes e indicadores
-            </NavLink>
-            <ListaSegundoNivel entradas={SEGUNDO_NIVEL} />
-          </li>
+          {entradas.has('reportes') && (
+            <li>
+              <NavLink
+                to={RUTAS.reportes}
+                className={() => `${estilos.item} ${enModulo ? estilos.activo : ''}`}
+                aria-current={enModulo ? 'true' : undefined}
+                end={false}
+              >
+                Reportes e indicadores
+              </NavLink>
+              <ListaSegundoNivel entradas={SEGUNDO_NIVEL} />
+            </li>
+          )}
 
-          {/* Pertenece a otros módulos; solo en la vista de Administrador. */}
-          {rol === ROL_ADMINISTRADOR && <SinEnlace texto="Configuración" />}
+          {entradas.has('repositorio') && (
+            <li>
+              <NavLink to={RUTAS_CORE.repositorio} className={claseItem}>
+                Repositorio
+              </NavLink>
+            </li>
+          )}
+
+          {entradas.has('usuarios') && (
+            <li>
+              <NavLink
+                to={RUTAS_CORE.usuarios}
+                className={() => `${estilos.item} ${enUsuarios ? estilos.activo : ''}`}
+                aria-current={enUsuarios ? 'true' : undefined}
+                end={false}
+              >
+                Usuarios y roles
+              </NavLink>
+              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_USUARIOS} />
+            </li>
+          )}
+
+          {/* Catálogos y parámetros: otro requisito; solo para quien los gestiona. */}
+          {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" />}
         </ul>
       </nav>
 
