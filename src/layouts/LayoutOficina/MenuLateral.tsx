@@ -167,6 +167,7 @@ export default function MenuLateral() {
               </NavLink>
               <ListaSegundoNivel entradas={[
                 { texto: 'Cuadrillas', ruta: RUTAS_CAMPO.cuadrillas },
+                { texto: 'Encargos', ruta: RUTAS_CAMPO.encargos },
               ]} />
             </li>
           )}

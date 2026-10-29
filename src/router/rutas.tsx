@@ -36,6 +36,7 @@ import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
 import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
+import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
 export const router = createBrowserRouter([
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
                 children: [
                   { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
                   { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                  { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
                 ],
               },
             ],
