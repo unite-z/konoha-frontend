@@ -148,9 +148,11 @@ export function validarContrato(b: BorradorContrato): ErroresContrato {
 /** Construye la entrada. Solo se llama con un borrador sin errores. */
 export function construirContrato(b: BorradorContrato): ContratoEntrada {
   const entrada: ContratoEntrada = {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- construirContrato solo se llama con un borrador validado
     proveedor_id: b.proveedor!.id,
     tipo_servicio_id: Number(b.tipoServicioId),
     area_metrado_estimado: b.area.trim(),
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- validarContrato ya rechazó un monto no normalizable
     monto_fijo: normalizarMonto(b.monto)!,
     frecuencia_pactada: b.frecuencia.trim(),
     vigencia_inicio: b.inicio,
@@ -190,6 +192,7 @@ export function validarEspecial(b: BorradorEspecial): ErroresEspecial {
 }
 
 export function construirEspecial(b: BorradorEspecial): AtencionEspecialEntrada {
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- construirEspecial solo se llama con un borrador validado
   return { ejemplar_id: b.ejemplar!.id, plaga_id: Number(b.plagaId), aplicaciones_adicionales: Number(b.aplicaciones) }
 }
 

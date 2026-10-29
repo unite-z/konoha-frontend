@@ -363,6 +363,7 @@ export default function RevisionExtraccionPage() {
           ? { accion: 'corregir', valor_final: convertirCorreccion(campo.tipo_dato, decision.texto).valor ?? null }
           : { accion: decision.accion }
     }
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- revision solo existe cuando hay sugerencia
     void ejecutar(() => validarExtraccion(sugerencia!.id, { decisiones }))
   }
 
