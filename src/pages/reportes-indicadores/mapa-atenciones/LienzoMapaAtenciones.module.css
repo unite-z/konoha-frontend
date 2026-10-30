@@ -1,0 +1,82 @@
+/* Lienzo del mapa de atenciones: Guía Web 5.8. */
+.contenedor {
+  --marcador-atencion: var(--web-map-marker);
+  --alto-mapa: var(--web-map-height);
+  --borde-espacio: 2px; /* Guía Web 5.8: borde del área verde (como `line-width: 2` del mapa) */
+  position: relative;
+  height: var(--alto-mapa);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mapa {
+  width: 100%;
+  height: 100%;
+}
+
+/* Atención: cuadrado azul (sin radio). */
+.marcador {
+  width: var(--marcador-atencion);
+  height: var(--marcador-atencion);
+  padding: 0;
+  border: 0;
+  background: var(--color-info);
+  cursor: pointer;
+}
+
+/* Seleccionada o con foco: anillo de foco (Guía Web 5.8 y 8.2). */
+.marcador:focus-visible,
+.marcador[aria-pressed='true'] {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Leyenda siempre visible, abajo a la derecha, encima de la atribución del mapa base. */
+.leyenda {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-8);
+  z-index: 1;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.tituloLeyenda {
+  font-weight: var(--type-label-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.listaLeyenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listaLeyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.simboloAtencion {
+  width: var(--marcador-atencion);
+  height: var(--marcador-atencion);
+  background: var(--color-info);
+}
+
+.simboloEspacio {
+  width: var(--marcador-atencion);
+  height: var(--marcador-atencion);
+  background: var(--green-100);
+  border: var(--borde-espacio) solid var(--green-500);
+}

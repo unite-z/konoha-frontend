@@ -1,0 +1,9 @@
+/*
+ * Tarjetas del panel: Guía Web 5.7 (filas de 3 a 4 tarjetas). Rejilla fija de 3 columnas para que las tarjetas
+ * de la segunda fila tengan el mismo ancho que las de la primera.
+ */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
