@@ -36,6 +36,7 @@ export default function EncargosPage() {
       {clave:'capataz_nombre',titulo:'Capataz',render:e=><>{e.capataz_nombre}<span className={estilos.secundario}>{e.cuadrilla_nombre}</span></>},
       {clave:'periodo',titulo:'Periodo',render:e=><><Badge tono="info" texto={e.periodicidad}/><span className={estilos.secundario}>{formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}</span></>},
       {clave:'plazo_previsto',titulo:'Plazo previsto',render:e=>formatearFecha(e.plazo_previsto)},
+      {clave:'estado',titulo:'Estado',render:e=><Badge tono="neutral" texto={e.estado??'Pendiente de integrar'}/>},
       {clave:'acciones',titulo:'Acciones',render:e=><Boton variante="terciario" compacto aria-label={`${jefe?'Editar':'Ver'} encargo ${e.id}`} onClick={()=>setDialogo(e)}>{jefe?'Editar encargo':'Ver encargo'}</Boton>},
     ]}/>
     {dialogo&&<DialogoEncargo actual={dialogo==='nuevo'?null:dialogo} soloLectura={!jefe} onCerrar={()=>setDialogo(null)} onGuardado={()=>{setDialogo(null);setAviso('El encargo se guardó correctamente');listado.consulta.reintentar()}}/>}
