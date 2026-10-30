@@ -20,6 +20,7 @@
 import { NavLink, useLocation } from 'react-router'
 import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
 import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { RUTAS_CAMPO, esRutaCampo } from '../../router/rutasCampo'
 import {
   PREFIJO_MODULO,
   PREFIJO_USUARIOS,
@@ -36,7 +37,7 @@ import estilos from './MenuLateral.module.css'
 const OTROS_MODULOS_ANTES = ['Inicio']
 
 /** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
-const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa', 'Operación de campo']
+const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -153,6 +154,22 @@ export default function MenuLateral() {
           {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
+
+          {entradas.has('campo') && (
+            <li>
+              <NavLink
+                to={RUTAS_CAMPO.cuadrillas}
+                className={() => `${estilos.item} ${esRutaCampo(pathname) ? estilos.activo : ''}`}
+                aria-current={esRutaCampo(pathname) ? 'true' : undefined}
+                end={false}
+              >
+                Operación de campo
+              </NavLink>
+              <ListaSegundoNivel entradas={[
+                { texto: 'Cuadrillas', ruta: RUTAS_CAMPO.cuadrillas },
+              ]} />
+            </li>
+          )}
 
           {entradas.has('tercerizados') && (
             <li>

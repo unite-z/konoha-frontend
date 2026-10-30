@@ -16,6 +16,7 @@ import { entradasMenu, puede } from '../config/permisosCore'
 import { usePaginaActual } from '../hooks/usePaginaActual'
 import { RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'
 import { useSesion, useSesionActiva } from './ContextoSesion'
+import { RUTAS_CAMPO } from '../router/rutasCampo'
 
 export default function RutaProtegida({ permitirContrasenaTemporal = false }: { permitirContrasenaTemporal?: boolean }) {
   const { estado, recargar } = useSesion()
@@ -64,6 +65,7 @@ export function InicioRol() {
   const sesion = useSesionActiva()
   const { cerrarSesion } = useSesion()
   const entradas = entradasMenu(sesion)
+  if (sesion?.rol.codigo === 'capataz' && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
   if (entradas.has('reportes')) return <Navigate to={RUTAS.reportes} replace />
   if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.servicios} replace />
   if (entradas.has('tercerizados')) return <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace />
