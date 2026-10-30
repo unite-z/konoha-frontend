@@ -101,8 +101,8 @@ export default function PanelCapas({ totales, visibles, onCambiarVisible, selecc
       {/*
         TODO (cuando se fusione MOD-02): las opciones vendrán de `listarTiposUso` (services/api/inventario.ts de la
         rama mod02), se enviará `tipo_uso_id` y los polígonos se rellenarán por tipo de uso con color y patrón.
-        Faltan los tokens de la guía (--web-map-institucional: #6A3D9A, --web-map-ornamental: #0F766E,
-        --web-map-deportivo: #C2570C; el recreativo usa --green-500). MOD-02 usa --map-uso-*: hay que acordarlo.
+        Faltan los tokens de la guía (--web-map-institucional, --web-map-ornamental y --web-map-deportivo, con los
+        colores de la Guía Web 5.8; el recreativo usa --green-500). MOD-02 usa --map-uso-*: hay que acordarlo.
       */}
       <Selector
         id="filtro-tipo-uso"

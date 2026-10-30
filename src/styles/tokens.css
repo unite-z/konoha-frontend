@@ -68,6 +68,10 @@
   --web-row-height-compact: 40px;
   --web-table-head: 40px;
   --web-control-compact: 32px;
+  /* Mapa con capas (Guía Web 5.8) */
+  --web-map-marker: 14px; /* atención tercerizada: cuadrado de 14 px */
+  --web-map-height: 480px; /* SUPUESTO (pendiente de confirmar): la guía no fija el alto del mapa */
+  --web-map-panel-width: 320px; /* panel de capas: 300 a 320 px */
 }
 
 /* Tabla 16 de la Guía Web: escala tipográfica (Inter) */

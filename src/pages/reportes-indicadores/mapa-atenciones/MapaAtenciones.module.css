@@ -1,6 +1,6 @@
 /* Mapa de atenciones: patrón «Mapa con capas» (Guía Web 5.8 y 6.1). */
 .composicion {
-  --ancho-panel-capas: 320px; /* Guía Web 5.8: 300 a 320 px */
+  --ancho-panel-capas: var(--web-map-panel-width);
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--ancho-panel-capas);
   gap: var(--space-6);
