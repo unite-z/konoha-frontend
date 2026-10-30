@@ -19,6 +19,8 @@ export interface EntradaEncargo {
   periodicidad: 'Semanal' | 'Quincenal'; fecha_reunion: string; fecha_inicio: string; fecha_fin: string; plazo_previsto: string
 }
 export interface EncargoCampo extends EntradaEncargo {
+  /** Sin estado de negocio disponible hasta integrar el contrato de seguimiento. */
+  estado: string | null
   id: number; capataz_id: number; cuadrilla_nombre: string; capataz_nombre: string; tipo_actividad_nombre: string; area_verde_nombre: string
 }
 export interface ParteCampo { id: number; cuadrilla_id: number; capataz_id: number; fecha: string; estado: 'Abierto' | 'Cerrado' }
