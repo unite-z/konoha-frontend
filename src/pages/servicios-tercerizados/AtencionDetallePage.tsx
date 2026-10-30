@@ -32,9 +32,13 @@ import {
   textoOrigen,
 } from '../../utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, SIN_VALOR } from '../../utils/formato'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../sesion/ContextoSesion'
 import AccionesAtencion from './acciones/AccionesAtencion'
 import DocumentosProveedor from './DocumentosProveedor'
+import Adjuntos from '../../components/core/Adjuntos'
+import HistorialCambios from '../../components/core/HistorialCambios'
+import { PERMISOS, puede } from '../../config/permisosCore'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
 import type { EstadoNavegacionBandeja } from './AtencionesPage'
 import estilos from './Tercerizados.module.css'
 
@@ -85,6 +89,7 @@ function Ficha({
   enfocarTitulo: boolean
 }) {
   const titulo = useRef<HTMLHeadingElement>(null)
+  const puedeAdjuntar = puede(useSesionActiva(), PERMISOS.registrarAtencion)
   useEffect(() => {
     if (enfocarTitulo) titulo.current?.focus()
     // `enfocarTitulo` no cambia durante la vida de la página: el efecto corre una sola vez.
@@ -215,10 +220,15 @@ function Ficha({
             </li>
           ))}
         </ol>
-        <p className={estilos.ayuda}>
-          Las correcciones de la orden de compra y del origen quedan auditadas en el servidor; su detalle se mostrará
-          aquí más adelante.
-        </p>
+      </section>
+
+      {/* RF-T-007 y RF-T-008: componentes comunes de MOD-01, con la sesión de MOD-01. */}
+      <section className={estilos.superficie} aria-label="Evidencias de la atención">
+        <Adjuntos entidad="atencion" registroId={atencion.id} puedeAdjuntar={puedeAdjuntar} />
+      </section>
+
+      <section className={estilos.superficie} aria-label="Historial de cambios de la atención">
+        <HistorialCambios entidad="atencion" registroId={atencion.id} />
       </section>
     </>
   )
@@ -230,8 +240,7 @@ export default function AtencionDetallePage() {
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = RUTAS_TERCERIZADOS.atenciones + ((state as EstadoNavegacionBandeja | null)?.volverA ?? '')
 
-  const { estado: sesion } = useSesionTercerizados()
-  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+  const rol = useRolTercerizados()
 
   const consulta = useConsulta(id === null ? null : `atencion|${id}`, (signal) => obtenerAtencion(id as number, signal))
   // Última versión recibida de una operación o recarga; se usa si es tan reciente como la consultada.

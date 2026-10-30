@@ -1,6 +1,11 @@
 import { RouterProvider } from 'react-router'
 import { router } from './router/rutas'
+import ProveedorSesion from './sesion/ProveedorSesion'
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return (
+    <ProveedorSesion>
+      <RouterProvider router={router} />
+    </ProveedorSesion>
+  )
 }

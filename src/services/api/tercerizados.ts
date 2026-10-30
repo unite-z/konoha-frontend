@@ -23,17 +23,11 @@ import type {
   TipoServicio,
   UnidadInstitucional,
   UnidadMedida,
-  UsuarioActual,
 } from '../../types/tercerizados'
 import type { InstanteIso } from '../../types/comun'
 import { descargarArchivoTercerizados, solicitarTercerizados } from './clienteTercerizados'
 
 // --- Sesión ---------------------------------------------------------------------------------------------
-
-/** `GET me/`. Con `autorizacion` comprueba unas credenciales antes de guardarlas. */
-export function obtenerUsuarioActual(opciones: { autorizacion?: string; signal?: AbortSignal } = {}) {
-  return solicitarTercerizados<UsuarioActual>('me/', opciones)
-}
 
 // --- Atenciones -----------------------------------------------------------------------------------------
 

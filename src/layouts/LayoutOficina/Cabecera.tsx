@@ -2,17 +2,13 @@
  * Cabecera global (Guía Web 3.2 y mockup, pantalla 2): alto de 64px, fondo blanco y borde inferior.
  * Izquierda: migas de pan sobre el título de la página (h1). Derecha: búsqueda global y usuario con su rol.
  *
- * Usuario mostrado:
- * - En rutas de MOD-05: el usuario real de su sesión, con «Cerrar sesión» (el guardián lleva al ingreso).
- *   Sin sesión, no se muestra nadie.
- * - En el resto (MOD-06): el usuario simulado de `config/sesion.ts`, como hasta ahora.
+ * Usuario mostrado: el de la sesión de MOD-01, con «Cambiar contraseña» y «Cerrar sesión» (toda la aplicación
+ * entra por esa sesión desde AV-234).
  */
 import type { ReactNode } from 'react'
-import { useLocation } from 'react-router'
-import { obtenerSesion } from '../../config/sesion'
-import { esRutaConSesion } from '../../router/rutasApp'
-import Boton from '../../components/ui/Boton'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { RUTAS_CORE } from '../../router/rutasApp'
+import Boton, { BotonEnlace } from '../../components/ui/Boton'
+import { useSesion } from '../../sesion/ContextoSesion'
 import BarraContexto from './BarraContexto'
 import type { Miga } from './ContextoPagina'
 import estilos from './Cabecera.module.css'
@@ -33,15 +29,20 @@ export interface CabeceraProps {
   migas: Miga[]
 }
 
-/** Texto del rol de un usuario de MOD-05 sin rol del módulo. */
-const SIN_ROL_MODULO = 'Sin acceso al módulo'
-
 interface DatosUsuarioVisible {
   nombre: string
   rol: string
 }
 
-function BloqueUsuario({ usuario, onCerrarSesion }: { usuario: DatosUsuarioVisible; onCerrarSesion?: () => void }) {
+function BloqueUsuario({
+  usuario,
+  onCerrarSesion,
+  conCambioContrasena = false,
+}: {
+  usuario: DatosUsuarioVisible
+  onCerrarSesion?: () => void
+  conCambioContrasena?: boolean
+}) {
   return (
     <div className={estilos.usuario}>
       <span className={estilos.iniciales} aria-hidden="true">
@@ -51,6 +52,11 @@ function BloqueUsuario({ usuario, onCerrarSesion }: { usuario: DatosUsuarioVisib
         <span className={estilos.nombre}>{usuario.nombre}</span>
         <span className={estilos.rol}>{usuario.rol}</span>
       </span>
+      {conCambioContrasena && (
+        <BotonEnlace to={RUTAS_CORE.cambiarContrasena} variante="terciario" compacto>
+          Cambiar contraseña
+        </BotonEnlace>
+      )}
       {onCerrarSesion && (
         <Boton variante="terciario" compacto onClick={onCerrarSesion}>
           Cerrar sesión
@@ -61,21 +67,15 @@ function BloqueUsuario({ usuario, onCerrarSesion }: { usuario: DatosUsuarioVisib
 }
 
 export default function Cabecera({ titulo, migas }: CabeceraProps) {
-  const { pathname } = useLocation()
-  const sesionTercerizados = useSesionTercerizados()
-  const conSesion = esRutaConSesion(pathname)
-
-  let bloque: ReactNode = <BloqueUsuario usuario={obtenerSesion()} />
-  if (conSesion) {
-    const { estado, cerrarSesion } = sesionTercerizados
-    bloque =
-      estado.tipo === 'activa' ? (
-        <BloqueUsuario
-          usuario={{ nombre: estado.usuario.nombre, rol: estado.usuario.rol ?? SIN_ROL_MODULO }}
-          onCerrarSesion={cerrarSesion}
-        />
-      ) : null
-  }
+  const { estado: sesionCore, cerrarSesion: cerrarSesionCore } = useSesion()
+  const bloque: ReactNode =
+    sesionCore.tipo === 'activa' ? (
+      <BloqueUsuario
+        usuario={{ nombre: sesionCore.sesion.usuario.nombre, rol: sesionCore.sesion.rol.nombre }}
+        onCerrarSesion={() => void cerrarSesionCore()}
+        conCambioContrasena
+      />
+    ) : null
 
   return (
     <header className={estilos.cabecera}>

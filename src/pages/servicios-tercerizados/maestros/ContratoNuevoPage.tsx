@@ -28,7 +28,7 @@ import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { listarProveedoresMaestro, registrarContrato } from '../../../services/api/maestrosTercerizados'
 import { listarTiposServicio, listarTodo } from '../../../services/api/tercerizados'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import type { ProveedorMaestro } from '../../../types/maestrosTercerizados'
 import { hoyLima } from '../../../utils/instanteLima'
 import {
@@ -59,8 +59,7 @@ const ORDEN: (keyof ErroresContrato)[] = ['proveedor', 'tipoServicio', 'area', '
 
 export default function ContratoNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.proveedoresContratos, { texto: 'Registrar contrato' }])
-  const { estado: sesion } = useSesionTercerizados()
-  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+  const rol = useRolTercerizados()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorContrato>(BORRADOR_CONTRATO_VACIO)
