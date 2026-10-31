@@ -8,22 +8,26 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 
 - Sprint 0 (en curso): repos, estándares, CI y despliegue preparados. Aún sin EC2: `deploy-uat.yml` se salta hasta que `DESPLIEGUE_ACTIVO=true`.
 - MOD-05 y MOD-06: pantallas del borrador importadas y funcionando en local contra el backend.
-- Pendiente de arranque: manifiesto y service worker (PWA), cola sin conexión y sesión de MOD-01.
+- MOD-01: inicio de sesión, menú por permisos, usuarios y roles, registro de accesos, repositorio, y los componentes comunes `Adjuntos` e `HistorialCambios`. Contrato en `konoha-backend/docs/modulos/mod01.md`.
+- Pendiente de arranque: manifiesto y service worker (PWA) y cola sin conexión.
 
 ## Mapa
 
 | Ruta | Qué hay |
 |---|---|
-| `src/pages/<modulo>/` | Pantallas: `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
+| `src/pages/<modulo>/` | Pantallas: `acceso/`, `usuarios-roles/` y `repositorio/` (MOD-01), `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
+| `src/pages/operacion-campo/` | MOD-04: cuadrillas, encargos y participantes; sesión común de MOD-01, menú y rutas según `CAM.CUADRILLA.CONSULTAR` |
+| `src/components/core/` | Componentes comunes de MOD-01 para las fichas de otros módulos: `Adjuntos` e `HistorialCambios` |
 | `src/components/ui/` | Componentes base. Reutilízalos antes de crear otro |
 | `src/services/api/` | Clientes y servicios tipados por módulo |
 | `src/types/` | Tipos del contrato de la API |
 | `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
-| `src/config/` | Permisos de interfaz por rol |
+| `src/config/` | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión) |
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
 | `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía |
 | `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
-| `.github/workflows/` | `ci.yml`, `deploy-uat.yml` y `limpiar-imagenes.yml` |
+| `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
+| `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR |
 
 ## Comandos
 
@@ -44,7 +48,8 @@ npm run typecheck && npm run lint && npm test && npm run build
 ```
 
 - El hook `pre-push` ya ejecuta typecheck y oxlint. Actívalo con `git config core.hooksPath .githooks`.
-- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks).
+- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css` y `fetch` fuera de `services/api/` y, en las líneas nuevas, medidas en px y `style={…}`.
+- oxlint rechaza `any`, `!` sin justificar (`// oxlint-disable-next-line typescript/no-non-null-assertion -- motivo`) y `console.*`.
 
 ## Reglas no negociables
 
@@ -85,8 +90,8 @@ Pendiente de decisión (no la cambies por tu cuenta): formato de errores del bac
 
 ## Seguridad abierta: no empeorar
 
-- Las credenciales de MOD-05 (HTTP Basic) se guardan en `sessionStorage` hasta que exista la sesión de MOD-01.
-- MOD-06 usa una sesión simulada (`src/config/sesion.ts`).
+- Toda la aplicación entra con la sesión de MOD-01 (cookie `HttpOnly`): la interfaz no guarda ninguna credencial (AV-234).
+- Una cuenta creada solo en MOD-01 entra en Servicios tercerizados, pero no puede registrar ahí hasta la consolidación de usuarios del backend.
 
 Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `localStorage`). Cerrarlas va en tickets propios.
 

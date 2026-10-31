@@ -23,7 +23,7 @@ import Icono from '../../../components/ui/Icono'
 import Selector from '../../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_VALIDAR_IA } from '../../../config/permisos'
-import { obtenerSesion } from '../../../config/sesion'
+import { useRolActual } from '../../../sesion/ContextoSesion'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
@@ -184,7 +184,8 @@ export default function RevisionExtraccionPage() {
   const location = useLocation()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaBandeja = `${RUTAS.extraccionReportes}${navegacion?.volverA ?? ''}`
-  const puedeValidar = puede(obtenerSesion().rol, ROLES_VALIDAR_IA)
+  const rol = useRolActual()
+  const puedeValidar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
 
   usePaginaActual(`Revisión de la propuesta n.º ${id}`, [
     MIGAS.reportesIndicadores,
@@ -362,6 +363,7 @@ export default function RevisionExtraccionPage() {
           ? { accion: 'corregir', valor_final: convertirCorreccion(campo.tipo_dato, decision.texto).valor ?? null }
           : { accion: decision.accion }
     }
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- revision solo existe cuando hay sugerencia
     void ejecutar(() => validarExtraccion(sugerencia!.id, { decisiones }))
   }
 

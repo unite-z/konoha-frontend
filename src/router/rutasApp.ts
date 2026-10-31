@@ -39,7 +39,6 @@ const BASE_TERCERIZADOS = '/servicios-tercerizados'
 export const PREFIJO_TERCERIZADOS = BASE_TERCERIZADOS
 
 export const RUTAS_TERCERIZADOS = {
-  ingreso: `${BASE_TERCERIZADOS}/ingreso`,
   atenciones: `${BASE_TERCERIZADOS}/atenciones`,
   nuevaAtencion: `${BASE_TERCERIZADOS}/atenciones/nueva`, // RF-SER-003
   proveedoresContratos: `${BASE_TERCERIZADOS}/proveedores-contratos`, // RF-SER-001 y RF-SER-002
@@ -106,36 +105,52 @@ export const MIGAS_INVENTARIO = {
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
 } satisfies Record<string, Miga>
 
-/** `true` si la ruta exige la sesión compartida de MOD-05 y MOD-03. */
-export function esRutaConSesion(ruta: string): boolean {
-  return esRutaTercerizados(ruta) || esRutaPlanificacion(ruta) || esRutaInventario(ruta)
-}
-
-/**
- * Destino seguro tras ingresar: solo rutas internas de MOD-05 o MOD-03 distintas del ingreso (evita redirecciones
- * abiertas a otros sitios con `?volver=`). Si no es válido, la bandeja de atenciones.
- */
-export function destinoTrasIngreso(volver: string | null | undefined): string {
-  if (!volver || !volver.startsWith('/') || volver.startsWith('//') || volver.includes('\\')) {
-    return RUTAS_TERCERIZADOS.atenciones
-  }
-  const ruta = volver.split(/[?#]/)[0]
-  const tieneControl = [...volver].some((caracter) => caracter.charCodeAt(0) < 0x20)
-  if (!esRutaConSesion(ruta) || ruta === RUTAS_TERCERIZADOS.ingreso || tieneControl) {
-    return RUTAS_TERCERIZADOS.atenciones
-  }
-  return volver
-}
-
-/** Ruta de ingreso que vuelve a `destino` tras autenticarse. */
-export function rutaIngreso(destino?: string): string {
-  if (!destino || destinoTrasIngreso(destino) !== destino) return RUTAS_TERCERIZADOS.ingreso
-  return `${RUTAS_TERCERIZADOS.ingreso}?volver=${encodeURIComponent(destino)}`
-}
-
 export const MIGAS_TERCERIZADOS = {
   serviciosTercerizados: { texto: 'Servicios tercerizados', ruta: RUTAS_TERCERIZADOS.atenciones },
   atenciones: { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones },
   proveedoresContratos: { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
   controlFitosanitario: { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
 } satisfies Record<string, Miga>
+
+// --- MOD-01 «Core y seguridad» -------------------------------------------------------------------------
+
+const BASE_USUARIOS = '/usuarios-roles'
+
+export const RUTAS_CORE = {
+  ingreso: '/ingreso', // RF-T-001
+  cambiarContrasena: '/cambiar-contrasena', // HU-MOD01-003
+  usuarios: `${BASE_USUARIOS}/usuarios`, // RF-T-002 y RF-T-003
+  accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
+  repositorio: '/repositorio', // RF-T-010
+} as const
+
+/** Prefijo de «Usuarios y roles» (menú). */
+export const PREFIJO_USUARIOS = BASE_USUARIOS
+
+export function rutaDetalleUsuario(id: number | string): string {
+  return `${RUTAS_CORE.usuarios}/${id}`
+}
+
+export const MIGAS_CORE = {
+  usuariosRoles: { texto: 'Usuarios y roles', ruta: RUTAS_CORE.usuarios },
+  usuarios: { texto: 'Usuarios', ruta: RUTAS_CORE.usuarios },
+  repositorio: { texto: 'Repositorio', ruta: RUTAS_CORE.repositorio },
+} satisfies Record<string, Miga>
+
+/**
+ * Destino seguro tras iniciar sesión: cualquier ruta interna salvo el ingreso y el cambio de contraseña
+ * (evita redirecciones abiertas con `?volver=`). Si no es válido, `null`: se va al inicio del rol.
+ */
+export function destinoTrasIngresoCore(volver: string | null | undefined): string | null {
+  if (!volver || !volver.startsWith('/') || volver.startsWith('//') || volver.includes('\\')) return null
+  if ([...volver].some((caracter) => caracter.charCodeAt(0) < 0x20)) return null
+  const ruta = volver.split(/[?#]/)[0]
+  if (ruta === RUTAS_CORE.ingreso || ruta === RUTAS_CORE.cambiarContrasena) return null
+  return volver
+}
+
+/** Ruta de ingreso de MOD-01 que vuelve a `destino`. */
+export function rutaIngresoCore(destino?: string): string {
+  const seguro = destinoTrasIngresoCore(destino)
+  return seguro && seguro !== '/' ? `${RUTAS_CORE.ingreso}?volver=${encodeURIComponent(seguro)}` : RUTAS_CORE.ingreso
+}

@@ -14,7 +14,7 @@ import { puedeEditarPlanificacion } from '../../config/permisosPlanificacion'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_PLANIFICACION } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../sesion/ContextoSesion'
 import { listarRestricciones } from '../../services/api/planificacion'
 import type { Restriccion } from '../../types/planificacion'
 import {
@@ -60,8 +60,7 @@ const COLUMNAS: ColumnaTabla<Restriccion>[] = [
 export default function CalendarioRestriccionesPage() {
   usePaginaActual('Calendario de restricciones', [MIGAS_PLANIFICACION.planificacion])
   const [mes, setMes] = useState(() => mesDeFecha(hoyLima()))
-  const { estado } = useSesionTercerizados()
-  const puedeEditar = estado.tipo === 'activa' && puedeEditarPlanificacion(estado.usuario.rol)
+  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   const [registrando, setRegistrando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
   const { desde, hasta } = rangoDelMes(mes)

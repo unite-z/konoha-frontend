@@ -38,3 +38,16 @@
 .saltar:focus {
   transform: none;
 }
+
+/* Adaptación de MOD-04 para el registro en campo; los otros módulos conservan su layout. */
+@media (max-width: 767px) {
+  .campo { grid-template-columns: minmax(0,1fr); }
+  .campo > aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--color-border-default); }
+  .campo > aside > p, .campo > aside nav > p { display: none; }
+  .campo > aside nav { padding: var(--space-2) var(--space-4); }
+  .campo > aside nav > ul > li:not(:has(> a[href^='/operacion-campo'])) { display: none; }
+  .campo > aside nav > ul > li > ul { flex-direction: row; padding-left: 0; overflow-x: auto; }
+  .campo > aside nav > ul > li > ul a { white-space: nowrap; }
+  .campo header { align-items: stretch; flex-direction: column; padding: var(--space-4); gap: var(--space-3); }
+  .campo .contenido { padding: var(--space-4); }
+}

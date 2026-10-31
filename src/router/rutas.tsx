@@ -1,7 +1,6 @@
 /**
- * Rutas de la aplicación web de oficina. Todas dentro de `LayoutOficina`.
- * Las de MOD-05 y MOD-03 pasan por `RutaSesionTercerizados` (sesión con usuario Spring Security).
- * Las rutas con nombre y las migas están en `rutasApp.ts`.
+ * Rutas de la aplicación web de oficina. Las secciones protegidas requieren sesión de MOD-01 y
+ * las secciones con permiso propio pasan además por `RutaConPermiso`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
@@ -15,7 +14,6 @@ import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/Dis
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
-import IngresoTercerizadosPage from '../pages/servicios-tercerizados/IngresoTercerizadosPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
@@ -30,61 +28,119 @@ import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/Contrato
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
-import RutaSesionTercerizados from '../sesion/RutaSesionTercerizados'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
+import RutaProtegida, { InicioRol, RutaConPermiso } from '../sesion/RutaProtegida'
+import CambioContrasenaPage from '../pages/acceso/CambioContrasenaPage'
+import IngresoPage from '../pages/acceso/IngresoPage'
+import RepositorioPage from '../pages/repositorio/RepositorioPage'
+import AccesosPage from '../pages/usuarios-roles/AccesosPage'
+import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
+import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
+import { PERMISOS } from '../config/permisosCore'
+import {
+  PREFIJO_PLANIFICACION,
+  PREFIJO_TERCERIZADOS,
+  RUTAS,
+  RUTAS_CORE,
+  RUTAS_INVENTARIO,
+  RUTAS_PLANIFICACION,
+  RUTAS_TERCERIZADOS,
+} from './rutasApp'
+import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
+import EncargosPage from '../pages/operacion-campo/EncargosPage'
+import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
+import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
 export const router = createBrowserRouter([
+  { path: RUTAS_CORE.ingreso, element: <IngresoPage /> }, // RF-T-001
   {
-    element: <LayoutOficina />,
+    element: <RutaProtegida permitirContrasenaTemporal />,
+    children: [{ path: RUTAS_CORE.cambiarContrasena, element: <CambioContrasenaPage /> }], // HU-MOD01-003
+  },
+  {
+    element: <RutaProtegida />,
     children: [
-      { path: '/', element: <Navigate to={RUTAS.reportes} replace /> },
-      { path: RUTAS.reportes, element: <ReportesIndexPage /> },
-      { path: RUTAS.cumplimientoCorte, element: <CumplimientoCortePage /> }, // RF-REP-002
-      { path: RUTAS.distribucionPersonal, element: <DistribucionPersonalPage /> }, // RF-REP-004
-      { path: RUTAS.atencionesEspacioSector, element: <AtencionesEspacioSectorPage /> }, // RF-REP-006
-      { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
-      { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
-      { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
-      // MOD-05 «Servicios tercerizados»: requiere sesión con usuario Spring Security (excepto el ingreso).
-      { path: RUTAS_TERCERIZADOS.ingreso, element: <IngresoTercerizadosPage /> },
       {
-        path: PREFIJO_TERCERIZADOS,
-        element: <RutaSesionTercerizados />,
+        element: <LayoutOficina />,
         children: [
-          { index: true, element: <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace /> },
-          { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> }, // RF-SER-003 a 006 y 011
-          { path: RUTAS_TERCERIZADOS.nuevaAtencion, element: <NuevaAtencionPage /> }, // RF-SER-003 y 011
-          { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
-          { path: RUTAS_TERCERIZADOS.proveedoresContratos, element: <ProveedoresContratosPage /> }, // RF-SER-001 y 002
-          { path: RUTAS_TERCERIZADOS.nuevoProveedor, element: <ProveedorNuevoPage /> }, // RF-SER-001
-          { path: RUTAS_TERCERIZADOS.nuevoContrato, element: <ContratoNuevoPage /> }, // RF-SER-002
-          { path: RUTAS_TERCERIZADOS.controlFitosanitario, element: <AtencionEspecialPage /> }, // RF-INV-011
-          { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> }, // RF-INV-011
+          { path: '/', element: <InicioRol /> },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
+            children: [
+              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+              {
+                path: BASE_CAMPO,
+                children: [
+                  { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+                  { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                  { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
+                  { path: RUTAS_CAMPO.participantes, element: <ParticipantesPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.consultarIndicadores} />,
+            children: [
+              { path: RUTAS.reportes, element: <ReportesIndexPage /> },
+              { path: RUTAS.cumplimientoCorte, element: <CumplimientoCortePage /> }, // RF-REP-002
+              { path: RUTAS.distribucionPersonal, element: <DistribucionPersonalPage /> }, // RF-REP-004
+              { path: RUTAS.atencionesEspacioSector, element: <AtencionesEspacioSectorPage /> }, // RF-REP-006
+              { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
+              { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
+              { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
+            ],
+          },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.gestionarUsuarios} />,
+            children: [
+              { path: RUTAS_CORE.usuarios, element: <UsuariosPage /> },
+              { path: `${RUTAS_CORE.usuarios}/:id`, element: <UsuarioDetallePage /> },
+              { path: RUTAS_CORE.accesos, element: <AccesosPage /> },
+            ],
+          },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.consultarRepositorio} />,
+            children: [{ path: RUTAS_CORE.repositorio, element: <RepositorioPage /> }],
+          },
+          { path: `${PREFIJO_TERCERIZADOS}/ingreso`, element: <Navigate to="/" replace /> },
+          {
+            path: PREFIJO_TERCERIZADOS,
+            element: <RutaConPermiso permiso={PERMISOS.registrarAtencion} />,
+            children: [
+              { index: true, element: <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace /> },
+              { path: RUTAS_TERCERIZADOS.atenciones, element: <AtencionesPage /> },
+              { path: RUTAS_TERCERIZADOS.nuevaAtencion, element: <NuevaAtencionPage /> },
+              { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
+              { path: RUTAS_TERCERIZADOS.proveedoresContratos, element: <ProveedoresContratosPage /> },
+              { path: RUTAS_TERCERIZADOS.nuevoProveedor, element: <ProveedorNuevoPage /> },
+              { path: RUTAS_TERCERIZADOS.nuevoContrato, element: <ContratoNuevoPage /> },
+              { path: RUTAS_TERCERIZADOS.controlFitosanitario, element: <AtencionEspecialPage /> },
+              { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> },
+            ],
+          },
+          {
+            path: PREFIJO_PLANIFICACION,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
+            children: [
+              { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
+              { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> },
+              { path: RUTAS_PLANIFICACION.restricciones, element: <CalendarioRestriccionesPage /> },
+            ],
+          },
+          {
+            path: RUTAS_INVENTARIO.areasVerdes,
+            children: [
+              { index: true, element: <AreasVerdesPage /> },
+              { path: 'nueva', element: <NuevaAreaVerdePage /> },
+              { path: 'mapa', element: <MapaAreasVerdesPage /> },
+              { path: 'coberturas', element: <CoberturasPage /> },
+              { path: 'catalogos', element: <CatalogosPage /> },
+              { path: 'ejemplares', element: <EjemplaresPage /> },
+            ],
+          },
+          { path: '*', element: <PaginaNoEncontrada /> },
         ],
       },
-      // MOD-03 «Planificación»: misma sesión que MOD-05.
-      {
-        path: PREFIJO_PLANIFICACION,
-        element: <RutaSesionTercerizados />,
-        children: [
-          { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
-          { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
-          { path: RUTAS_PLANIFICACION.restricciones, element: <CalendarioRestriccionesPage /> }, // HU-MOD03-003
-        ],
-      },
-      {
-        path: RUTAS_INVENTARIO.areasVerdes,
-        element: <RutaSesionTercerizados />,
-        children: [
-          { index: true, element: <AreasVerdesPage /> },
-          { path: 'nueva', element: <NuevaAreaVerdePage /> },
-          { path: 'mapa', element: <MapaAreasVerdesPage /> },
-          { path: 'coberturas', element: <CoberturasPage /> },
-          { path: 'catalogos', element: <CatalogosPage /> },
-          { path: 'ejemplares', element: <EjemplaresPage /> },
-        ],
-      },
-      { path: '*', element: <PaginaNoEncontrada /> },
     ],
   },
 ])

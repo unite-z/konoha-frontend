@@ -29,7 +29,7 @@ import {
   listarTodo,
   listarUnidadesMedida,
 } from '../../../services/api/tercerizados'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import { hoyLima } from '../../../utils/instanteLima'
 import {
   BORRADOR_VACIO,
@@ -85,8 +85,7 @@ function enfocar(id: string) {
 
 export default function NuevaAtencionPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.atenciones, { texto: 'Nueva' }])
-  const { estado: sesion } = useSesionTercerizados()
-  const rol = sesion.tipo === 'activa' ? sesion.usuario.rol : null
+  const rol = useRolTercerizados()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorAtencion>(BORRADOR_VACIO)

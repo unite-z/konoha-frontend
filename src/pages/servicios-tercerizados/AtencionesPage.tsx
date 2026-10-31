@@ -23,7 +23,7 @@ import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { puedeRegistrarAtencion } from '../../config/permisosTercerizados'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../sesion/ContextoSesion'
 import { listarAtenciones, listarTodosLosContratos } from '../../services/api/tercerizados'
 import type { Atencion, Contrato } from '../../types/tercerizados'
 import {
@@ -130,8 +130,7 @@ export default function AtencionesPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, { texto: 'Atenciones' }])
   const navegar = useNavigate()
   const { search } = useLocation()
-  const { estado: sesion } = useSesionTercerizados()
-  const esJefe = puedeRegistrarAtencion(sesion.tipo === 'activa' ? sesion.usuario.rol : null)
+  const esJefe = puedeRegistrarAtencion(useRolTercerizados())
 
   const { filtros: url, establecer } = useFiltrosUrl<ClaveFiltroBandeja>(FILTROS_BANDEJA_VACIOS)
   const { filtros, pagina } = leerFiltrosBandeja(url)

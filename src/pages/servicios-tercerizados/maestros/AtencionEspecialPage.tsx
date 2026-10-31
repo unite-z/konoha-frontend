@@ -20,7 +20,7 @@ import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { listarAtencionesEspeciales, listarPlagas } from '../../../services/api/maestrosTercerizados'
 import { listarTodo } from '../../../services/api/tercerizados'
-import { useSesionTercerizados } from '../../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import type { AtencionEspecial, EstadoAtencionEspecial } from '../../../types/maestrosTercerizados'
 import { formatearNumero, SIN_VALOR } from '../../../utils/formato'
 import { textoAplicaciones } from '../../../utils/validacionMaestros'
@@ -76,8 +76,7 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
 export default function AtencionEspecialPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Atención especial' }])
   const { state } = useLocation()
-  const { estado: sesion } = useSesionTercerizados()
-  const puedeMarcar = puedeMarcarAtencionEspecial(sesion.tipo === 'activa' ? sesion.usuario.rol : null)
+  const puedeMarcar = puedeMarcarAtencionEspecial(useRolTercerizados())
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

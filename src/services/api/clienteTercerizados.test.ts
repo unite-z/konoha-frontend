@@ -1,19 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { cabeceraBasic, construirUrlTercerizados, nombreDeDisposicion } from './clienteTercerizados'
+import { construirUrlTercerizados, nombreDeDisposicion } from './clienteTercerizados'
 import { formularioReporte } from './tercerizados'
-
-describe('cabeceraBasic', () => {
-  it('codifica usuario y contraseña en Base64', () => {
-    expect(cabeceraBasic('mod05_jefe', 'clave')).toBe(`Basic ${btoa('mod05_jefe:clave')}`)
-  })
-
-  it('codifica en UTF-8 los caracteres no ASCII', () => {
-    const cabecera = cabeceraBasic('peña', 'contraseña')
-    const binario = atob(cabecera.slice('Basic '.length))
-    const texto = new TextDecoder().decode(Uint8Array.from(binario, (c) => c.charCodeAt(0)))
-    expect(texto).toBe('peña:contraseña')
-  })
-})
 
 describe('construirUrlTercerizados', () => {
   it('omite parámetros vacíos y codifica valores', () => {

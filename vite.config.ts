@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     // MOD-05 en Spring Boot; MOD-06 conserva Django. Orden: ruta específica primero.
     proxy: {
-      '/api/tercerizados': 'http://localhost:8000',
-      '/swagger-ui': 'http://localhost:8000',
-      '/api': 'http://localhost:8000',
+      '/api/tercerizados': process.env.KONOHA_API_LOCAL_URL || 'http://localhost:8000',
+      '/swagger-ui': process.env.KONOHA_API_LOCAL_URL || 'http://localhost:8000',
+      '/api': process.env.KONOHA_API_LOCAL_URL || 'http://localhost:8000',
     },
   },
 })

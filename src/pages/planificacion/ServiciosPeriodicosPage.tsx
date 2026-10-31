@@ -14,7 +14,7 @@ import { puedeEditarPlanificacion } from '../../config/permisosPlanificacion'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_PLANIFICACION } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useRolTercerizados } from '../../sesion/ContextoSesion'
 import { listarServiciosPeriodicos } from '../../services/api/planificacion'
 import type { ServicioPeriodico } from '../../types/planificacion'
 import { formatearFechaHora } from '../../utils/formato'
@@ -102,8 +102,7 @@ function TarjetaServicio({ servicio, editar, editarDuracion }: PropsTarjeta) {
 
 export default function ServiciosPeriodicosPage() {
   usePaginaActual('Servicios periódicos', [MIGAS_PLANIFICACION.planificacion])
-  const { estado } = useSesionTercerizados()
-  const puedeEditar = estado.tipo === 'activa' && puedeEditarPlanificacion(estado.usuario.rol)
+  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   const [editando, setEditando] = useState<{ servicio: ServicioPeriodico; fila: FilaFrecuencia } | null>(null)
   const [editandoDuracion, setEditandoDuracion] = useState<ServicioPeriodico | null>(null)
   const [cambios, setCambios] = useState<Record<number, ServicioPeriodico>>({})
