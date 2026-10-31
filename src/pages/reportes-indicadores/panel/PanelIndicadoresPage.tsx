@@ -60,7 +60,12 @@ function columnaEtiqueta(titulo: string): ColumnaTabla<ElementoDesglose> {
 
 /**
  * Columnas del desglose de cada indicador. La etiqueta es lo que agrupa el back-end: el espacio, el estado de
- * la atención o el material con su unidad. Los indicadores de MOD-04 aún no tienen desglose («Concepto»).
+ * la atención o el material con su unidad.
+ *
+ * Indicadores de MOD-04 (actividades, operarios y material): en desarrollo, con `MOD06_DATOS_EJEMPLO=true` en el
+ * back-end, muestran datos de EJEMPLO. Actividades se desglosa en «Estado: Abierto/Cerrado» (estado del parte
+ * diario) y «Tipo: …»; operarios, en «Cuadrilla: …» y «Espacio: …». Esto variará cuando se programe MOD-04: el
+ * estado de una actividad y los conceptos del desglose pueden cambiar.
  */
 const COLUMNAS_DESGLOSE: Record<ClaveIndicadorPanel, ColumnaTabla<ElementoDesglose>[]> = {
   'actividades-por-estado': [columnaEtiqueta('Concepto'), columnaValor('Valor')],

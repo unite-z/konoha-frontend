@@ -71,7 +71,10 @@ const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
   { clave: 'proveedor', titulo: 'Proveedor' },
 ]
 
-/** Hoy nunca llegan registros (MOD-04 aún no registra el material); queda preparado. */
+/**
+ * MOD-04 aún no registra el material. En desarrollo, con `MOD06_DATOS_EJEMPLO=true` en el back-end, llegan
+ * registros de EJEMPLO; esto variará cuando se programe MOD-04 (sus columnas reales pueden cambiar).
+ */
 const COLUMNAS_CONSUMO: ColumnaTabla<FilaMovimientoMaterial>[] = [
   { clave: 'fecha', titulo: 'Fecha', render: (f) => formatearFecha(f.fecha) },
   { clave: 'espacio', titulo: 'Espacio', render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
@@ -265,8 +268,10 @@ export default function DetalleIndicadorPage() {
       )
     case 'actividades-por-estado':
     case 'distribucion-operarios':
-      // TODO: definir sus columnas cuando MOD-04 publique los partes diarios. Hoy siempre llegan sin datos y se
-      // ve el vacío con el motivo del back-end.
+      // TODO: definir sus columnas cuando MOD-04 publique los partes diarios. Sin datos se ve el vacío con el
+      // motivo del back-end. En desarrollo, con `MOD06_DATOS_EJEMPLO=true`, llegan datos de EJEMPLO (estado del
+      // parte diario: «Abierto» o «Cerrado») y aquí se ve el aviso de que el detalle aún no se puede mostrar.
+      // Esto variará cuando se programe MOD-04: el estado y los campos de cada registro pueden cambiar.
       return <ContenidoDetalle<unknown> key={indicador} clave={indicador} columnas={null} claveFila={() => ''} />
   }
 }
