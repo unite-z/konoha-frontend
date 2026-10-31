@@ -54,6 +54,15 @@ export function formatearFecha(valor: FechaIso | InstanteIso | null | undefined)
   return enLima ? `${dosDigitos(enLima.dia)} ${MESES[enLima.mes - 1]} ${enLima.anio}` : SIN_VALOR
 }
 
+const PATRON_MES = /^(\d{4})-(0[1-9]|1[0-2])$/
+
+/** «oct. 2026» a partir de `AAAA-MM` (misma tabla de meses que `formatearFecha`, Guía Web 7); «—» si no es válido. */
+export function formatearMes(mes: string | null | undefined): string {
+  if (!mes) return SIN_VALOR
+  const partes = PATRON_MES.exec(mes)
+  return partes ? `${MESES[Number(partes[2]) - 1]} ${partes[1]}` : SIN_VALOR
+}
+
 /** «20 oct. 2026, 10:35» a partir de un instante ISO 8601, en la hora de America/Lima. */
 export function formatearFechaHora(instante: InstanteIso | null | undefined): string {
   if (!instante) return SIN_VALOR

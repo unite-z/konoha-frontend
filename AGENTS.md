@@ -19,6 +19,7 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 | `src/pages/operacion-campo/` | MOD-04: cuadrillas, encargos y participantes; sesión común de MOD-01, menú y rutas según `CAM.CUADRILLA.CONSULTAR` |
 | `src/components/core/` | Componentes comunes de MOD-01 para las fichas de otros módulos: `Adjuntos` e `HistorialCambios` |
 | `src/components/ui/` | Componentes base. Reutilízalos antes de crear otro |
+| `src/components/reportes-indicadores/` | Componentes propios del MOD-06 (filtros compartidos de los reportes de gestión) |
 | `src/services/api/` | Clientes y servicios tipados por módulo |
 | `src/types/` | Tipos del contrato de la API |
 | `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
