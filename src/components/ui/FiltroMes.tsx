@@ -9,7 +9,7 @@
  * - `children` añade controles a la misma barra (por ejemplo, el selector de espacio).
  *
  * En los navegadores sin selector de mes, `type="month"` se comporta como un campo de texto: la ayuda indica el
- * formato.
+ * formato. Con `ayudaEmergente`, esa ayuda va en un icono junto a la etiqueta en lugar de debajo del campo.
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { validarMes } from '../../utils/reportesGestion'
@@ -26,10 +26,20 @@ export interface FiltroMesProps {
   idBase?: string
   /** Bloquea el botón mientras se consulta. */
   cargando?: boolean
+  /** Icono de ayuda junto a la etiqueta «Mes» (sustituye a la ayuda bajo el campo). */
+  ayudaEmergente?: ReactNode
   children?: ReactNode
 }
 
-export default function FiltroMes({ mes, onAplicar, errorServidor, idBase = 'filtro', cargando = false, children }: FiltroMesProps) {
+export default function FiltroMes({
+  mes,
+  onAplicar,
+  errorServidor,
+  idBase = 'filtro',
+  cargando = false,
+  ayudaEmergente,
+  children,
+}: FiltroMesProps) {
   const [borrador, setBorrador] = useState(mes)
   const [error, setError] = useState<string | undefined>()
 
@@ -56,17 +66,18 @@ export default function FiltroMes({ mes, onAplicar, errorServidor, idBase = 'fil
 
   return (
     <form className={estilos.barra} onSubmit={enviar} noValidate aria-label="Filtros del reporte">
-      <div className={estilos.campo}>
+      <div className={`${estilos.campo} ${ayudaEmergente ? estilos.conAyuda : ''}`}>
         <CampoFormulario
           id={idMes}
           etiqueta="Mes"
           type="month"
           obligatorio
-          ayuda="Formato AAAA-MM"
+          ayuda={ayudaEmergente ? undefined : 'Formato AAAA-MM'}
           value={borrador}
           onChange={(e) => setBorrador(e.target.value)}
           error={error ?? errorServidor}
         />
+        {ayudaEmergente && <span className={estilos.ayudaEmergente}>{ayudaEmergente}</span>}
       </div>
       {children}
       <div className={estilos.accion}>

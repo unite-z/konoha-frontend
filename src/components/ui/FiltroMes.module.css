@@ -23,3 +23,14 @@
 .barra > :not(.campo):not(.accion) {
   flex: 0 1 14rem;
 }
+
+/* Con ayuda emergente: el icono queda en la línea de la etiqueta, sin mover los demás filtros. */
+.conAyuda {
+  position: relative;
+}
+
+.ayudaEmergente {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: 0;
+}
