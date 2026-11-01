@@ -1,0 +1,108 @@
+/* Mapa de calor «Cuadrilla por jornada» de RF-REP-004: rampa secuencial verde de tokens.css. */
+
+.mapa {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: var(--space-1);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+}
+
+.mapa th {
+  padding: var(--space-2);
+  color: var(--neutral-700);
+  font-weight: var(--type-label-md-weight);
+  white-space: nowrap;
+}
+.mapa thead th {
+  text-align: center;
+}
+/* Columna de cuadrillas fija al desplazar. */
+.mapa thead th:first-child,
+.mapa tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-bg-surface);
+  text-align: left;
+}
+.mapa tbody th {
+  min-width: 10rem;
+  max-width: 16rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mapa td {
+  padding: 0;
+}
+
+.celda,
+.celdaVacia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 5rem;
+  min-height: var(--space-12);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.celda {
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: var(--type-label-md-weight);
+  cursor: pointer;
+}
+.celda:hover {
+  border-color: var(--neutral-950);
+}
+
+.celdaActiva {
+  outline: 2px solid var(--neutral-950);
+  outline-offset: 1px;
+}
+
+.celdaVacia {
+  border: 1px dashed var(--color-border-default);
+  color: var(--color-text-muted);
+}
+
+/* El texto oscuro o claro mantiene el contraste en cada nivel. */
+.nivel0 {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+.nivel1 {
+  background: var(--green-100);
+  color: var(--color-text-primary);
+}
+.nivel2 {
+  background: var(--green-500);
+  color: var(--color-text-primary);
+}
+.nivel3 {
+  background: var(--green-700);
+  color: var(--color-bg-surface);
+}
+.nivel4 {
+  background: var(--green-900);
+  color: var(--color-bg-surface);
+}
+
+.escala {
+  gap: var(--space-1);
+}
+
+/* Muestra de la leyenda (después de .celdaVacia para ganarle el tamaño). */
+.muestra {
+  display: inline-block;
+  width: var(--space-6);
+  min-width: 0;
+  height: var(--space-4);
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
