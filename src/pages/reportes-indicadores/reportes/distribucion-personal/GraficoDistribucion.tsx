@@ -12,10 +12,14 @@ import Boton from '../../../../components/ui/Boton'
 import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
 import type { FilaDistribucion } from '../../../../types/reportes'
 import { formatearNumero } from '../../../../utils/formato'
+import BarrasHorizontales, { type BarraGrafico } from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
+import ColumnasFecha from '../../../../components/reportes-indicadores/graficos/ColumnasFecha'
+import { marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
+import estilos from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
 import {
   agrupar,
   DIMENSIONES,
-  DIVISIONES_EJE,
   escalaEje,
   formatearMedida,
   MEDIDAS,
@@ -26,11 +30,8 @@ import {
   type Grupo,
   type Medida,
 } from './agregacion'
-import BarrasHorizontales, { type BarraGrafico } from './BarrasHorizontales'
-import ColumnasJornada from './ColumnasJornada'
 import type { Seleccion } from './DetalleSeleccion'
-import estilos from './Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico, ControlMedida, SinDatosMedida } from './PartesGrafico'
+import { ControlMedida, SinDatosMedida } from './PartesGrafico'
 
 /** Barras visibles antes de «Ver todas». */
 const BARRAS_INICIALES = 10
@@ -80,7 +81,7 @@ export default function GraficoDistribucion({ filas, medida, onCambiarMedida, on
 
   const maximo = Math.max(0, ...elementos.map((e) => e.valor ?? 0))
   const escala = escalaEje(maximo, medida)
-  const marcas = Array.from({ length: DIVISIONES_EJE + 1 }, (_, i) => textoMarca((escala * i) / DIVISIONES_EJE, medida))
+  const marcas = marcasEje(escala, (v) => textoMarca(v, medida))
   const textoMedida = MEDIDAS.find((m) => m.valor === medida)?.texto ?? ''
 
   const elegido = elementos.find((e) => e.clave === claveElegida)
@@ -98,13 +99,13 @@ export default function GraficoDistribucion({ filas, medida, onCambiarMedida, on
     setClaveElegida((actual) => (actual === clave ? null : clave))
   }
 
-  const comunes = { medida, escala, marcas, claveElegida, onAlternar: alternar }
+  const comunes = { formatear: (v: number | null) => formatearMedida(v, medida), escala, marcas, claveElegida, onAlternar: alternar }
   let cuerpo
   if (maximo === 0) {
     cuerpo = <SinDatosMedida medida={medida} />
   } else if (esJornada) {
     cuerpo = (
-      <ColumnasJornada {...comunes} columnas={elementos.map((e) => ({ ...e, jornada: e.clave.slice(2) }))} />
+      <ColumnasFecha {...comunes} columnas={elementos.map((e) => ({ ...e, fecha: e.clave.slice(2) }))} />
     )
   } else {
     cuerpo = <BarrasHorizontales {...comunes} barras={elementos} agrupadas={dimension === 'actividad'} />
@@ -124,9 +125,9 @@ export default function GraficoDistribucion({ filas, medida, onCambiarMedida, on
         <ControlMedida medida={medida} onCambiar={onCambiarMedida} />
       </div>
       <BarraSeleccion
-        seleccion={seleccion}
+        seleccionado={seleccion?.titulo ?? null}
         indicacion={esJornada ? 'Haz clic en una columna para ver su detalle.' : 'Haz clic en una barra para ver su detalle.'}
-        onVerDetalle={onVerDetalle}
+        onVerDetalle={() => seleccion && onVerDetalle(seleccion)}
       />
       {cuerpo}
       {!esJornada && maximo > 0 && grupos.length > BARRAS_INICIALES && (

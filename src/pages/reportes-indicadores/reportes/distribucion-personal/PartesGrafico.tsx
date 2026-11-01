@@ -1,47 +1,17 @@
 /**
- * Piezas comunes de los gráficos de RF-REP-004: selector de medida, aviso de la parte elegida con
- * «Ver detalles» y mensaje sin datos.
+ * Piezas de los gráficos de RF-REP-004 propias de sus medidas: selector de medida y mensaje sin datos.
+ * La cabecera y «Ver detalles» son las comunes del MOD-06 (`components/reportes-indicadores/graficos`).
  */
-import Boton from '../../../../components/ui/Boton'
+import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
 import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
 import EstadoVacio from '../../../../components/ui/EstadoVacio'
 import { MEDIDAS, MEDIDAS_CON_TIEMPO, type Medida } from './agregacion'
-import type { Seleccion } from './DetalleSeleccion'
-import estilos from './Graficos.module.css'
 
 export function ControlMedida({ medida, onCambiar }: { medida: Medida; onCambiar: (medida: Medida) => void }) {
   return (
-    <div className={estilos.control}>
-      <span className={estilos.etiquetaControl}>Medida</span>
+    <div className={comunes.control}>
+      <span className={comunes.etiquetaControl}>Medida</span>
       <GrupoChips etiqueta="Medida" opciones={MEDIDAS} valor={medida} onCambiar={(v) => onCambiar(v as Medida)} />
-    </div>
-  )
-}
-
-export function BarraSeleccion({
-  seleccion,
-  indicacion,
-  onVerDetalle,
-}: {
-  seleccion: Seleccion | null
-  /** Texto mientras no hay nada elegido. */
-  indicacion: string
-  onVerDetalle: (seleccion: Seleccion) => void
-}) {
-  return (
-    <div className={estilos.barraSeleccion}>
-      <p className={estilos.textoSeleccion} aria-live="polite">
-        {seleccion ? (
-          <>
-            Seleccionado: <strong>{seleccion.titulo}</strong>
-          </>
-        ) : (
-          indicacion
-        )}
-      </p>
-      <Boton variante="secundario" deshabilitado={!seleccion} onClick={() => seleccion && onVerDetalle(seleccion)}>
-        Ver detalles
-      </Boton>
     </div>
   )
 }
@@ -57,18 +27,5 @@ export function SinDatosMedida({ medida }: { medida: Medida }) {
           : 'Ninguna actividad mostrada tiene este dato. Elige otra medida.'
       }
     />
-  )
-}
-
-/** Título del gráfico y total de la medida en el conjunto mostrado. */
-export function CabeceraGrafico({ titulo, total }: { titulo: string; total: string }) {
-  return (
-    <div className={estilos.cabecera}>
-      <h3 className={estilos.tituloGrafico}>{titulo}</h3>
-      <p className={estilos.total}>
-        <span className={estilos.etiquetaTotal}>Total</span>
-        <span className={`${estilos.valorTotal} cifra`}>{total}</span>
-      </p>
-    </div>
   )
 }
