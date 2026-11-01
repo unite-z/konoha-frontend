@@ -10,28 +10,38 @@
  * que se construyen con los valores presentes en la respuesta sin filtros opcionales del periodo.
  *
  * Supuesto: periodo predeterminado a confirmar con la contraparte (CU-MOD06-001). Aquí, la semana actual.
+ *
+ * Presentación: tarjetas de resumen, gráfico por cuadrilla, actividad (clase y sus tipos), espacio o jornada y
+ * mapa de calor de cuadrilla por jornada. Al elegir una parte de un gráfico, «Ver detalles» abre su tabla.
+ * La tarjeta «Actividades sin tiempo registrado» filtra los gráficos por esas actividades (parámetro
+ * `sin_tiempo` de la URL; el filtro es del cliente, no se envía a la API).
  */
 import { useMemo, useState } from 'react'
+import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
 import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
 import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import TarjetaIndicador, { FilaTarjetas } from '../../../components/ui/TarjetaIndicador'
+import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS } from '../../../router/rutasApp'
 import { obtenerDistribucionPersonal } from '../../../services/api/reportes'
-import type {
-  FilaDistribucion,
-  FiltrosDistribucion,
-  ResultadoDistribucionPersonal,
-  TotalCuadrillaJornada,
-} from '../../../types/reportes'
-import { formatearFecha, formatearMinutos, formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
+import type { FiltrosDistribucion, ResultadoDistribucionPersonal } from '../../../types/reportes'
+import { formatearFecha, formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
+import {
+  cuadrillasDistintas,
+  filasSinTiempo,
+  MEDIDAS_CON_TIEMPO,
+  type Medida,
+} from './distribucion-personal/agregacion'
+import DetalleSeleccion, { type Seleccion } from './distribucion-personal/DetalleSeleccion'
+import GraficoDistribucion from './distribucion-personal/GraficoDistribucion'
+import MapaCalorCuadrillaJornada from './distribucion-personal/MapaCalorCuadrillaJornada'
+import estilosPagina from './DistribucionPersonal.module.css'
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
@@ -50,6 +60,20 @@ type ClaveFiltro = (typeof FILTROS_OPCIONALES)[number]['clave']
 type Borrador = Record<ClaveFiltro, string>
 
 const BORRADOR_VACIO: Borrador = { cuadrilla_id: '', clase_actividad_id: '', tipo_actividad_id: '', area_verde_id: '' }
+
+/** Parámetros de la URL que se pueden quitar con un chip. */
+type ClaveUrl = ClaveFiltro | 'sin_tiempo'
+
+const TEXTO_SIN_TIEMPO = 'Solo actividades sin tiempo registrado'
+
+/** Medida inicial: horas-persona, salvo con el filtro «sin tiempo» (no tendría datos). */
+function medidaInicial(soloSinTiempo: boolean): Medida {
+  return soloSinTiempo ? 'numero_actividades' : 'horas_persona'
+}
+
+function plural(n: number, singular: string, varios: string): string {
+  return `${formatearNumero(n)} ${n === 1 ? singular : varios}`
+}
 
 /** Opciones distintas, ordenadas por texto. */
 function opcionesDistintas(pares: [number | null, string | null][]): OpcionSelector[] {
@@ -77,109 +101,6 @@ function construirOpciones(datos: ResultadoDistribucionPersonal | null): Record<
   }
 }
 
-/** Número de operarios y sus nombres; el apoyo eventual lleva la insignia «Apoyo». */
-function celdaOperarios(fila: FilaDistribucion) {
-  return (
-    <div className={estilos.celdaAvance}>
-      <span className="cifra">{formatearNumero(fila.numero_operarios)}</span>
-      <ul className={`${estilos.listaSinVinetas} ${estilos.textoPequeno}`}>
-        {fila.operarios.map((o) => (
-          <li key={o.operario_id} className={estilos.enLinea}>
-            <span>{o.nombre_completo ?? SIN_VALOR}</span>
-            {o.es_apoyo && (
-              <Badge tono="info" texto="Apoyo" ayuda="Operario de otra cuadrilla que apoyó en esta actividad" />
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-const COLUMNAS_DETALLE: ColumnaTabla<FilaDistribucion>[] = [
-  { clave: 'jornada', titulo: 'Jornada', ordenable: true, render: (f) => formatearFecha(f.jornada) },
-  { clave: 'cuadrilla_nombre', titulo: 'Cuadrilla', ordenable: true },
-  { clave: 'clase_actividad_nombre', titulo: 'Clase de actividad', ordenable: true },
-  { clave: 'tipo_actividad_nombre', titulo: 'Tipo de actividad', ordenable: true },
-  { clave: 'area_verde_nombre', titulo: 'Espacio', ordenable: true },
-  {
-    clave: 'numero_actividades',
-    titulo: 'N.º de actividades',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.numero_actividades),
-  },
-  { clave: 'operarios', titulo: 'Operarios', valorOrden: (f) => f.numero_operarios, render: celdaOperarios },
-  {
-    clave: 'horas_persona',
-    titulo: 'Horas-persona',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.horas_persona, 2),
-  },
-  {
-    clave: 'tiempo_minutos',
-    titulo: 'Tiempo',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearMinutos(f.tiempo_minutos),
-  },
-  {
-    clave: 'superficie_m2',
-    titulo: 'Superficie (m²)',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.superficie_m2),
-  },
-]
-
-type FilaTotal = TotalCuadrillaJornada & { capataz_nombre: string | null }
-
-const COLUMNAS_TOTALES: ColumnaTabla<FilaTotal>[] = [
-  { clave: 'jornada', titulo: 'Jornada', ordenable: true, render: (f) => formatearFecha(f.jornada) },
-  { clave: 'cuadrilla_nombre', titulo: 'Cuadrilla', ordenable: true },
-  { clave: 'capataz_nombre', titulo: 'Capataz', ordenable: true },
-  {
-    clave: 'numero_operarios',
-    titulo: 'Operarios',
-    subtitulo: 'distintos',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.numero_operarios),
-  },
-  {
-    clave: 'horas_persona',
-    titulo: 'Horas-persona',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.horas_persona, 2),
-  },
-  {
-    clave: 'tiempo_minutos',
-    titulo: 'Tiempo',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearMinutos(f.tiempo_minutos),
-  },
-  {
-    clave: 'superficie_m2',
-    titulo: 'Superficie (m²)',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.superficie_m2),
-  },
-]
-
-/** El back-end no envía el capataz en los totales: se toma de las filas de la misma cuadrilla y jornada. */
-function totalesConCapataz(datos: ResultadoDistribucionPersonal): FilaTotal[] {
-  const capataces = new Map<string, string | null>()
-  for (const f of datos.filas) capataces.set(`${f.jornada}|${f.cuadrilla_id}`, f.capataz_nombre)
-  return datos.totales_por_cuadrilla_jornada.map((t) => ({
-    ...t,
-    capataz_nombre: capataces.get(`${t.jornada}|${t.cuadrilla_id}`) ?? null,
-  }))
-}
-
 function aFiltrosApi(filtros: Borrador): FiltrosDistribucion {
   const resultado: FiltrosDistribucion = {}
   for (const { clave } of FILTROS_OPCIONALES) {
@@ -192,7 +113,7 @@ export default function DistribucionPersonalPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.reportes, { texto: TITULO }])
 
   const predeterminado = useMemo(() => semanaActual(), [])
-  const { filtros, establecer } = useFiltrosUrl({ ...predeterminado, ...BORRADOR_VACIO })
+  const { filtros, establecer } = useFiltrosUrl({ ...predeterminado, ...BORRADOR_VACIO, sin_tiempo: '' })
   const { desde, hasta } = filtros
   const opcionales: Borrador = {
     cuadrilla_id: filtros.cuadrilla_id,
@@ -202,6 +123,11 @@ export default function DistribucionPersonalPage() {
   }
   const claveOpcionales = JSON.stringify(opcionales)
   const hayOpcionales = Object.values(opcionales).some(Boolean)
+  const soloSinTiempo = filtros.sin_tiempo === '1'
+
+  const [medidaGrafico, setMedidaGrafico] = useState<Medida>(() => medidaInicial(soloSinTiempo))
+  const [medidaMapa, setMedidaMapa] = useState<Medida>(() => medidaInicial(soloSinTiempo))
+  const [detalle, setDetalle] = useState<Seleccion | null>(null)
 
   // Borrador de los selectores: se aplica con «Aplicar filtros».
   // Si los filtros de la URL cambian (por ejemplo, al quitar un chip), el borrador los refleja.
@@ -230,20 +156,34 @@ export default function DistribucionPersonalPage() {
     return opciones[clave].find((o) => o.valor === valor)?.texto ?? `n.º ${valor}`
   }
 
-  const filtrosActivos = FILTROS_OPCIONALES.filter(({ clave }) => opcionales[clave]).map(({ clave, etiqueta }) => ({
-    clave,
-    texto: `${etiqueta}: ${textoOpcion(clave, opcionales[clave])}`,
-  }))
+  const filtrosActivos = [
+    ...FILTROS_OPCIONALES.filter(({ clave }) => opcionales[clave]).map(({ clave, etiqueta }) => ({
+      clave,
+      texto: `${etiqueta}: ${textoOpcion(clave, opcionales[clave])}`,
+    })),
+    ...(soloSinTiempo ? [{ clave: 'sin_tiempo', texto: TEXTO_SIN_TIEMPO }] : []),
+  ]
 
   function limpiarFiltros() {
-    establecer({ ...BORRADOR_VACIO })
+    establecer({ ...BORRADOR_VACIO, sin_tiempo: null })
+  }
+
+  function alternarSinTiempo() {
+    const activar = !soloSinTiempo
+    establecer({ sin_tiempo: activar ? '1' : null })
+    // Horas-persona y tiempo no tienen datos con este filtro: se pasa a «Actividades».
+    if (activar) {
+      const sinTiempo = (m: Medida): Medida => (MEDIDAS_CON_TIEMPO.includes(m) ? 'numero_actividades' : m)
+      setMedidaGrafico(sinTiempo)
+      setMedidaMapa(sinTiempo)
+    }
   }
 
   return (
     <PlantillaReporte
       consulta={consulta}
       filtros={
-        <>
+        <div className={estilosPagina.filtros}>
           <FiltroPeriodo
             idBase="periodo-distribucion"
             desde={desde}
@@ -280,10 +220,10 @@ export default function DistribucionPersonalPage() {
           </FiltroPeriodo>
           <ChipsFiltrosActivos
             filtros={filtrosActivos}
-            onQuitar={(clave) => establecer({ [clave]: null } as Partial<Record<ClaveFiltro, null>>)}
+            onQuitar={(clave) => establecer({ [clave]: null } as Partial<Record<ClaveUrl, null>>)}
             onLimpiar={limpiarFiltros}
           />
-        </>
+        </div>
       }
       vacio={{
         titulo: 'Sin partes diarios en el periodo',
@@ -297,21 +237,78 @@ export default function DistribucionPersonalPage() {
       {(datos) => {
         const resumen = datos.resumen
         const sinTiempo = resumen?.actividades_sin_tiempo ?? 0
+        const filas = soloSinTiempo ? filasSinTiempo(datos.filas) : datos.filas
+        const mostradasSinTiempo = filas.reduce((a, f) => a + f.numero_actividades, 0)
+        const cuadrillas = cuadrillasDistintas(datos.filas)
+        // Al cambiar los datos o el filtro, los gráficos olvidan la parte elegida.
+        const claveGraficos = `${datos.generado_en}|${soloSinTiempo}`
         return (
           <>
             {resumen && (
-              <FilaTarjetas>
-                <TarjetaIndicador etiqueta="Jornadas con parte" valor={formatearNumero(resumen.jornadas_con_parte)} />
-                <TarjetaIndicador etiqueta="Operarios distintos" valor={formatearNumero(resumen.operarios_distintos)} />
-                <TarjetaIndicador etiqueta="Horas-persona" valor={formatearNumero(resumen.horas_persona, 2)} />
-                <TarjetaIndicador
-                  etiqueta="Actividades sin tiempo registrado"
-                  valor={formatearNumero(sinTiempo)}
-                  estado={sinTiempo > 0 ? 'alerta' : 'normal'}
-                  contexto={sinTiempo > 0 ? 'Su tiempo no suma en las horas-persona' : undefined}
-                  insignia={sinTiempo > 0 ? { tono: 'advertencia', texto: 'Sin tiempo registrado' } : undefined}
-                />
-              </FilaTarjetas>
+              <div className={estilosPagina.tarjetas}>
+                <div>
+                  <TarjetaIndicador
+                    etiqueta="Jornadas con parte"
+                    valor={formatearNumero(resumen.jornadas_con_parte)}
+                    contexto={plural(resumen.partes, 'parte diario registrado', 'partes diarios registrados')}
+                  />
+                </div>
+                <div>
+                  <TarjetaIndicador
+                    etiqueta="Operarios distintos"
+                    valor={formatearNumero(resumen.operarios_distintos)}
+                    contexto={`En ${plural(cuadrillas, 'cuadrilla', 'cuadrillas')}`}
+                  />
+                </div>
+                <div>
+                  <TarjetaIndicador
+                    etiqueta="Horas-persona"
+                    valor={formatearNumero(resumen.horas_persona, 2)}
+                    contexto={[
+                      `En ${plural(resumen.actividades, 'actividad', 'actividades')}`,
+                      resumen.horas_persona !== null && resumen.operarios_distintos > 0
+                        ? `${formatearNumero(resumen.horas_persona / resumen.operarios_distintos, 2)} h por operario`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  />
+                </div>
+                <div
+                  className={
+                    sinTiempo > 0
+                      ? `${estilosPagina.tarjetaFiltro} ${soloSinTiempo ? estilosPagina.tarjetaFiltroActiva : ''}`
+                      : undefined
+                  }
+                >
+                  <TarjetaIndicador
+                    etiqueta="Actividades sin tiempo registrado"
+                    valor={formatearNumero(sinTiempo)}
+                    estado={sinTiempo > 0 ? 'alerta' : 'normal'}
+                    contexto={
+                      sinTiempo === 0
+                        ? 'Todas las actividades tienen tiempo'
+                        : soloSinTiempo
+                          ? 'Filtro aplicado en los gráficos. Pulsa para quitarlo.'
+                          : 'Su tiempo no suma en las horas-persona. Pulsa para verlas en los gráficos.'
+                    }
+                    insignia={sinTiempo > 0 ? { tono: 'advertencia', texto: 'Sin tiempo registrado' } : undefined}
+                  />
+                  {sinTiempo > 0 && (
+                    <button
+                      type="button"
+                      className={estilosPagina.botonTarjeta}
+                      aria-pressed={soloSinTiempo}
+                      aria-label={
+                        soloSinTiempo
+                          ? 'Quitar el filtro de actividades sin tiempo registrado'
+                          : 'Filtrar los gráficos por las actividades sin tiempo registrado'
+                      }
+                      onClick={alternarSinTiempo}
+                    />
+                  )}
+                </div>
+              </div>
             )}
 
             {datos.cuadrillas_sin_parte.length > 0 && (
@@ -329,30 +326,59 @@ export default function DistribucionPersonalPage() {
               </AvisoEnLinea>
             )}
 
-            <section className={estilos.seccion} aria-labelledby="titulo-totales">
-              <h2 id="titulo-totales" className={estilos.tituloSeccion}>
-                Totales por cuadrilla y jornada
+            {soloSinTiempo && (
+              <AvisoEnLinea
+                tono="info"
+                titulo={TEXTO_SIN_TIEMPO}
+                accion={{ texto: 'Quitar el filtro', onClick: alternarSinTiempo }}
+              >
+                {mostradasSinTiempo < sinTiempo
+                  ? `Se muestran ${formatearNumero(mostradasSinTiempo)} de ${formatearNumero(sinTiempo)}: las demás ` +
+                    'comparten jornada, cuadrilla, tipo y espacio con actividades que sí tienen tiempo.'
+                  : 'Los gráficos muestran solo las actividades cuyo tiempo no se registró.'}
+              </AvisoEnLinea>
+            )}
+
+            <section className={estilos.seccion} aria-labelledby="titulo-distribucion">
+              <h2 id="titulo-distribucion" className={estilos.tituloSeccion}>
+                Distribución por cuadrilla, actividad, espacio y jornada
               </h2>
-              <TablaDatos
-                titulo="Totales por cuadrilla y jornada"
-                columnas={COLUMNAS_TOTALES}
-                filas={totalesConCapataz(datos)}
-                claveFila={(f) => `${f.jornada}-${f.cuadrilla_id}`}
-                ordenInicial={{ clave: 'jornada', direccion: 'asc' }}
+              <GraficoDistribucion
+                key={claveGraficos}
+                filas={filas}
+                medida={medidaGrafico}
+                onCambiarMedida={setMedidaGrafico}
+                onVerDetalle={setDetalle}
               />
             </section>
 
-            <section className={estilos.seccion} aria-labelledby="titulo-detalle">
-              <h2 id="titulo-detalle" className={estilos.tituloSeccion}>
-                Detalle por actividad y espacio
+            <section className={estilos.seccion} aria-labelledby="titulo-mapa">
+              <h2 id="titulo-mapa" className={estilos.tituloSeccion}>
+                Cuadrilla por jornada
               </h2>
-              <TablaDatos
-                titulo="Detalle por actividad y espacio"
-                columnas={COLUMNAS_DETALLE}
-                filas={datos.filas}
-                claveFila={(f, i) => `${f.jornada}-${f.cuadrilla_id}-${f.tipo_actividad_id}-${f.area_verde_id}-${i}`}
+              <p className={estilos.ayuda}>Cuanto más oscura la celda, mayor el valor de la medida elegida.</p>
+              <MapaCalorCuadrillaJornada
+                key={claveGraficos}
+                filas={filas}
+                medida={medidaMapa}
+                onCambiarMedida={setMedidaMapa}
+                onVerDetalle={setDetalle}
               />
             </section>
+
+            <DialogoDetalle
+              abierto={detalle !== null}
+              titulo={detalle?.titulo ?? ''}
+              descripcion={
+                detalle
+                  ? `Periodo del ${formatearFecha(desde)} al ${formatearFecha(hasta)}` +
+                    (soloSinTiempo ? ` · ${TEXTO_SIN_TIEMPO.toLowerCase()}` : '')
+                  : undefined
+              }
+              onCerrar={() => setDetalle(null)}
+            >
+              {detalle && <DetalleSeleccion seleccion={detalle} />}
+            </DialogoDetalle>
           </>
         )
       }}
