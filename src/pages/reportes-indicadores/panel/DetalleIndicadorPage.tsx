@@ -1,93 +1,52 @@
 // RF-REP-001 · HU-MOD06-001 criterio 3 · CU-MOD06-001 paso 5: detalle de los registros con los mismos filtros.
 /**
- * Detalle paginado (25 por página, en el servidor) de los registros de un indicador del panel, con los mismos
- * filtros que el panel (comparten la URL). La miga «Panel» vuelve con esos filtros.
+ * Detalle de los registros de un indicador del panel, con los mismos filtros que el panel (comparten la URL).
+ * La miga «Panel» vuelve con esos filtros.
  *
- * Cada indicador tiene sus columnas: la página elige un `ContenidoDetalle` tipado según la clave de la ruta.
+ * - Se descargan todos los registros del filtro (25 por página en el back-end, hasta MAXIMO_REGISTROS) y se
+ *   resumen en un gráfico; al elegir una barra, «Ver detalles» abre sus registros en un diálogo, y
+ *   «Ver todos los registros» abre la tabla completa.
  * - Clave desconocida: no se consulta y se muestra «No existe ese indicador» (también con el 404 del back-end).
- * - Página fuera de rango (404 `pagina-inexistente`): aviso con «Ir a la primera página».
+ * - Indicadores de MOD-04 (actividades y operarios): su detalle aún no se puede mostrar.
  */
-import type { ReactNode } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
-import { BotonEnlace } from '../../../components/ui/Boton'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
+import { useState } from 'react'
+import { useLocation, useParams } from 'react-router'
+import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
+import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '../../../components/ui/Boton'
+import EstadoVacio from '../../../components/ui/EstadoVacio'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS, rutaDetalleAtencion } from '../../../router/rutasApp'
-import { obtenerDetalleIndicador } from '../../../services/api/reportesGestion'
+import { MIGAS, RUTAS } from '../../../router/rutasApp'
 import type {
   ClaveIndicadorPanel,
-  DetalleIndicadorPanel,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
 } from '../../../types/reportesGestion'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../utils/formato'
-import {
-  esClaveIndicador,
-  insigniaEstadoAtencion,
-  notasUnicas,
-  numeroDeDecimal,
-  rutaDetalleConFiltros,
-} from '../../../utils/reportesGestion'
+import { formatearFecha, formatearNumero } from '../../../utils/formato'
+import { esClaveIndicador, notasUnicas, rutaDetalleConFiltros } from '../../../utils/reportesGestion'
 import PlantillaReporte from '../reportes/PlantillaReporte'
 import estilos from '../reportes/Reportes.module.css'
 import BarraFiltrosPanel from './BarraFiltrosPanel'
+import estilosPanel from './PanelIndicadores.module.css'
+import {
+  AGRUPACIONES_ATENCIONES_ESPACIO,
+  AGRUPACIONES_CONSUMO,
+  AGRUPACIONES_CUMPLIMIENTO,
+  cargarRegistros,
+  type Agrupacion,
+  type DetalleCompleto,
+} from './registros'
+import ResumenDetalle from './ResumenDetalle'
+import TablaRegistros from './TablaRegistros'
 import { useFiltrosPanel } from './useFiltrosPanel'
 
 /** Título mientras no llega el nombre del indicador. */
 const TITULO_PROVISIONAL = 'Detalle del indicador'
 
-/** Tamaño de página del back-end (`Paginacion.TAMANO_PAGINA`). */
-const POR_PAGINA = 25
-
-/** Texto del espacio de una atención sin espacio (como «Sin espacio» del back-end). */
-const TEXTO_SIN_ESPACIO = 'Sin espacio'
-
-// --- Columnas por indicador ------------------------------------------------------------------------------------
-
-/** Código de la atención con enlace a su ficha de MOD-05 (misma sesión; Guía Web 5.8: «abre la atención»). */
-function enlaceAtencion(fila: { atencion_id: number; codigo: string }): ReactNode {
-  return <Link to={rutaDetalleAtencion(fila.atencion_id)}>{fila.codigo}</Link>
-}
-
-const COLUMNAS_ATENCIONES_ESPACIO: ColumnaTabla<FilaAtencionEspacio>[] = [
-  { clave: 'fecha', titulo: 'Fecha', render: (f) => formatearFecha(f.fecha) },
-  { clave: 'codigo', titulo: 'Atención', render: enlaceAtencion },
-  { clave: 'tipo_servicio', titulo: 'Tipo de servicio' },
-  { clave: 'estado', titulo: 'Estado', render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} /> },
-  { clave: 'espacio', titulo: 'Espacio', render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
-]
-
-const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
-  { clave: 'fecha', titulo: 'Fecha', render: (f) => formatearFecha(f.fecha) },
-  { clave: 'codigo', titulo: 'Atención', render: enlaceAtencion },
-  { clave: 'tipo_servicio', titulo: 'Tipo de servicio' },
-  { clave: 'estado', titulo: 'Estado', render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} /> },
-  { clave: 'proveedor', titulo: 'Proveedor' },
-]
-
-/**
- * MOD-04 aún no registra el material. En desarrollo, con `MOD06_DATOS_EJEMPLO=true` en el back-end, llegan
- * registros de EJEMPLO; esto variará cuando se programe MOD-04 (sus columnas reales pueden cambiar).
- */
-const COLUMNAS_CONSUMO: ColumnaTabla<FilaMovimientoMaterial>[] = [
-  { clave: 'fecha', titulo: 'Fecha', render: (f) => formatearFecha(f.fecha) },
-  { clave: 'espacio', titulo: 'Espacio', render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
-  { clave: 'tipo_material', titulo: 'Material' },
-  { clave: 'categoria', titulo: 'Categoría' },
-  {
-    clave: 'cantidad',
-    titulo: 'Cantidad',
-    alineacion: 'derecha',
-    render: (f) => formatearNumero(numeroDeDecimal(f.cantidad)),
-  },
-  { clave: 'unidad', titulo: 'Unidad', render: (f) => f.unidad || SIN_VALOR },
-]
+const unidadMovimiento = (f: FilaMovimientoMaterial) => f.unidad
 
 // --- Estados propios ---------------------------------------------------------------------------------------------
 
@@ -117,21 +76,28 @@ function IndicadorInexistente() {
 
 interface ContenidoDetalleProps<F> {
   clave: ClaveIndicadorPanel
-  /** `null`: el indicador aún no tiene columnas propias (sus datos son de MOD-04). */
-  columnas: ColumnaTabla<F>[] | null
-  claveFila: (fila: F) => string
+  /** `null`: el indicador aún no tiene registros que mostrar (sus datos son de MOD-04). */
+  agrupaciones: Agrupacion<F>[] | null
+  unidadDe?: (fila: F) => string
 }
 
-function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetalleProps<F>) {
+/** Registros elegidos para el diálogo. */
+interface Eleccion {
+  titulo: string
+  filas: unknown[]
+}
+
+function ContenidoDetalle<F>({ clave, agrupaciones, unidadDe }: ContenidoDetalleProps<F>) {
   const { search } = useLocation()
   const filtrosPanel = useFiltrosPanel()
-  const { filtros, claveAplicados, consulta: parametros, establecer } = filtrosPanel
+  const { filtros, claveAplicados, consulta: parametros } = filtrosPanel
   const catalogos = useCatalogosFiltros()
-  const pagina = filtros.page || undefined
+  const [eleccion, setEleccion] = useState<Eleccion | null>(null)
 
-  const consulta = useConsulta<DetalleIndicadorPanel<F>>(
-    `detalle|${clave}|${filtros.desde}|${filtros.hasta}|${claveAplicados}|${pagina ?? ''}`,
-    (signal) => obtenerDetalleIndicador<F>(clave, parametros, pagina, signal),
+  const consulta = useConsulta<DetalleCompleto<F>>(
+    `detalle|${clave}|${filtros.desde}|${filtros.hasta}|${claveAplicados}`,
+    // Sin agrupaciones (MOD-04) basta la primera página: sus registros aún no se muestran.
+    (signal) => cargarRegistros<F>(clave, parametros, signal, agrupaciones ? undefined : 25),
     (datos) => datos.sin_datos,
   )
   const consultaConCatalogos = {
@@ -151,31 +117,6 @@ function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetallePro
 
   if (consulta.error?.codigo === 'indicador-no-encontrado') return <IndicadorInexistente />
 
-  const barra = (
-    <BarraFiltrosPanel
-      filtrosPanel={filtrosPanel}
-      catalogos={catalogos}
-      error={consulta.error}
-      cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
-      onReintentar={consultaConCatalogos.reintentar}
-    />
-  )
-
-  if (consulta.error?.codigo === 'pagina-inexistente') {
-    return (
-      <div className={estilos.pagina}>
-        {barra}
-        <AvisoEnLinea
-          tono="advertencia"
-          titulo="Esa página ya no existe"
-          accion={{ texto: 'Ir a la primera página', onClick: () => establecer({ page: null }) }}
-        >
-          El detalle tiene menos páginas con estos filtros
-        </AvisoEnLinea>
-      </div>
-    )
-  }
-
   // Sin registros, `PlantillaReporte` solo muestra el vacío: las notas que explican el motivo van debajo.
   const notasSinDatos =
     consulta.estado !== 'error' && !consulta.cargaVisible && consulta.datos?.sin_datos
@@ -186,7 +127,15 @@ function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetallePro
     <div className={estilos.pagina}>
       <PlantillaReporte
         consulta={consultaConCatalogos}
-        filtros={barra}
+        filtros={
+          <BarraFiltrosPanel
+            filtrosPanel={filtrosPanel}
+            catalogos={catalogos}
+            error={consulta.error}
+            cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
+            onReintentar={consultaConCatalogos.reintentar}
+          />
+        }
         vacio={{ titulo: 'Sin registros para este indicador' }}
       >
         {(datos) => (
@@ -199,19 +148,34 @@ function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetallePro
               <p className={estilos.ayuda}>Unidad: {datos.indicador.unidad}</p>
             </section>
 
-            {columnas ? (
-              <TablaDatos
-                titulo={`Registros de ${datos.indicador.nombre}`}
-                columnas={columnas}
-                filas={datos.results}
-                claveFila={claveFila}
-                paginacionServidor={{
-                  pagina: Number(filtros.page) || 1,
-                  total: datos.count,
-                  porPagina: POR_PAGINA,
-                  onCambiarPagina: (p) => establecer({ page: p > 1 ? String(p) : null }),
-                }}
-              />
+            {agrupaciones ? (
+              <section className={estilos.seccion} aria-labelledby="titulo-registros">
+                <h2 id="titulo-registros" className={estilos.tituloSeccion}>
+                  Registros del periodo
+                </h2>
+                {!datos.completo && (
+                  <AvisoEnLinea tono="advertencia" titulo="El gráfico resume solo una parte de los registros">
+                    Hay {formatearNumero(datos.count)} registros con estos filtros y se descargaron{' '}
+                    {formatearNumero(datos.results.length)}. Acota el periodo o añade filtros para verlos todos.
+                  </AvisoEnLinea>
+                )}
+                <ResumenDetalle<F>
+                  // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
+                  key={datos.generado_en}
+                  filas={datos.results}
+                  agrupaciones={agrupaciones}
+                  unidadDe={unidadDe}
+                  onVerDetalle={(t, filas) => setEleccion({ titulo: t, filas })}
+                />
+                <div className={estilosPanel.acciones}>
+                  <Boton
+                    variante="secundario"
+                    onClick={() => setEleccion({ titulo: `Registros de ${datos.indicador.nombre}`, filas: datos.results })}
+                  >
+                    Ver todos los registros ({formatearNumero(datos.results.length)})
+                  </Boton>
+                </div>
+              </section>
             ) : (
               <AvisoEnLinea tono="info">El detalle de este indicador todavía no se puede mostrar</AvisoEnLinea>
             )}
@@ -221,6 +185,22 @@ function ContenidoDetalle<F>({ clave, columnas, claveFila }: ContenidoDetallePro
                 {nota}
               </AvisoEnLinea>
             ))}
+
+            <DialogoDetalle
+              abierto={eleccion !== null}
+              titulo={eleccion?.titulo ?? ''}
+              descripcion={`Periodo del ${formatearFecha(filtros.desde)} al ${formatearFecha(filtros.hasta)}`}
+              onCerrar={() => setEleccion(null)}
+            >
+              {eleccion && (
+                <TablaRegistros
+                  clave={clave}
+                  titulo={eleccion.titulo}
+                  filas={eleccion.filas}
+                  incompleto={!datos.completo}
+                />
+              )}
+            </DialogoDetalle>
           </>
         )}
       </PlantillaReporte>
@@ -243,35 +223,28 @@ export default function DetalleIndicadorPage() {
         <ContenidoDetalle<FilaAtencionEspacio>
           key={indicador}
           clave={indicador}
-          columnas={COLUMNAS_ATENCIONES_ESPACIO}
-          // Una atención se repite por cada espacio de su alcance.
-          claveFila={(f) => `${f.atencion_id}-${f.area_verde_id ?? 'sin'}`}
+          agrupaciones={AGRUPACIONES_ATENCIONES_ESPACIO}
         />
       )
     case 'cumplimiento-tercerizados':
       return (
-        <ContenidoDetalle<FilaAtencionPeriodo>
-          key={indicador}
-          clave={indicador}
-          columnas={COLUMNAS_CUMPLIMIENTO}
-          claveFila={(f) => String(f.atencion_id)}
-        />
+        <ContenidoDetalle<FilaAtencionPeriodo> key={indicador} clave={indicador} agrupaciones={AGRUPACIONES_CUMPLIMIENTO} />
       )
     case 'consumo-materiales':
       return (
         <ContenidoDetalle<FilaMovimientoMaterial>
           key={indicador}
           clave={indicador}
-          columnas={COLUMNAS_CONSUMO}
-          claveFila={(f) => String(f.id)}
+          agrupaciones={AGRUPACIONES_CONSUMO}
+          unidadDe={unidadMovimiento}
         />
       )
     case 'actividades-por-estado':
     case 'distribucion-operarios':
-      // TODO: definir sus columnas cuando MOD-04 publique los partes diarios. Sin datos se ve el vacío con el
+      // TODO: definir sus registros cuando MOD-04 publique los partes diarios. Sin datos se ve el vacío con el
       // motivo del back-end. En desarrollo, con `MOD06_DATOS_EJEMPLO=true`, llegan datos de EJEMPLO (estado del
       // parte diario: «Abierto» o «Cerrado») y aquí se ve el aviso de que el detalle aún no se puede mostrar.
       // Esto variará cuando se programe MOD-04: el estado y los campos de cada registro pueden cambiar.
-      return <ContenidoDetalle<unknown> key={indicador} clave={indicador} columnas={null} claveFila={() => ''} />
+      return <ContenidoDetalle<unknown> key={indicador} clave={indicador} agrupaciones={null} />
   }
 }
