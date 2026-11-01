@@ -1,0 +1,34 @@
+/*
+ * Consumo y propagación de material vegetal (RF-REP-005): ajustes propios de esta pantalla.
+ * Mismos puntos de corte que el resto del proyecto (móvil).
+ */
+
+/* Misma separación que la plantilla de reportes entre la barra de filtros y los chips. */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  /* Barra de filtros: campos y botón a todo el ancho. */
+  .filtros form > * {
+    flex: 1 1 100%;
+  }
+  .filtros form > :last-child {
+    padding-top: 0;
+  }
+  .filtros form > :last-child button {
+    width: 100%;
+  }
+
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}

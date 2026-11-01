@@ -3,8 +3,11 @@
  * Consumo y propagación de material vegetal e insumos de un mes, por tipo y espacio.
  *
  * - Separa lo consumido, lo propagado y (HU v2) lo trasladado entre espacios, con su origen y destino, en
- *   pestañas. El back-end agrupa también por unidad: las cantidades de unidades distintas nunca se suman.
- * - Compara el mes con los 3 anteriores (paso 4). Un mes sin movimientos se avisa, nunca se muestra con ceros.
+ *   pestañas. Cada pestaña es un gráfico agrupado (material, espacio, categoría; o ruta, material, origen y
+ *   destino) con chips de unidad: las cantidades de unidades distintas nunca se suman. Al elegir una barra,
+ *   «Ver detalles» abre sus movimientos; «Ver todos los movimientos», la tabla completa de la pestaña.
+ * - Compara el mes con los 3 anteriores (paso 4) en columnas por mes. Un mes sin movimientos se muestra
+ *   «Sin movimientos», nunca con ceros.
  * - 1a: el mes sin registros muestra el estado vacío con el motivo del back-end.
  * - 2a: los consumos sin espacio llegan del back-end como «Sin espacio».
  * - 3a: los productos agronómicos aplicados por proveedores van en una sección aparte, sin mezclarse.
@@ -13,6 +16,9 @@
  * Esta pantalla no tiene mockup: sigue el patrón de los demás reportes (`PlantillaReporte`).
  */
 import { useState } from 'react'
+import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
+import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import GraficoAgrupado from '../../../components/reportes-indicadores/graficos/GraficoAgrupado'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
 import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
@@ -20,110 +26,90 @@ import EstadoVacio from '../../../components/ui/EstadoVacio'
 import FiltroMes from '../../../components/ui/FiltroMes'
 import Pestanas from '../../../components/ui/Pestanas'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS } from '../../../router/rutasApp'
 import { obtenerMaterialVegetal } from '../../../services/api/reportesGestion'
-import type { ResultadoMaterialVegetal, TotalMaterial, TotalTraslado } from '../../../types/reportesGestion'
+import type { ResultadoMaterialVegetal, TotalMaterial, TotalMes, TotalTraslado } from '../../../types/reportesGestion'
 import { formatearMes, formatearNumero } from '../../../utils/formato'
+import { enteroPositivo, mesActualLima } from '../../../utils/reportesGestion'
+import estilosMaterial from './MaterialVegetal.module.css'
+import GraficoComparacion from './material-vegetal/GraficoComparacion'
 import {
-  enteroPositivo,
-  filasComparacion,
-  mesActualLima,
-  mesesSinDatos,
-  numeroDeDecimal,
-  type FilaComparacion,
-} from '../../../utils/reportesGestion'
+  AGRUPACIONES_MATERIAL,
+  AGRUPACIONES_TRASLADO,
+  mesesComparacion,
+  MOVIMIENTOS,
+  unidadDe,
+  type Movimiento,
+} from './material-vegetal/materialVegetal'
+import { TablaMateriales, TablaMes, TablaTraslados } from './material-vegetal/TablasMaterial'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
 
 const TITULO = 'Consumo y propagación de material vegetal'
 
-type Vista = 'consumido' | 'propagado' | 'trasladado'
-
-const VISTAS: { valor: Vista; texto: string }[] = [
-  { valor: 'consumido', texto: 'Consumido' },
-  { valor: 'propagado', texto: 'Propagado' },
-  { valor: 'trasladado', texto: 'Trasladado' },
-]
+const AYUDA_MES = 'Formato AAAA-MM: año y mes, por ejemplo 2026-10'
 
 /** Pestaña de la URL, o «consumido» si no es válida. */
-function leerVista(valor: string): Vista {
-  return VISTAS.find((v) => v.valor === valor)?.valor ?? 'consumido'
+function leerVista(valor: string): Movimiento {
+  return MOVIMIENTOS.find((v) => v.valor === valor)?.valor ?? 'consumido'
 }
 
-function columnaCantidad<F extends { cantidad: string }>(): ColumnaTabla<F> {
-  return {
-    clave: 'cantidad',
-    titulo: 'Cantidad',
-    alineacion: 'derecha',
-    ordenable: true,
-    valorOrden: (f) => numeroDeDecimal(f.cantidad),
-    render: (f) => formatearNumero(numeroDeDecimal(f.cantidad)),
-  }
-}
+/** Registros abiertos en el diálogo «Ver detalles». */
+type Detalle =
+  | { tipo: 'material'; titulo: string; filas: TotalMaterial[] }
+  | { tipo: 'traslado'; titulo: string; filas: TotalTraslado[] }
+  | { tipo: 'mes'; titulo: string; filas: TotalMes[] }
 
-function columnaMovimientos<F extends { movimientos: number }>(): ColumnaTabla<F> {
-  return {
-    clave: 'movimientos',
-    titulo: 'Movimientos',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (f) => formatearNumero(f.movimientos),
-  }
-}
+/** Gráfico de una pestaña, con «Ver todos los movimientos». */
+function MovimientosVista({
+  vista,
+  datos,
+  onDetalle,
+}: {
+  vista: Movimiento
+  datos: ResultadoMaterialVegetal
+  onDetalle: (detalle: Detalle) => void
+}) {
+  const texto = MOVIMIENTOS.find((v) => v.valor === vista)?.texto.toLowerCase() ?? vista
+  const total = vista === 'trasladado' ? datos.trasladado.length : datos[vista].length
+  if (total === 0) return <EstadoVacio nivel={3} titulo={`Sin material ${texto} en el mes`} />
 
-const COLUMNAS_MATERIAL: ColumnaTabla<TotalMaterial>[] = [
-  { clave: 'espacio', titulo: 'Espacio' },
-  { clave: 'tipo_material', titulo: 'Material', ordenable: true },
-  { clave: 'categoria', titulo: 'Categoría' },
-  columnaCantidad<TotalMaterial>(),
-  { clave: 'unidad', titulo: 'Unidad' },
-  columnaMovimientos<TotalMaterial>(),
-]
+  const verTodos = () =>
+    vista === 'trasladado'
+      ? onDetalle({ tipo: 'traslado', titulo: `Material ${texto}`, filas: datos.trasladado })
+      : onDetalle({ tipo: 'material', titulo: `Material ${texto}`, filas: datos[vista] })
 
-const COLUMNAS_TRASLADO: ColumnaTabla<TotalTraslado>[] = [
-  { clave: 'origen', titulo: 'Origen' },
-  { clave: 'destino', titulo: 'Destino' },
-  { clave: 'tipo_material', titulo: 'Material', ordenable: true },
-  { clave: 'categoria', titulo: 'Categoría' },
-  columnaCantidad<TotalTraslado>(),
-  { clave: 'unidad', titulo: 'Unidad' },
-  columnaMovimientos<TotalTraslado>(),
-]
-
-const COLUMNAS_COMPARACION: ColumnaTabla<FilaComparacion>[] = [
-  { clave: 'mes', titulo: 'Mes', render: (f) => formatearMes(f.mes) },
-  { clave: 'movimiento', titulo: 'Movimiento' },
-  { clave: 'tipo_material', titulo: 'Material' },
-  { clave: 'unidad', titulo: 'Unidad' },
-  { clave: 'cantidad', titulo: 'Cantidad', alineacion: 'derecha', render: (f) => formatearNumero(numeroDeDecimal(f.cantidad)) },
-]
-
-function claveMaterial(f: TotalMaterial): string {
-  return `${f.area_verde_id ?? 'sin'}|${f.tipo_material}|${f.unidad}`
-}
-
-function claveTraslado(f: TotalTraslado): string {
-  return `${f.origen_area_id ?? 'sin'}|${f.destino_area_id ?? 'sin'}|${f.tipo_material}|${f.unidad}`
-}
-
-function TablaVista({ vista, datos }: { vista: Vista; datos: ResultadoMaterialVegetal }) {
-  const texto = VISTAS.find((v) => v.valor === vista)?.texto.toLowerCase() ?? vista
-  const vacio = <EstadoVacio nivel={3} titulo={`Sin material ${texto} en el mes`} />
-  if (vista === 'trasladado') {
-    if (datos.trasladado.length === 0) return vacio
-    return (
-      <TablaDatos titulo="Material trasladado" columnas={COLUMNAS_TRASLADO} filas={datos.trasladado} claveFila={claveTraslado} />
-    )
-  }
-  const filas = vista === 'consumido' ? datos.consumido : datos.propagado
-  if (filas.length === 0) return vacio
-  // Orden del back-end: «Sin espacio» al final.
-  return <TablaDatos titulo={`Material ${texto}`} columnas={COLUMNAS_MATERIAL} filas={filas} claveFila={claveMaterial} />
+  return (
+    <div className={estilos.seccion}>
+      {vista === 'trasladado' ? (
+        <GraficoAgrupado<TotalTraslado>
+          // Al cambiar los datos, el gráfico olvida la barra elegida.
+          key={datos.generado_en}
+          filas={datos.trasladado}
+          agrupaciones={AGRUPACIONES_TRASLADO}
+          unidadDe={unidadDe}
+          onVerDetalle={(titulo, filas) => onDetalle({ tipo: 'traslado', titulo, filas })}
+        />
+      ) : (
+        <GraficoAgrupado<TotalMaterial>
+          key={`${vista}|${datos.generado_en}`}
+          filas={datos[vista]}
+          agrupaciones={AGRUPACIONES_MATERIAL}
+          unidadDe={unidadDe}
+          onVerDetalle={(titulo, filas) => onDetalle({ tipo: 'material', titulo, filas })}
+        />
+      )}
+      <div className={estilosMaterial.acciones}>
+        <Boton variante="secundario" onClick={verTodos}>
+          Ver todos los movimientos ({formatearNumero(total)})
+        </Boton>
+      </div>
+    </div>
+  )
 }
 
 export default function MaterialVegetalPage() {
@@ -135,6 +121,7 @@ export default function MaterialVegetalPage() {
   const vista = leerVista(filtros.vista)
   const areaNumerica = enteroPositivo(area)
   const catalogos = useCatalogosFiltros()
+  const [detalle, setDetalle] = useState<Detalle | null>(null)
 
   // Borrador del espacio: se aplica con el botón de la barra.
   const [borradorArea, setBorradorArea] = useState(area)
@@ -168,12 +155,13 @@ export default function MaterialVegetalPage() {
     <PlantillaReporte
       consulta={consultaConCatalogos}
       filtros={
-        <>
+        <div className={estilosMaterial.filtros}>
           <FiltroMes
             idBase="material-vegetal"
             mes={mes}
             errorServidor={errorMes}
             cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
+            ayudaEmergente={<AyudaEmergente id="material-vegetal-ayuda-mes" tema="el mes" texto={AYUDA_MES} />}
             onAplicar={(nuevoMes) => {
               if (nuevoMes === mes && borradorArea === area) consultaConCatalogos.reintentar()
               else establecer({ mes: nuevoMes, area_verde_id: borradorArea })
@@ -191,7 +179,7 @@ export default function MaterialVegetalPage() {
             />
           </FiltroMes>
           <ChipsFiltrosActivos filtros={filtrosActivos} onQuitar={limpiar} onLimpiar={limpiar} />
-        </>
+        </div>
       }
       vacio={{
         titulo: 'Sin movimientos de material en el mes',
@@ -203,9 +191,7 @@ export default function MaterialVegetalPage() {
       }}
     >
       {(datos) => {
-        const comparacion = filasComparacion(datos.comparacion)
-        const sinDatos = mesesSinDatos(datos.comparacion)
-        const totales: Record<Vista, number> = {
+        const totales: Record<Movimiento, number> = {
           consumido: datos.consumido.length,
           propagado: datos.propagado.length,
           trasladado: datos.trasladado.length,
@@ -220,13 +206,13 @@ export default function MaterialVegetalPage() {
                 etiqueta="Movimientos del mes"
                 valor={vista}
                 onCambiar={(valor) => establecer({ vista: valor })}
-                pestanas={VISTAS.map((v) => ({
+                pestanas={MOVIMIENTOS.map((v) => ({
                   valor: v.valor,
                   texto: v.texto,
                   extra: <span className="cifra"> ({formatearNumero(totales[v.valor])})</span>,
                 }))}
               >
-                <TablaVista vista={vista} datos={datos} />
+                <MovimientosVista vista={vista} datos={datos} onDetalle={setDetalle} />
               </Pestanas>
             </section>
 
@@ -235,17 +221,14 @@ export default function MaterialVegetalPage() {
                 <h2 id="titulo-comparacion" className={estilos.tituloSeccion}>
                   Comparación con meses anteriores
                 </h2>
-                {sinDatos.length > 0 && (
-                  <AvisoEnLinea tono="info">Sin movimientos en: {sinDatos.map(formatearMes).join(', ')}</AvisoEnLinea>
-                )}
-                {comparacion.length > 0 && (
-                  <TablaDatos
-                    titulo="Comparación con meses anteriores (las cantidades no se suman entre unidades)"
-                    columnas={COLUMNAS_COMPARACION}
-                    filas={comparacion}
-                    claveFila={(f) => `${f.mes}|${f.movimiento}|${f.tipo_material}|${f.unidad}`}
-                  />
-                )}
+                <p className={estilos.ayuda}>
+                  {formatearMes(mes)} frente a los 3 meses anteriores. Las cantidades no se suman entre unidades.
+                </p>
+                <GraficoComparacion
+                  key={datos.generado_en}
+                  meses={mesesComparacion(datos)}
+                  onVerDetalle={(titulo, filas) => setDetalle({ tipo: 'mes', titulo, filas })}
+                />
               </section>
             )}
 
@@ -271,6 +254,17 @@ export default function MaterialVegetalPage() {
                 {nota}
               </AvisoEnLinea>
             ))}
+
+            <DialogoDetalle
+              abierto={detalle !== null}
+              titulo={detalle?.titulo ?? ''}
+              descripcion={formatearMes(mes)}
+              onCerrar={() => setDetalle(null)}
+            >
+              {detalle?.tipo === 'material' && <TablaMateriales titulo={detalle.titulo} filas={detalle.filas} />}
+              {detalle?.tipo === 'traslado' && <TablaTraslados titulo={detalle.titulo} filas={detalle.filas} />}
+              {detalle?.tipo === 'mes' && <TablaMes titulo={detalle.titulo} filas={detalle.filas} />}
+            </DialogoDetalle>
           </>
         )
       }}
