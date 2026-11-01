@@ -1,0 +1,94 @@
+/* DialogoDetalle: Guía Web 5.10, con las medidas de DialogoFormulario (variante amplia). */
+.dialogo {
+  --dialogo-ancho: 64rem;
+  width: min(var(--dialogo-ancho), calc(100vw - 2 * var(--space-6)));
+  max-height: calc(100vh - 2 * var(--space-6));
+  padding: 0;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--web-elev-3);
+}
+
+.dialogo::backdrop {
+  background: var(--web-scrim);
+}
+
+.marco {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2 * var(--space-6) - 2px);
+}
+
+.cabecera {
+  padding: var(--space-6) var(--space-6) 0;
+}
+
+.titulo {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+  overflow-wrap: anywhere;
+}
+
+.descripcion {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+/* El cuerpo se desplaza; título y acciones quedan visibles. */
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-4) var(--space-6);
+  overflow-y: auto;
+}
+
+/* El contenido no se encoge para caber: si no cabe, el cuerpo se desplaza (la tabla recorta lo que encoge). */
+.cuerpo > * {
+  flex-shrink: 0;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+/* Móvil: pantalla completa. */
+@media (max-width: 767px) {
+  .dialogo {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .marco {
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .cuerpo {
+    flex: 1;
+  }
+
+  .cabecera,
+  .cuerpo,
+  .acciones {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
