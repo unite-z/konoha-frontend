@@ -1,0 +1,256 @@
+/*
+ * Solicitud de análisis (RF-IA-001): superficie de tarjeta del proyecto, opciones seleccionables con el borde
+ * verde de las tarjetas de enlace y la elegida con el fondo de los filtros activos.
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.titulo {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+.ayuda,
+.alternativa {
+  color: var(--color-text-secondary);
+}
+
+.enlace {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green-700);
+  font: inherit;
+  font-weight: var(--type-label-md-weight);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Búsqueda: el campo crece y el botón queda alineado con él. */
+.busqueda,
+.filaManual {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3) var(--space-4);
+}
+.busqueda > :first-child {
+  flex: 1 1 22rem;
+}
+.filaManual > :first-child {
+  flex: 0 1 22rem;
+}
+
+/* Deja encima el espacio de la etiqueta y de la ayuda del campo. */
+.accionBusqueda,
+.accionManual {
+  padding-top: calc(var(--type-label-md-line) + var(--type-body-sm-line) + 2 * var(--space-1));
+}
+
+.manual {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* --- Opciones seleccionables --------------------------------------------- */
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duracion-transicion),
+    background-color var(--duracion-transicion);
+}
+.opcion:hover {
+  border-color: var(--green-700);
+  background: var(--green-50);
+}
+.opcion svg {
+  flex: none;
+  color: var(--green-700);
+}
+
+.textoOpcion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.tituloOpcion {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.metaOpcion {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.descripcionOpcion {
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.lineaInsignias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Atención elegida en el paso 2. */
+.elegida {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-page);
+  border: 1px solid var(--web-border-subtle);
+  overflow-wrap: anywhere;
+}
+
+/* Informes: opciones de radio con aspecto de tarjeta. */
+.grupoInformes {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.leyendaGrupo {
+  margin-bottom: var(--space-2);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+.informe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  transition:
+    border-color var(--duracion-transicion),
+    background-color var(--duracion-transicion);
+}
+.informe:hover {
+  border-color: var(--green-700);
+}
+
+.informeActivo,
+.informeActivo:hover {
+  border-color: var(--green-700);
+  background: var(--green-50);
+}
+
+.etiquetaInforme {
+  display: flex;
+  flex: 1 1 18rem;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  cursor: pointer;
+}
+.etiquetaInforme input {
+  margin-top: var(--space-1);
+  accent-color: var(--green-700);
+}
+
+.verPropuesta {
+  flex: none;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.botonesPaginacion {
+  display: flex;
+  gap: var(--space-2);
+}
+
+@media (max-width: 767px) {
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .busqueda > *,
+  .filaManual > * {
+    flex: 1 1 100%;
+  }
+  .accionBusqueda,
+  .accionManual {
+    padding-top: 0;
+  }
+  .accionBusqueda button,
+  .accionManual button,
+  .acciones > * {
+    width: 100%;
+  }
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
