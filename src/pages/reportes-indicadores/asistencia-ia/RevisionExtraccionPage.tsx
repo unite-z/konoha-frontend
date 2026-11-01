@@ -19,7 +19,6 @@ import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Icono from '../../../components/ui/Icono'
 import Selector from '../../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_VALIDAR_IA } from '../../../config/permisos'
@@ -38,11 +37,12 @@ import {
   type TipoDato,
   type ValorCampo,
 } from '../../../types/ia'
-import { ETIQUETA_OPCION_ACCION, insigniaAccion, insigniaSugerencia } from '../../../utils/estados'
+import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '../../../utils/estados'
 import { formatearFechaHora, SIN_VALOR } from '../../../utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
+import CabeceraPropuesta from './extraccion/CabeceraPropuesta'
 import {
   ACCIONES,
   convertirCorreccion,
@@ -176,10 +176,6 @@ export default function RevisionExtraccionPage() {
   const campos = contenido.entrada.campos_solicitados
   const enPropuesta = sugerencia.estado === 'Propuesta'
   const editable = enPropuesta && puedeValidar
-  const conValor = campos.filter((c) => {
-    const valor = contenido.propuesta[claveCampo(c.campo_id)]?.valor
-    return valor !== null && valor !== undefined
-  }).length
   const nombreCampo = (c: CampoSolicitado) => c.nombre_campo ?? claveCampo(c.campo_id)
 
   function actualizarDecision(clave: string, cambio: Partial<DecisionCampo>) {
@@ -478,47 +474,7 @@ export default function RevisionExtraccionPage() {
     <div className={estilos.pagina}>
       <div>{volver}</div>
 
-      {/* Cabecera de identificación (mockup, pantalla 6). */}
-      <section className={estilosIa.cabeceraPropuesta} aria-label="Identificación de la propuesta">
-        <dl className={estilosIa.datosPropuesta}>
-          <div>
-            <dt>Reporte del proveedor</dt>
-            <dd>n.º {contenido.entrada.reporte_proveedor_id}</dd>
-          </div>
-          <div>
-            <dt>Atención</dt>
-            <dd>n.º {contenido.entrada.atencion_id}</dd>
-          </div>
-          <div>
-            <dt>Formato estándar</dt>
-            <dd>versión {contenido.entrada.formato_version ?? SIN_VALOR}</dd>
-          </div>
-          <div>
-            <dt>Generada con</dt>
-            <dd>
-              {contenido.ia.proveedor} · {contenido.ia.modelo}
-            </dd>
-          </div>
-        </dl>
-        <Badge {...insigniaSugerencia(sugerencia.estado, sugerencia.etiqueta_estado)} />
-      </section>
-
-      {/* Documento analizado (mockup, pantalla 6: «Reporte y documentos del proveedor»). */}
-      <section className={estilos.seccion} aria-labelledby="titulo-documento">
-        <h2 id="titulo-documento" className={estilos.tituloSeccion}>
-          Documento analizado
-        </h2>
-        <div className={estilosIa.documento}>
-          <span className={estilosIa.nombreDocumento}>
-            <Icono nombre="documento" />
-            Informe final del proveedor · PDF · archivo n.º {contenido.entrada.archivo_id}
-          </span>
-          <span className={`${estilosIa.cobertura} cifra`}>
-            Formato estándar: {conValor} de {campos.length} datos
-          </span>
-          {/* TODO: acción «Ver» del PDF cuando se exponga la descarga de archivos (el back-end del MOD-06 no la ofrece). */}
-        </div>
-      </section>
+      <CabeceraPropuesta sugerencia={sugerencia} />
 
       {contenido.campos_obligatorios_faltantes.length > 0 && (
         <AvisoEnLinea tono="advertencia" titulo="Datos mínimos no encontrados en el informe">
