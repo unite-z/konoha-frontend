@@ -1,0 +1,43 @@
+/* Ayuda emergente: icono de información con un texto breve encima del contenido. */
+.ayuda {
+  position: relative;
+  display: inline-flex;
+}
+
+.boton {
+  display: inline-flex;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-info);
+  cursor: help;
+}
+.boton:hover {
+  background: var(--color-info-bg);
+}
+
+.burbuja {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 3;
+  width: max-content;
+  max-width: 16rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--neutral-950);
+  color: var(--color-bg-surface);
+  box-shadow: var(--web-elev-2);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--duracion-transicion);
+}
+
+.ayuda:hover .burbuja,
+.ayuda:focus-within .burbuja {
+  visibility: visible;
+  opacity: 1;
+}
