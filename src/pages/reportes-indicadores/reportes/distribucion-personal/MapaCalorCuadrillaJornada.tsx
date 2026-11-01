@@ -6,9 +6,11 @@
 import { useMemo, useState } from 'react'
 import type { FilaDistribucion } from '../../../../types/reportes'
 import { formatearFecha, SIN_VALOR } from '../../../../utils/formato'
+import { fechaCorta } from '../../../../components/reportes-indicadores/graficos/escala'
+import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
 import {
   claveCelda,
-  fechaCorta,
   formatearMedida,
   matrizCuadrillaJornada,
   MEDIDAS,
@@ -18,9 +20,8 @@ import {
   type Medida,
 } from './agregacion'
 import type { Seleccion } from './DetalleSeleccion'
-import comunes from './Graficos.module.css'
 import estilos from './MapaCalor.module.css'
-import { BarraSeleccion, CabeceraGrafico, ControlMedida, SinDatosMedida } from './PartesGrafico'
+import { ControlMedida, SinDatosMedida } from './PartesGrafico'
 
 const CLASE_NIVEL = [estilos.nivel0, estilos.nivel1, estilos.nivel2, estilos.nivel3, estilos.nivel4]
 
@@ -56,9 +57,9 @@ export default function MapaCalorCuadrillaJornada({ filas, medida, onCambiarMedi
         <ControlMedida medida={medida} onCambiar={onCambiarMedida} />
       </div>
       <BarraSeleccion
-        seleccion={seleccion}
+        seleccionado={seleccion?.titulo ?? null}
         indicacion="Haz clic en una celda para ver su detalle."
-        onVerDetalle={onVerDetalle}
+        onVerDetalle={() => seleccion && onVerDetalle(seleccion)}
       />
       {maximo === 0 ? (
         <SinDatosMedida medida={medida} />

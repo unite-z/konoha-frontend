@@ -4,9 +4,14 @@
  *
  * Presentacional: el borrador, los catálogos y los estados permitidos llegan por props.
  * No hay selectores de cuadrilla ni de sector: el back-end aún no los acepta y lo explica en `notas`.
+ *
+ * La ayuda fija de «Tipo de servicio» va en una ayuda emergente (icono de información) para no descuadrar la
+ * barra; los avisos variables del catálogo (por ejemplo, incompleto) siguen visibles bajo el campo.
  */
 import Selector, { OPCION_TODOS } from '../ui/Selector'
+import AyudaEmergente from './AyudaEmergente'
 import { OPCIONES_MODALIDAD } from '../../utils/estados'
+import estilos from './SelectoresFiltroGestion.module.css'
 import type { CatalogosFiltros } from './useCatalogosFiltros'
 
 /** Campos del borrador de filtros, como texto (valor vacío = «Todos»). */
@@ -47,16 +52,21 @@ export default function SelectoresFiltroGestion({
         bloqueadoMotivo={catalogos.motivoBloqueoEspacios}
         onCambiar={(valor) => onCambiar('area_verde_id', valor)}
       />
-      <Selector
-        id={`${idBase}-tipo-servicio`}
-        etiqueta="Tipo de servicio"
-        valor={borrador.tipo_servicio_id}
-        opciones={catalogos.tiposServicio}
-        opcionTodos={OPCION_TODOS}
-        ayuda={catalogos.ayudaTipos ? `${AYUDA_TIPO_SERVICIO}. ${catalogos.ayudaTipos}` : AYUDA_TIPO_SERVICIO}
-        bloqueadoMotivo={catalogos.motivoBloqueoTipos}
-        onCambiar={(valor) => onCambiar('tipo_servicio_id', valor)}
-      />
+      <div className={estilos.campoConAyuda}>
+        <Selector
+          id={`${idBase}-tipo-servicio`}
+          etiqueta="Tipo de servicio"
+          valor={borrador.tipo_servicio_id}
+          opciones={catalogos.tiposServicio}
+          opcionTodos={OPCION_TODOS}
+          ayuda={catalogos.ayudaTipos}
+          bloqueadoMotivo={catalogos.motivoBloqueoTipos}
+          onCambiar={(valor) => onCambiar('tipo_servicio_id', valor)}
+        />
+        <span className={estilos.iconoAyuda}>
+          <AyudaEmergente id={`${idBase}-ayuda-tipo-servicio`} tema="el tipo de servicio" texto={AYUDA_TIPO_SERVICIO} />
+        </span>
+      </div>
       <Selector
         id={`${idBase}-estado`}
         etiqueta="Estado"

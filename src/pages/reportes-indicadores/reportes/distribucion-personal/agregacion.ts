@@ -8,6 +8,7 @@
  *   tiempo, así que el filtro trabaja con esas filas.
  */
 import type { FilaDistribucion } from '../../../../types/reportes'
+import { escalaRedonda } from '../../../../components/reportes-indicadores/graficos/escala'
 import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 
 export type Dimension = 'cuadrilla' | 'actividad' | 'espacio' | 'jornada'
@@ -176,33 +177,14 @@ export function cuadrillasDistintas(filas: FilaDistribucion[]): number {
   return new Set(filas.map((f) => f.cuadrilla_id)).size
 }
 
-/** «20 oct.» a partir de una fecha ISO. */
-export function fechaCorta(jornada: string): string {
-  return formatearFecha(jornada).split(' ').slice(0, 2).join(' ')
-}
-
-/** Largo de una barra (0 a 100) respecto del máximo. */
-export function porcentaje(valor: number | null, maximo: number): number {
-  return valor !== null && maximo > 0 ? Math.max(0, Math.min(100, (valor / maximo) * 100)) : 0
-}
-
-/** Marcas del eje: 0 y cuartos de la escala. */
-export const DIVISIONES_EJE = 4
-
 /**
- * Escala redonda del eje (≥ máximo): cuatro pasos de 1, 2 o 5 × 10ⁿ, para que las marcas tengan cifras limpias.
- * El tiempo usa pasos de horas completas (salvo por debajo de una hora).
+ * Escala redonda del eje (≥ máximo) para la medida: conteos con pasos enteros y el tiempo en horas completas.
  */
 export function escalaEje(maximo: number, medida: Medida): number {
-  if (maximo <= 0) return 0
-  const enHoras = medida === 'tiempo_minutos' && maximo > 60
-  const objetivo = (enHoras ? maximo / 60 : maximo) / DIVISIONES_EJE
-  const potencia = 10 ** Math.floor(Math.log10(objetivo))
-  const paso = [1, 2, 5, 10].map((m) => m * potencia).find((p) => p >= objetivo - 1e-9) ?? 10 * potencia
-  // Operarios y actividades son enteros: el paso nunca baja de 1.
-  const enteros = medida === 'operarios' || medida === 'numero_actividades' || enHoras
-  const pasoFinal = enteros ? Math.max(1, paso) : paso
-  return pasoFinal * DIVISIONES_EJE * (enHoras ? 60 : 1)
+  return escalaRedonda(maximo, {
+    enteros: medida === 'operarios' || medida === 'numero_actividades',
+    minutos: medida === 'tiempo_minutos',
+  })
 }
 
 /** Texto de una marca del eje (las horas-persona sin decimales). */

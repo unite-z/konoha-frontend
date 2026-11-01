@@ -1,21 +1,22 @@
 /**
- * Columnas por jornada del gráfico de RF-REP-004, en orden de fecha, con eje vertical y líneas guía.
- * Con muchas jornadas se desplazan en horizontal.
+ * Columnas por fecha de los gráficos del MOD-06, en orden de fecha, con eje vertical y líneas guía.
+ * Con muchas fechas se desplazan en horizontal.
  */
-import { fechaCorta, formatearMedida, porcentaje, type Medida } from './agregacion'
+import { fechaCorta, porcentaje } from './escala'
 import estilos from './Columnas.module.css'
 
 export interface ColumnaGrafico {
   clave: string
   texto: string
   valor: number | null
-  /** Fecha ISO de la jornada. */
-  jornada: string
+  /** Fecha ISO de la columna. */
+  fecha: string
 }
 
-export interface ColumnasJornadaProps {
+export interface ColumnasFechaProps {
   columnas: ColumnaGrafico[]
-  medida: Medida
+  /** Texto del valor de una columna. */
+  formatear: (valor: number | null) => string
   escala: number
   /** Textos de las marcas del eje, de 0 a la escala. */
   marcas: string[]
@@ -23,14 +24,14 @@ export interface ColumnasJornadaProps {
   onAlternar: (clave: string) => void
 }
 
-export default function ColumnasJornada({
+export default function ColumnasFecha({
   columnas,
-  medida,
+  formatear,
   escala,
   marcas,
   claveElegida,
   onAlternar,
-}: ColumnasJornadaProps) {
+}: ColumnasFechaProps) {
   return (
     <div className={estilos.grafico}>
       <div className={estilos.eje} aria-hidden="true">
@@ -40,10 +41,10 @@ export default function ColumnasJornada({
           ))}
         </span>
       </div>
-      <div className={estilos.desplazable} tabIndex={0} role="region" aria-label="Columnas por jornada">
+      <div className={estilos.desplazable} tabIndex={0} role="region" aria-label="Columnas por fecha">
         <ul className={estilos.columnas}>
           {columnas.map((c) => {
-            const texto = formatearMedida(c.valor, medida)
+            const texto = formatear(c.valor)
             const activa = c.clave === claveElegida
             return (
               <li key={c.clave} className={estilos.item}>
@@ -62,7 +63,7 @@ export default function ColumnasJornada({
                       style={{ height: `${porcentaje(c.valor, escala)}%` }} // estilo-calculado
                     />
                   </span>
-                  <span className={estilos.fecha}>{fechaCorta(c.jornada)}</span>
+                  <span className={estilos.fecha}>{fechaCorta(c.fecha)}</span>
                 </button>
               </li>
             )

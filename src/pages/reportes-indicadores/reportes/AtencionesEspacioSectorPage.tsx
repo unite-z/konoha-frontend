@@ -11,6 +11,7 @@
  * Supuesto: periodo predeterminado a confirmar con la contraparte (CU-MOD06-001). Aquí, la semana actual.
  */
 import { useMemo, useState } from 'react'
+import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
 import TarjetaFiltro from '../../../components/reportes-indicadores/TarjetaFiltro'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
@@ -34,7 +35,6 @@ import {
 } from '../../../types/reportes'
 import { OPCIONES_MODALIDAD, textoModalidad } from '../../../utils/estados'
 import { formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
-import AyudaEmergente from './atenciones-espacio-sector/AyudaEmergente'
 import BloqueSector from './atenciones-espacio-sector/BloqueSector'
 import {
   AtencionesFrenteAlMaximo,

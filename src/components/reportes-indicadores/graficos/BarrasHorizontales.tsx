@@ -1,8 +1,8 @@
 /**
- * Barras horizontales del gráfico de RF-REP-004, con su eje de valores. En «agrupadas», cada grupo (clase de
+ * Barras horizontales de los gráficos del MOD-06, con su eje de valores. En «agrupadas», cada grupo (clase de
  * actividad) va seguido de sus subgrupos (tipos), más claros y finos.
  */
-import { formatearMedida, porcentaje, type Medida } from './agregacion'
+import { porcentaje } from './escala'
 import estilos from './Barras.module.css'
 import comunes from './Graficos.module.css'
 
@@ -19,7 +19,8 @@ export interface BarraGrafico {
 export interface BarrasHorizontalesProps {
   barras: BarraGrafico[]
   agrupadas: boolean
-  medida: Medida
+  /** Texto del valor de una barra (por ejemplo, «12,50 h»). */
+  formatear: (valor: number | null) => string
   escala: number
   /** Textos de las marcas del eje, de 0 a la escala. */
   marcas: string[]
@@ -30,14 +31,14 @@ export interface BarrasHorizontalesProps {
 export default function BarrasHorizontales({
   barras,
   agrupadas,
-  medida,
+  formatear,
   escala,
   marcas,
   claveElegida,
   onAlternar,
 }: BarrasHorizontalesProps) {
   function boton(barra: BarraGrafico) {
-    const texto = formatearMedida(barra.valor, medida)
+    const texto = formatear(barra.valor)
     const activa = barra.clave === claveElegida
     return (
       <button
