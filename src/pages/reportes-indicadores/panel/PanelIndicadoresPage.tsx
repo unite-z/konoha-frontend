@@ -4,8 +4,8 @@
  * filtros elegidos, en el orden en que llegan del back-end.
  *
  * Composición (Guía Web 5.7 y 6.1, patrón «Panel de indicadores»; mockup, pantalla 2): filtros globales arriba,
- * tarjetas de indicador (dos filas, de 3 a 4 por fila), tablas de apoyo con el desglose de cada indicador y el
- * acceso al mapa. Cada tarjeta enlaza a su detalle con los mismos filtros (HU-MOD06-001, criterio 3).
+ * tarjetas de indicador (dos filas, de 3 a 4 por fila), un gráfico con el desglose de cada indicador (al elegir
+ * una barra, «Ver detalles» abre sus registros en un diálogo) y el acceso al mapa. Cada tarjeta enlaza a su detalle con los mismos filtros (HU-MOD06-001, criterio 3).
  *
  * - Sin alertas: no hay umbrales definidos (pendiente 6 de los mockups) y el back-end no los envía.
  * - Los cinco indicadores tienen el mismo permiso: un 403 lo muestra `PlantillaReporte`; un usuario sin rol lo
@@ -14,68 +14,35 @@
  *
  * Supuestos (pendientes de confirmar): periodo predeterminado = semana actual; el mapa no se incrusta (ver abajo).
  */
+import { useState } from 'react'
 import { useLocation } from 'react-router'
-import Badge from '../../../components/ui/Badge'
+import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'
 import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS, rutaDetalleIndicador } from '../../../router/rutasApp'
 import { obtenerPanel } from '../../../services/api/reportesGestion'
-import type { ClaveIndicadorPanel, ElementoDesglose, ResultadoIndicador, ResultadoPanel } from '../../../types/reportesGestion'
-import { formatearNumero } from '../../../utils/formato'
-import {
-  insigniaEstadoAtencion,
-  notasUnicas,
-  numeroDeDecimal,
-  rutaDetalleConFiltros,
-  valorTarjeta,
-} from '../../../utils/reportesGestion'
+import type { ClaveIndicadorPanel, ResultadoIndicador, ResultadoPanel } from '../../../types/reportesGestion'
+import { formatearFecha } from '../../../utils/formato'
+import { notasUnicas, rutaDetalleConFiltros, valorTarjeta } from '../../../utils/reportesGestion'
 import PlantillaReporte from '../reportes/PlantillaReporte'
 import estilos from '../reportes/Reportes.module.css'
 import BarraFiltrosPanel from './BarraFiltrosPanel'
+import GraficoDesglose from './GraficoDesglose'
 import estilosPanel from './PanelIndicadores.module.css'
+import RegistrosDeBarra from './RegistrosDeBarra'
 import { useFiltrosPanel } from './useFiltrosPanel'
 
 const TITULO = 'Panel de indicadores'
 
-/** Columna de valores del desglose: cifra a la derecha y ordenable. */
-function columnaValor(titulo: string): ColumnaTabla<ElementoDesglose> {
-  return {
-    clave: 'valor',
-    titulo,
-    alineacion: 'derecha',
-    ordenable: true,
-    valorOrden: (e) => numeroDeDecimal(e.valor),
-    render: (e) => formatearNumero(numeroDeDecimal(e.valor)),
-  }
-}
-
-function columnaEtiqueta(titulo: string): ColumnaTabla<ElementoDesglose> {
-  return { clave: 'etiqueta', titulo, ordenable: true }
-}
-
-/**
- * Columnas del desglose de cada indicador. La etiqueta es lo que agrupa el back-end: el espacio, el estado de
- * la atención o el material con su unidad.
- *
- * Indicadores de MOD-04 (actividades, operarios y material): en desarrollo, con `MOD06_DATOS_EJEMPLO=true` en el
- * back-end, muestran datos de EJEMPLO. Actividades se desglosa en «Estado: Abierto/Cerrado» (estado del parte
- * diario) y «Tipo: …»; operarios, en «Cuadrilla: …» y «Espacio: …». Esto variará cuando se programe MOD-04: el
- * estado de una actividad y los conceptos del desglose pueden cambiar.
- */
-const COLUMNAS_DESGLOSE: Record<ClaveIndicadorPanel, ColumnaTabla<ElementoDesglose>[]> = {
-  'actividades-por-estado': [columnaEtiqueta('Concepto'), columnaValor('Valor')],
-  'distribucion-operarios': [columnaEtiqueta('Concepto'), columnaValor('Valor')],
-  'atenciones-por-espacio': [columnaEtiqueta('Espacio'), columnaValor('Atenciones')],
-  'consumo-materiales': [columnaEtiqueta('Material (unidad)'), columnaValor('Cantidad')],
-  'cumplimiento-tercerizados': [
-    { clave: 'etiqueta', titulo: 'Estado', ordenable: true, render: (e) => <Badge {...insigniaEstadoAtencion(e.etiqueta)} /> },
-    columnaValor('Atenciones'),
-  ],
+/** Barra del desglose elegida para «Ver detalles». */
+interface DetalleElegido {
+  clave: ClaveIndicadorPanel
+  etiqueta: string
+  titulo: string
 }
 
 function Tarjeta({ resultado, busqueda }: { resultado: ResultadoIndicador; busqueda: string }) {
@@ -103,6 +70,7 @@ export default function PanelIndicadoresPage() {
   const filtrosPanel = useFiltrosPanel()
   const { filtros, claveAplicados, hayFiltros, consulta: parametros, limpiar } = filtrosPanel
   const catalogos = useCatalogosFiltros()
+  const [detalle, setDetalle] = useState<DetalleElegido | null>(null)
 
   const consulta = useConsulta<ResultadoPanel>(
     `panel|${filtros.desde}|${filtros.hasta}|${claveAplicados}`,
@@ -166,21 +134,18 @@ export default function PanelIndicadoresPage() {
                 <h2 id="titulo-desglose" className={estilos.tituloSeccion}>
                   Desglose de los indicadores
                 </h2>
-                {datos.indicadores
-                  .filter((r) => r.desglose.length > 0)
-                  .map((r) => (
-                    <section key={r.clave} className={estilos.superficie} aria-labelledby={`desglose-${r.clave}`}>
-                      <h3 id={`desglose-${r.clave}`} className={estilos.tituloGrupo}>
-                        {r.indicador.nombre}
-                      </h3>
-                      <TablaDatos
-                        titulo={`Desglose de ${r.indicador.nombre}`}
-                        columnas={COLUMNAS_DESGLOSE[r.clave]}
-                        filas={r.desglose}
-                        claveFila={(e) => e.etiqueta}
+                <div className={estilosPanel.graficos}>
+                  {datos.indicadores
+                    .filter((r) => r.desglose.length > 0)
+                    .map((r) => (
+                      <GraficoDesglose
+                        // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
+                        key={`${r.clave}|${datos.generado_en}`}
+                        resultado={r}
+                        onVerDetalle={(s) => setDetalle({ clave: r.clave, ...s })}
                       />
-                    </section>
-                  ))}
+                    ))}
+                </div>
               </section>
             )}
 
@@ -208,6 +173,23 @@ export default function PanelIndicadoresPage() {
                 {nota}
               </AvisoEnLinea>
             ))}
+
+            <DialogoDetalle
+              abierto={detalle !== null}
+              titulo={detalle?.titulo ?? ''}
+              descripcion={`Periodo del ${formatearFecha(filtros.desde)} al ${formatearFecha(filtros.hasta)}`}
+              onCerrar={() => setDetalle(null)}
+            >
+              {detalle && (
+                <RegistrosDeBarra
+                  clave={detalle.clave}
+                  etiqueta={detalle.etiqueta}
+                  titulo={detalle.titulo}
+                  consulta={parametros}
+                  claveFiltros={`${filtros.desde}|${filtros.hasta}|${claveAplicados}`}
+                />
+              )}
+            </DialogoDetalle>
           </>
         )}
       </PlantillaReporte>

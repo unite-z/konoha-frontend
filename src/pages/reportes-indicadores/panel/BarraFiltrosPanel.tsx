@@ -16,6 +16,7 @@ import { OPCIONES_MODALIDAD } from '../../../utils/estados'
 import { ESTADOS_FILTRO_PANEL } from '../../../utils/reportesGestion'
 import { erroresDePeriodo } from '../reportes/erroresPeriodo'
 import type { BorradorPanel, FiltrosPanel } from './useFiltrosPanel'
+import estilos from './PanelIndicadores.module.css'
 
 export interface BarraFiltrosPanelProps {
   filtrosPanel: FiltrosPanel
@@ -62,7 +63,7 @@ export default function BarraFiltrosPanel({ filtrosPanel, catalogos, error, carg
   }
 
   return (
-    <>
+    <div className={estilos.filtros}>
       <FiltroPeriodo
         idBase="periodo-panel"
         desde={filtros.desde}
@@ -87,6 +88,6 @@ export default function BarraFiltrosPanel({ filtrosPanel, catalogos, error, carg
         />
       </FiltroPeriodo>
       <ChipsFiltrosActivos filtros={chips(aplicados, catalogos)} onQuitar={quitar} onLimpiar={limpiar} />
-    </>
+    </div>
   )
 }
