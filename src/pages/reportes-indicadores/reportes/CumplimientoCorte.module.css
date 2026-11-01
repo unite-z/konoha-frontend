@@ -1,6 +1,6 @@
 /*
  * Cumplimiento del corte de césped (RF-REP-002): ajustes responsivos propios de esta pantalla.
- * Puntos de corte del proyecto: tablet ≤ 1023px y móvil ≤ 767px.
+ * Mismos puntos de corte que el resto del proyecto (tablet y móvil).
  */
 
 /* Tarjetas de indicador: 3 en escritorio, 2 en tablet y 1 en móvil. */
