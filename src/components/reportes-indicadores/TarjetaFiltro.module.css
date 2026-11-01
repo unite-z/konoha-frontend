@@ -1,0 +1,31 @@
+/* TarjetaFiltro: TarjetaIndicador (Guía Web 5.7) usada como filtro. */
+.tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+}
+
+.tarjeta > :first-child {
+  flex: 1;
+  transition: box-shadow var(--duracion-transicion);
+}
+.tarjeta:hover > :first-child {
+  box-shadow: var(--web-elev-2);
+}
+
+.activa > :first-child,
+.activa:hover > :first-child {
+  background: var(--green-50);
+  box-shadow: 0 0 0 2px var(--green-700);
+}
+
+.boton {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+}
