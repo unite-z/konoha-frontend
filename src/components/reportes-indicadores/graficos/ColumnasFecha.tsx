@@ -11,6 +11,8 @@ export interface ColumnaGrafico {
   valor: number | null
   /** Fecha ISO de la columna. */
   fecha: string
+  /** Texto bajo la columna (por defecto, la fecha corta: «20 oct.»). */
+  etiqueta?: string
 }
 
 export interface ColumnasFechaProps {
@@ -63,7 +65,7 @@ export default function ColumnasFecha({
                       style={{ height: `${porcentaje(c.valor, escala)}%` }} // estilo-calculado
                     />
                   </span>
-                  <span className={estilos.fecha}>{fechaCorta(c.fecha)}</span>
+                  <span className={estilos.fecha}>{c.etiqueta ?? fechaCorta(c.fecha)}</span>
                 </button>
               </li>
             )

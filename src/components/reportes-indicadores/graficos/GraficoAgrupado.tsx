@@ -1,23 +1,23 @@
 /**
- * Gráfico de resumen del detalle de un indicador (RF-REP-001): agrupa todos los registros del filtro (por día,
- * tipo de servicio, estado, proveedor, espacio o material, según el indicador). Por día son columnas en orden
- * de fecha; el resto, barras de mayor a menor (10 primeras y «Ver todas»). En el consumo se elige la unidad.
- * Al elegir una barra o columna, «Ver detalles» abre sus registros.
+ * Gráfico agrupado del MOD-06 (detalle de indicadores y material vegetal): agrupa los registros según la
+ * agrupación elegida (chips «Agrupar por»). Por fecha son columnas en orden; el resto, barras de mayor a menor
+ * (10 primeras y «Ver todas»). Con `unidadDe` se elige la unidad (chips «Unidad»): nunca se suman unidades
+ * distintas. Al elegir una barra o columna, «Ver detalles» abre sus registros.
  */
 import { useMemo, useState } from 'react'
-import BarrasHorizontales from '../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import ColumnasFecha from '../../../components/reportes-indicadores/graficos/ColumnasFecha'
-import { escalaRedonda, marcasEje } from '../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../components/reportes-indicadores/graficos/PartesGrafico'
-import Boton from '../../../components/ui/Boton'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
+import BarrasHorizontales from './BarrasHorizontales'
+import ColumnasFecha from './ColumnasFecha'
+import { agruparRegistros, type Agrupacion } from './agrupar'
+import { escalaRedonda, marcasEje } from './escala'
+import comunes from './Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from './PartesGrafico'
+import Boton from '../../ui/Boton'
+import { GrupoChips } from '../../ui/ChipsFiltro'
 import { formatearNumero, SIN_VALOR } from '../../../utils/formato'
-import { agruparRegistros, type Agrupacion } from './registros'
 
 const BARRAS_INICIALES = 10
 
-export interface ResumenDetalleProps<F> {
+export interface GraficoAgrupadoProps<F> {
   filas: F[]
   agrupaciones: Agrupacion<F>[]
   /** Unidad de cada registro (consumo de materiales): se elige una y solo se suman las de esa unidad. */
@@ -25,7 +25,7 @@ export interface ResumenDetalleProps<F> {
   onVerDetalle: (titulo: string, filas: F[]) => void
 }
 
-export default function ResumenDetalle<F>({ filas, agrupaciones, unidadDe, onVerDetalle }: ResumenDetalleProps<F>) {
+export default function GraficoAgrupado<F>({ filas, agrupaciones, unidadDe, onVerDetalle }: GraficoAgrupadoProps<F>) {
   const unidades = useMemo(
     () => (unidadDe ? [...new Set(filas.map(unidadDe))].sort((a, b) => a.localeCompare(b, 'es')) : []),
     [filas, unidadDe],

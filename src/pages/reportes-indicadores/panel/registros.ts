@@ -2,6 +2,7 @@
  * Registros del detalle de un indicador (RF-REP-001) para sus gráficos: se descargan todas las páginas del
  * back-end (25 por página) hasta un tope, y se agrupan según lo que elija la persona.
  */
+import { type Agrupacion } from '../../../components/reportes-indicadores/graficos/agrupar'
 import { obtenerDetalleIndicador } from '../../../services/api/reportesGestion'
 import type {
   ClaveIndicadorPanel,
@@ -14,6 +15,9 @@ import type {
 import { formatearFecha } from '../../../utils/formato'
 import { numeroDeDecimal } from '../../../utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
+
+// La agrupación es común a los gráficos del MOD-06.
+export { agruparRegistros, type Agrupacion, type GrupoRegistros } from '../../../components/reportes-indicadores/graficos/agrupar'
 
 /** Tope de registros que se descargan para los gráficos (40 páginas de 25). */
 export const MAXIMO_REGISTROS = 1000
@@ -41,42 +45,6 @@ export async function cargarRegistros<F>(
     if (!siguiente.next) break
   }
   return { ...primera, results: filas, completo: filas.length >= primera.count }
-}
-
-export interface GrupoRegistros<F> {
-  clave: string
-  texto: string
-  valor: number
-  filas: F[]
-}
-
-/** Formas de agrupar los registros de un indicador en su gráfico de resumen. */
-export interface Agrupacion<F> {
-  valor: string
-  texto: string
-  /** Columnas por fecha (en orden) en lugar de barras de mayor a menor. */
-  porFecha: boolean
-  clave: (fila: F) => string
-  textoClave?: (clave: string) => string
-  /** Cuánto suma cada registro (por defecto, 1: se cuentan registros). */
-  peso?: (fila: F) => number
-}
-
-export function agruparRegistros<F>(filas: F[], agrupacion: Agrupacion<F>): GrupoRegistros<F>[] {
-  const mapa = new Map<string, F[]>()
-  for (const fila of filas) {
-    const clave = agrupacion.clave(fila)
-    mapa.set(clave, [...(mapa.get(clave) ?? []), fila])
-  }
-  const grupos = [...mapa.entries()].map(([clave, filasGrupo]) => ({
-    clave,
-    texto: agrupacion.textoClave ? agrupacion.textoClave(clave) : clave,
-    valor: Math.round(filasGrupo.reduce((a, f) => a + (agrupacion.peso ? agrupacion.peso(f) : 1), 0) * 100) / 100,
-    filas: filasGrupo,
-  }))
-  return agrupacion.porFecha
-    ? grupos.sort((a, b) => a.clave.localeCompare(b.clave))
-    : grupos.sort((a, b) => b.valor - a.valor || a.texto.localeCompare(b.texto, 'es'))
 }
 
 const porDia = <F extends { fecha: string }>(): Agrupacion<F> => ({
