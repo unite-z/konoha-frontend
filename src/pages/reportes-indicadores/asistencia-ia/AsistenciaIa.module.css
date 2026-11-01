@@ -1,92 +1,5 @@
 /* Páginas de asistencia IA (RF-IA-001): espaciado de la Guía Web 4.1. */
-/* Revisión campo por campo. */
-.celdaDato {
-  display: flex;
-  flex-direction: column;
-}
 
-.tipoDato {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-muted);
-}
-
-.asterisco {
-  color: var(--color-error);
-}
-
-.celdaValor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-  min-width: 12rem;
-  white-space: normal;
-}
-
-.noEncontrado {
-  color: var(--color-text-muted);
-}
-
-.listaJson {
-  margin: 0;
-  padding-left: var(--space-4);
-}
-
-.decision {
-  min-width: 16rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.opciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-}
-
-.opcion {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--web-control-compact);
-  cursor: pointer;
-}
-
-.opcion input {
-  accent-color: var(--green-700);
-  margin: 0;
-}
-
-.opcionDeshabilitada {
-  color: var(--neutral-500);
-  cursor: not-allowed;
-}
-
-.ayudaDecision {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
-}
-
-.correccion {
-  margin-top: var(--space-2);
-}
-
-.errorDecision {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-error);
-}
-
-.acciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-/* Acción principal de la bandeja. */
 .accionPrincipal {
   display: flex;
 }
@@ -233,6 +146,12 @@
 
 .textoBarra {
   color: var(--color-text-secondary);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 @media (max-width: 767px) {
