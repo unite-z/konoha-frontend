@@ -6,17 +6,19 @@
  * final, en el orden del back-end). El cuartel solo se muestra cuando está registrado y no sustituye al
  * sector. Sin datos, se informa del estado vacío.
  *
+ * Las tarjetas «Personal propio» y «Tercerizado» también filtran por modalidad (el mismo filtro de la barra).
+ *
  * Supuesto: periodo predeterminado a confirmar con la contraparte (CU-MOD06-001). Aquí, la semana actual.
  */
 import { useMemo, useState } from 'react'
+import TarjetaFiltro from '../../../components/reportes-indicadores/TarjetaFiltro'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
 import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
 import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import TarjetaIndicador, { FilaTarjetas } from '../../../components/ui/TarjetaIndicador'
+import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
@@ -25,16 +27,22 @@ import { obtenerAtencionesEspacioSector } from '../../../services/api/reportes'
 import {
   SIN_SECTOR,
   type CuartelAtenciones,
-  type EspacioAtenciones,
   type FiltrosAtenciones,
-  type Medidas,
   type Modalidad,
   type OrdenAtenciones,
   type ResultadoAtencionesEspacioSector,
-  type SectorAtenciones,
 } from '../../../types/reportes'
 import { OPCIONES_MODALIDAD, textoModalidad } from '../../../utils/estados'
 import { formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
+import AyudaEmergente from './atenciones-espacio-sector/AyudaEmergente'
+import BloqueSector from './atenciones-espacio-sector/BloqueSector'
+import {
+  AtencionesFrenteAlMaximo,
+  BarraModalidad,
+  LeyendaModalidad,
+  TiposAtencion,
+} from './atenciones-espacio-sector/PiezasAtenciones'
+import estilosPagina from './AtencionesEspacioSector.module.css'
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
@@ -43,6 +51,8 @@ const TITULO = 'Atenciones por espacio y sector'
 
 /** Texto del grupo y de la opción sin sector. */
 const TEXTO_SIN_SECTOR = 'Sin sector'
+
+const AYUDA_ORDEN = 'Para priorizar, revisa primero los espacios menos atendidos'
 
 const OPCIONES_ORDEN: { valor: OrdenAtenciones; texto: string }[] = [
   { valor: 'desc', texto: 'Más atendidos primero' },
@@ -55,65 +65,42 @@ interface Borrador {
   orden: string
 }
 
-/** «Mantenimiento de jardines: 3 · Poda (Menor): 1». */
-function textoPorTipo(porTipo: Record<string, number>): string {
-  const partes = Object.entries(porTipo).map(([tipo, n]) => `${tipo}: ${formatearNumero(n)}`)
-  return partes.length > 0 ? partes.join(' · ') : SIN_VALOR
-}
-
 function textoAtenciones(n: number): string {
   return `${formatearNumero(n)} ${n === 1 ? 'atención' : 'atenciones'}`
 }
 
-/** «{total} atenciones · {personal_propio} personal propio · {tercerizado} tercerizado». */
-function textoTotales(m: Medidas): string {
-  return `${textoAtenciones(m.total)} · ${formatearNumero(m.personal_propio)} personal propio · ${formatearNumero(
-    m.tercerizado,
-  )} tercerizado`
+function plural(n: number, singular: string, varios: string): string {
+  return `${formatearNumero(n)} ${n === 1 ? singular : varios}`
 }
 
-const COLUMNAS_ESPACIOS: ColumnaTabla<EspacioAtenciones>[] = [
-  { clave: 'area_verde_nombre', titulo: 'Espacio', ordenable: true },
-  { clave: 'total', titulo: 'Total', alineacion: 'derecha', ordenable: true, render: (e) => formatearNumero(e.total) },
-  {
-    clave: 'personal_propio',
-    titulo: 'Personal propio',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (e) => formatearNumero(e.personal_propio),
-  },
-  {
-    clave: 'tercerizado',
-    titulo: 'Tercerizado',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (e) => formatearNumero(e.tercerizado),
-  },
-  { clave: 'por_tipo', titulo: 'Por tipo', multilinea: true, render: (e) => textoPorTipo(e.por_tipo) },
-]
+function porcentaje(parte: number, total: number): string {
+  return `${formatearNumero(total > 0 ? Math.round((parte / total) * 100) : 0)} %`
+}
 
-const COLUMNAS_CUARTELES: ColumnaTabla<CuartelAtenciones>[] = [
-  {
-    clave: 'cuartel',
-    titulo: 'Cuartel',
-    render: (c) => `N.º ${c.numero ?? SIN_VALOR} · ${c.nombre ?? SIN_VALOR}`,
-  },
-  { clave: 'total', titulo: 'Total', alineacion: 'derecha', ordenable: true, render: (c) => formatearNumero(c.total) },
-  {
-    clave: 'personal_propio',
-    titulo: 'Personal propio',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (c) => formatearNumero(c.personal_propio),
-  },
-  {
-    clave: 'tercerizado',
-    titulo: 'Tercerizado',
-    alineacion: 'derecha',
-    ordenable: true,
-    render: (c) => formatearNumero(c.tercerizado),
-  },
-]
+function columnasCuarteles(maximo: number): ColumnaTabla<CuartelAtenciones>[] {
+  return [
+    {
+      clave: 'cuartel',
+      titulo: 'Cuartel',
+      render: (c) => `N.º ${c.numero ?? SIN_VALOR} · ${c.nombre ?? SIN_VALOR}`,
+    },
+    {
+      clave: 'total',
+      titulo: 'Atenciones',
+      subtitulo: 'frente al más atendido',
+      ordenable: true,
+      render: (c) => <AtencionesFrenteAlMaximo total={c.total} maximo={maximo} nombre={c.nombre ?? ''} />,
+    },
+    {
+      clave: 'modalidad',
+      titulo: 'Modalidad',
+      subtitulo: 'propio · tercerizado',
+      ordenable: true,
+      valorOrden: (c) => c.personal_propio,
+      render: (c) => <BarraModalidad propio={c.personal_propio} tercerizado={c.tercerizado} />,
+    },
+  ]
+}
 
 function construirOpcionesSector(datos: ResultadoAtencionesEspacioSector | null): OpcionSelector[] {
   const sectores = (datos?.por_sector ?? [])
@@ -128,35 +115,6 @@ function aFiltrosApi(b: Borrador): FiltrosAtenciones {
   if (b.modalidad) filtros.modalidad = b.modalidad as Modalidad
   if (b.orden) filtros.orden = b.orden as OrdenAtenciones
   return filtros
-}
-
-function BloqueSector({ sector }: { sector: SectorAtenciones }) {
-  const esSinSector = sector.sector_id === null
-  const nombre = sector.sector_nombre ?? TEXTO_SIN_SECTOR
-  const idTitulo = `sector-${sector.sector_id ?? SIN_SECTOR}`
-  return (
-    <section className={estilos.superficie} aria-labelledby={idTitulo}>
-      <div className={estilos.cabeceraGrupo}>
-        <div>
-          <h2 id={idTitulo} className={estilos.tituloGrupo}>
-            {nombre}
-          </h2>
-          {sector.capataz_vigente?.nombre && <p className={estilos.ayuda}>Capataz: {sector.capataz_vigente.nombre}</p>}
-          {esSinSector && <p className={estilos.ayuda}>Espacios sin sector asignado; se atienden a demanda</p>}
-        </div>
-        <div className={estilos.enLinea}>
-          {sector.atencion_a_demanda && <Badge tono="neutral" texto="Atención a demanda" />}
-          <span className={`${estilos.totalesGrupo} cifra`}>{textoTotales(sector)}</span>
-        </div>
-      </div>
-      <TablaDatos
-        titulo={`Espacios de ${nombre}`}
-        columnas={COLUMNAS_ESPACIOS}
-        filas={sector.espacios}
-        claveFila={(e) => String(e.area_verde_id)}
-      />
-    </section>
-  )
 }
 
 export default function AtencionesEspacioSectorPage() {
@@ -206,11 +164,21 @@ export default function AtencionesEspacioSectorPage() {
     establecer({ sector_id: null, modalidad: null })
   }
 
+  /** Tarjeta de modalidad: filtra por ella o, si ya está aplicada, quita el filtro. */
+  function alternarModalidad(modalidad: Modalidad) {
+    establecer({ modalidad: aplicados.modalidad === modalidad ? null : modalidad })
+  }
+
+  function contextoModalidad(modalidad: Modalidad, valor: number, total: number): string {
+    if (aplicados.modalidad === modalidad) return 'Filtro aplicado. Pulsa para quitarlo.'
+    return `${porcentaje(valor, total)} del total · Pulsa para filtrar`
+  }
+
   return (
     <PlantillaReporte
       consulta={consulta}
       filtros={
-        <>
+        <div className={estilosPagina.filtros}>
           <FiltroPeriodo
             idBase="periodo-atenciones"
             desde={desde}
@@ -240,21 +208,25 @@ export default function AtencionesEspacioSectorPage() {
               opcionTodos={OPCION_TODOS}
               onCambiar={(valor) => setBorrador((b) => ({ ...b, modalidad: valor }))}
             />
-            <Selector
-              id="filtro-orden"
-              etiqueta="Orden"
-              ayuda="Para priorizar, revisa primero los espacios menos atendidos"
-              valor={borrador.orden}
-              opciones={OPCIONES_ORDEN}
-              onCambiar={(valor) => setBorrador((b) => ({ ...b, orden: valor }))}
-            />
+            <div className={estilosPagina.campoConAyuda}>
+              <Selector
+                id="filtro-orden"
+                etiqueta="Orden"
+                valor={borrador.orden}
+                opciones={OPCIONES_ORDEN}
+                onCambiar={(valor) => setBorrador((b) => ({ ...b, orden: valor }))}
+              />
+              <span className={estilosPagina.iconoAyuda}>
+                <AyudaEmergente id="ayuda-orden" tema="el orden" texto={AYUDA_ORDEN} />
+              </span>
+            </div>
           </FiltroPeriodo>
           <ChipsFiltrosActivos
             filtros={filtrosActivos}
             onQuitar={(clave) => establecer({ [clave]: null } as Partial<Record<keyof Borrador, null>>)}
             onLimpiar={limpiarFiltros}
           />
-        </>
+        </div>
       }
       vacio={{
         titulo: 'Sin atenciones en el periodo',
@@ -265,56 +237,113 @@ export default function AtencionesEspacioSectorPage() {
         ) : undefined,
       }}
     >
-      {(datos) => (
-        <>
-          {datos.resumen && (
-            <FilaTarjetas>
-              <TarjetaIndicador etiqueta="Atenciones en el periodo" valor={formatearNumero(datos.resumen.total_atenciones)} />
-              <TarjetaIndicador etiqueta="Personal propio" valor={formatearNumero(datos.resumen.personal_propio)} />
-              <TarjetaIndicador etiqueta="Tercerizado" valor={formatearNumero(datos.resumen.tercerizado)} />
-              <TarjetaIndicador
-                etiqueta="Espacios atendidos"
-                valor={formatearNumero(datos.resumen.espacios_con_atenciones)}
-              />
-            </FilaTarjetas>
-          )}
+      {(datos) => {
+        const resumen = datos.resumen
+        const maximoCuartel = Math.max(0, ...datos.por_cuartel.map((c) => c.total))
+        return (
+          <>
+            {resumen && (
+              <div className={estilosPagina.tarjetas}>
+                <div>
+                  <TarjetaIndicador
+                    etiqueta="Atenciones en el periodo"
+                    valor={formatearNumero(resumen.total_atenciones)}
+                    contexto={`En ${plural(resumen.espacios_con_atenciones, 'espacio', 'espacios')} de ${plural(
+                      resumen.sectores_con_atenciones,
+                      'sector',
+                      'sectores',
+                    )}`}
+                  />
+                </div>
+                <TarjetaFiltro
+                  activo={aplicados.modalidad === 'PersonalPropio'}
+                  etiqueta={
+                    aplicados.modalidad === 'PersonalPropio'
+                      ? 'Quitar el filtro de personal propio'
+                      : 'Filtrar por atenciones de personal propio'
+                  }
+                  onAlternar={() => alternarModalidad('PersonalPropio')}
+                >
+                  <TarjetaIndicador
+                    etiqueta="Personal propio"
+                    valor={formatearNumero(resumen.personal_propio)}
+                    contexto={contextoModalidad('PersonalPropio', resumen.personal_propio, resumen.total_atenciones)}
+                  />
+                </TarjetaFiltro>
+                <TarjetaFiltro
+                  activo={aplicados.modalidad === 'Tercerizado'}
+                  etiqueta={
+                    aplicados.modalidad === 'Tercerizado'
+                      ? 'Quitar el filtro de tercerizado'
+                      : 'Filtrar por atenciones tercerizadas'
+                  }
+                  onAlternar={() => alternarModalidad('Tercerizado')}
+                >
+                  <TarjetaIndicador
+                    etiqueta="Tercerizado"
+                    valor={formatearNumero(resumen.tercerizado)}
+                    contexto={contextoModalidad('Tercerizado', resumen.tercerizado, resumen.total_atenciones)}
+                  />
+                </TarjetaFiltro>
+                <div>
+                  <TarjetaIndicador
+                    etiqueta="Espacios atendidos"
+                    valor={formatearNumero(resumen.espacios_con_atenciones)}
+                    contexto={
+                      resumen.espacios_con_atenciones > 0
+                        ? `${formatearNumero(
+                            resumen.total_atenciones / resumen.espacios_con_atenciones,
+                            1,
+                          )} atenciones por espacio en promedio`
+                        : 'Con al menos una atención en el periodo'
+                    }
+                  />
+                </div>
+              </div>
+            )}
 
-          {datos.por_sector.map((sector) => (
-            <BloqueSector key={sector.sector_id ?? SIN_SECTOR} sector={sector} />
-          ))}
-
-          {datos.sin_espacio && datos.sin_espacio.total > 0 && (
-            <AvisoEnLinea tono="info" titulo="Atenciones sin espacio asociado">
-              <p>{textoAtenciones(datos.sin_espacio.total)} sobre ejemplares sin área verde registrada</p>
-              <p className="cifra">
-                {formatearNumero(datos.sin_espacio.personal_propio)} personal propio ·{' '}
-                {formatearNumero(datos.sin_espacio.tercerizado)} tercerizado · {textoPorTipo(datos.sin_espacio.por_tipo)}
+            <div className={estilosPagina.cabeceraSectores}>
+              <p className={estilos.ayuda}>
+                Las barras de atenciones comparan cada espacio con el más atendido de su sector.
               </p>
-            </AvisoEnLinea>
-          )}
+              <LeyendaModalidad />
+            </div>
 
-          {datos.por_cuartel.length > 0 && (
-            <section className={estilos.seccion} aria-labelledby="titulo-cuarteles">
-              <h2 id="titulo-cuarteles" className={estilos.tituloSeccion}>
-                Por cuartel (referencia histórica)
-              </h2>
-              <p className={estilos.ayuda}>El cuartel es una capa histórica opcional y no sustituye al sector</p>
-              <TablaDatos
-                titulo="Por cuartel (referencia histórica)"
-                columnas={COLUMNAS_CUARTELES}
-                filas={datos.por_cuartel}
-                claveFila={(c) => String(c.cuartel_id)}
-              />
-            </section>
-          )}
+            {datos.por_sector.map((sector) => (
+              <BloqueSector key={sector.sector_id ?? SIN_SECTOR} sector={sector} />
+            ))}
 
-          {datos.notas.map((nota) => (
-            <AvisoEnLinea key={nota} tono="info">
-              {nota}
-            </AvisoEnLinea>
-          ))}
-        </>
-      )}
+            {datos.sin_espacio && datos.sin_espacio.total > 0 && (
+              <AvisoEnLinea tono="info" titulo="Atenciones sin espacio asociado">
+                <p>{textoAtenciones(datos.sin_espacio.total)} sobre ejemplares sin área verde registrada</p>
+                <BarraModalidad propio={datos.sin_espacio.personal_propio} tercerizado={datos.sin_espacio.tercerizado} />
+                <TiposAtencion porTipo={datos.sin_espacio.por_tipo} />
+              </AvisoEnLinea>
+            )}
+
+            {datos.por_cuartel.length > 0 && (
+              <section className={estilos.seccion} aria-labelledby="titulo-cuarteles">
+                <h2 id="titulo-cuarteles" className={estilos.tituloSeccion}>
+                  Por cuartel (referencia histórica)
+                </h2>
+                <p className={estilos.ayuda}>El cuartel es una capa histórica opcional y no sustituye al sector</p>
+                <TablaDatos
+                  titulo="Por cuartel (referencia histórica)"
+                  columnas={columnasCuarteles(maximoCuartel)}
+                  filas={datos.por_cuartel}
+                  claveFila={(c) => String(c.cuartel_id)}
+                />
+              </section>
+            )}
+
+            {datos.notas.map((nota) => (
+              <AvisoEnLinea key={nota} tono="info">
+                {nota}
+              </AvisoEnLinea>
+            ))}
+          </>
+        )
+      }}
     </PlantillaReporte>
   )
 }
