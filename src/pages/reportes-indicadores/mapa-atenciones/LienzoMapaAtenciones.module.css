@@ -80,3 +80,10 @@
   background: var(--green-100);
   border: var(--borde-espacio) solid var(--green-500);
 }
+
+/* Móvil: un mapa más bajo, para que quepa en pantalla junto al panel de capas. */
+@media (max-width: 767px) {
+  .contenedor {
+    --alto-mapa: 22rem;
+  }
+}
