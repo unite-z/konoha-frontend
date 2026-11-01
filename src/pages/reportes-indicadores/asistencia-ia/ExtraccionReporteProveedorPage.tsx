@@ -3,18 +3,20 @@
  * Extracción de informes de proveedores: bandeja de propuestas de IA (patrón «Bandeja de pendientes»).
  *
  * - La salida de la IA es una sugerencia: nada se registra sin la revisión de una persona autorizada.
- * - «Analizar informe» solo se muestra a los roles que pueden solicitar el análisis.
- * - Si la IA no está disponible (503), se informa y se permite continuar con el registro manual (MOD-05).
+ * - «Analizar informe» solo se muestra a los roles que pueden solicitar el análisis: se busca la atención y se
+ *   elige su informe (SolicitudAnalisis), sin tener que conocer el número del reporte.
+ * - Cada propuesta se identifica con la atención de MOD-05 (código, proveedor y tipo de servicio). Si MOD-05 no
+ *   responde, se muestran los números de siempre.
  * - El estado elegido y la página van en la URL, para conservarlos al volver desde la revisión.
+ * - En móvil, cada propuesta es una ficha en lugar de una fila.
  */
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
+import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
-import CampoFormulario, { LeyendaObligatorio } from '../../../components/ui/CampoFormulario'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
-import EstadoCarga from '../../../components/ui/EstadoCarga'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_SOLICITAR_IA } from '../../../config/permisos'
 import { useRolActual } from '../../../sesion/ContextoSesion'
@@ -22,20 +24,19 @@ import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, rutaRevisionExtraccion } from '../../../router/rutasApp'
-import { aErrorApi, type ErrorApi } from '../../../services/api/cliente'
-import { listarExtracciones, solicitarExtraccion } from '../../../services/api/ia'
+import { listarExtracciones } from '../../../services/api/ia'
 import type { EstadoSugerencia, SugerenciaIA } from '../../../types/ia'
+import type { Atencion } from '../../../types/tercerizados'
 import { insigniaSugerencia } from '../../../utils/estados'
 import { formatearFecha, formatearFechaHora, formatearNumero, SIN_VALOR } from '../../../utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
+import { cargarAtenciones } from './extraccion/consultasApoyo'
+import SolicitudAnalisis from './extraccion/SolicitudAnalisis'
+import { coberturaSugerencia } from './extraccion/valoresCampo'
 
 const TITULO = 'Extracción de informes de proveedores'
-const ID_CAMPO_REPORTE = 'reporte-proveedor'
 const POR_PAGINA = 25 // Paginación del back-end (Guía Web 5.5).
-
-const MENSAJE_FALTA_REPORTE = 'Indica el número del reporte del proveedor que quieres analizar'
-const MENSAJE_ENTERO = 'Usa un número entero positivo'
 
 const OPCIONES_ESTADO: { valor: '' | EstadoSugerencia; texto: string }[] = [
   { valor: '', texto: 'Todas' },
@@ -52,27 +53,101 @@ export interface EstadoNavegacionRevision {
   volverA?: string
 }
 
-const COLUMNAS: ColumnaTabla<SugerenciaIA>[] = [
-  { clave: 'id', titulo: 'Propuesta', render: (s) => `n.º ${s.id}` },
-  { clave: 'registro_id', titulo: 'Reporte', render: (s) => `n.º ${s.registro_id}` },
-  {
-    clave: 'estado',
-    titulo: 'Estado',
-    render: (s) => <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} />,
-  },
-  { clave: 'fecha_creacion', titulo: 'Creada', render: (s) => formatearFechaHora(s.fecha_creacion) },
-  {
-    clave: 'faltantes',
-    titulo: 'Campos faltantes',
-    alineacion: 'derecha',
-    render: (s) => formatearNumero(s.contenido.campos_obligatorios_faltantes.length),
-  },
-  {
-    clave: 'fecha_validacion',
-    titulo: 'Revisada',
-    render: (s) => (s.fecha_validacion ? formatearFecha(s.fecha_validacion) : SIN_VALOR),
-  },
-]
+/** Código de la atención y, debajo, proveedor y tipo de servicio. */
+function CeldaAtencion({ atencion, atencionId }: { atencion: Atencion | undefined; atencionId: number }) {
+  if (!atencion) return <span className="cifra">n.º {atencionId}</span>
+  return (
+    <span className={estilosIa.celdaAtencion}>
+      <span className={estilosIa.codigoAtencion}>{atencion.codigo}</span>
+      <span className={estilosIa.metaAtencion}>
+        {atencion.proveedor_nombre ?? SIN_VALOR} · {atencion.tipo_servicio_nombre ?? SIN_VALOR}
+      </span>
+    </span>
+  )
+}
+
+/** «6 de 8» datos encontrados por la IA, con aviso si faltan obligatorios. */
+function CeldaDatos({ sugerencia }: { sugerencia: SugerenciaIA }) {
+  const { conValor, total } = coberturaSugerencia(sugerencia)
+  const faltan = sugerencia.contenido.campos_obligatorios_faltantes.length
+  return (
+    <span className={estilosIa.celdaAtencion}>
+      <span className="cifra">
+        {formatearNumero(conValor)} de {formatearNumero(total)}
+      </span>
+      {faltan > 0 && (
+        <Badge tono="advertencia" texto={faltan === 1 ? '1 obligatorio sin valor' : `${faltan} obligatorios sin valor`} />
+      )}
+    </span>
+  )
+}
+
+function columnas(atenciones: Map<number, Atencion>): ColumnaTabla<SugerenciaIA>[] {
+  return [
+    {
+      clave: 'id',
+      titulo: 'Propuesta',
+      render: (s) => (
+        <span className={estilosIa.celdaAtencion}>
+          <span className="cifra">n.º {s.id}</span>
+          <span className={estilosIa.metaAtencion}>{formatearFechaHora(s.fecha_creacion)}</span>
+        </span>
+      ),
+    },
+    {
+      clave: 'atencion',
+      titulo: 'Atención',
+      subtitulo: 'proveedor · tipo de servicio',
+      render: (s) => (
+        <CeldaAtencion atencion={atenciones.get(s.contenido.entrada.atencion_id)} atencionId={s.contenido.entrada.atencion_id} />
+      ),
+    },
+    { clave: 'registro_id', titulo: 'Reporte', render: (s) => <span className="cifra">n.º {s.registro_id}</span> },
+    { clave: 'estado', titulo: 'Estado', render: (s) => <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} /> },
+    { clave: 'datos', titulo: 'Datos encontrados', render: (s) => <CeldaDatos sugerencia={s} /> },
+    {
+      clave: 'fecha_validacion',
+      titulo: 'Revisada',
+      render: (s) => (s.fecha_validacion ? formatearFecha(s.fecha_validacion) : SIN_VALOR),
+    },
+  ]
+}
+
+/** Ficha de una propuesta (móvil). */
+function FichaPropuesta({
+  sugerencia: s,
+  atencion,
+  onAbrir,
+}: {
+  sugerencia: SugerenciaIA
+  atencion: Atencion | undefined
+  onAbrir: () => void
+}) {
+  return (
+    <li>
+      <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
+        <span className={estilosIa.cabeceraFicha}>
+          <span className={estilosIa.codigoAtencion}>{atencion?.codigo ?? `Atención n.º ${s.contenido.entrada.atencion_id}`}</span>
+          <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} />
+        </span>
+        {atencion && (
+          <span className={estilosIa.metaAtencion}>
+            {atencion.proveedor_nombre ?? SIN_VALOR} · {atencion.tipo_servicio_nombre ?? SIN_VALOR}
+          </span>
+        )}
+        <span className={estilosIa.datosFicha}>
+          <span>
+            Propuesta n.º {s.id} · Reporte n.º {s.registro_id}
+          </span>
+          <span>Creada el {formatearFechaHora(s.fecha_creacion)}</span>
+        </span>
+        <span className={estilosIa.pieFicha}>
+          <span>Datos encontrados:</span> <CeldaDatos sugerencia={s} />
+        </span>
+      </button>
+    </li>
+  )
+}
 
 export default function ExtraccionReporteProveedorPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
@@ -80,6 +155,8 @@ export default function ExtraccionReporteProveedorPage() {
   const location = useLocation()
   const rol = useRolActual()
   const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const esMovil = useEsMovil()
+  const [solicitudAbierta, setSolicitudAbierta] = useState(false)
 
   // --- Bandeja -----------------------------------------------------------------
   const { filtros, establecer } = useFiltrosUrl({ estado: '', page: '1' })
@@ -93,6 +170,14 @@ export default function ExtraccionReporteProveedorPage() {
     (signal) => listarExtracciones({ estado: estadoFiltro || undefined, page: pagina }, signal),
     (datos) => datos.count === 0,
   )
+  const propuestas = consulta.datos?.results ?? []
+
+  // Atenciones de MOD-05 de la página, para identificar cada propuesta.
+  const idsAtencion = [...new Set(propuestas.map((s) => s.contenido.entrada.atencion_id))].sort((a, b) => a - b)
+  const consultaAtenciones = useConsulta(idsAtencion.length > 0 ? `atenciones|${idsAtencion.join(',')}` : null, (signal) =>
+    cargarAtenciones(idsAtencion, signal),
+  )
+  const atenciones = consultaAtenciones.datos ?? new Map<number, Atencion>()
 
   let estadoTabla: EstadoTabla | null = null
   if (consulta.estado === 'error') estadoTabla = 'error'
@@ -105,47 +190,20 @@ export default function ExtraccionReporteProveedorPage() {
     navigate(rutaRevisionExtraccion(sugerencia.id), { state: estado })
   }
 
-  // --- Solicitud de análisis ---------------------------------------------------------
-  const [formularioAbierto, setFormularioAbierto] = useState(false)
-  const [numero, setNumero] = useState('')
-  const [errorCampo, setErrorCampo] = useState<string | undefined>()
-  const [analizando, setAnalizando] = useState(false)
-  const [errorAnalisis, setErrorAnalisis] = useState<ErrorApi | null>(null)
-  const [mostrarManual, setMostrarManual] = useState(false)
-
-  function validarFormato(texto: string): string | undefined {
-    if (texto.trim() === '') return undefined // la obligatoriedad se comprueba al enviar
-    return /^\d+$/.test(texto.trim()) && Number(texto) >= 1 ? undefined : MENSAJE_ENTERO
+  const total = consulta.datos?.count ?? 0
+  const cambiarPagina = (nueva: number) => establecer({ page: nueva > 1 ? String(nueva) : null })
+  const vacio = {
+    titulo: 'Sin propuestas de extracción',
+    descripcion: 'Aparecerán aquí cuando se analice un informe de proveedor',
+    accion: estadoFiltro ? (
+      <Boton variante="secundario" onClick={() => establecer({ estado: null, page: null })}>
+        Limpiar filtros
+      </Boton>
+    ) : undefined,
   }
-
-  async function enviar(evento: FormEvent) {
-    evento.preventDefault()
-    if (analizando) return
-    const texto = numero.trim()
-    const error = texto === '' ? MENSAJE_FALTA_REPORTE : validarFormato(texto)
-    setErrorCampo(error)
-    if (error) {
-      document.getElementById(ID_CAMPO_REPORTE)?.focus()
-      return
-    }
-    setAnalizando(true)
-    setErrorAnalisis(null)
-    setMostrarManual(false)
-    try {
-      const sugerencia = await solicitarExtraccion(Number(texto))
-      abrirRevision(sugerencia, 'Propuesta creada: pendiente de revisión')
-    } catch (causa) {
-      const errorApi = aErrorApi(causa)
-      const mensajeCampo = errorApi.errores_campo.reporte_proveedor_id?.[0]
-      if (errorApi.estado === 400 && mensajeCampo) {
-        setErrorCampo(mensajeCampo)
-        document.getElementById(ID_CAMPO_REPORTE)?.focus()
-      } else {
-        setErrorAnalisis(errorApi)
-      }
-      setAnalizando(false)
-    }
-  }
+  const error = consulta.error
+    ? { titulo: 'No se pudieron cargar las propuestas', descripcion: consulta.error.detalle, onReintentar: consulta.reintentar }
+    : undefined
 
   return (
     <div className={estilos.pagina}>
@@ -154,73 +212,20 @@ export default function ExtraccionReporteProveedorPage() {
         persona autorizada.
       </AvisoEnLinea>
 
-      {puedeSolicitar && (
-        <section className={estilos.seccion} aria-label="Analizar informe">
-          {!formularioAbierto ? (
-            <div>
-              <Boton variante="primario" onClick={() => setFormularioAbierto(true)} aria-expanded={false}>
-                Analizar informe
-              </Boton>
-            </div>
-          ) : (
-            <form className={estilosIa.formulario} onSubmit={enviar} noValidate>
-              <LeyendaObligatorio />
-              <div className={estilosIa.filaFormulario}>
-                <CampoFormulario
-                  id={ID_CAMPO_REPORTE}
-                  etiqueta="Reporte del proveedor (n.º)"
-                  ayuda="Número del reporte registrado en la atención tercerizada"
-                  obligatorio
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={numero}
-                  error={errorCampo}
-                  onChange={(e) => setNumero(e.target.value)}
-                  onBlur={(e) => setErrorCampo(validarFormato(e.target.value))}
-                  autoFocus
-                />
-                {/* TODO: sustituir por un selector cuando el MOD-05 publique el listado de reportes del
-                    proveedor (CU-MOD05-006). El MOD-06 no tiene endpoint de reportes del proveedor. */}
-                <div className={estilosIa.accionesFormulario}>
-                  <Boton type="submit" variante="primario" cargando={analizando}>
-                    Analizar informe
-                  </Boton>
-                  <Boton
-                    variante="secundario"
-                    deshabilitado={analizando}
-                    onClick={() => {
-                      setFormularioAbierto(false)
-                      setErrorCampo(undefined)
-                      setErrorAnalisis(null)
-                      setMostrarManual(false)
-                    }}
-                  >
-                    Cancelar
-                  </Boton>
-                </div>
-              </div>
-              {analizando && <EstadoCarga forma="tarjetas" texto="Analizando el informe del proveedor…" retrasar />}
-            </form>
-          )}
-
-          {errorAnalisis && (
-            <AvisoEnLinea
-              tono="error"
-              titulo="No se pudo analizar el informe"
-              accion={
-                errorAnalisis.estado === 503
-                  ? { texto: 'Registrar manualmente', onClick: () => setMostrarManual(true) }
-                  : undefined
-              }
-            >
-              {errorAnalisis.detalle}
-            </AvisoEnLinea>
-          )}
-          {mostrarManual && (
-            <AvisoEnLinea tono="info">Registra los datos del informe en Servicios tercerizados</AvisoEnLinea>
-          )}
-        </section>
-      )}
+      {puedeSolicitar &&
+        (solicitudAbierta ? (
+          <SolicitudAnalisis
+            onCreada={(s) => abrirRevision(s, 'Propuesta creada: pendiente de revisión')}
+            onAbrirPropuesta={(s) => abrirRevision(s)}
+            onCancelar={() => setSolicitudAbierta(false)}
+          />
+        ) : (
+          <div className={estilosIa.accionPrincipal}>
+            <Boton variante="primario" onClick={() => setSolicitudAbierta(true)} aria-expanded={false}>
+              Analizar informe
+            </Boton>
+          </div>
+        ))}
 
       <section className={estilos.seccion} aria-labelledby="titulo-propuestas">
         <h2 id="titulo-propuestas" className={estilos.tituloSeccion}>
@@ -232,40 +237,50 @@ export default function ExtraccionReporteProveedorPage() {
           valor={estadoFiltro}
           onCambiar={(valor) => establecer({ estado: valor, page: null })}
         />
-        {estadoTabla && (
-          <TablaDatos
-            titulo="Propuestas de extracción"
-            columnas={COLUMNAS}
-            filas={consulta.datos?.results ?? []}
-            claveFila={(s) => String(s.id)}
-            estado={estadoTabla}
-            onFilaClick={(s) => abrirRevision(s)}
-            paginacionServidor={{
-              pagina,
-              total: consulta.datos?.count ?? 0,
-              porPagina: POR_PAGINA,
-              onCambiarPagina: (nueva) => establecer({ page: nueva > 1 ? String(nueva) : null }),
-            }}
-            vacio={{
-              titulo: 'Sin propuestas de extracción',
-              descripcion: 'Aparecerán aquí cuando se analice un informe de proveedor',
-              accion: estadoFiltro ? (
-                <Boton variante="secundario" onClick={() => establecer({ estado: null, page: null })}>
-                  Limpiar filtros
-                </Boton>
-              ) : undefined,
-            }}
-            error={
-              consulta.error
-                ? {
-                    titulo: 'No se pudieron cargar las propuestas',
-                    descripcion: consulta.error.detalle,
-                    onReintentar: consulta.reintentar,
-                  }
-                : undefined
-            }
-          />
-        )}
+        {estadoTabla &&
+          (esMovil && estadoTabla === 'exito' ? (
+            <>
+              <ul className={estilosIa.fichas} aria-label="Propuestas de extracción">
+                {propuestas.map((s) => (
+                  <FichaPropuesta
+                    key={s.id}
+                    sugerencia={s}
+                    atencion={atenciones.get(s.contenido.entrada.atencion_id)}
+                    onAbrir={() => abrirRevision(s)}
+                  />
+                ))}
+              </ul>
+              {total > POR_PAGINA && (
+                <div className={estilosIa.paginacionFichas}>
+                  <p className="cifra">
+                    Página {formatearNumero(pagina)} de {formatearNumero(Math.ceil(total / POR_PAGINA))}
+                  </p>
+                  <Boton variante="secundario" deshabilitado={pagina <= 1} onClick={() => cambiarPagina(pagina - 1)}>
+                    Anterior
+                  </Boton>
+                  <Boton
+                    variante="secundario"
+                    deshabilitado={pagina * POR_PAGINA >= total}
+                    onClick={() => cambiarPagina(pagina + 1)}
+                  >
+                    Siguiente
+                  </Boton>
+                </div>
+              )}
+            </>
+          ) : (
+            <TablaDatos
+              titulo="Propuestas de extracción"
+              columnas={columnas(atenciones)}
+              filas={propuestas}
+              claveFila={(s) => String(s.id)}
+              estado={estadoTabla}
+              onFilaClick={(s) => abrirRevision(s)}
+              paginacionServidor={{ pagina, total, porPagina: POR_PAGINA, onCambiarPagina: cambiarPagina }}
+              vacio={vacio}
+              error={error}
+            />
+          ))}
       </section>
     </div>
   )
