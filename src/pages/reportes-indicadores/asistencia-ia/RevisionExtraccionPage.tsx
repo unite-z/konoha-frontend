@@ -39,44 +39,24 @@ import {
   type ValorCampo,
 } from '../../../types/ia'
 import { ETIQUETA_OPCION_ACCION, insigniaAccion, insigniaSugerencia } from '../../../utils/estados'
-import { esFechaIsoValida, formatearFecha, formatearFechaHora, formatearNumero, SIN_VALOR } from '../../../utils/formato'
+import { formatearFechaHora, SIN_VALOR } from '../../../utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
-
-const ACCIONES: AccionDecision[] = ['aceptar', 'corregir', 'descartar']
-
-/** Mensajes de la revisión. */
-const MENSAJES = {
-  sinDecision: 'Elige una decisión para cada dato',
-  sinValorAceptar: 'No hay valor que aceptar: corrígelo o descártalo',
-  json: 'Escribe una lista JSON válida, por ejemplo [{"nombre": "..."}]',
-  vacio: 'Escribe el valor corregido',
-  entero: 'Escribe un número entero, por ejemplo 12',
-  decimal: 'Escribe un número, por ejemplo 1250,5',
-  booleano: 'Elige Sí o No',
-  fecha: 'Indica una fecha válida',
-  correcciones: 'Corrige los valores marcados',
-} as const
+import {
+  ACCIONES,
+  convertirCorreccion,
+  idCorreccion,
+  idDecision,
+  MENSAJES,
+  textoObjeto,
+  textoValorSimple,
+  valorATexto,
+} from './extraccion/valoresCampo'
 
 // =============================================================================
 // Valores: presentación y conversión
 // =============================================================================
-
-function textoValorSimple(valor: unknown, tipo?: TipoDato | null): string {
-  if (valor === null || valor === undefined) return SIN_VALOR
-  if (typeof valor === 'boolean') return valor ? 'Sí' : 'No'
-  if (typeof valor === 'number') return formatearNumero(valor)
-  if (typeof valor === 'string') return tipo === 'Fecha' || esFechaIsoValida(valor) ? formatearFecha(valor) : valor
-  return JSON.stringify(valor)
-}
-
-/** Objeto de una lista JSON como «clave: valor · clave: valor». */
-function textoObjeto(objeto: Record<string, unknown>): string {
-  return Object.entries(objeto)
-    .map(([clave, valor]) => `${clave}: ${textoValorSimple(valor)}`)
-    .join(' · ')
-}
 
 /** Valor legible: listas JSON como lista, cifras y fechas con el formato de la Guía Web 7. */
 function ValorLegible({ valor, tipo, textoNulo }: { valor: ValorCampo; tipo: TipoDato | null; textoNulo: string }) {
@@ -94,50 +74,6 @@ function ValorLegible({ valor, tipo, textoNulo }: { valor: ValorCampo; tipo: Tip
     )
   }
   return <span className={typeof valor === 'number' ? 'cifra' : undefined}>{textoValorSimple(valor, tipo)}</span>
-}
-
-/** Texto inicial del campo de corrección, a partir del valor sugerido. */
-function valorATexto(tipo: TipoDato | null, valor: ValorCampo): string {
-  if (valor === null || valor === undefined) return ''
-  if (tipo === 'Booleano') return valor ? 'si' : 'no'
-  if (tipo === 'Decimal' && typeof valor === 'number') return String(valor).replace('.', ',')
-  if (tipo === 'JSON') return JSON.stringify(valor, null, 2)
-  return String(valor)
-}
-
-/** Convierte el texto del campo de corrección al tipo del dato, o devuelve qué hacer. */
-function convertirCorreccion(tipo: TipoDato | null, texto: string): { valor?: ValorCampo; error?: string } {
-  const limpio = texto.trim()
-  switch (tipo) {
-    case 'Entero':
-      if (limpio === '') return { error: MENSAJES.vacio }
-      return /^-?\d+$/.test(limpio) ? { valor: Number(limpio) } : { error: MENSAJES.entero }
-    case 'Decimal': {
-      if (limpio === '') return { error: MENSAJES.vacio }
-      const normalizado = limpio.replace(/[\s ]/g, '').replace(',', '.')
-      return /^-?\d+(\.\d+)?$/.test(normalizado) ? { valor: Number(normalizado) } : { error: MENSAJES.decimal }
-    }
-    case 'Booleano':
-      if (limpio === 'si') return { valor: true }
-      if (limpio === 'no') return { valor: false }
-      return { error: MENSAJES.booleano }
-    case 'Fecha':
-      if (limpio === '') return { error: MENSAJES.vacio }
-      return esFechaIsoValida(limpio) ? { valor: limpio } : { error: MENSAJES.fecha }
-    case 'JSON': {
-      if (limpio === '') return { error: MENSAJES.json }
-      try {
-        const lista: unknown = JSON.parse(limpio)
-        const valida =
-          Array.isArray(lista) && lista.every((e) => e !== null && typeof e === 'object' && !Array.isArray(e))
-        return valida ? { valor: lista as Record<string, unknown>[] } : { error: MENSAJES.json }
-      } catch {
-        return { error: MENSAJES.json }
-      }
-    }
-    default: // Texto, Texto largo o sin tipo
-      return limpio === '' ? { error: MENSAJES.vacio } : { valor: texto }
-  }
 }
 
 // =============================================================================
@@ -169,9 +105,6 @@ function revisionInicial(s: SugerenciaIA): Revision {
   }
   return { clave: claveRevision(s), decisiones, errores: {}, mostrarResumen: false }
 }
-
-const idDecision = (clave: string, accion: AccionDecision) => `decision-${clave}-${accion}`
-const idCorreccion = (clave: string) => `correccion-${clave}`
 
 // =============================================================================
 // Página
