@@ -92,3 +92,103 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* --- Filtros ----------------------------------------------------------------- */
+/* Misma separación que la plantilla de reportes entre la barra de filtros y los chips. */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Campo con ayuda emergente: el icono queda en la línea de la etiqueta, sin mover los demás filtros. */
+.campoConAyuda {
+  position: relative;
+}
+
+.iconoAyuda {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: 0;
+}
+
+/* --- Lista en móvil: una ficha por atención ----------------------------------- */
+.fichas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+}
+
+.fichaElegida {
+  border-color: var(--green-700);
+  background: var(--green-50);
+}
+
+.cabeceraFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.codigoFicha {
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.metaFicha {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.pieFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+.pieLista {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 767px) {
+  /* Barra de filtros: campos y botón a todo el ancho. */
+  .filtros form > * {
+    flex: 1 1 100%;
+  }
+  .filtros form > :last-child {
+    padding-top: 0;
+  }
+  .filtros form > :last-child button {
+    width: 100%;
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+}

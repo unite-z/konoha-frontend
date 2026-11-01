@@ -11,6 +11,7 @@
  * - A2: sin atenciones, el mapa sigue visible y un aviso lo informa (por eso no se usa `PlantillaReporte`, que
  *   sustituye todo el contenido).
  * - E1: si el mapa falla, se avisa y se sigue con la lista, con «Reintentar mapa».
+ * - Móvil: filtros a todo el ancho, mapa más bajo y la lista como fichas (ListaAtencionesMovil).
  *
  * Supuestos (pendientes de confirmar): periodo predeterminado = semana actual; mismo símbolo para los tres tipos
  * de atención; marcador de un área en el centro de su caja.
@@ -26,10 +27,12 @@ import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
 import IndicadorActualizacion from '../../../components/ui/IndicadorActualizacion'
 import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
+import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
 import SelectoresFiltroGestion, {
   type CampoFiltroGestion,
 } from '../../../components/reportes-indicadores/SelectoresFiltroGestion'
 import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
+import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
@@ -50,6 +53,7 @@ import {
 import { ESTADOS_FILTRO_MAPA, insigniaEstadoAtencion, TIPOS_ATENCION } from '../../../utils/reportesGestion'
 import { erroresDePeriodo } from '../reportes/erroresPeriodo'
 import estilosReportes from '../reportes/Reportes.module.css'
+import ListaAtencionesMovil from './ListaAtencionesMovil'
 import PanelCapas from './PanelCapas'
 import estilos from './MapaAtenciones.module.css'
 
@@ -74,6 +78,8 @@ const CAMPOS_OPCIONALES: CampoOpcionalMapa[] = [
 ]
 
 const OPCIONES_TIPO_ATENCION: OpcionSelector[] = TIPOS_ATENCION.map((t) => ({ valor: t, texto: t }))
+
+const AYUDA_RIESGO = 'Atenciones que exigen prevencionista'
 
 const OPCIONES_RIESGO: OpcionSelector[] = [
   { valor: 'true', texto: 'Atención de riesgo' },
@@ -111,6 +117,7 @@ function textoOpcion(opciones: OpcionSelector[], valor: string): string {
 
 export default function MapaAtencionesPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, { texto: 'Mapa de atenciones' }])
+  const esMovil = useEsMovil()
 
   // SUPUESTO (pendiente de confirmar): periodo predeterminado = semana actual, como el panel.
   const predeterminado = useMemo(() => semanaActual(), [])
@@ -215,7 +222,7 @@ export default function MapaAtencionesPage() {
   }
 
   const barra = (
-    <>
+    <div className={estilos.filtros}>
       <FiltroPeriodo
         idBase="periodo-mapa"
         desde={filtros.desde}
@@ -244,18 +251,22 @@ export default function MapaAtencionesPage() {
           catalogos={catalogos}
           estados={ESTADOS_FILTRO_MAPA}
         />
-        <Selector
-          id="filtro-mapa-riesgo"
-          etiqueta="Nivel de riesgo"
-          ayuda="Atenciones que exigen prevencionista"
-          valor={borrador.es_riesgo}
-          opciones={OPCIONES_RIESGO}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => setBorrador((b) => ({ ...b, es_riesgo: valor }))}
-        />
+        <div className={estilos.campoConAyuda}>
+          <Selector
+            id="filtro-mapa-riesgo"
+            etiqueta="Nivel de riesgo"
+            valor={borrador.es_riesgo}
+            opciones={OPCIONES_RIESGO}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => setBorrador((b) => ({ ...b, es_riesgo: valor }))}
+          />
+          <span className={estilos.iconoAyuda}>
+            <AyudaEmergente id="filtro-mapa-ayuda-riesgo" tema="el nivel de riesgo" texto={AYUDA_RIESGO} />
+          </span>
+        </div>
       </FiltroPeriodo>
       <ChipsFiltrosActivos filtros={filtrosActivos} onQuitar={quitar} onLimpiar={limpiar} />
-    </>
+    </div>
   )
 
   // Estados de toda la página, como `PlantillaReporte`.
@@ -335,17 +346,27 @@ export default function MapaAtencionesPage() {
           <h2 id="titulo-lista" className={estilosReportes.tituloSeccion}>
             Lista de atenciones
           </h2>
-          <TablaDatos
-            titulo="Lista de atenciones"
-            columnas={COLUMNAS}
-            filas={filasVisibles}
-            claveFila={(f) => f.clave}
-            onFilaClick={(f) => setSeleccion(f.clave)}
-            estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
-            vacio={{
-              titulo: filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
-            }}
-          />
+          {esMovil && filasVisibles.length > 0 ? (
+            <ListaAtencionesMovil
+              // Al cambiar los datos o los tipos visibles, la lista vuelve a las primeras 25.
+              key={`${datos.generado_en}|${[...tiposVisibles].join(',')}`}
+              filas={filasVisibles}
+              seleccion={seleccion}
+              onSeleccionar={setSeleccion}
+            />
+          ) : (
+            <TablaDatos
+              titulo="Lista de atenciones"
+              columnas={COLUMNAS}
+              filas={filasVisibles}
+              claveFila={(f) => f.clave}
+              onFilaClick={(f) => setSeleccion(f.clave)}
+              estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
+              vacio={{
+                titulo: filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
+              }}
+            />
+          )}
         </section>
 
         {datos.notas.map((nota) => (
