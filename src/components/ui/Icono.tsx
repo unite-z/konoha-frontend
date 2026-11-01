@@ -19,6 +19,7 @@ export type NombreIcono =
   | 'flechaOrden'
   | 'chevronDerecha'
   | 'documento'
+  | 'destello'
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   circulo: <circle cx="12" cy="12" r="5" />,
@@ -51,6 +52,13 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <polyline points="14 3 14 8 19 8" />
       <line x1="9" y1="13" x2="15" y2="13" />
       <line x1="9" y1="17" x2="15" y2="17" />
+    </>
+  ),
+  // Asistencia con IA.
+  destello: (
+    <>
+      <path d="M10 3.5 11.8 8.2 16.5 10l-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8z" />
+      <path d="M18 14v6m-3-3h6" />
     </>
   ),
 }

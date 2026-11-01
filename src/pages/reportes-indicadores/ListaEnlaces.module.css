@@ -1,0 +1,126 @@
+/*
+ * Lista de enlaces en tarjetas (páginas índice del módulo: Reportes y Asistencia IA).
+ * Superficie, borde y elevación de TarjetaIndicador (Guía Web 5.7); pares etiqueta-valor como
+ * ListaDescripcion. Mismos puntos de corte que el resto del proyecto (móvil).
+ */
+
+/* 2 columnas en escritorio y tablet; 1 en móvil. */
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 767px) {
+  .rejilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition:
+    border-color var(--duracion-transicion),
+    box-shadow var(--duracion-transicion);
+}
+.tarjeta:hover {
+  border-color: var(--green-700);
+  box-shadow: var(--web-elev-2);
+}
+
+@media (max-width: 767px) {
+  .tarjeta {
+    padding: var(--space-4);
+  }
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+/* Icono de la tarjeta sobre fondo verde suave. */
+.icono {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--green-50);
+  color: var(--green-700);
+}
+.tarjeta:hover .icono {
+  background: var(--green-100);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.descripcion {
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line);
+  font-weight: var(--type-body-lg-weight);
+  color: var(--color-text-secondary);
+}
+
+/* Dato adicional (por ejemplo, los filtros que admite). */
+.detalles {
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+.etiqueta {
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--color-text-muted);
+}
+
+.valor {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line);
+  color: var(--color-text-primary);
+}
+
+/* Acción al pie: empujada al fondo para que todas las tarjetas de una fila la alineen. */
+.accion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--green-700);
+}
+.tarjeta:hover .accion {
+  text-decoration: underline;
+}
