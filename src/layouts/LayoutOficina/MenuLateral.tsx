@@ -70,8 +70,8 @@ const SEGUNDO_NIVEL_USUARIOS: EntradaSegundoNivel[] = [
 ]
 
 const SEGUNDO_NIVEL: EntradaSegundoNivel[] = [
-  { texto: 'Panel', ruta: RUTAS.panel }, // RF-REP-001
   { texto: 'Reportes', ruta: RUTAS.reportes },
+  { texto: 'Panel', ruta: RUTAS.panel }, // RF-REP-001
   { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones }, // RF-REP-007
   { texto: 'Exportaciones' }, // RF-REP-009, otro requisito
   { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },

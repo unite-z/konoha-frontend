@@ -9,14 +9,14 @@
  * Supuesto: periodo predeterminado a confirmar con la contraparte (CU-MOD06-001). Aquí, del 1 de enero del
  * año actual a hoy, porque los ciclos de corte se repiten cada 30 a 45 días.
  */
-import { useMemo } from 'react'
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import Badge from '../../../components/ui/Badge'
 import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton from '../../../components/ui/Boton'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import TarjetaIndicador, { FilaTarjetas, type TarjetaIndicadorProps } from '../../../components/ui/TarjetaIndicador'
+import TarjetaIndicador, { type TarjetaIndicadorProps } from '../../../components/ui/TarjetaIndicador'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
@@ -28,9 +28,30 @@ import { anioActualHastaHoy, formatearFecha, formatearNumero, SIN_VALOR } from '
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
+import estilosCorte from './CumplimientoCorte.module.css'
 
 const TITULO = 'Cumplimiento del corte de césped'
 const ID_PERIODO = 'periodo-corte'
+
+/** Móvil (punto de corte del proyecto): los ciclos se muestran como fichas en lugar de la tabla. */
+const CONSULTA_MOVIL = '(max-width: 767px)'
+
+/** Fichas que se muestran de una vez en móvil (igual que la página de la tabla). */
+const FICHAS_POR_TANDA = 25
+
+function suscribirMovil(aviso: () => void): () => void {
+  const consulta = window.matchMedia(CONSULTA_MOVIL)
+  consulta.addEventListener('change', aviso)
+  return () => consulta.removeEventListener('change', aviso)
+}
+
+function useEsMovil(): boolean {
+  return useSyncExternalStore(
+    suscribirMovil,
+    () => window.matchMedia(CONSULTA_MOVIL).matches,
+    () => false,
+  )
+}
 
 /** Faltantes del back-end que afectan a la duración (el resto afectan a la frecuencia). */
 const PATRON_FALTANTE_DURACION = /fin de corte|limpieza|duración/i
@@ -104,6 +125,143 @@ function contextoCiclos(resumen: ResumenCumplimiento): string {
   return partes.join(' · ')
 }
 
+/** «práctica / máxima» de la frecuencia. */
+function textoFrecuencia(c: FilaCumplimiento): string {
+  return c.frecuencia_practica_dias === null && c.frecuencia_maxima_dias === null
+    ? SIN_VALOR
+    : `${c.frecuencia_practica_dias ?? SIN_VALOR} / ${c.frecuencia_maxima_dias ?? SIN_VALOR}`
+}
+
+/** Días de ejecución frente al máximo, con barra de avance. */
+function avanceTotal(c: FilaCumplimiento): ReactNode {
+  if (!duracionCalculada(c) || c.dias_total === null || c.maximo_total === null) return SIN_VALOR
+  const texto = `${c.dias_total} de ${c.maximo_total}`
+  return (
+    <div className={estilos.celdaAvance}>
+      <span className="cifra">{texto}</span>
+      <BarraAvance
+        valor={c.dias_total}
+        maximo={c.maximo_total}
+        etiqueta="Días de ejecución frente al máximo"
+        textoValor={texto}
+        alerta={c.estado_duracion === 'Excede el máximo'}
+      />
+    </div>
+  )
+}
+
+function listaFaltantes(c: FilaCumplimiento): ReactNode {
+  return c.faltantes.length === 0 ? (
+    SIN_VALOR
+  ) : (
+    <ul className={`${estilos.listaSimple} ${estilos.textoPequeno}`}>
+      {c.faltantes.map((f) => (
+        <li key={f}>{f}</li>
+      ))}
+    </ul>
+  )
+}
+
+/** Ficha de un ciclo (móvil). Muestra los mismos datos que una fila de la tabla. */
+function FichaCiclo({ ciclo: c }: { ciclo: FilaCumplimiento }) {
+  const idTitulo = `ciclo-${c.ciclo_id}`
+  const lugar = [c.ruta_nombre, c.proveedor_razon_social, c.estacion].filter(Boolean).join(' · ')
+  return (
+    <li>
+      <article className={estilosCorte.ficha} aria-labelledby={idTitulo}>
+        <div>
+          <div className={estilosCorte.cabeceraFicha}>
+            <h3 id={idTitulo} className={estilosCorte.tituloFicha}>
+              Inicio: {formatearFecha(c.fecha_inicio_real)}
+            </h3>
+            {c.estado_ciclo && <Badge tono="neutral" texto={c.estado_ciclo} />}
+          </div>
+          {lugar && <p className={estilosCorte.subtituloFicha}>{lugar}</p>}
+        </div>
+
+        <div className={estilosCorte.bloque}>
+          <div className={estilosCorte.cabeceraBloque}>
+            <p className={estilosCorte.tituloBloque}>Frecuencia</p>
+            <Badge tono={tonoCumplimiento(c.estado_frecuencia)} texto={c.estado_frecuencia} />
+          </div>
+          <dl className={estilosCorte.datos}>
+            <div>
+              <dt>Días desde el anterior</dt>
+              <dd className="cifra">{frecuenciaCalculada(c) ? formatearNumero(c.dias_entre_ciclos) : SIN_VALOR}</dd>
+            </div>
+            <div>
+              <dt>Práctica / máxima</dt>
+              <dd className="cifra">{textoFrecuencia(c)}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className={estilosCorte.bloque}>
+          <div className={estilosCorte.cabeceraBloque}>
+            <p className={estilosCorte.tituloBloque}>Duración</p>
+            <Badge tono={tonoCumplimiento(c.estado_duracion)} texto={c.estado_duracion} />
+          </div>
+          <dl className={estilosCorte.datos}>
+            <div>
+              <dt>Días de corte</dt>
+              <dd className="cifra">{formatearNumero(c.dias_corte)}</dd>
+            </div>
+            <div>
+              <dt>Días de limpieza</dt>
+              <dd className="cifra">{formatearNumero(c.dias_limpieza)}</dd>
+            </div>
+            <div className={estilosCorte.datoAncho}>
+              <dt>Total frente al máximo</dt>
+              <dd>{avanceTotal(c)}</dd>
+            </div>
+          </dl>
+        </div>
+
+        {c.faltantes.length > 0 && (
+          <div className={estilosCorte.bloque}>
+            <p className={estilosCorte.tituloBloque}>Faltantes</p>
+            {listaFaltantes(c)}
+          </div>
+        )}
+      </article>
+    </li>
+  )
+}
+
+/** Lista de ciclos en móvil: del más reciente al más antiguo, en tandas de 25. */
+function ListaCiclosMovil({ ciclos }: { ciclos: FilaCumplimiento[] }) {
+  const [visibles, setVisibles] = useState(FICHAS_POR_TANDA)
+  const ordenados = useMemo(
+    () =>
+      [...ciclos].sort(
+        (a, b) => b.fecha_inicio_real.localeCompare(a.fecha_inicio_real) || b.ciclo_id - a.ciclo_id,
+      ),
+    [ciclos],
+  )
+  const mostrados = ordenados.slice(0, visibles)
+  return (
+    <>
+      <ul className={estilosCorte.listaCiclos} aria-label="Ciclos de corte">
+        {mostrados.map((c) => (
+          <FichaCiclo key={c.ciclo_id} ciclo={c} />
+        ))}
+      </ul>
+      {ordenados.length > FICHAS_POR_TANDA && (
+        <div className={estilosCorte.pieLista}>
+          <p className="cifra">
+            Mostrando {formatearNumero(mostrados.length)} de {formatearNumero(ordenados.length)}
+          </p>
+          {mostrados.length < ordenados.length && (
+            <Boton variante="secundario" onClick={() => setVisibles((n) => n + FICHAS_POR_TANDA)}>
+              Mostrar más ciclos
+            </Boton>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
 const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
   {
     clave: 'fecha_inicio_real',
@@ -133,10 +291,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     titulo: 'Frecuencia',
     subtitulo: 'práctica / máxima',
     alineacion: 'derecha',
-    render: (c) =>
-      c.frecuencia_practica_dias === null && c.frecuencia_maxima_dias === null
-        ? SIN_VALOR
-        : `${c.frecuencia_practica_dias ?? SIN_VALOR} / ${c.frecuencia_maxima_dias ?? SIN_VALOR}`,
+    render: textoFrecuencia,
   },
   {
     clave: 'estado_frecuencia',
@@ -161,22 +316,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
   {
     clave: 'dias_total',
     titulo: 'Total frente al máximo',
-    render: (c) => {
-      if (!duracionCalculada(c) || c.dias_total === null || c.maximo_total === null) return SIN_VALOR
-      const texto = `${c.dias_total} de ${c.maximo_total}`
-      return (
-        <div className={estilos.celdaAvance}>
-          <span className="cifra">{texto}</span>
-          <BarraAvance
-            valor={c.dias_total}
-            maximo={c.maximo_total}
-            etiqueta="Días de ejecución frente al máximo"
-            textoValor={texto}
-            alerta={c.estado_duracion === 'Excede el máximo'}
-          />
-        </div>
-      )
-    },
+    render: avanceTotal,
   },
   {
     clave: 'estado_duracion',
@@ -188,16 +328,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     clave: 'faltantes',
     titulo: 'Faltantes',
     multilinea: true,
-    render: (c) =>
-      c.faltantes.length === 0 ? (
-        SIN_VALOR
-      ) : (
-        <ul className={`${estilos.listaSimple} ${estilos.textoPequeno}`}>
-          {c.faltantes.map((f) => (
-            <li key={f}>{f}</li>
-          ))}
-        </ul>
-      ),
+    render: listaFaltantes,
   },
 ]
 
@@ -207,6 +338,7 @@ export default function CumplimientoCortePage() {
   const predeterminado = useMemo(() => anioActualHastaHoy(), [])
   const { filtros, establecer } = useFiltrosUrl({ desde: predeterminado.desde, hasta: predeterminado.hasta })
   const { desde, hasta } = filtros
+  const esMovil = useEsMovil()
 
   const consulta = useConsulta<ResultadoCumplimientoCorte>(
     `${desde}|${hasta}`,
@@ -218,14 +350,16 @@ export default function CumplimientoCortePage() {
     <PlantillaReporte
       consulta={consulta}
       filtros={
-        <FiltroPeriodo
-          idBase={ID_PERIODO}
-          desde={desde}
-          hasta={hasta}
-          onAplicar={(periodo) => (periodo.desde === desde && periodo.hasta === hasta ? consulta.reintentar() : establecer(periodo))}
-          erroresServidor={erroresDePeriodo(consulta.error)}
-          cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
-        />
+        <div className={estilosCorte.filtros}>
+          <FiltroPeriodo
+            idBase={ID_PERIODO}
+            desde={desde}
+            hasta={hasta}
+            onAplicar={(periodo) => (periodo.desde === desde && periodo.hasta === hasta ? consulta.reintentar() : establecer(periodo))}
+            erroresServidor={erroresDePeriodo(consulta.error)}
+            cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
+          />
+        </div>
       }
       vacio={{
         titulo: 'Sin ciclos de corte en el periodo',
@@ -242,7 +376,7 @@ export default function CumplimientoCortePage() {
         )
         return (
           <>
-            <FilaTarjetas>
+            <div className={estilosCorte.tarjetas}>
               <TarjetaIndicador {...tarjetaUltimoCiclo(datos.ultimo_ciclo)} />
               <TarjetaIndicador {...tarjetaFrecuencia(datos.ultimo_ciclo)} />
               <TarjetaIndicador
@@ -250,7 +384,7 @@ export default function CumplimientoCortePage() {
                 valor={formatearNumero(datos.resumen?.total_ciclos ?? datos.ciclos.length)}
                 contexto={datos.resumen ? contextoCiclos(datos.resumen) : undefined}
               />
-            </FilaTarjetas>
+            </div>
 
             <section className={estilos.seccion} aria-labelledby="titulo-ciclos">
               <h2 id="titulo-ciclos" className={estilos.tituloSeccion}>
@@ -262,13 +396,18 @@ export default function CumplimientoCortePage() {
                   frecuencia y la duración del servicio en Planificación.
                 </AvisoEnLinea>
               )}
-              <TablaDatos
-                titulo="Ciclos de corte"
-                columnas={COLUMNAS}
-                filas={datos.ciclos}
-                claveFila={(c) => String(c.ciclo_id)}
-                ordenInicial={{ clave: 'fecha_inicio_real', direccion: 'desc' }}
-              />
+              {esMovil ? (
+                // Se reinicia (vuelve a 25 fichas) al cambiar los ciclos, como la tabla con su página.
+                <ListaCiclosMovil key={datos.ciclos.map((c) => c.ciclo_id).join('|')} ciclos={datos.ciclos} />
+              ) : (
+                <TablaDatos
+                  titulo="Ciclos de corte"
+                  columnas={COLUMNAS}
+                  filas={datos.ciclos}
+                  claveFila={(c) => String(c.ciclo_id)}
+                  ordenInicial={{ clave: 'fecha_inicio_real', direccion: 'desc' }}
+                />
+              )}
             </section>
           </>
         )
