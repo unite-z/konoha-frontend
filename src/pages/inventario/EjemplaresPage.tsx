@@ -122,7 +122,7 @@ export default function EjemplaresPage() {
               <div>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud && ejemplar.longitud ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
               {ejemplar.advertencia_placa_repetida && <p role="status">Aviso: esta placa antigua también figura en otro ejemplar.</p>}
             </div>
-            {ejemplar.codigo_placa_antigua && <button className={estilos.botonTabla} type="button" disabled={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</button>}
+            {puedeRegistrar && ejemplar.codigo_placa_antigua && <button className={estilos.botonTabla} type="button" disabled={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</button>}
           </li>)}</ul>
         )}
       </section>
