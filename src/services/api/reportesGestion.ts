@@ -1,5 +1,5 @@
 /**
- * Servicios de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005, RF-REP-007 y RF-REP-008). Solo lectura (GET).
+ * Servicios de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005, RF-REP-007, RF-REP-008 y RF-REP-010). Solo lectura (GET).
  * Rutas relativas a `API_REPORTES_GESTION_URL`. Las páginas no llaman a `fetch`: usan estas funciones.
  *
  * Los catálogos de los filtros (espacios y tipos de servicio) son los de MOD-05 (`tercerizados.ts`), con la
@@ -7,19 +7,22 @@
  */
 import { DATOS_SIMULADOS } from '../../config/datosSimulados'
 import type {
+  CatalogoComparacion,
   CatalogoServicios,
   ClaveIndicadorPanel,
   ConsultaGestion,
   ConsultaMapa,
+  ConsultaProgramadoEjecutado,
   ConsultaReporteServicio,
   DetalleIndicadorPanel,
   ResultadoMapaAtenciones,
   ResultadoMaterialVegetal,
   ResultadoPanel,
+  ResultadoProgramadoEjecutado,
   ResultadoReporteServicio,
 } from '../../types/reportesGestion'
 import { solicitarReportesGestion } from './clienteReportesGestion'
-import { listarProveedores, listarTiposServicio, listarTodo } from './tercerizados'
+import { listarAreasVerdes, listarProveedores, listarTiposServicio, listarTodo } from './tercerizados'
 
 /** RF-REP-001: `GET panel/`. */
 export function obtenerPanel(consulta: ConsultaGestion, signal?: AbortSignal) {
@@ -82,5 +85,34 @@ export async function obtenerCatalogoServicios(signal?: AbortSignal): Promise<Ca
     tipos_servicio: tipos.resultados.filter((t) => t.ejecutor === 'Tercerizado').map(({ id, nombre }) => ({ id, nombre })),
     proveedores: proveedores.resultados.map((p) => ({ id: p.id, nombre: p.razon_social })),
     completo: tipos.completo && proveedores.completo,
+  }
+}
+
+/** RF-REP-010: `GET programado-ejecutado/` (el backend aplica los filtros a lo programado y a lo ejecutado). */
+export async function obtenerProgramadoEjecutado(consulta: ConsultaProgramadoEjecutado, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularProgramadoEjecutado } = await import('../simulados/programadoEjecutado')
+    return simularProgramadoEjecutado(consulta, signal)
+  }
+  return solicitarReportesGestion<ResultadoProgramadoEjecutado>('programado-ejecutado/', {
+    parametros: { ...consulta },
+    signal,
+  })
+}
+
+/** RF-REP-010: opciones de los filtros (todos los tipos de servicio y los espacios), de los catálogos de MOD-05. */
+export async function obtenerCatalogoComparacion(signal?: AbortSignal): Promise<CatalogoComparacion> {
+  if (DATOS_SIMULADOS) {
+    const { simularCatalogoComparacion } = await import('../simulados/programadoEjecutado')
+    return simularCatalogoComparacion(signal)
+  }
+  const [tipos, espacios] = await Promise.all([
+    listarTodo((page) => listarTiposServicio({ page }, signal)),
+    listarTodo((page) => listarAreasVerdes({ page }, signal)),
+  ])
+  return {
+    tipos_servicio: tipos.resultados.map(({ id, nombre }) => ({ id, nombre })),
+    espacios: espacios.resultados.map(({ id, nombre }) => ({ id, nombre })),
+    completo: tipos.completo && espacios.completo,
   }
 }
