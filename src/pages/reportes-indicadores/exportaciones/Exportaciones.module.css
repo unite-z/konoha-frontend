@@ -1,0 +1,234 @@
+/*
+ * Exportaciones (RF-REP-009): formulario «Generar reporte» y historial «Reportes generados».
+ * Mismos puntos de corte que el resto del proyecto (tablet y móvil).
+ */
+
+.zona {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* «Generar reporte»: tarjeta con la acción primaria de la pantalla. */
+.zonaGenerar {
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.tituloZona {
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+/* Escritorio: tipo y formato a la izquierda; periodo y filtros a la derecha. */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.leyenda {
+  margin-bottom: var(--space-2);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+/* Tipos de reporte: radios con aspecto de tarjeta (como los informes de la solicitud con IA). */
+.tipos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tipo {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  transition:
+    border-color var(--duracion-transicion),
+    background-color var(--duracion-transicion);
+}
+.tipo:hover {
+  border-color: var(--green-700);
+}
+
+.tipoActivo,
+.tipoActivo:hover {
+  border-color: var(--green-700);
+  background: var(--green-50);
+}
+
+.tipoInactivo,
+.tipoInactivo:hover {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-subtle);
+}
+.tipoInactivo .etiquetaTipo {
+  cursor: not-allowed;
+}
+
+.etiquetaTipo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+.etiquetaTipo input {
+  margin-top: var(--space-1);
+  accent-color: var(--green-700);
+}
+
+.textoTipo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.nombreTipo {
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.descripcionTipo {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.periodo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.resumen {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  overflow-wrap: anywhere;
+}
+
+.etiquetaResumen {
+  font-weight: var(--type-label-md-weight);
+}
+
+.avisoAcciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.avisoAcciones > :first-child {
+  align-self: stretch;
+}
+
+.accion {
+  display: flex;
+}
+
+/* Historial en móvil: una ficha por reporte. */
+.fichas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+}
+
+.cabeceraFicha,
+.pieFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.pieFicha {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+.metaFicha {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.paginacionFichas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+.paginacionFichas > p {
+  flex: 1 1 100%;
+}
+.paginacionFichas > button {
+  flex: 1 1 0;
+}
+
+@media (max-width: 1023px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .zonaGenerar {
+    padding: var(--space-4);
+  }
+
+  .periodo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accion > button,
+  .pieFicha > button {
+    width: 100%;
+  }
+}
