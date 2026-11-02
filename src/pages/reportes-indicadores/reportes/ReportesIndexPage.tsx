@@ -1,5 +1,5 @@
 /**
- * Índice de reportes de «Reportes e indicadores» (RF-REP-002, RF-REP-004, RF-REP-005 y RF-REP-006).
+ * Índice de reportes de «Reportes e indicadores» (RF-REP-002, RF-REP-004, RF-REP-005, RF-REP-006 y RF-REP-008).
  * El de RF-REP-005 exige la sesión de MOD-05: sin ella, el guardián lleva al ingreso y después vuelve.
  *
  * Cada reporte es una tarjeta de enlace con su descripción y los filtros que admite.
@@ -40,6 +40,12 @@ export default function ReportesIndexPage() {
           descripcion: 'Material vegetal e insumos consumidos, propagados y trasladados en un mes, por tipo y espacio.',
           detalle: { etiqueta: FILTROS, valor: 'Mes y espacio' },
           ruta: RUTAS.materialVegetal,
+        },
+        {
+          titulo: 'Servicio tercerizado',
+          descripcion: 'Avance, rendimiento, especies o plagas atendidas y conformidad de un servicio en un periodo.',
+          detalle: { etiqueta: FILTROS, valor: 'Servicio, proveedor y periodo' },
+          ruta: RUTAS.reporteServicioTercerizado,
         },
       ]}
     />
