@@ -18,6 +18,7 @@ import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/Dis
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
 import MaterialVegetalPage from '../pages/reportes-indicadores/reportes/MaterialVegetalPage'
 import ReporteServicioTercerizadoPage from '../pages/reportes-indicadores/reportes/ReporteServicioTercerizadoPage'
+import ExportacionesPage from '../pages/reportes-indicadores/exportaciones/ExportacionesPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
@@ -88,6 +89,7 @@ export const router = createBrowserRouter([
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
               { path: RUTAS.mapaAtenciones, element: <MapaAtencionesPage /> }, // RF-REP-007
               { path: RUTAS.reporteServicioTercerizado, element: <ReporteServicioTercerizadoPage /> }, // RF-REP-008
+              { path: RUTAS.exportaciones, element: <ExportacionesPage /> }, // RF-REP-009
             ],
           },
           // MOD-01 «Usuarios y roles»: solo el jefe de sección (RF-T-002 a RF-T-004).
