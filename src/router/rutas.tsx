@@ -32,6 +32,7 @@ import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
 import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
 import CatalogosPage from '../pages/inventario/CatalogosPage'
+import EjemplaresPage from '../pages/inventario/EjemplaresPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
@@ -108,6 +109,7 @@ export const router = createBrowserRouter([
                 { path: 'nueva', element: <NuevaAreaVerdePage /> },
                 { path: 'coberturas', element: <CoberturasPage /> },
                 { path: 'catalogos', element: <CatalogosPage /> },
+                { path: 'ejemplares', element: <EjemplaresPage /> },
               ],
             }],
           },
