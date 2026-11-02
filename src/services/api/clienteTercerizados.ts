@@ -16,7 +16,7 @@ export const API_TERCERIZADOS_URL: string = import.meta.env.VITE_API_TERCERIZADO
 type ValorParametro = string | number | boolean | null | undefined
 
 export interface OpcionesTercerizados {
-  metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH'
+  metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   /** Parámetros de consulta; se omiten los vacíos (`null`, `undefined` o cadena vacía). */
   parametros?: Record<string, ValorParametro>
   /** Cuerpo JSON. */

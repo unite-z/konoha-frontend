@@ -44,6 +44,22 @@ export const MIGAS = {
   mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
 
+const BASE_INVENTARIO = '/areas-verdes'
+
+export const RUTAS_INVENTARIO = {
+  areasVerdes: BASE_INVENTARIO,
+  coberturas: `${BASE_INVENTARIO}/coberturas`,
+} as const
+
+export function esRutaInventario(ruta: string): boolean {
+  return ruta === BASE_INVENTARIO || ruta.startsWith(`${BASE_INVENTARIO}/`)
+}
+
+export const MIGAS_INVENTARIO = {
+  areasVerdes: { texto: 'Áreas verdes', ruta: RUTAS_INVENTARIO.areasVerdes },
+  coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
+} satisfies Record<string, Miga>
+
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
 
 const BASE_TERCERIZADOS = '/servicios-tercerizados'
