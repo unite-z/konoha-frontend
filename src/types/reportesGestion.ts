@@ -1,5 +1,5 @@
 /**
- * Tipos de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005, RF-REP-007 y RF-REP-008).
+ * Tipos de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005, RF-REP-007, RF-REP-008 y RF-REP-010).
  * Reflejo de los records de `konoha-backend` (`mod06/gestion/servicios/`), con las claves en snake_case
  * como el JSON (ADR 0005). Base de la API: `/api/v1/reportes` con HTTP Basic.
  */
@@ -381,6 +381,110 @@ export interface ConsultaReporteServicio extends Periodo {
 export interface CatalogoServicios {
   tipos_servicio: { id: number; nombre: string }[]
   proveedores: { id: number; nombre: string }[]
+  /** `false` si algún catálogo tenía más páginas de las cargadas. */
+  completo: boolean
+}
+
+// =============================================================================
+// RF-REP-010: programado frente a ejecutado
+// =============================================================================
+
+/**
+ * Situación de un trabajo programado al comparar con su ejecución (RF-REP-010).
+ * SUPUESTO (pendiente de confirmar con el backend): la documentación dice «pendiente» y «desviación» sin fijar la
+ * tolerancia; se usa 0 días (cualquier retraso del fin real es desviación). Regla en `situacionDe`
+ * (`utils/programadoEjecutado.ts`):
+ * - Cancelado: la programación está Cancelada;
+ * - Ejecutado: una ejecución con fin real y `desviacion_dias` ≤ 0;
+ * - EjecutadoConDesviacion: fin real y `desviacion_dias` > 0;
+ * - EnCurso: una ejecución con inicio y sin fin;
+ * - Pendiente: sin ejecución, o sin inicio real.
+ */
+export type SituacionProgramacion = 'Ejecutado' | 'EjecutadoConDesviacion' | 'EnCurso' | 'Pendiente' | 'Cancelado'
+
+/** Ejecución vinculada a una programación: atención tercerizada o actividad de personal propio. */
+export interface EjecucionVinculada {
+  origen: 'Atencion' | 'Actividad'
+  id: number
+  codigo: string
+  estado: string
+  etiqueta_estado: string
+  inicio_real: InstanteIso | null
+  fin_real: InstanteIso | null
+}
+
+/** Una fila de la comparación: un trabajo programado. */
+export interface FilaProgramadoEjecutado {
+  programacion_id: number
+  tipo_servicio: string
+  modalidad: Modalidad
+  /** Proveedor o cuadrilla. */
+  responsable: string | null
+  espacio: string | null
+  ventana_mes: string | null
+  inicio_previsto: FechaIso
+  fin_previsto: FechaIso
+  estado_programacion: 'Programada' | 'EnCurso' | 'Completada' | 'Cancelada'
+  ejecuciones: EjecucionVinculada[]
+  situacion: SituacionProgramacion
+  etiqueta_situacion: string
+  /** Días de retraso del fin real frente al fin previsto (positivo = tarde; null si no hay fin real). */
+  desviacion_dias: number | null
+}
+
+/** Totales del periodo. */
+export interface ResumenProgramadoEjecutado {
+  programados: number
+  ejecutados: number
+  ejecutados_con_desviacion: number
+  en_curso: number
+  pendientes: number
+  cancelados: number
+  /** (ejecutados + con desviación) / (programados − cancelados), texto decimal o null. */
+  porcentaje_cumplimiento: string | null
+  /** Ejecuciones del periodo que no tienen programación vinculada. */
+  ejecuciones_sin_programacion: number
+}
+
+/** Línea por servicio (barras «programado frente a ejecutado»). */
+export interface ComparacionPorServicio {
+  tipo_servicio_id: number
+  tipo_servicio: string
+  modalidad: Modalidad
+  programados: number
+  ejecutados: number
+  pendientes: number
+}
+
+export interface FiltrosProgramadoEjecutado {
+  tipo_servicio_id: number | null
+  area_verde_id: number | null
+  modalidad: Modalidad | null
+  situacion: SituacionProgramacion | null
+}
+
+/** GET /api/v1/reportes/programado-ejecutado/ (RF-REP-010). El backend aplica los filtros a los dos conjuntos. */
+export interface ResultadoProgramadoEjecutado extends ReporteBase<FiltrosProgramadoEjecutado> {
+  resumen: ResumenProgramadoEjecutado
+  por_servicio: ComparacionPorServicio[]
+  filas: FilaProgramadoEjecutado[]
+  sin_programacion: EjecucionVinculada[]
+  /** Por ejemplo, el personal propio sin datos hasta que lo aporte Operación de campo. */
+  personal_propio: SeccionNoDisponible
+  notas: string[]
+}
+
+export interface ConsultaProgramadoEjecutado extends Periodo {
+  tipo_servicio_id?: number
+  area_verde_id?: number
+  modalidad?: Modalidad
+  situacion?: SituacionProgramacion
+}
+
+/** Opciones de los filtros de la comparación (catálogos de MOD-05: todos los tipos de servicio y los espacios). */
+export interface CatalogoComparacion {
+  tipos_servicio: { id: number; nombre: string }[]
+  espacios: { id: number; nombre: string }[]
   /** `false` si algún catálogo tenía más páginas de las cargadas. */
   completo: boolean
 }
