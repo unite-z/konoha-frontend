@@ -18,6 +18,12 @@
   --map-uso-4: #6A1B9A;
   --map-uso-5: #00838F;
   --map-uso-6: #AD3A16;
+  --map-grid-color: #E7EEE9;
+  --map-outline-color: #C7D5CC;
+  --map-label-color: #84928A;
+  --map-label-strong-color: #37443D;
+  --map-label-outline-width: 3px;
+  --map-swatch-outline: color-mix(in srgb, var(--neutral-950) 55%, transparent);
   --font-family-base: Inter, system-ui, sans-serif;
   --space-1: 4px;
   --space-2: 8px;

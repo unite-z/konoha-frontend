@@ -70,14 +70,14 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-bg-surface);
 }
 
 .mapaLocalSvg {
   display: block;
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--color-bg-surface);
 }
 
 .modoSeleccionar {
@@ -93,27 +93,27 @@
 }
 
 .fondoMapaLocal line {
-  stroke: #e7eee9;
+  stroke: var(--map-grid-color);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .fondoMapaLocal rect {
   fill: none;
-  stroke: #c7d5cc;
+  stroke: var(--map-outline-color);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
 
 .fondoMapaLocal text {
-  fill: #84928a;
-  font-size: 13px;
+  fill: var(--map-label-color);
+  font-size: var(--type-body-md-size);
   letter-spacing: .04em;
 }
 
 .fondoMapaLocal path {
   fill: none;
-  stroke: #84928a;
+  stroke: var(--map-label-color);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
@@ -123,12 +123,12 @@
 }
 
 .etiquetasMapaLocal text {
-  fill: #37443d;
-  font-size: 9px;
+  fill: var(--map-label-strong-color);
+  font-size: var(--type-label-sm-size);
   font-weight: 600;
   paint-order: stroke;
-  stroke: white;
-  stroke-width: 3px;
+  stroke: var(--color-bg-surface);
+  stroke-width: var(--map-label-outline-width);
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
@@ -234,7 +234,7 @@
   width: 0.9rem;
   height: 0.9rem;
   margin-top: 0.2rem;
-  border: 1px solid rgb(17 24 39 / 55%);
+  border: 1px solid var(--map-swatch-outline);
   border-radius: 2px;
 }
 

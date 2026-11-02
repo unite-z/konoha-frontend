@@ -79,7 +79,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
           setZoom((actual) => Math.max(1, Math.min(8, actual * (evento.deltaY < 0 ? 1.25 : 0.8))))
         }}
       >
-        <rect x="0" y="0" width="1000" height="700" fill="#ffffff" />
+        <rect x="0" y="0" width="1000" height="700" fill="var(--color-bg-surface)" />
         <image
           href="/datos/fondo-mapa-campus.svg"
           x="0"
@@ -112,7 +112,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
               d={ruta(feature.geometry, limites)}
               fill={uso.color}
               fillOpacity={activo ? 1 : 0.78}
-              stroke={activo ? '#111827' : uso.color}
+              stroke={activo ? 'var(--neutral-950)' : uso.color}
               strokeWidth={activo ? 3 : 1.3}
               onMouseEnter={(evento) => posicionar(evento, feature)}
               onMouseMove={(evento) => posicionar(evento, feature)}
@@ -129,7 +129,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
         <button type="button" aria-label="Restablecer zoom" onClick={() => setZoom(1)}>⌂</button>
       </div>
       {hover && (
-        <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}>
+        <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
           <strong>{texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
           <span>Uso: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
           {categorias.find((categoria) => categoria.uso_fuente === texto(hover.feature.properties?.Uso))?.tipo_uso_nombre && (

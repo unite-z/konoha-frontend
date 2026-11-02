@@ -4,7 +4,6 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { BotonEnlace } from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
-import { puedeGestionarCoberturas } from '../../config/permisosInventario'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '../../router/rutasApp'
@@ -17,7 +16,8 @@ import {
   listarUsosFuenteMapa,
 } from '../../services/api/inventario'
 import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '../../services/api/mapaInventario'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import type { UsoFuenteMapa } from '../../types/mod02'
 import estilos from './MapaAreasVerdesPage.module.css'
 import MapaVectorialLocal from './MapaVectorialLocal'
@@ -58,7 +58,7 @@ interface HoverMapa {
 
 export default function MapaAreasVerdesPage() {
   usePaginaActual('Mapa del campus', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.mapa])
-  const { estado: sesion } = useSesionTercerizados()
+  const sesion = useSesionActiva()
   const contenedorMapa = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<MapaMapLibre | null>(null)
   const usoSeleccionadoRef = useRef('')
@@ -75,7 +75,7 @@ export default function MapaAreasVerdesPage() {
   const [guardando, setGuardando] = useState<'uso' | 'area' | null>(null)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
   const [mensajeAccion, setMensajeAccion] = useState<string | null>(null)
-  const puedeEditar = sesion.tipo === 'activa' && puedeGestionarCoberturas(sesion.usuario.rol)
+  const puedeEditar = puede(sesion, PERMISOS.gestionarCatalogos)
 
   const consultaConError = [mapa, categorias, asignaciones, tiposUso, areas].find((consulta) => consulta.estado === 'error' && !consulta.datos)
   const consultaPendiente = [mapa, categorias, asignaciones, tiposUso, areas].some((consulta) => !consulta.datos)
@@ -90,6 +90,9 @@ export default function MapaAreasVerdesPage() {
     if (!contenedorMapa.current || !mapa.datos) return
     const limites = obtenerLimites(mapa.datos)
     if (!limites) return
+    const colorFondo = getComputedStyle(document.documentElement)
+      .getPropertyValue('--color-bg-surface')
+      .trim()
 
     const instancia = new MapaMapLibre({
       container: contenedorMapa.current,
@@ -97,7 +100,7 @@ export default function MapaAreasVerdesPage() {
         version: 8,
         sources: {},
         layers: [
-          { id: 'fondo-campus', type: 'background', paint: { 'background-color': '#ffffff' } },
+          { id: 'fondo-campus', type: 'background', paint: { 'background-color': colorFondo } },
         ],
       },
       center: [(limites.oeste + limites.este) / 2, (limites.sur + limites.norte) / 2],
@@ -335,7 +338,7 @@ export default function MapaAreasVerdesPage() {
           <ul className={estilos.leyenda}>
             {usos.map((uso) => (
               <li key={uso.nombre}>
-                <span className={estilos.muestraColor} style={{ backgroundColor: uso.color }} aria-hidden="true" />
+                <span className={estilos.muestraColor} style={{ backgroundColor: uso.color }} aria-hidden="true" /> {/* estilo-calculado: color del uso */}
                 <span>{uso.nombre}{uso.tipoUsoId !== null && <small> · {catalogoTipos.find((tipo) => tipo.id === uso.tipoUsoId)?.nombre ?? 'tipo inactivo'}</small>}</span>
                 <span className={estilos.cantidad}>{uso.cantidad}</span>
               </li>

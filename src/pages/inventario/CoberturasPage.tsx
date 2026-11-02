@@ -6,11 +6,11 @@ import { BotonEnlace } from '../../components/ui/Boton'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
-import { puedeGestionarCoberturas } from '../../config/permisosInventario'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import { crearCobertura, listarCoberturas, modificarCobertura } from '../../services/api/inventario'
 import type { CoberturaVegetal } from '../../types/mod02'
 import estilos from './Inventario.module.css'
@@ -18,14 +18,14 @@ import estilos from './Inventario.module.css'
 export default function CoberturasPage() {
   usePaginaActual('Coberturas vegetales', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.coberturas])
   const navegar = useNavigate()
-  const { estado: sesion } = useSesionTercerizados()
+  const sesion = useSesionActiva()
   const consulta = useConsulta('coberturas-todas', (signal) => listarCoberturas(true, signal))
   const [nombreNueva, setNombreNueva] = useState('')
   const [nombres, setNombres] = useState<Record<number, string>>({})
   const [enCurso, setEnCurso] = useState<number | 'nueva' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
-  const puedeGestionar = sesion.tipo === 'activa' && puedeGestionarCoberturas(sesion.usuario.rol)
+  const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
 
   if (!puedeGestionar) {
     return (

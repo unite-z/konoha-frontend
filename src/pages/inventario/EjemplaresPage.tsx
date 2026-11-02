@@ -5,19 +5,19 @@ import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import Selector from '../../components/ui/Selector'
-import { puedeRegistrarAreasVerdes } from '../../config/permisosInventario'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_INVENTARIO } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import { cambiarEspecie, crearEjemplar, crearEspecie, listarEjemplares, listarEspecies, quitarPlacaAntigua } from '../../services/api/inventario'
 import estilos from './Inventario.module.css'
 
 export default function EjemplaresPage() {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
-  const { estado: sesion } = useSesionTercerizados()
-  const puedeRegistrar = sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)
-  const puedeGestionar = sesion.tipo === 'activa' && sesion.usuario.rol === 'Jefe de sección'
+  const sesion = useSesionActiva()
+  const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
+  const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
   const consulta = useConsulta('ejemplares-inventario', (signal) => listarEjemplares('', 1, signal))
   const especies = useConsulta('especies-inventario', (signal) => listarEspecies(false, signal))
   const [codigoPlaca, setCodigoPlaca] = useState('')

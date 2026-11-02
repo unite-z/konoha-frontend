@@ -128,14 +128,19 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: RUTAS_INVENTARIO.areasVerdes,
+            element: <RutaConPermiso permiso={PERMISOS.consultarInventario} />,
             children: [
-              { index: true, element: <AreasVerdesPage /> },
-              { path: 'nueva', element: <NuevaAreaVerdePage /> },
-              { path: 'mapa', element: <MapaAreasVerdesPage /> },
-              { path: 'coberturas', element: <CoberturasPage /> },
-              { path: 'catalogos', element: <CatalogosPage /> },
-              { path: 'ejemplares', element: <EjemplaresPage /> },
+              {
+                path: RUTAS_INVENTARIO.areasVerdes,
+                children: [
+                  { index: true, element: <AreasVerdesPage /> },
+                  { path: 'nueva', element: <NuevaAreaVerdePage /> },
+                  { path: 'mapa', element: <MapaAreasVerdesPage /> },
+                  { path: 'coberturas', element: <CoberturasPage /> },
+                  { path: 'catalogos', element: <CatalogosPage /> },
+                  { path: 'ejemplares', element: <EjemplaresPage /> },
+                ],
+              },
             ],
           },
           { path: '*', element: <PaginaNoEncontrada /> },

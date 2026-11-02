@@ -4,11 +4,11 @@ import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
-import { puedeRegistrarAreasVerdes } from '../../config/permisosInventario'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import { asignarAreaSector, listarAreasVerdes, listarHistorialSectorArea, listarSectores, listarTiposUso, listarCuarteles, modificarAreaVerde } from '../../services/api/inventario'
 import Selector from '../../components/ui/Selector'
 import type { AreaVerde, AsignacionSectorInventario, SectorInventario } from '../../types/mod02'
@@ -27,14 +27,14 @@ const COLUMNAS: ColumnaTabla<AreaVerde>[] = [
 
 export default function AreasVerdesPage() {
   usePaginaActual('Áreas verdes', [MIGAS_INVENTARIO.areasVerdes])
-  const { estado: sesion } = useSesionTercerizados()
+  const sesion = useSesionActiva()
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
   const [sectorId, setSectorId] = useState('')
   const [usoId, setUsoId] = useState('')
   const [cuartelId, setCuartelId] = useState('')
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
-  const puedeAsignarSectores = sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)
+  const puedeAsignarSectores = puede(sesion, PERMISOS.registrarInventario)
   const sectores = useConsulta('sectores-filtro', (signal) => listarSectores(false, signal))
   const usos = useConsulta('tipos-uso-filtro', (signal) => listarTiposUso(false, signal))
   const cuarteles = useConsulta('cuarteles-filtro', (signal) => listarCuarteles(false, signal))
@@ -59,7 +59,7 @@ export default function AreasVerdesPage() {
   if (consulta.estado === 'vacio' && !hayCriteriosConsulta) {
     return (
       <div className={estilos.pagina}>
-        <Acciones puedeRegistrar={sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)} />
+        <Acciones puedeRegistrar={puede(sesion, PERMISOS.registrarInventario)} />
         <EstadoVacio titulo="Aún no hay áreas verdes" descripcion="Registra un área para iniciar el inventario del campus." />
       </div>
     )
@@ -96,7 +96,7 @@ export default function AreasVerdesPage() {
 
   return (
     <div className={estilos.pagina}>
-      <Acciones puedeRegistrar={sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)} />
+      <Acciones puedeRegistrar={puede(sesion, PERMISOS.registrarInventario)} />
       <label className={estilos.busqueda}>
         <span>Buscar por nombre</span>
         <input
@@ -211,8 +211,8 @@ function SectorArea({
 }
 
 function Acciones({ puedeRegistrar }: { puedeRegistrar: boolean }) {
-  const { estado: sesion } = useSesionTercerizados()
-  const puedeGestionarCoberturas = sesion.tipo === 'activa' && sesion.usuario.rol === 'Jefe de sección'
+  const sesion = useSesionActiva()
+  const puedeGestionarCoberturas = puede(sesion, PERMISOS.gestionarCatalogos)
   return (
     <div className={estilos.acciones}>
       <p>Inventario centralizado de espacios verdes del campus.</p>

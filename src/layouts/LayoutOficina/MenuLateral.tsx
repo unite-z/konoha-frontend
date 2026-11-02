@@ -154,17 +154,25 @@ export default function MenuLateral() {
             </li>
           )}
 
-          <li>
-            <NavLink
-              to={RUTAS_INVENTARIO.areasVerdes}
-              className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
-              aria-current={enInventario ? 'true' : undefined}
-              end={false}
-            >
-              Áreas verdes y mapa
-            </NavLink>
-            <ListaSegundoNivel entradas={[{ texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes }, { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa }, { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos }]} />
-          </li>
+          {entradas.has('inventario') && (
+            <li>
+              <NavLink
+                to={RUTAS_INVENTARIO.areasVerdes}
+                className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
+                aria-current={enInventario ? 'true' : undefined}
+                end={false}
+              >
+                Áreas verdes y mapa
+              </NavLink>
+              <ListaSegundoNivel
+                entradas={[
+                  { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
+                  { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
+                  { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
+                ]}
+              />
+            </li>
+          )}
 
           {OTROS_MODULOS_TRAS_INVENTARIO.map((texto) => (
             <SinEnlace key={texto} texto={texto} />

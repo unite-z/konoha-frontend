@@ -11,14 +11,15 @@ import { cambiarCuartel, cambiarSector, cambiarTipoUso, crearCuartel, crearSecto
 import type { AsignacionCapataz } from '../../types/mod02'
 import { fechaLimaDeInstante } from '../../utils/instanteLima'
 import type { InstanteIso } from '../../types/comun'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import estilos from './Inventario.module.css'
 
 export default function CatalogosPage() {
   usePaginaActual('Catálogos y sectores', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.catalogos])
   const navegar = useNavigate()
-  const { estado: sesion } = useSesionTercerizados()
-  const puedeEditar = sesion.tipo === 'activa' && sesion.usuario.rol === 'Jefe de sección'
+  const sesion = useSesionActiva()
+  const puedeEditar = puede(sesion, PERMISOS.gestionarCatalogos)
   const usos = useConsulta('tipos-uso-todos', (signal) => listarTiposUso(true, signal))
   const sectores = useConsulta('sectores-todos', (signal) => listarSectores(true, signal))
   const cuarteles = useConsulta('cuarteles-todos', (signal) => listarCuarteles(true, signal))

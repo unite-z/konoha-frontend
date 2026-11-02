@@ -6,18 +6,18 @@ import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import Selector from '../../components/ui/Selector'
-import { puedeRegistrarAreasVerdes } from '../../config/permisosInventario'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '../../router/rutasApp'
-import { useSesionTercerizados } from '../../sesion/ContextoSesionTercerizados'
+import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '../../config/permisosCore'
 import { listarCoberturasActivas, listarCuarteles, listarSectores, listarTiposUso, registrarAreaVerde } from '../../services/api/inventario'
 import estilos from './Inventario.module.css'
 
 export default function NuevaAreaVerdePage() {
   usePaginaActual('Registrar área verde', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Registrar área' }])
   const navegar = useNavigate()
-  const { estado: sesion } = useSesionTercerizados()
+  const sesion = useSesionActiva()
   const consulta = useConsulta('coberturas-activas', listarCoberturasActivas)
   const usos = useConsulta('tipos-uso-activos', (signal) => listarTiposUso(false, signal))
   const sectores = useConsulta('sectores-activos', (signal) => listarSectores(false, signal))
@@ -32,7 +32,7 @@ export default function NuevaAreaVerdePage() {
   const [cuartelId, setCuartelId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
-  const puedeRegistrar = sesion.tipo === 'activa' && puedeRegistrarAreasVerdes(sesion.usuario.rol)
+  const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
 
   async function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -58,7 +58,7 @@ export default function NuevaAreaVerdePage() {
   }
 
   if (!puedeRegistrar) {
-    return <EstadoError titulo="No tienes permiso para registrar áreas" descripcion="El alta está disponible para jefes de sección e ingenieros de campo." onReintentar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} />
+    return <EstadoError titulo="No tienes permiso para registrar áreas" descripcion="El alta está disponible para jefes de sección, ingenieros de campo y practicantes autorizados." onReintentar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} />
   }
 
   return (
