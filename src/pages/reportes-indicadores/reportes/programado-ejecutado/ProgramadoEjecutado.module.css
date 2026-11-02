@@ -1,0 +1,140 @@
+/*
+ * Programado frente a ejecutado (RF-REP-010): ajustes propios de esta pantalla.
+ * Mismos puntos de corte que el resto del proyecto (tablet y móvil).
+ */
+
+/* Misma separación que la plantilla de reportes entre la barra de filtros y los chips. */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mesesRapidos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.etiquetaMeses {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+/* Tarjetas de indicador: 4 en escritorio, 2 en tablet y 1 en móvil. */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.tarjetas > * {
+  display: flex;
+  flex-direction: column;
+}
+.tarjetas > * > :first-child {
+  flex: 1;
+}
+
+.cabeceraFiltrada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.celdaServicio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.atenuado {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.codigos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Fichas en móvil (mismo aspecto que las del mapa de atenciones). */
+.fichas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+}
+
+.cabeceraFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tituloFicha {
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.metaFicha {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.pieFicha {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+@media (max-width: 1023px) {
+  .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  /* Barra de filtros: campos y botón a todo el ancho. */
+  .filtros form > * {
+    flex: 1 1 100%;
+  }
+  .filtros form > :last-child {
+    padding-top: 0;
+  }
+  .filtros form > :last-child button {
+    width: 100%;
+  }
+
+  .tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
