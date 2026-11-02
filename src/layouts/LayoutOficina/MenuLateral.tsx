@@ -167,6 +167,7 @@ export default function MenuLateral() {
                 { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
                 { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
                 { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
+                { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
               ]} />
             </li>
           )}

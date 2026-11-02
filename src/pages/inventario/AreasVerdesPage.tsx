@@ -23,7 +23,10 @@ export default function AreasVerdesPage() {
     <div className={estilos.pagina}>
       <header className={estilos.cabecera}>
         <div><h2>Inventario de áreas verdes</h2><p>Consulta y registra los espacios verdes del campus.</p></div>
-        <BotonEnlace to={RUTAS_INVENTARIO.nuevaArea} variante="primario">Registrar área</BotonEnlace>
+        <div className={estilos.acciones}>
+          <BotonEnlace to={RUTAS_INVENTARIO.mapa}>Ver mapa</BotonEnlace>
+          <BotonEnlace to={RUTAS_INVENTARIO.nuevaArea} variante="primario">Registrar área</BotonEnlace>
+        </div>
       </header>
       <label className={estilos.busqueda}>
         Buscar por nombre
