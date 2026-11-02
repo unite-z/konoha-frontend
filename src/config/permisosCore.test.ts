@@ -19,6 +19,7 @@ const CAPATAZ = sesion('capataz', [
   'PLA.PLANIFICACION.CONSULTAR',
   'CAM.PARTE.REGISTRAR',
   'CAM.CUADRILLA.CONSULTAR',
+  'INV.INVENTARIO.CONSULTAR',
 ])
 const PRACTICANTE = sesion('practicante', [
   'CORE.REPOSITORIO.CONSULTAR',
@@ -26,6 +27,7 @@ const PRACTICANTE = sesion('practicante', [
   'SER.CONTRATO.CONSULTAR',
   'SER.ATENCION.REGISTRAR',
   'REP.INDICADOR.CONSULTAR',
+  'INV.INVENTARIO.CONSULTAR',
 ])
 const JEFE = sesion('jefe-seccion', [...PRACTICANTE.permisos, 'CORE.USUARIO.GESTIONAR'])
 
@@ -34,7 +36,7 @@ describe('entradasMenu', () => {
     const menu = entradasMenu(CAPATAZ)
     expect(menu.has('usuarios')).toBe(false)
     expect(menu.has('tercerizados')).toBe(false)
-    expect([...menu].sort()).toEqual(['campo', 'planificacion', 'repositorio'])
+    expect([...menu].sort()).toEqual(['campo', 'inventario', 'planificacion', 'repositorio'])
   })
 
   it('solo el jefe ve «Usuarios y roles»', () => {
@@ -50,5 +52,10 @@ describe('entradasMenu', () => {
   it('operación de campo exige el permiso común de consultar cuadrillas', () => {
     expect(entradasMenu(sesion('capataz', [])).has('campo')).toBe(false)
     expect(entradasMenu(sesion('ingeniero-campo', ['CAM.CUADRILLA.CONSULTAR'])).has('campo')).toBe(true)
+  })
+
+  it('inventario exige su permiso de consulta', () => {
+    expect(entradasMenu(sesion('capataz', [])).has('inventario')).toBe(false)
+    expect(entradasMenu(sesion('capataz', ['INV.INVENTARIO.CONSULTAR'])).has('inventario')).toBe(true)
   })
 })

@@ -89,6 +89,32 @@ export const MIGAS_PLANIFICACION = {
   planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.servicios },
 } satisfies Record<string, Miga>
 
+// --- MOD-02 «Inventario de áreas verdes» -----------------------------------------------------------------
+
+const BASE_INVENTARIO = '/areas-verdes'
+
+export const PREFIJO_INVENTARIO = BASE_INVENTARIO
+
+export const RUTAS_INVENTARIO = {
+  areasVerdes: BASE_INVENTARIO,
+  mapa: `${BASE_INVENTARIO}/mapa`,
+  nuevaArea: `${BASE_INVENTARIO}/nueva`,
+  coberturas: `${BASE_INVENTARIO}/coberturas`,
+  catalogos: `${BASE_INVENTARIO}/catalogos`,
+  ejemplares: `${BASE_INVENTARIO}/ejemplares`,
+} as const
+
+export function esRutaInventario(ruta: string): boolean {
+  return ruta === BASE_INVENTARIO || ruta.startsWith(`${BASE_INVENTARIO}/`)
+}
+
+export const MIGAS_INVENTARIO = {
+  areasVerdes: { texto: 'Áreas verdes', ruta: RUTAS_INVENTARIO.areasVerdes },
+  mapa: { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
+  coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
+  catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
+} satisfies Record<string, Miga>
+
 export const MIGAS_TERCERIZADOS = {
   serviciosTercerizados: { texto: 'Servicios tercerizados', ruta: RUTAS_TERCERIZADOS.atenciones },
   atenciones: { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones },

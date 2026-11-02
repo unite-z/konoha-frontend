@@ -27,8 +27,10 @@ import {
   PREFIJO_USUARIOS,
   RUTAS,
   RUTAS_CORE,
+  RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
+  esRutaInventario,
   esRutaPlanificacion,
   esRutaTercerizados,
 } from '../../router/rutasApp'
@@ -38,7 +40,7 @@ import estilos from './MenuLateral.module.css'
 const OTROS_MODULOS_ANTES = ['Inicio']
 
 /** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
-const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa']
+const OTROS_MODULOS_TRAS_INVENTARIO = ['Operación de campo']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -120,6 +122,7 @@ export default function MenuLateral() {
   const enModulo = pathname.startsWith(PREFIJO_MODULO)
   const enTercerizados = esRutaTercerizados(pathname)
   const enPlanificacion = esRutaPlanificacion(pathname)
+  const enInventario = esRutaInventario(pathname)
 
   return (
     <aside className={estilos.lateral}>
@@ -152,7 +155,27 @@ export default function MenuLateral() {
             </li>
           )}
 
-          {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
+          {entradas.has('inventario') && (
+            <li>
+              <NavLink
+                to={RUTAS_INVENTARIO.areasVerdes}
+                className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
+                aria-current={enInventario ? 'true' : undefined}
+                end={false}
+              >
+                Áreas verdes y mapa
+              </NavLink>
+              <ListaSegundoNivel
+                entradas={[
+                  { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
+                  { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
+                  { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
+                ]}
+              />
+            </li>
+          )}
+
+          {OTROS_MODULOS_TRAS_INVENTARIO.map((texto) => (
             <SinEnlace key={texto} texto={texto} />
           ))}
 
