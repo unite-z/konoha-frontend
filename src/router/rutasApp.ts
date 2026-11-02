@@ -51,6 +51,7 @@ export const RUTAS_INVENTARIO = {
   nuevaArea: `${BASE_INVENTARIO}/nueva`,
   coberturas: `${BASE_INVENTARIO}/coberturas`,
   catalogos: `${BASE_INVENTARIO}/catalogos`,
+  ejemplares: `${BASE_INVENTARIO}/ejemplares`,
 } as const
 
 export function esRutaInventario(ruta: string): boolean {
