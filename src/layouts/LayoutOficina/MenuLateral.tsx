@@ -165,6 +165,7 @@ export default function MenuLateral() {
               <ListaSegundoNivel entradas={[
                 { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
                 { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
+                { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
               ]} />
             </li>
           )}

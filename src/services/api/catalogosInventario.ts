@@ -1,0 +1,41 @@
+import { solicitarTercerizados } from './clienteTercerizados'
+import type { AsignacionCapataz, CuartelInventario, ElementoInventario, PersonaInventario, SectorInventario } from '../../types/catalogosInventario'
+
+const BASE = '/api/v1/inventario'
+
+export function listarTiposUso(incluirInactivos = false, signal?: AbortSignal): Promise<ElementoInventario[]> {
+  return solicitarTercerizados('tipos-uso', { parametros: { incluir_inactivos: incluirInactivos }, signal, base: BASE })
+}
+export function crearTipoUso(nombre: string): Promise<ElementoInventario> {
+  return solicitarTercerizados('tipos-uso', { metodo: 'POST', cuerpo: { nombre }, base: BASE })
+}
+export function cambiarTipoUso(id: number, cambio: { activo: boolean }): Promise<ElementoInventario> {
+  return solicitarTercerizados(`tipos-uso/${id}`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
+}
+export function listarCuarteles(incluirDesaparecidos = false, signal?: AbortSignal): Promise<CuartelInventario[]> {
+  return solicitarTercerizados('cuarteles', { parametros: { incluir_desaparecidos: incluirDesaparecidos }, signal, base: BASE })
+}
+export function crearCuartel(entrada: { numero: string; nombre: string }): Promise<CuartelInventario> {
+  return solicitarTercerizados('cuarteles', { metodo: 'POST', cuerpo: entrada, base: BASE })
+}
+export function cambiarCuartel(id: number, estado: CuartelInventario['estado']): Promise<CuartelInventario> {
+  return solicitarTercerizados(`cuarteles/${id}`, { metodo: 'PATCH', cuerpo: { estado }, base: BASE })
+}
+export function listarSectores(incluirInactivos = false, signal?: AbortSignal): Promise<SectorInventario[]> {
+  return solicitarTercerizados('sectores', { parametros: { incluir_inactivos: incluirInactivos }, signal, base: BASE })
+}
+export function crearSector(entrada: { nombre: string; atencion_demanda: boolean }): Promise<SectorInventario> {
+  return solicitarTercerizados('sectores', { metodo: 'POST', cuerpo: entrada, base: BASE })
+}
+export function cambiarSector(id: number, cambio: { activo: boolean }): Promise<SectorInventario> {
+  return solicitarTercerizados(`sectores/${id}`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
+}
+export function asignarCapataz(sectorId: number, capatazId: number | null): Promise<SectorInventario> {
+  return solicitarTercerizados(`sectores/${sectorId}/capataz`, { metodo: 'PATCH', cuerpo: { capataz_id: capatazId }, base: BASE })
+}
+export function listarCapataces(signal?: AbortSignal): Promise<PersonaInventario[]> {
+  return solicitarTercerizados('capataces', { signal, base: BASE })
+}
+export function listarHistorialCapataz(sectorId: number): Promise<AsignacionCapataz[]> {
+  return solicitarTercerizados(`sectores/${sectorId}/historial-capataz`, { base: BASE })
+}
