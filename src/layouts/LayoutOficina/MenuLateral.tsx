@@ -9,8 +9,8 @@
  * fitosanitario (sin enlace: fuera de esta entrega).
  *
  * Segundo nivel de «Reportes e indicadores»: Panel, Reportes, Mapa de atenciones, Exportaciones y
- * Asistencia IA. «Exportaciones» no tiene enlace (RF-REP-009, otro requisito). «Panel» y «Mapa de atenciones»
- * exigen la sesión de MOD-05 (su API usa HTTP Basic).
+ * Asistencia IA. «Panel», «Mapa de atenciones» y «Exportaciones» exigen la sesión de MOD-05 (su API usa HTTP
+ * Basic).
  *
  * Sin iconos: la librería de iconos de menú está pendiente de decisión y el menú expandido lleva siempre
  * etiqueta.
@@ -73,7 +73,7 @@ const SEGUNDO_NIVEL: EntradaSegundoNivel[] = [
   { texto: 'Reportes', ruta: RUTAS.reportes },
   { texto: 'Panel', ruta: RUTAS.panel }, // RF-REP-001
   { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones }, // RF-REP-007
-  { texto: 'Exportaciones' }, // RF-REP-009, otro requisito
+  { texto: 'Exportaciones', ruta: RUTAS.exportaciones }, // RF-REP-009
   { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
 ]
 
