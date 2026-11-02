@@ -48,6 +48,7 @@ const BASE_INVENTARIO = '/areas-verdes'
 
 export const RUTAS_INVENTARIO = {
   areasVerdes: BASE_INVENTARIO,
+  mapa: `${BASE_INVENTARIO}/mapa`,
   nuevaArea: `${BASE_INVENTARIO}/nueva`,
   coberturas: `${BASE_INVENTARIO}/coberturas`,
   catalogos: `${BASE_INVENTARIO}/catalogos`,
@@ -60,6 +61,7 @@ export function esRutaInventario(ruta: string): boolean {
 
 export const MIGAS_INVENTARIO = {
   areasVerdes: { texto: 'Áreas verdes', ruta: RUTAS_INVENTARIO.areasVerdes },
+  mapa: { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
   nuevaArea: { texto: 'Registrar área', ruta: RUTAS_INVENTARIO.nuevaArea },
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },

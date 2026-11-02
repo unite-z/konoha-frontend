@@ -110,6 +110,7 @@ export const router = createBrowserRouter([
                 { path: 'coberturas', element: <CoberturasPage /> },
                 { path: 'catalogos', element: <CatalogosPage /> },
                 { path: 'ejemplares', element: <EjemplaresPage /> },
+                { path: 'mapa', lazy: async () => ({ Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default }) },
               ],
             }],
           },
