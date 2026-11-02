@@ -18,8 +18,8 @@ export interface EjemplarInventario {
   especie_forma_biologica: string | null
   tipo_vegetacion: string | null
   ubicacion: string | null
-  latitud: string | null
-  longitud: string | null
+  latitud: number | null
+  longitud: number | null
   cantidad: number
   area_verde_id: number | null
   advertencia_placa_repetida: boolean

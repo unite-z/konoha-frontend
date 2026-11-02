@@ -119,7 +119,7 @@ export default function EjemplaresPage() {
               <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
               <div>{ejemplar.especie_nombre_cientifico ?? 'Sin nombre científico'} · {ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion ?? 'Sin forma biológica'}</div>
               <div>Referencia: {ejemplar.referencia_catastro ?? '—'} · Código de catastro: {ejemplar.codigo_catastro ?? '—'} · Placa antigua: {ejemplar.codigo_placa_antigua ?? '—'}</div>
-              <div>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud && ejemplar.longitud ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
+              <div>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
               {ejemplar.advertencia_placa_repetida && <p role="status">Aviso: esta placa antigua también figura en otro ejemplar.</p>}
             </div>
             {puedeRegistrar && ejemplar.codigo_placa_antigua && <button className={estilos.botonTabla} type="button" disabled={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</button>}
