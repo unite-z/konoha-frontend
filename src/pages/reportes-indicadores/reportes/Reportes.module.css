@@ -91,3 +91,24 @@
 .totalesGrupo {
   color: var(--color-text-secondary);
 }
+
+/* Línea de «Actualizado el …» con las acciones del resultado (por ejemplo, «Exportar»). */
+.barraResultado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.accionesResultado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .accionesResultado {
+    flex: 1 1 100%;
+  }
+}

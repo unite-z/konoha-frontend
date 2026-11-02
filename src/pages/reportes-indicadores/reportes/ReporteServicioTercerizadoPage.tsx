@@ -7,10 +7,11 @@
  * - Una sección sin datos se muestra «Sin datos» con su motivo, nunca con ceros (criterio 3).
  * - A1: sin registros, el estado vacío con el motivo. A2: las atenciones sin evidencia se señalan y se pueden
  *   filtrar. E1: «Reintentar» conserva los filtros.
- * - Solo consulta (GET). La exportación es RF-REP-009: no está en esta pantalla.
+ * - Solo consulta (GET). «Exportar» (RF-REP-009) genera el archivo con los filtros aplicados.
  */
 import { useMemo, useState } from 'react'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
+import BotonExportar from '../../../components/reportes-indicadores/BotonExportar'
 import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import { AYUDA_CATALOGO_INCOMPLETO, MOTIVO_CATALOGO_NO_DISPONIBLE } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
@@ -194,6 +195,19 @@ export default function ReporteServicioTercerizadoPage() {
             />
           </div>
         }
+        acciones={(datos) => (
+          <BotonExportar
+            tipo="ServicioTercerizado"
+            parametros={{
+              desde,
+              hasta,
+              tipo_servicio_id: datos.filtros_aplicados.tipo_servicio_id,
+              ...(datos.filtros_aplicados.proveedor_id !== null ? { proveedor_id: datos.filtros_aplicados.proveedor_id } : {}),
+            }}
+            resumen={filtrosActivos.map((f) => f.texto).concat(periodoTexto).join(' · ')}
+            sinDatos={datos.sin_datos}
+          />
+        )}
         vacio={{
           titulo: 'No existen datos para los criterios seleccionados',
           accion: proveedor ? (

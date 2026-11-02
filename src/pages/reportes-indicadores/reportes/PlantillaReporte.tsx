@@ -8,6 +8,8 @@
  * - error: 403 y 400 sin campo en un aviso con el `detalle`; 400 del periodo junto al campo (lo muestra
  *   `FiltroPeriodo`); el resto con «Reintentar», conservando los filtros.
  *
+ * `acciones` (opcional) va en la línea de «Actualizado el …», por ejemplo «Exportar» (RF-REP-009).
+ *
  * Ningún reporte modifica datos: solo consultan (GET).
  */
 import type { ReactNode } from 'react'
@@ -30,6 +32,8 @@ export interface PlantillaReporteProps<T extends ReporteBase<unknown>> {
   /** Barra de filtros (y chips de filtros activos). */
   filtros: ReactNode
   vacio: { titulo: string; accion?: ReactNode }
+  /** Acciones sobre el resultado, junto a «Actualizado el …» (recibe los datos actuales). */
+  acciones?: (datos: T) => ReactNode
   children: (datos: T) => ReactNode
 }
 
@@ -37,6 +41,7 @@ export default function PlantillaReporte<T extends ReporteBase<unknown>>({
   consulta,
   filtros,
   vacio,
+  acciones,
   children,
 }: PlantillaReporteProps<T>) {
   const { estado, datos, error, cargaVisible, reintentar } = consulta
@@ -53,13 +58,23 @@ export default function PlantillaReporte<T extends ReporteBase<unknown>>({
   } else if (estado === 'cargando' && (cargaVisible || !datos)) {
     contenido = cargaVisible ? <EstadoCarga forma="pagina" /> : null
   } else if (datos) {
+    const indicador = (
+      <IndicadorActualizacion
+        actualizadoEl={formatearFechaHora(datos.generado_en)}
+        onActualizar={reintentar}
+        cargando={estado === 'cargando'}
+      />
+    )
     contenido = (
       <div className={estilos.pagina} aria-busy={estado === 'cargando' || undefined}>
-        <IndicadorActualizacion
-          actualizadoEl={formatearFechaHora(datos.generado_en)}
-          onActualizar={reintentar}
-          cargando={estado === 'cargando'}
-        />
+        {acciones ? (
+          <div className={estilos.barraResultado}>
+            {indicador}
+            <div className={estilos.accionesResultado}>{acciones(datos)}</div>
+          </div>
+        ) : (
+          indicador
+        )}
         {datos.sin_datos ? (
           <EstadoVacio
             titulo={vacio.titulo}
