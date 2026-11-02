@@ -28,6 +28,7 @@ import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
+import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
@@ -41,7 +42,7 @@ import AccesosPage from '../pages/usuarios-roles/AccesosPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
@@ -95,6 +96,10 @@ export const router = createBrowserRouter([
             ],
           },
           // MOD-01 «Usuarios y roles»: solo el jefe de sección (RF-T-002 a RF-T-004).
+          {
+            element: <RutaConPermiso permiso={PERMISOS.consultarInventario} />,
+            children: [{ path: RUTAS_INVENTARIO.coberturas, element: <CoberturasPage /> }],
+          },
           {
             element: <RutaConPermiso permiso={PERMISOS.gestionarUsuarios} />,
             children: [

@@ -27,18 +27,17 @@ import {
   PREFIJO_USUARIOS,
   RUTAS,
   RUTAS_CORE,
+  RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
   esRutaPlanificacion,
+  esRutaInventario,
   esRutaTercerizados,
 } from '../../router/rutasApp'
 import estilos from './MenuLateral.module.css'
 
 /** Entradas de primer nivel que pertenecen a otros módulos (sin enlace). */
 const OTROS_MODULOS_ANTES = ['Inicio']
-
-/** Entradas de otros módulos entre «Planificación» y «Servicios tercerizados». */
-const OTROS_MODULOS_TRAS_PLANIFICACION = ['Áreas verdes y mapa']
 
 /** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
 const OTROS_MODULOS_ENTRE = ['Incidencias']
@@ -120,6 +119,7 @@ export default function MenuLateral() {
   const enModulo = pathname.startsWith(PREFIJO_MODULO)
   const enTercerizados = esRutaTercerizados(pathname)
   const enPlanificacion = esRutaPlanificacion(pathname)
+  const enInventario = esRutaInventario(pathname)
 
   return (
     <aside className={estilos.lateral}>
@@ -152,9 +152,19 @@ export default function MenuLateral() {
             </li>
           )}
 
-          {OTROS_MODULOS_TRAS_PLANIFICACION.map((texto) => (
-            <SinEnlace key={texto} texto={texto} />
-          ))}
+          {entradas.has('inventario') && (
+            <li>
+              <NavLink
+                to={RUTAS_INVENTARIO.areasVerdes}
+                className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
+                aria-current={enInventario ? 'true' : undefined}
+                end={false}
+              >
+                Áreas verdes y mapa
+              </NavLink>
+              <ListaSegundoNivel entradas={[{ texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas }]} />
+            </li>
+          )}
 
           {entradas.has('campo') && (
             <li>
