@@ -25,6 +25,8 @@ export interface SelectoresFiltroGestionProps {
   catalogos: CatalogosFiltros
   /** `ESTADOS_FILTRO_PANEL` o `ESTADOS_FILTRO_MAPA`. */
   estados: readonly string[]
+  /** `false` oculta el selector «Estado» (RF-REP-010, que no filtra por estado). Por defecto, visible. */
+  conEstado?: boolean
   /** Prefijo de los ids de los selectores. */
   idBase: string
 }
@@ -38,6 +40,7 @@ export default function SelectoresFiltroGestion({
   catalogos,
   estados,
   idBase,
+  conEstado = true,
 }: SelectoresFiltroGestionProps) {
   const opcionesEstado = estados.map((estado) => ({ valor: estado, texto: estado }))
   return (
@@ -67,14 +70,16 @@ export default function SelectoresFiltroGestion({
           <AyudaEmergente id={`${idBase}-ayuda-tipo-servicio`} tema="el tipo de servicio" texto={AYUDA_TIPO_SERVICIO} />
         </span>
       </div>
-      <Selector
-        id={`${idBase}-estado`}
-        etiqueta="Estado"
-        valor={borrador.estado}
-        opciones={opcionesEstado}
-        opcionTodos={OPCION_TODOS}
-        onCambiar={(valor) => onCambiar('estado', valor)}
-      />
+      {conEstado && (
+        <Selector
+          id={`${idBase}-estado`}
+          etiqueta="Estado"
+          valor={borrador.estado}
+          opciones={opcionesEstado}
+          opcionTodos={OPCION_TODOS}
+          onCambiar={(valor) => onCambiar('estado', valor)}
+        />
+      )}
       <Selector
         id={`${idBase}-modalidad`}
         etiqueta="Modalidad"
