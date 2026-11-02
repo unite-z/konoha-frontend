@@ -16,6 +16,7 @@ export const PERMISOS = {
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
   consultarInventario: 'INV.INVENTARIO.CONSULTAR',
+  registrarInventario: 'INV.INVENTARIO.REGISTRAR',
 } as const
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS]
