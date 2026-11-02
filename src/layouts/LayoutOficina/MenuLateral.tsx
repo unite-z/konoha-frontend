@@ -162,7 +162,10 @@ export default function MenuLateral() {
               >
                 Áreas verdes y mapa
               </NavLink>
-              <ListaSegundoNivel entradas={[{ texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas }]} />
+              <ListaSegundoNivel entradas={[
+                { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
+                { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
+              ]} />
             </li>
           )}
 

@@ -29,6 +29,8 @@ import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtenci
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import CoberturasPage from '../pages/inventario/CoberturasPage'
+import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
+import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
@@ -98,7 +100,14 @@ export const router = createBrowserRouter([
           // MOD-01 «Usuarios y roles»: solo el jefe de sección (RF-T-002 a RF-T-004).
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarInventario} />,
-            children: [{ path: RUTAS_INVENTARIO.coberturas, element: <CoberturasPage /> }],
+            children: [{
+              path: RUTAS_INVENTARIO.areasVerdes,
+              children: [
+                { index: true, element: <AreasVerdesPage /> },
+                { path: 'nueva', element: <NuevaAreaVerdePage /> },
+                { path: 'coberturas', element: <CoberturasPage /> },
+              ],
+            }],
           },
           {
             element: <RutaConPermiso permiso={PERMISOS.gestionarUsuarios} />,

@@ -48,6 +48,7 @@ const BASE_INVENTARIO = '/areas-verdes'
 
 export const RUTAS_INVENTARIO = {
   areasVerdes: BASE_INVENTARIO,
+  nuevaArea: `${BASE_INVENTARIO}/nueva`,
   coberturas: `${BASE_INVENTARIO}/coberturas`,
 } as const
 
@@ -57,6 +58,7 @@ export function esRutaInventario(ruta: string): boolean {
 
 export const MIGAS_INVENTARIO = {
   areasVerdes: { texto: 'Áreas verdes', ruta: RUTAS_INVENTARIO.areasVerdes },
+  nuevaArea: { texto: 'Registrar área', ruta: RUTAS_INVENTARIO.nuevaArea },
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
 } satisfies Record<string, Miga>
 
