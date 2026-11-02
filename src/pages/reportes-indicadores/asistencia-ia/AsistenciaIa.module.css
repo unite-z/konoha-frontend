@@ -1,178 +1,167 @@
 /* Páginas de asistencia IA (RF-IA-001): espaciado de la Guía Web 4.1. */
-.formulario {
+
+.accionPrincipal {
+  display: flex;
+}
+
+/* --- Bandeja ----------------------------------------------------------------- */
+.celdaAtencion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.codigoAtencion {
+  font-weight: var(--type-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.metaAtencion {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+  white-space: normal;
+}
+
+/* Propuestas en móvil: una ficha por propuesta (superficie de tarjeta del proyecto). */
+.fichas {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-}
-
-.filaFormulario {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.filaFormulario > :first-child {
-  flex: 0 1 22rem;
-}
-
-/* Alinea los botones con el campo: deja el espacio de la etiqueta y de la ayuda encima. */
-.accionesFormulario {
-  display: flex;
-  gap: var(--space-3);
-  padding-top: calc(var(--type-label-md-line) + var(--type-body-sm-line) + 2 * var(--space-1));
-}
-
-/* Cabecera de identificación de la propuesta (mockup, pantalla 6). */
-.cabeceraPropuesta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-}
-
-.datosPropuesta {
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  gap: var(--space-2) var(--space-8);
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.datosPropuesta dt {
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--duracion-transicion);
+}
+.ficha:hover {
+  border-color: var(--green-700);
+}
+
+.cabeceraFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.datosFicha {
+  display: flex;
+  flex-direction: column;
   font-size: var(--type-body-sm-size);
   line-height: var(--type-body-sm-line);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
-.datosPropuesta dd {
-  margin: 0;
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
+.pieFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--web-border-subtle);
+  color: var(--color-text-secondary);
 }
 
-/* Bloque «Documento analizado» (mockup, pantalla 6: «Reporte y documentos del proveedor»). */
-.documento {
+.paginacionFichas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+.paginacionFichas > p {
+  flex: 1 1 100%;
+}
+.paginacionFichas > button {
+  flex: 1 1 0;
+}
+
+/* --- Revisión ---------------------------------------------------------------- */
+.cabeceraRevision {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
+}
+
+.avance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
 }
 
-.nombreDocumento {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-text-primary);
-}
-
-.nombreDocumento svg {
-  color: var(--green-700);
-}
-
-.cobertura {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-muted);
-}
-
-/* Revisión campo por campo. */
-.celdaDato {
+.fichasCampo {
   display: flex;
   flex-direction: column;
-}
-
-.tipoDato {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-muted);
-}
-
-.asterisco {
-  color: var(--color-error);
-}
-
-.celdaValor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-  min-width: 12rem;
-  white-space: normal;
-}
-
-.noEncontrado {
-  color: var(--color-text-muted);
-}
-
-.listaJson {
-  margin: 0;
-  padding-left: var(--space-4);
-}
-
-.decision {
-  min-width: 16rem;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
-  border: 0;
+  list-style: none;
 }
 
-.opciones {
+/* Acciones fijas al pie mientras se revisa. */
+.conBarraFija {
+  padding-bottom: var(--space-4);
+}
+
+.barraFija {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-}
-
-.opcion {
-  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: var(--web-control-compact);
-  cursor: pointer;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-2);
 }
 
-.opcion input {
-  accent-color: var(--green-700);
-  margin: 0;
-}
-
-.opcionDeshabilitada {
-  color: var(--neutral-500);
-  cursor: not-allowed;
-}
-
-.ayudaDecision {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+.textoBarra {
   color: var(--color-text-secondary);
-}
-
-.correccion {
-  margin-top: var(--space-2);
-}
-
-.errorDecision {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-error);
 }
 
 .acciones {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .accionPrincipal > *,
+  .cabeceraRevision > button {
+    flex: 1 1 100%;
+  }
+
+  .acciones,
+  .acciones > * {
+    flex: 1 1 100%;
+  }
 }

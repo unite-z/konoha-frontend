@@ -1,0 +1,10 @@
+/* Campo con ayuda emergente: el icono queda en la línea de la etiqueta, sin mover los demás filtros. */
+.campoConAyuda {
+  position: relative;
+}
+
+.iconoAyuda {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: 0;
+}

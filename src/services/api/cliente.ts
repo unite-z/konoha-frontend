@@ -9,7 +9,7 @@
  * Las páginas nunca llaman a `fetch` directamente: usan `reportes.ts` e `ia.ts`.
  */
 
-export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL
+export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 /** Mensaje cuando el servidor no responde (texto propio, sin equivalente en el back-end). */
 export const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo'

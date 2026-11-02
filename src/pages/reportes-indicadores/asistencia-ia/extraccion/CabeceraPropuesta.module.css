@@ -1,0 +1,82 @@
+/* Cabecera de identificación de la propuesta (mockup, pantalla 6). */
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-1);
+  min-width: 0;
+}
+
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Pares etiqueta-valor, como ListaDescripcion. */
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+
+.datos dt {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-muted);
+}
+
+.datos dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+/* Documento analizado. */
+.documento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-page);
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.nombreDocumento {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+.nombreDocumento svg {
+  color: var(--green-700);
+}
+
+.cobertura {
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 767px) {
+  .cabecera {
+    padding: var(--space-4);
+  }
+
+  .documento > :last-child {
+    flex: 1 1 100%;
+  }
+}

@@ -12,6 +12,10 @@ import AtencionesEspacioSectorPage from '../pages/reportes-indicadores/reportes/
 import CumplimientoCortePage from '../pages/reportes-indicadores/reportes/CumplimientoCortePage'
 import DistribucionPersonalPage from '../pages/reportes-indicadores/reportes/DistribucionPersonalPage'
 import ReportesIndexPage from '../pages/reportes-indicadores/reportes/ReportesIndexPage'
+import MaterialVegetalPage from '../pages/reportes-indicadores/reportes/MaterialVegetalPage'
+import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
+import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
+import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
@@ -88,6 +92,10 @@ export const router = createBrowserRouter([
               { path: RUTAS.asistenciaIa, element: <AsistenciaIaIndexPage /> },
               { path: RUTAS.extraccionReportes, element: <ExtraccionReporteProveedorPage /> }, // RF-IA-001
               { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
+              { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
+              { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
+              { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
+              { path: RUTAS.mapaAtenciones, element: <MapaAtencionesPage /> }, // RF-REP-007
             ],
           },
           {

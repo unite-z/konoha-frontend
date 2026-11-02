@@ -3,25 +3,27 @@
  * Revisión de una propuesta de extracción con IA (patrón «Ficha de detalle»).
  *
  * RN-IA-001: la salida de la IA es una recomendación; la validación humana es obligatoria antes de cualquier
- * efecto, y la interfaz distingue entre datos registrados, sugerencias de IA («Sugerencia») y decisiones
- * validadas por el usuario («Valor final», con la insignia de la acción).
+ * efecto. Cada dato es una ficha que separa lo que propone la IA («Sugerencia de la IA», panel azul) de la
+ * decisión de la persona («Tu decisión») o, ya validada, del «Valor final» con la insignia de la acción.
+ *
+ * - Avance de la revisión con filtros (todos, pendientes, no encontrados por la IA, obligatorios).
+ * - «Aceptar sugerencias con valor»: acepta de una vez los datos pendientes que tienen sugerencia.
+ * - Las acciones «Validar» y «Rechazar» quedan fijas al pie mientras se revisa.
  *
  * Solo el jefe de sección valida o rechaza (ROLES_VALIDAR_IA); los demás ven la propuesta sin acciones.
  */
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
 import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import Badge from '../../../components/ui/Badge'
+import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import CampoFormulario, { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
+import { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
+import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Icono from '../../../components/ui/Icono'
-import Selector from '../../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_VALIDAR_IA } from '../../../config/permisos'
 import { useRolActual } from '../../../sesion/ContextoSesion'
 import { useConsulta } from '../../../hooks/useConsulta'
@@ -29,125 +31,35 @@ import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
 import { aErrorApi } from '../../../services/api/cliente'
 import { obtenerExtraccion, rechazarExtraccion, validarExtraccion } from '../../../services/api/ia'
-import {
-  claveCampo,
-  type AccionDecision,
-  type CampoSolicitado,
-  type CuerpoValidacion,
-  type SugerenciaIA,
-  type TipoDato,
-  type ValorCampo,
-} from '../../../types/ia'
-import { ETIQUETA_OPCION_ACCION, insigniaAccion, insigniaSugerencia } from '../../../utils/estados'
-import { esFechaIsoValida, formatearFecha, formatearFechaHora, formatearNumero, SIN_VALOR } from '../../../utils/formato'
+import { claveCampo, type CampoSolicitado, type CuerpoValidacion, type SugerenciaIA } from '../../../types/ia'
+import { formatearFechaHora, formatearNumero } from '../../../utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
+import CabeceraPropuesta from './extraccion/CabeceraPropuesta'
+import FichaCampo, { type DecisionCampo } from './extraccion/FichaCampo'
+import {
+  convertirCorreccion,
+  idCorreccion,
+  idDecision,
+  MENSAJES,
+  pasaFiltro,
+  tieneValor,
+  valorATexto,
+  valorSugerido,
+  type FiltroCampos,
+} from './extraccion/valoresCampo'
 
-const ACCIONES: AccionDecision[] = ['aceptar', 'corregir', 'descartar']
-
-/** Mensajes de la revisión. */
-const MENSAJES = {
-  sinDecision: 'Elige una decisión para cada dato',
-  sinValorAceptar: 'No hay valor que aceptar: corrígelo o descártalo',
-  json: 'Escribe una lista JSON válida, por ejemplo [{"nombre": "..."}]',
-  vacio: 'Escribe el valor corregido',
-  entero: 'Escribe un número entero, por ejemplo 12',
-  decimal: 'Escribe un número, por ejemplo 1250,5',
-  booleano: 'Elige Sí o No',
-  fecha: 'Indica una fecha válida',
-  correcciones: 'Corrige los valores marcados',
-} as const
-
-// =============================================================================
-// Valores: presentación y conversión
-// =============================================================================
-
-function textoValorSimple(valor: unknown, tipo?: TipoDato | null): string {
-  if (valor === null || valor === undefined) return SIN_VALOR
-  if (typeof valor === 'boolean') return valor ? 'Sí' : 'No'
-  if (typeof valor === 'number') return formatearNumero(valor)
-  if (typeof valor === 'string') return tipo === 'Fecha' || esFechaIsoValida(valor) ? formatearFecha(valor) : valor
-  return JSON.stringify(valor)
-}
-
-/** Objeto de una lista JSON como «clave: valor · clave: valor». */
-function textoObjeto(objeto: Record<string, unknown>): string {
-  return Object.entries(objeto)
-    .map(([clave, valor]) => `${clave}: ${textoValorSimple(valor)}`)
-    .join(' · ')
-}
-
-/** Valor legible: listas JSON como lista, cifras y fechas con el formato de la Guía Web 7. */
-function ValorLegible({ valor, tipo, textoNulo }: { valor: ValorCampo; tipo: TipoDato | null; textoNulo: string }) {
-  if (valor === null || valor === undefined) return <span className={estilosIa.noEncontrado}>{textoNulo}</span>
-  if (Array.isArray(valor)) {
-    if (valor.length === 0) return <span className={estilosIa.noEncontrado}>{SIN_VALOR}</span>
-    return (
-      <ul className={estilosIa.listaJson}>
-        {valor.map((objeto, i) => (
-          <li key={i}>
-            {objeto && typeof objeto === 'object' ? textoObjeto(objeto) : textoValorSimple(objeto)}
-          </li>
-        ))}
-      </ul>
-    )
-  }
-  return <span className={typeof valor === 'number' ? 'cifra' : undefined}>{textoValorSimple(valor, tipo)}</span>
-}
-
-/** Texto inicial del campo de corrección, a partir del valor sugerido. */
-function valorATexto(tipo: TipoDato | null, valor: ValorCampo): string {
-  if (valor === null || valor === undefined) return ''
-  if (tipo === 'Booleano') return valor ? 'si' : 'no'
-  if (tipo === 'Decimal' && typeof valor === 'number') return String(valor).replace('.', ',')
-  if (tipo === 'JSON') return JSON.stringify(valor, null, 2)
-  return String(valor)
-}
-
-/** Convierte el texto del campo de corrección al tipo del dato, o devuelve qué hacer. */
-function convertirCorreccion(tipo: TipoDato | null, texto: string): { valor?: ValorCampo; error?: string } {
-  const limpio = texto.trim()
-  switch (tipo) {
-    case 'Entero':
-      if (limpio === '') return { error: MENSAJES.vacio }
-      return /^-?\d+$/.test(limpio) ? { valor: Number(limpio) } : { error: MENSAJES.entero }
-    case 'Decimal': {
-      if (limpio === '') return { error: MENSAJES.vacio }
-      const normalizado = limpio.replace(/[\s ]/g, '').replace(',', '.')
-      return /^-?\d+(\.\d+)?$/.test(normalizado) ? { valor: Number(normalizado) } : { error: MENSAJES.decimal }
-    }
-    case 'Booleano':
-      if (limpio === 'si') return { valor: true }
-      if (limpio === 'no') return { valor: false }
-      return { error: MENSAJES.booleano }
-    case 'Fecha':
-      if (limpio === '') return { error: MENSAJES.vacio }
-      return esFechaIsoValida(limpio) ? { valor: limpio } : { error: MENSAJES.fecha }
-    case 'JSON': {
-      if (limpio === '') return { error: MENSAJES.json }
-      try {
-        const lista: unknown = JSON.parse(limpio)
-        const valida =
-          Array.isArray(lista) && lista.every((e) => e !== null && typeof e === 'object' && !Array.isArray(e))
-        return valida ? { valor: lista as Record<string, unknown>[] } : { error: MENSAJES.json }
-      } catch {
-        return { error: MENSAJES.json }
-      }
-    }
-    default: // Texto, Texto largo o sin tipo
-      return limpio === '' ? { error: MENSAJES.vacio } : { valor: texto }
-  }
-}
+const FILTROS: { valor: FiltroCampos; texto: string }[] = [
+  { valor: 'todos', texto: 'Todos' },
+  { valor: 'pendientes', texto: 'Pendientes' },
+  { valor: 'sin_valor', texto: 'No encontrados por la IA' },
+  { valor: 'obligatorios', texto: 'Obligatorios' },
+]
 
 // =============================================================================
 // Estado de la revisión
 // =============================================================================
-
-interface DecisionCampo {
-  accion?: AccionDecision
-  texto: string
-}
 
 interface Revision {
   /** Identifica la versión de la propuesta a la que corresponde el estado. */
@@ -164,14 +76,10 @@ function claveRevision(s: SugerenciaIA): string {
 function revisionInicial(s: SugerenciaIA): Revision {
   const decisiones: Record<string, DecisionCampo> = {}
   for (const campo of s.contenido.entrada.campos_solicitados) {
-    const clave = claveCampo(campo.campo_id)
-    decisiones[clave] = { texto: valorATexto(campo.tipo_dato, s.contenido.propuesta[clave]?.valor ?? null) }
+    decisiones[claveCampo(campo.campo_id)] = { texto: valorATexto(campo.tipo_dato, valorSugerido(s, campo)) }
   }
   return { clave: claveRevision(s), decisiones, errores: {}, mostrarResumen: false }
 }
-
-const idDecision = (clave: string, accion: AccionDecision) => `decision-${clave}-${accion}`
-const idCorreccion = (clave: string) => `correccion-${clave}`
 
 // =============================================================================
 // Página
@@ -205,6 +113,7 @@ export default function RevisionExtraccionPage() {
   const [dialogo, setDialogo] = useState<'validar' | 'rechazar' | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [motivo, setMotivo] = useState('')
+  const [filtro, setFiltro] = useState<FiltroCampos>('todos')
 
   // El estado de la revisión se reinicia cuando cambia la propuesta (patrón de ajuste durante el render).
   const [revision, setRevision] = useState<Revision | null>(null)
@@ -243,11 +152,8 @@ export default function RevisionExtraccionPage() {
   const campos = contenido.entrada.campos_solicitados
   const enPropuesta = sugerencia.estado === 'Propuesta'
   const editable = enPropuesta && puedeValidar
-  const conValor = campos.filter((c) => {
-    const valor = contenido.propuesta[claveCampo(c.campo_id)]?.valor
-    return valor !== null && valor !== undefined
-  }).length
   const nombreCampo = (c: CampoSolicitado) => c.nombre_campo ?? claveCampo(c.campo_id)
+  const sinValor = (c: CampoSolicitado) => !tieneValor(valorSugerido(sugerencia, c))
 
   function actualizarDecision(clave: string, cambio: Partial<DecisionCampo>) {
     setRevision((r) => {
@@ -255,6 +161,23 @@ export default function RevisionExtraccionPage() {
       const errores = { ...r.errores }
       delete errores[clave]
       return { ...r, errores, decisiones: { ...r.decisiones, [clave]: { ...r.decisiones[clave], ...cambio } } }
+    })
+  }
+
+  /** Acepta de una vez los datos pendientes que tienen sugerencia (las decisiones ya tomadas no cambian). */
+  function aceptarConValor() {
+    setRevision((r) => {
+      if (!r) return r
+      const decisiones = { ...r.decisiones }
+      const errores = { ...r.errores }
+      for (const campo of campos) {
+        const clave = claveCampo(campo.campo_id)
+        if (!decisiones[clave]?.accion && !sinValor(campo)) {
+          decisiones[clave] = { ...decisiones[clave], accion: 'aceptar' }
+          delete errores[clave]
+        }
+      }
+      return { ...r, decisiones, errores }
     })
   }
 
@@ -294,11 +217,12 @@ export default function RevisionExtraccionPage() {
   function destinoFoco(clave: string): string {
     const decision = revision?.decisiones[clave]
     if (decision?.accion === 'corregir') return idCorreccion(clave)
-    const sinValor = contenido.propuesta[clave]?.valor === null || contenido.propuesta[clave]?.valor === undefined
-    return idDecision(clave, sinValor ? 'corregir' : 'aceptar')
+    const campo = campos.find((c) => claveCampo(c.campo_id) === clave)
+    return idDecision(clave, campo && sinValor(campo) ? 'corregir' : 'aceptar')
   }
 
   function mostrarErrores() {
+    setFiltro('todos') // que se vean todas las fichas con error
     setRevision((r) => (r ? { ...r, errores: erroresActuales, mostrarResumen: true } : r))
     const primero = campos.map((c) => claveCampo(c.campo_id)).find((clave) => erroresActuales[clave])
     if (primero) window.setTimeout(() => document.getElementById(destinoFoco(primero))?.focus(), 0)
@@ -309,9 +233,11 @@ export default function RevisionExtraccionPage() {
       const accion = revision.decisiones[claveCampo(campo.campo_id)]?.accion
       if (accion === 'descartar') total.descartados += 1
       else if (accion) total.validados += 1
+      if (accion) total.decididos += 1
+      else if (!sinValor(campo)) total.pendientesConValor += 1
       return total
     },
-    { validados: 0, descartados: 0 },
+    { validados: 0, descartados: 0, decididos: 0, pendientesConValor: 0 },
   )
 
   /** Asocia un 400 del back-end al campo que nombra («campo 'Metrado'»), o lo muestra en un aviso. */
@@ -367,171 +293,6 @@ export default function RevisionExtraccionPage() {
     void ejecutar(() => validarExtraccion(sugerencia!.id, { decisiones }))
   }
 
-  // --- Columnas --------------------------------------------------------------------
-  function campoCorreccion(campo: CampoSolicitado): ReactNode {
-    const clave = claveCampo(campo.campo_id)
-    const comun = {
-      id: idCorreccion(clave),
-      etiqueta: `Valor corregido de ${nombreCampo(campo)}`,
-      etiquetaOculta: true,
-      error: revision?.errores[clave] !== MENSAJES.sinDecision ? revision?.errores[clave] : undefined,
-    }
-    const texto = revision?.decisiones[clave]?.texto ?? ''
-    const cambiar = (valor: string) => actualizarDecision(clave, { texto: valor })
-    switch (campo.tipo_dato) {
-      case 'Texto largo':
-      case 'JSON':
-        return (
-          <AreaTexto
-            {...comun}
-            rows={campo.tipo_dato === 'JSON' ? 4 : 3}
-            value={texto}
-            onChange={(e) => cambiar(e.target.value)}
-            onBlur={() => validarAlSalir(campo)}
-          />
-        )
-      case 'Booleano':
-        return (
-          <Selector
-            {...comun}
-            valor={texto}
-            opcionTodos="Elige una opción"
-            opciones={[
-              { valor: 'si', texto: 'Sí' },
-              { valor: 'no', texto: 'No' },
-            ]}
-            onCambiar={cambiar}
-          />
-        )
-      default:
-        return (
-          <CampoFormulario
-            {...comun}
-            type={campo.tipo_dato === 'Fecha' ? 'date' : 'text'}
-            inputMode={campo.tipo_dato === 'Entero' ? 'numeric' : campo.tipo_dato === 'Decimal' ? 'decimal' : undefined}
-            value={texto}
-            onChange={(e) => cambiar(e.target.value)}
-            onBlur={() => validarAlSalir(campo)}
-          />
-        )
-    }
-  }
-
-  const columnaDato: ColumnaTabla<CampoSolicitado> = {
-    clave: 'dato',
-    titulo: 'Dato',
-    render: (c) => (
-      <span className={estilosIa.celdaDato}>
-        <span>
-          {nombreCampo(c)}
-          {c.obligatorio && (
-            <>
-              <span className={estilosIa.asterisco} aria-hidden="true">
-                {' '}
-                *
-              </span>
-              <span className="sr-only"> (obligatorio)</span>
-            </>
-          )}
-        </span>
-        {c.tipo_dato && <span className={estilosIa.tipoDato}>{c.tipo_dato}</span>}
-      </span>
-    ),
-  }
-
-  const columnaSugerencia: ColumnaTabla<CampoSolicitado> = {
-    clave: 'sugerencia',
-    titulo: 'Sugerencia de IA',
-    multilinea: true,
-    render: (c) => (
-      <span className={estilosIa.celdaValor}>
-        <Badge tono="info" texto="Sugerencia" />
-        <ValorLegible
-          valor={contenido.propuesta[claveCampo(c.campo_id)]?.valor ?? null}
-          tipo={c.tipo_dato}
-          textoNulo="No encontrado en el informe"
-        />
-      </span>
-    ),
-  }
-
-  const columnaDecision: ColumnaTabla<CampoSolicitado> = {
-    clave: 'decision',
-    titulo: 'Decisión',
-    multilinea: true,
-    render: (c) => {
-      const clave = claveCampo(c.campo_id)
-      const decision = revision.decisiones[clave]
-      const sinValor = contenido.propuesta[clave]?.valor === null || contenido.propuesta[clave]?.valor === undefined
-      const idAyuda = `ayuda-${clave}`
-      const errorPendiente = revision.errores[clave] === MENSAJES.sinDecision
-      return (
-        <fieldset className={estilosIa.decision} aria-describedby={errorPendiente ? `error-${clave}` : undefined}>
-          <legend className="sr-only">{nombreCampo(c)}</legend>
-          <div className={estilosIa.opciones}>
-            {ACCIONES.map((accion) => {
-              const deshabilitada = accion === 'aceptar' && sinValor
-              return (
-                <label
-                  key={accion}
-                  className={`${estilosIa.opcion} ${deshabilitada ? estilosIa.opcionDeshabilitada : ''}`}
-                >
-                  <input
-                    type="radio"
-                    id={idDecision(clave, accion)}
-                    name={`decision-${clave}`}
-                    value={accion}
-                    checked={decision?.accion === accion}
-                    disabled={deshabilitada}
-                    aria-describedby={deshabilitada ? idAyuda : undefined}
-                    onChange={() => actualizarDecision(clave, { accion })}
-                  />
-                  {ETIQUETA_OPCION_ACCION[accion]}
-                </label>
-              )
-            })}
-          </div>
-          {sinValor && (
-            <p id={idAyuda} className={estilosIa.ayudaDecision}>
-              {MENSAJES.sinValorAceptar}
-            </p>
-          )}
-          {errorPendiente && (
-            <p id={`error-${clave}`} className={estilosIa.errorDecision}>
-              {MENSAJES.sinDecision}
-            </p>
-          )}
-          {decision?.accion === 'corregir' && <div className={estilosIa.correccion}>{campoCorreccion(c)}</div>}
-        </fieldset>
-      )
-    },
-  }
-
-  const columnaValorFinal: ColumnaTabla<CampoSolicitado> = {
-    clave: 'valor_final',
-    titulo: 'Valor final',
-    multilinea: true,
-    subtitulo: 'Decisión validada',
-    render: (c) => {
-      const final = contenido.decision?.por_campo[claveCampo(c.campo_id)]
-      if (!final) return SIN_VALOR
-      return (
-        <span className={estilosIa.celdaValor}>
-          <Badge {...insigniaAccion(final.accion)} />
-          {final.accion !== 'descartar' && (
-            <ValorLegible valor={final.valor_final} tipo={c.tipo_dato} textoNulo={SIN_VALOR} />
-          )}
-        </span>
-      )
-    },
-  }
-
-  const columnas = [
-    columnaDato,
-    columnaSugerencia,
-    ...(enPropuesta ? (editable ? [columnaDecision] : []) : [columnaValorFinal]),
-  ]
-
   const erroresResumen: ErrorResumen[] = revision.mostrarResumen
     ? campos
         .map((c) => ({ c, clave: claveCampo(c.campo_id) }))
@@ -540,52 +301,17 @@ export default function RevisionExtraccionPage() {
     : []
   const hayPendientes = Object.values(revision.errores).includes(MENSAJES.sinDecision)
   const resumen = contenido.decision?.resumen
+  const modo = editable ? 'editar' : enPropuesta ? 'consulta' : 'final'
+  const opcionesFiltro = editable ? FILTROS : FILTROS.filter((f) => f.valor !== 'pendientes')
+  const visibles = campos.filter((c) =>
+    pasaFiltro(filtro, c, valorSugerido(sugerencia, c), revision.decisiones[claveCampo(c.campo_id)]?.accion),
+  )
 
   return (
-    <div className={estilos.pagina}>
+    <div className={`${estilos.pagina} ${editable ? estilosIa.conBarraFija : ''}`}>
       <div>{volver}</div>
 
-      {/* Cabecera de identificación (mockup, pantalla 6). */}
-      <section className={estilosIa.cabeceraPropuesta} aria-label="Identificación de la propuesta">
-        <dl className={estilosIa.datosPropuesta}>
-          <div>
-            <dt>Reporte del proveedor</dt>
-            <dd>n.º {contenido.entrada.reporte_proveedor_id}</dd>
-          </div>
-          <div>
-            <dt>Atención</dt>
-            <dd>n.º {contenido.entrada.atencion_id}</dd>
-          </div>
-          <div>
-            <dt>Formato estándar</dt>
-            <dd>versión {contenido.entrada.formato_version ?? SIN_VALOR}</dd>
-          </div>
-          <div>
-            <dt>Generada con</dt>
-            <dd>
-              {contenido.ia.proveedor} · {contenido.ia.modelo}
-            </dd>
-          </div>
-        </dl>
-        <Badge {...insigniaSugerencia(sugerencia.estado, sugerencia.etiqueta_estado)} />
-      </section>
-
-      {/* Documento analizado (mockup, pantalla 6: «Reporte y documentos del proveedor»). */}
-      <section className={estilos.seccion} aria-labelledby="titulo-documento">
-        <h2 id="titulo-documento" className={estilos.tituloSeccion}>
-          Documento analizado
-        </h2>
-        <div className={estilosIa.documento}>
-          <span className={estilosIa.nombreDocumento}>
-            <Icono nombre="documento" />
-            Informe final del proveedor · PDF · archivo n.º {contenido.entrada.archivo_id}
-          </span>
-          <span className={`${estilosIa.cobertura} cifra`}>
-            Formato estándar: {conValor} de {campos.length} datos
-          </span>
-          {/* TODO: acción «Ver» del PDF cuando se exponga la descarga de archivos (el back-end del MOD-06 no la ofrece). */}
-        </div>
-      </section>
+      <CabeceraPropuesta sugerencia={sugerencia} />
 
       {contenido.campos_obligatorios_faltantes.length > 0 && (
         <AvisoEnLinea tono="advertencia" titulo="Datos mínimos no encontrados en el informe">
@@ -616,32 +342,86 @@ export default function RevisionExtraccionPage() {
       {avisoAccion && <AvisoEnLinea tono={avisoAccion.tono}>{avisoAccion.texto}</AvisoEnLinea>}
 
       <section className={estilos.seccion} aria-labelledby="titulo-revision">
-        <h2 id="titulo-revision" className={estilos.tituloSeccion}>
-          Revisión campo por campo
-        </h2>
-        <ResumenErrores titulo={hayPendientes ? MENSAJES.sinDecision : MENSAJES.correcciones} errores={erroresResumen} />
-        <TablaDatos
-          titulo="Revisión campo por campo"
-          columnas={columnas}
-          filas={campos}
-          claveFila={(c) => claveCampo(c.campo_id)}
+        <div className={estilosIa.cabeceraRevision}>
+          <h2 id="titulo-revision" className={estilos.tituloSeccion}>
+            Revisión campo por campo
+          </h2>
+          {editable && (
+            <Boton variante="secundario" deshabilitado={resumenDecisiones.pendientesConValor === 0} onClick={aceptarConValor}>
+              Aceptar sugerencias con valor ({formatearNumero(resumenDecisiones.pendientesConValor)})
+            </Boton>
+          )}
+        </div>
+
+        {editable && (
+          <div className={estilosIa.avance}>
+            <p className="cifra">
+              <strong>{formatearNumero(resumenDecisiones.decididos)}</strong> de {formatearNumero(campos.length)} datos
+              decididos
+            </p>
+            <BarraAvance
+              valor={resumenDecisiones.decididos}
+              maximo={campos.length}
+              etiqueta="Avance de la revisión"
+              textoValor={`${resumenDecisiones.decididos} de ${campos.length} datos decididos`}
+            />
+          </div>
+        )}
+
+        <GrupoChips
+          etiqueta="Mostrar datos"
+          opciones={opcionesFiltro}
+          valor={filtro}
+          onCambiar={(v) => setFiltro(v as FiltroCampos)}
         />
+
+        <ResumenErrores titulo={hayPendientes ? MENSAJES.sinDecision : MENSAJES.correcciones} errores={erroresResumen} />
+
+        {visibles.length === 0 ? (
+          <EstadoVacio nivel={3} titulo="Ningún dato con este filtro" descripcion="Elige «Todos» para ver todos los datos." />
+        ) : (
+          <ul className={estilosIa.fichasCampo} aria-label="Datos de la propuesta">
+            {visibles.map((c) => {
+              const clave = claveCampo(c.campo_id)
+              return (
+                <FichaCampo
+                  key={clave}
+                  campo={c}
+                  sugerido={valorSugerido(sugerencia, c)}
+                  modo={modo}
+                  decision={revision.decisiones[clave]}
+                  error={revision.errores[clave]}
+                  final={contenido.decision?.por_campo[clave]}
+                  onAccion={(accion) => actualizarDecision(clave, { accion })}
+                  onTexto={(texto) => actualizarDecision(clave, { texto })}
+                  onSalir={() => validarAlSalir(c)}
+                />
+              )
+            })}
+          </ul>
+        )}
       </section>
 
       {editable && (
-        <div className={estilosIa.acciones}>
-          <Boton
-            variante="primario"
-            deshabilitado={!completa}
-            ayudaDeshabilitado={!completa ? MENSAJES.sinDecision : undefined}
-            onClickDeshabilitado={mostrarErrores}
-            onClick={() => setDialogo('validar')}
-          >
-            Validar propuesta
-          </Boton>
-          <Boton variante="destructivo" onClick={() => setDialogo('rechazar')}>
-            Rechazar propuesta
-          </Boton>
+        <div className={estilosIa.barraFija}>
+          <p className={`${estilosIa.textoBarra} cifra`}>
+            {completa
+              ? 'Todos los datos tienen decisión'
+              : `Faltan ${formatearNumero(campos.length - resumenDecisiones.decididos)} datos por decidir`}
+          </p>
+          <div className={estilosIa.acciones}>
+            <Boton variante="destructivo" onClick={() => setDialogo('rechazar')}>
+              Rechazar propuesta
+            </Boton>
+            <Boton
+              variante="primario"
+              deshabilitado={!completa}
+              onClickDeshabilitado={mostrarErrores}
+              onClick={() => setDialogo('validar')}
+            >
+              Validar propuesta
+            </Boton>
+          </div>
         </div>
       )}
 

@@ -1,0 +1,67 @@
+/*
+ * Atenciones por espacio y sector (RF-REP-006): ajustes propios de esta pantalla.
+ * Mismos puntos de corte que el resto del proyecto (tablet y móvil).
+ */
+
+/* Misma separación que la plantilla de reportes entre la barra de filtros y los chips. */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Campo con ayuda emergente: el icono queda en la línea de la etiqueta, sin mover los demás filtros. */
+.campoConAyuda {
+  position: relative;
+}
+.iconoAyuda {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: 0;
+}
+
+/* Tarjetas de indicador: 4 en escritorio, 2 en tablet y 1 en móvil. */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.tarjetas > * {
+  display: flex;
+  flex-direction: column;
+}
+.tarjetas > * > :first-child {
+  flex: 1;
+}
+
+/* Leyenda de modalidad sobre los sectores. */
+.cabeceraSectores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Barra de filtros: campos y botón a todo el ancho. */
+  .filtros form > * {
+    flex: 1 1 100%;
+  }
+  .filtros form > :last-child {
+    padding-top: 0;
+  }
+  .filtros form > :last-child button {
+    width: 100%;
+  }
+}
