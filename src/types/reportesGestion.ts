@@ -1,9 +1,9 @@
 /**
- * Tipos de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005 y RF-REP-007).
+ * Tipos de los reportes de gestión del MOD-06 (RF-REP-001, RF-REP-005, RF-REP-007 y RF-REP-008).
  * Reflejo de los records de `konoha-backend` (`mod06/gestion/servicios/`), con las claves en snake_case
  * como el JSON (ADR 0005). Base de la API: `/api/v1/reportes` con HTTP Basic.
  */
-import type { FechaIso, Periodo, ReporteBase } from './comun'
+import type { FechaIso, InstanteIso, Periodo, ReporteBase } from './comun'
 import type { Modalidad } from './reportes'
 
 // =============================================================================
@@ -262,4 +262,125 @@ export interface ConsultaMapa extends ConsultaGestion {
   tipo_atencion?: TipoAtencion
   tipo_uso_id?: number
   es_riesgo?: boolean
+}
+
+// =============================================================================
+// RF-REP-008: reporte por servicio tercerizado
+// =============================================================================
+
+/** `filtros_aplicados` del reporte por servicio. */
+export interface FiltrosReporteServicio {
+  tipo_servicio_id: number
+  proveedor_id: number | null
+  contrato_id: number | null
+}
+
+/** Servicio y contrato del reporte (cabecera). */
+export interface ServicioReportado {
+  tipo_servicio_id: number
+  nombre: string
+  proveedor: { id: number; nombre: string } | null
+  contrato: { id: number; codigo: string; vigencia_desde: FechaIso; vigencia_hasta: FechaIso | null } | null
+}
+
+/** Avance: atenciones del periodo por situación y metrado ejecutado frente al previsto. */
+export interface AvanceServicio extends SeccionNoDisponible {
+  programadas: number
+  extraordinarias: number
+  ejecutadas: number
+  en_ejecucion: number
+  pendientes: number
+  /** Ejecutadas / (programadas + extraordinarias), en texto con punto decimal, o null. */
+  porcentaje_avance: string | null
+  metrado_previsto: string | null
+  metrado_ejecutado: string | null
+  unidad_metrado: string | null
+}
+
+/** Rendimiento: producción por tiempo de ejecución. */
+export interface RendimientoServicio extends SeccionNoDisponible {
+  horas_ejecucion: string | null
+  /** Metrado ejecutado por hora (texto decimal) o null. */
+  rendimiento_por_hora: string | null
+  unidad_rendimiento: string | null
+  duracion_media_horas: string | null
+  atenciones_fuera_de_plazo: number | null
+}
+
+/** Especie o plaga atendida. */
+export interface ElementoAtendido {
+  tipo: 'Especie' | 'Plaga'
+  nombre: string
+  atenciones: number
+  ejemplares: number | null
+}
+
+export interface EspeciesPlagasServicio extends SeccionNoDisponible {
+  elementos: ElementoAtendido[]
+}
+
+/** Conformidad del periodo (ResultadoConformidad: Conforme u Observada). */
+export interface ConformidadServicio extends SeccionNoDisponible {
+  conformes: number
+  observadas: number
+  pendientes_de_revision: number
+  sin_reporte_proveedor: number
+  subsanaciones_abiertas: number
+}
+
+/** Registro de origen: una atención del periodo. */
+export interface FilaAtencionServicio {
+  id: number
+  codigo: string
+  clase: 'Programada' | 'Extraordinaria'
+  estado: string
+  /** Texto de interfaz del estado (como en MOD-05). */
+  etiqueta_estado: string
+  espacio: string | null
+  ejemplar_codigo: string | null
+  fecha_hora_inicio: InstanteIso | null
+  fecha_hora_fin: InstanteIso | null
+  metrado: string | null
+  unidad: string | null
+  conformidad: 'Conforme' | 'Observada' | null
+  documentos: number
+  /**
+   * Especies o plagas atendidas en la atención (para abrir sus registros desde el gráfico).
+   * SUPUESTO (pendiente de confirmar con el backend): campo añadido al contrato del ticket.
+   */
+  especies_plagas: string[]
+  /** `false` → «Sin evidencia» (CU-MOD06-002 A2). */
+  con_evidencia: boolean
+  es_riesgo: boolean
+}
+
+/**
+ * GET /api/v1/reportes/servicios-tercerizados/ (RF-REP-008).
+ * SUPUESTO (pendiente de confirmar con el backend): el detalle `atenciones` llega completo (hasta 500 filas) y
+ * se pagina en el cliente.
+ */
+export interface ResultadoReporteServicio extends ReporteBase<FiltrosReporteServicio> {
+  servicio: ServicioReportado
+  avance: AvanceServicio
+  rendimiento: RendimientoServicio
+  especies_plagas: EspeciesPlagasServicio
+  conformidad: ConformidadServicio
+  atenciones: FilaAtencionServicio[]
+  atenciones_sin_evidencia: number
+  notas: string[]
+}
+
+/** Consulta del reporte por servicio. */
+export interface ConsultaReporteServicio extends Periodo {
+  tipo_servicio_id: number
+  proveedor_id?: number
+  contrato_id?: number
+}
+
+/** Opciones de los filtros del reporte: tipos de servicio tercerizados y proveedores (catálogos de MOD-05). */
+export interface CatalogoServicios {
+  tipos_servicio: { id: number; nombre: string }[]
+  proveedores: { id: number; nombre: string }[]
+  /** `false` si algún catálogo tenía más páginas de las cargadas. */
+  completo: boolean
 }
