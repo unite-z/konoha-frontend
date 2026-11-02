@@ -92,7 +92,8 @@
 }
 .barraTipo .relleno {
   height: var(--space-4);
-  background: var(--green-500);
+  /* Más claro que la barra de su grupo para distinguirlos (solo con tokens). */
+  background: color-mix(in srgb, var(--green-500) 55%, var(--color-bg-surface));
 }
 .barraTipo .valorBarra {
   font-size: var(--type-body-md-size);
