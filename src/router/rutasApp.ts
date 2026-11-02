@@ -18,6 +18,7 @@ export const RUTAS = {
   materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
   reporteServicioTercerizado: `${BASE}/reportes/servicio-tercerizado`, // RF-REP-008
   exportaciones: `${BASE}/exportaciones`, // RF-REP-009
+  programadoEjecutado: `${BASE}/reportes/programado-ejecutado`, // RF-REP-010
 } as const
 
 /** Detalle de un indicador del panel (RF-REP-001, criterio 3). */
