@@ -11,12 +11,13 @@
  * - 1a: el mes sin registros muestra el estado vacío con el motivo del back-end.
  * - 2a: los consumos sin espacio llegan del back-end como «Sin espacio».
  * - 3a: los productos agronómicos aplicados por proveedores van en una sección aparte, sin mezclarse.
- * - La exportación (paso 5) es RF-REP-009: no está en esta pantalla.
+ * - La exportación (paso 5) es RF-REP-009: «Exportar», con el mes y el espacio aplicados.
  *
  * Esta pantalla no tiene mockup: sigue el patrón de los demás reportes (`PlantillaReporte`).
  */
 import { useState } from 'react'
 import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
+import BotonExportar from '../../../components/reportes-indicadores/BotonExportar'
 import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import GraficoAgrupado from '../../../components/reportes-indicadores/graficos/GraficoAgrupado'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
@@ -181,6 +182,14 @@ export default function MaterialVegetalPage() {
           <ChipsFiltrosActivos filtros={filtrosActivos} onQuitar={limpiar} onLimpiar={limpiar} />
         </div>
       }
+      acciones={(datos) => (
+        <BotonExportar
+          tipo="MaterialVegetal"
+          parametros={{ mes, ...(areaNumerica !== undefined ? { area_verde_id: areaNumerica } : {}) }}
+          resumen={[formatearMes(mes), area && `Espacio: ${nombreEspacio}`].filter(Boolean).join(' · ')}
+          sinDatos={datos.sin_datos}
+        />
+      )}
       vacio={{
         titulo: 'Sin movimientos de material en el mes',
         accion: area ? (
