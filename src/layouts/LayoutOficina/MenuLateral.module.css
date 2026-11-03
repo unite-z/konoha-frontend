@@ -40,7 +40,8 @@
 }
 
 /* Botón «Comprimir menú» / «Expandir menú» (icono panel-left de Figma). */
-.alternar {
+.alternar,
+.cerrarMovil {
   display: flex;
   flex: none;
   padding: var(--space-2);
@@ -51,7 +52,12 @@
   cursor: pointer;
 }
 
-.alternar:hover {
+.cerrarMovil {
+  display: none;
+}
+
+.alternar:hover,
+.cerrarMovil:hover {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
@@ -179,4 +185,41 @@ a.activo:hover {
 .comprimido .item {
   justify-content: center;
   padding: 0;
+}
+
+/* Móvil: el menú es un panel completo (nunca comprimido) con botón de cierre en lugar del de comprimir. */
+@media (max-width: 767px) {
+  .lateral {
+    height: 100%;
+  }
+
+  .alternar {
+    display: none;
+  }
+
+  .cerrarMovil {
+    display: flex;
+  }
+
+  .comprimido .marca {
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  }
+
+  .comprimido .logo,
+  .comprimido .textosMarca,
+  .comprimido .texto,
+  .comprimido .rotulo,
+  .comprimido .pie {
+    display: flex;
+  }
+
+  .comprimido .navegacion {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .comprimido .item {
+    justify-content: flex-start;
+    padding: 0 var(--space-3);
+  }
 }

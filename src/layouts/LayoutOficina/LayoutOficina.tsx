@@ -4,10 +4,14 @@
  * Zonas: menú lateral de 256px (izquierda, a toda la altura), cabecera de 52px con las migas y contenido con
  * margen de 32px y ancho máximo de 1440px. El contenido empieza por el título de la página (h1, estilo
  * Título página), que cada página declara con `usePaginaActual`. Incluye el enlace «Saltar al contenido».
+ *
+ * Por debajo de 768px: Barra superior móvil en lugar de la cabecera, menú lateral como panel sobre velo
+ * (se cierra con su botón, el velo, Esc o al navegar; el resto queda inerte) y Barra inferior con las
+ * secciones del módulo activo.
  */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
-import { esRutaCampo } from '../../router/rutasCampo'
+import { BarraInferior, BarraSuperiorMovil } from './BarrasMoviles'
 import Cabecera from './Cabecera'
 import { ContextoPagina, type DatosPagina } from './ContextoPagina'
 import MenuLateral from './MenuLateral'
@@ -33,7 +37,7 @@ function guardarComprimido(valor: boolean) {
 }
 
 export default function LayoutOficina() {
-  const enCampo = esRutaCampo(useLocation().pathname)
+  const { pathname } = useLocation()
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const valor = useMemo(() => ({ pagina, establecerPagina }), [pagina])
   const [comprimido, setComprimido] = useState(leerComprimido)
@@ -44,21 +48,46 @@ export default function LayoutOficina() {
     })
   }, [])
 
+  // Menú como panel en móvil: se cierra al cambiar de página (ajuste durante el render) y con Esc.
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const [rutaAnterior, setRutaAnterior] = useState(pathname)
+  if (rutaAnterior !== pathname) {
+    setRutaAnterior(pathname)
+    setMenuAbierto(false)
+  }
+  useEffect(() => {
+    if (!menuAbierto) return
+    const alPulsar = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') setMenuAbierto(false)
+    }
+    document.addEventListener('keydown', alPulsar)
+    return () => document.removeEventListener('keydown', alPulsar)
+  }, [menuAbierto])
+
   return (
     <ContextoPagina.Provider value={valor}>
       <a href="#contenido" className={estilos.saltar}>
         Saltar al contenido
       </a>
       <div
-        className={[estilos.layout, enCampo && estilos.campo, comprimido && estilos.menuComprimido].filter(Boolean).join(' ')}
+        className={[estilos.layout, comprimido && estilos.menuComprimido, menuAbierto && estilos.menuAbierto]
+          .filter(Boolean)
+          .join(' ')}
       >
-        <MenuLateral comprimido={comprimido} onAlternarComprimido={alternarComprimido} />
-        <div className={estilos.columna}>
+        <MenuLateral
+          comprimido={comprimido}
+          onAlternarComprimido={alternarComprimido}
+          onCerrarMovil={() => setMenuAbierto(false)}
+        />
+        {menuAbierto && <div className={estilos.velo} aria-hidden="true" onClick={() => setMenuAbierto(false)} />}
+        <div className={estilos.columna} inert={menuAbierto}>
+          <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} />
           <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
             {pagina.titulo && <h1 className={estilos.titulo}>{pagina.titulo}</h1>}
             <Outlet />
           </main>
+          <BarraInferior />
         </div>
       </div>
     </ContextoPagina.Provider>

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
@@ -32,6 +33,7 @@ function pintar() {
       <Routes>
         <Route element={<LayoutOficina />}>
           <Route path="/areas-verdes/coberturas" element={<Coberturas />} />
+          <Route path="/areas-verdes/catalogos" element={<p>Catálogos</p>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -65,5 +67,49 @@ describe('LayoutOficina', () => {
 
     expect(screen.getByRole('link', { name: 'Saltar al contenido' }).getAttribute('href')).toBe('#contenido')
     expect(screen.getByRole('main').id).toBe('contenido')
+  })
+})
+
+describe('LayoutOficina en móvil', () => {
+  it('la barra superior abre el menú como panel y deja el contenido inerte; Esc lo cierra', async () => {
+    const usuario = userEvent.setup()
+    pintar()
+
+    expect(screen.getByRole('main').closest('[inert]')).toBeNull()
+    await usuario.click(screen.getByRole('button', { name: 'Abrir menú' }))
+    expect(screen.getByRole('main').closest('[inert]')).not.toBeNull()
+
+    await usuario.keyboard('{Escape}')
+    expect(screen.getByRole('main').closest('[inert]')).toBeNull()
+  })
+
+  it('el panel se cierra con su botón y al navegar', async () => {
+    const usuario = userEvent.setup()
+    pintar()
+
+    await usuario.click(screen.getByRole('button', { name: 'Abrir menú' }))
+    await usuario.click(screen.getByRole('button', { name: 'Cerrar menú' }))
+    expect(screen.getByRole('main').closest('[inert]')).toBeNull()
+
+    await usuario.click(screen.getByRole('button', { name: 'Abrir menú' }))
+    const menu = screen.getByRole('navigation', { name: 'Menú principal' })
+    await usuario.click(within(menu).getByRole('link', { name: 'Catálogos y sectores' }))
+    expect(screen.getByText('Catálogos')).toBeTruthy()
+    expect(screen.getByRole('main').closest('[inert]')).toBeNull()
+  })
+
+  it('la barra inferior lleva las secciones del módulo activo y marca la actual', () => {
+    pintar()
+
+    const barra = screen.getByRole('navigation', { name: 'Secciones de Áreas verdes y mapa' })
+    const enlaces = within(barra).getAllByRole('link')
+    expect(enlaces.map((a) => a.textContent)).toEqual([
+      'Inventario de áreas',
+      'Coberturas vegetales',
+      'Catálogos y sectores',
+      'Ejemplares y especies',
+      'Mapa del campus',
+    ])
+    expect(within(barra).getByRole('link', { current: 'page' }).textContent).toBe('Coberturas vegetales')
   })
 })

@@ -22,6 +22,8 @@ import {
 
 export interface EntradaSegundoNivel {
   texto: string
+  /** Icono de la Pestaña inferior en móvil (nombre de Figma). */
+  icono?: NombreIconoFigma
   /** Sin ruta: pertenece a otro requisito y se muestra sin enlace, con «Próximamente». */
   ruta?: string
 }
@@ -48,8 +50,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS_PLANIFICACION.servicios,
     prefijos: [PREFIJO_PLANIFICACION],
     hijos: [
-      { texto: 'Servicios periódicos', ruta: RUTAS_PLANIFICACION.servicios },
-      { texto: 'Calendario de restricciones', ruta: RUTAS_PLANIFICACION.restricciones },
+      { texto: 'Servicios periódicos', icono: 'repeat', ruta: RUTAS_PLANIFICACION.servicios },
+      { texto: 'Calendario de restricciones', icono: 'calendar', ruta: RUTAS_PLANIFICACION.restricciones },
       { texto: 'Programación' },
       { texto: 'Calendario de actividades' },
     ],
@@ -61,11 +63,11 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS_INVENTARIO.areasVerdes,
     prefijos: [RUTAS_INVENTARIO.areasVerdes],
     hijos: [
-      { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
-      { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
-      { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
-      { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
-      { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
+      { texto: 'Inventario de áreas', icono: 'list', ruta: RUTAS_INVENTARIO.areasVerdes },
+      { texto: 'Coberturas vegetales', icono: 'leaf', ruta: RUTAS_INVENTARIO.coberturas },
+      { texto: 'Catálogos y sectores', icono: 'sliders', ruta: RUTAS_INVENTARIO.catalogos },
+      { texto: 'Ejemplares y especies', icono: 'tree', ruta: RUTAS_INVENTARIO.ejemplares },
+      { texto: 'Mapa del campus', icono: 'map', ruta: RUTAS_INVENTARIO.mapa },
     ],
   },
   {
@@ -75,9 +77,9 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS_CAMPO.cuadrillas,
     prefijos: [BASE_CAMPO],
     hijos: [
-      { texto: 'Cuadrillas', ruta: RUTAS_CAMPO.cuadrillas },
-      { texto: 'Encargos', ruta: RUTAS_CAMPO.encargos },
-      { texto: 'Participantes por actividad', ruta: RUTAS_CAMPO.participantes },
+      { texto: 'Cuadrillas', icono: 'list', ruta: RUTAS_CAMPO.cuadrillas },
+      { texto: 'Encargos', icono: 'clipboard', ruta: RUTAS_CAMPO.encargos },
+      { texto: 'Participantes por actividad', icono: 'check', ruta: RUTAS_CAMPO.participantes },
     ],
   },
   {
@@ -87,9 +89,9 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS_TERCERIZADOS.atenciones,
     prefijos: [PREFIJO_TERCERIZADOS],
     hijos: [
-      { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones },
-      { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
-      { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
+      { texto: 'Atenciones', icono: 'list', ruta: RUTAS_TERCERIZADOS.atenciones },
+      { texto: 'Proveedores y contratos', icono: 'truck', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
+      { texto: 'Control fitosanitario', icono: 'leaf', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
     ],
   },
   { texto: 'Incidencias', icono: 'triangle-alert' },
@@ -100,11 +102,11 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS.reportes,
     prefijos: [PREFIJO_MODULO],
     hijos: [
-      { texto: 'Reportes', ruta: RUTAS.reportes },
-      { texto: 'Panel', ruta: RUTAS.panel },
-      { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
-      { texto: 'Exportaciones', ruta: RUTAS.exportaciones },
-      { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
+      { texto: 'Reportes', icono: 'chart', ruta: RUTAS.reportes },
+      { texto: 'Panel', icono: 'dashboard', ruta: RUTAS.panel },
+      { texto: 'Mapa de atenciones', icono: 'map-pin', ruta: RUTAS.mapaAtenciones },
+      { texto: 'Exportaciones', icono: 'download', ruta: RUTAS.exportaciones },
+      { texto: 'Asistencia IA', icono: 'search', ruta: RUTAS.asistenciaIa },
     ],
   },
   { clave: 'repositorio', texto: 'Repositorio', icono: 'paperclip', ruta: RUTAS_CORE.repositorio, prefijos: [RUTAS_CORE.repositorio] },
@@ -115,8 +117,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
     ruta: RUTAS_CORE.usuarios,
     prefijos: [PREFIJO_USUARIOS],
     hijos: [
-      { texto: 'Usuarios', ruta: RUTAS_CORE.usuarios },
-      { texto: 'Registro de accesos', ruta: RUTAS_CORE.accesos },
+      { texto: 'Usuarios', icono: 'list', ruta: RUTAS_CORE.usuarios },
+      { texto: 'Registro de accesos', icono: 'clipboard', ruta: RUTAS_CORE.accesos },
     ],
   },
 ]
@@ -153,4 +155,13 @@ export function activoEnMenu(pathname: string, modulos: ModuloMenu[] = MODULOS_M
   const hijos = (modulo?.hijos ?? []).filter((h) => h.ruta)
   const hijo = masLargo(ruta, hijos, (h) => (h.ruta ? [h.ruta] : []))
   return { modulo, hijo }
+}
+
+/** Subentradas con enlace del módulo activo, para la Barra inferior móvil (como mucho 5, como en Figma). */
+export function seccionesMoviles(
+  pathname: string,
+  modulos: ModuloMenu[] = MODULOS_MENU,
+): (EntradaSegundoNivel & { ruta: string })[] {
+  const { modulo } = activoEnMenu(pathname, modulos)
+  return (modulo?.hijos ?? []).filter((hijo): hijo is EntradaSegundoNivel & { ruta: string } => Boolean(hijo.ruta)).slice(0, 5)
 }

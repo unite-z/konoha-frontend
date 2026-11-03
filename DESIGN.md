@@ -150,8 +150,8 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 | Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo (`aria-current="page"`), Deshabilitado («Próximamente») | 32 px, Pequeño; activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
 | Elemento compacto | `MenuLateral comprimido` | Estado: Normal, Activo | solo el icono del módulo, con su nombre como texto accesible y `title` |
 | Cabecera | `layouts/LayoutOficina/Cabecera` | 52 px · migas a la izquierda; búsqueda y usuario a la derecha | el título de página (h1) lo pinta `LayoutOficina` al principio del contenido |
-| Barra superior móvil | pendiente, fase 2 | | título y acción principal en móvil |
-| Barra inferior y Pestaña inferior | pendiente, fase 2 | Barra inferior · Planificación, · Capataz · Activa: Sí, No | de 3 a 5 secciones en móvil |
+| Barra superior móvil | `BarraSuperiorMovil` (`BarrasMoviles.tsx`) | botón «Abrir menú» y título | por debajo de 768 px, en lugar de la Cabecera; el menú lateral se abre como panel sobre velo |
+| Barra inferior y Pestaña inferior | `BarraInferior` (`BarrasMoviles.tsx`) | subentradas del módulo activo (hasta 5), icono y texto · la actual con `aria-current` | por debajo de 768 px, si el módulo tiene al menos 2 secciones |
 
 ### 4.4 Calendario y campo
 

@@ -130,3 +130,10 @@
     padding-left: var(--space-4);
   }
 }
+
+/* Móvil: la Barra superior móvil sustituye a la cabecera. */
+@media (max-width: 767px) {
+  .cabecera {
+    display: none;
+  }
+}
