@@ -146,8 +146,8 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 
 | Figma | Código | Variantes | Notas |
 |---|---|---|---|
-| Menú lateral | `layouts/LayoutOficina/MenuLateral` | Estado: Expandido, Comprimido (pendiente, fase 2) | un solo módulo activo |
-| Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo, Deshabilitado | activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
+| Menú lateral | `layouts/LayoutOficina/MenuLateral`, entradas en `entradasMenuLateral.ts` | Estado: Expandido; Comprimido pendiente (AV-342) | un solo elemento activo: prefijo más largo, módulo o subentrada |
+| Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo (`aria-current="page"`), Deshabilitado («Próximamente») | 32 px, Pequeño; activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
 | Elemento compacto | pendiente, fase 2 | Estado: Normal, Activo | menú comprimido, solo icono |
 | Cabecera | `layouts/LayoutOficina/Cabecera` | migas, acciones de la derecha | el título de página va en el contenido, no en la cabecera |
 | Barra superior móvil | pendiente, fase 2 | | título y acción principal en móvil |

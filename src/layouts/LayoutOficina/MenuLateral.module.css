@@ -1,6 +1,5 @@
-/* Menú lateral: Guía Web 3.2 y 4.2. */
+/* Menú lateral y Elemento de menú: sistema de diseño de Figma (DESIGN.md, 4.3). */
 .lateral {
-  --menu-item-height: 44px; /* Guía Web 3.2: ítems de 44px de alto */
   position: sticky;
   top: 0;
   display: flex;
@@ -20,16 +19,16 @@
 }
 
 .nombreMarca {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: 600;
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
   color: var(--color-text-primary);
 }
 
 .oficina {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
 }
 
 .navegacion {
@@ -39,10 +38,9 @@
 
 .rotulo {
   padding: 0 var(--space-3) var(--space-2);
-  font-size: var(--type-label-sm-size);
-  line-height: var(--type-label-sm-line);
-  font-weight: var(--type-label-sm-weight);
-  text-transform: uppercase;
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
   color: var(--color-text-muted);
 }
 
@@ -57,56 +55,61 @@
 
 .segundoNivel {
   margin-top: var(--space-1);
-  padding-left: var(--space-6);
+  padding-left: var(--space-4);
 }
 
+/* Elemento de menú, nivel Principal. */
 .item {
-  position: relative;
   display: flex;
   align-items: center;
-  min-height: var(--menu-item-height);
+  gap: var(--space-2);
+  min-height: var(--web-control-compact);
   padding: 0 var(--space-3);
-  border-radius: var(--radius-md);
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-primary);
   text-decoration: none;
   transition: background-color var(--duracion-transicion);
 }
 
+/* Elemento de menú, nivel Sub. */
+.sub {
+  color: var(--color-text-muted);
+}
+
 a.item:hover {
-  background: var(--color-bg-subtle);
+  background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
 
+/* Activo: solo fondo y texto de menú activo, sin barra lateral. */
 .activo,
 a.activo:hover {
   background: var(--color-sidebar-active-bg);
   color: var(--color-sidebar-active-text);
-  font-weight: 600;
+  font-weight: var(--type-pequeno-medio-weight);
 }
-
 
 /* Entradas aún no disponibles: sin enlace, atenuadas y con «Próximamente» bajo el nombre. */
 .sinEnlace {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--color-text-disabled);
   cursor: not-allowed;
 }
 
 .proximamente {
-  font-size: var(--type-label-sm-size);
-  line-height: var(--type-label-sm-line);
-  font-weight: var(--type-label-sm-weight);
-  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-disabled);
 }
 
 .pie {
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--color-border-default);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
