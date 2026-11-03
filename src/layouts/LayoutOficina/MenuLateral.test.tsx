@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PERMISOS } from '../../config/permisosCore'
@@ -62,5 +63,36 @@ describe('MenuLateral', () => {
     expect(within(menu).getByRole('link', { name: 'Planificación' })).toBeTruthy()
     expect(within(menu).queryByRole('link', { name: 'Áreas verdes y mapa' })).toBeNull()
     expect(within(menu).queryByRole('link', { name: 'Usuarios y roles' })).toBeNull()
+  })
+})
+
+describe('MenuLateral comprimido', () => {
+  function pintarComprimido(ruta: string, alternar = vi.fn()) {
+    sesion.actual = conPermisos(Object.values(PERMISOS))
+    render(
+      <MemoryRouter initialEntries={[ruta]}>
+        <MenuLateral comprimido onAlternarComprimido={alternar} />
+      </MemoryRouter>,
+    )
+    return { menu: screen.getByRole('navigation', { name: 'Menú principal' }), alternar }
+  }
+
+  it('solo muestra el primer nivel, con su nombre accesible, y marca el módulo activo', () => {
+    const { menu } = pintarComprimido(RUTAS_INVENTARIO.coberturas)
+
+    expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
+    const activo = within(menu).getByRole('link', { current: 'page' })
+    expect(activo.textContent).toBe('Áreas verdes y mapa')
+    expect(activo.querySelector('svg')).not.toBeNull()
+  })
+
+  it('el botón de la marca dice qué hará y avisa al pulsarlo', async () => {
+    const usuario = userEvent.setup()
+    const { alternar } = pintarComprimido(RUTAS_PLANIFICACION.servicios)
+
+    const boton = screen.getByRole('button', { name: 'Expandir menú' })
+    expect(boton.getAttribute('aria-pressed')).toBe('true')
+    await usuario.click(boton)
+    expect(alternar).toHaveBeenCalledTimes(1)
   })
 })

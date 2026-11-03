@@ -6,54 +6,100 @@
  * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
  * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
  *
+ * Comprimido («Menú lateral · Comprimido» y «Elemento compacto» de Figma): solo los iconos de primer nivel, con
+ * el nombre como texto accesible y `title`. El botón de la marca alterna entre expandido y comprimido.
+ *
  * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
  * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
  */
 import { Link, useLocation } from 'react-router'
 import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
+import Icono, { type NombreIconoFigma } from '../../components/ui/Icono'
 import { useSesionActiva } from '../../sesion/ContextoSesion'
 import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
 import estilos from './MenuLateral.module.css'
 
 /** Entrada que aún no está disponible: sin enlace y con «Próximamente» bajo el nombre. */
-function SinEnlace({ texto, secundaria = false }: { texto: string; secundaria?: boolean }) {
+interface PropsEntrada {
+  texto: string
+  icono?: NombreIconoFigma
+  secundaria?: boolean
+}
+
+function Etiqueta({ texto, icono }: Pick<PropsEntrada, 'texto' | 'icono'>) {
+  return (
+    <>
+      {icono && <Icono nombre={icono} tamano="base" />}
+      <span className={estilos.texto}>{texto}</span>
+    </>
+  )
+}
+
+function SinEnlace({ texto, icono, secundaria = false }: PropsEntrada) {
   return (
     <li>
       <span
         className={`${estilos.item} ${secundaria ? estilos.sub : ''} ${estilos.sinEnlace}`}
         aria-disabled="true"
-        title="Disponible próximamente"
+        title={`${texto}: disponible próximamente`}
       >
-        <span>{texto}</span>
-        <span className={estilos.proximamente}>Próximamente</span>
+        {icono && <Icono nombre={icono} tamano="base" />}
+        <span className={`${estilos.texto} ${estilos.textoSinEnlace}`}>
+          <span>{texto}</span>
+          <span className={estilos.proximamente}>Próximamente</span>
+        </span>
       </span>
     </li>
   )
 }
 
-function Entrada({ texto, ruta, activa, secundaria = false }: { texto: string; ruta: string; activa: boolean; secundaria?: boolean }) {
+function Entrada({ texto, icono, ruta, activa, secundaria = false }: PropsEntrada & { ruta: string; activa: boolean }) {
   return (
     <Link
       to={ruta}
       className={[estilos.item, secundaria && estilos.sub, activa && estilos.activo].filter(Boolean).join(' ')}
       aria-current={activa ? 'page' : undefined}
+      title={texto}
     >
-      {texto}
+      <Etiqueta texto={texto} icono={icono} />
     </Link>
   )
 }
 
-export default function MenuLateral() {
+export interface MenuLateralProps {
+  /** Solo iconos de primer nivel. */
+  comprimido?: boolean
+  onAlternarComprimido?: () => void
+}
+
+export default function MenuLateral({ comprimido = false, onAlternarComprimido }: MenuLateralProps) {
   const { pathname } = useLocation()
   const sesion = useSesionActiva()
   const permitidas = entradasMenu(sesion)
   const activo = activoEnMenu(pathname)
 
   return (
-    <aside className={estilos.lateral}>
+    <aside className={`${estilos.lateral} ${comprimido ? estilos.comprimido : ''}`}>
       <div className={estilos.marca}>
-        <span className={estilos.nombreMarca}>Gestión de Áreas Verdes</span>
-        <span className={estilos.oficina}>Oficina de Servicios Generales</span>
+        <span className={estilos.logo} aria-hidden="true">
+          <Icono nombre="leaf" tamano="base" />
+        </span>
+        <span className={estilos.textosMarca}>
+          <span className={estilos.nombreMarca}>Áreas Verdes</span>
+          <span className={estilos.oficina}>Servicios Generales</span>
+        </span>
+        {onAlternarComprimido && (
+          <button
+            type="button"
+            className={estilos.alternar}
+            aria-label={comprimido ? 'Expandir menú' : 'Comprimir menú'}
+            aria-pressed={comprimido}
+            title={comprimido ? 'Expandir menú' : 'Comprimir menú'}
+            onClick={onAlternarComprimido}
+          >
+            <Icono nombre="panel-left" tamano="base" />
+          </button>
+        )}
       </div>
 
       <nav className={estilos.navegacion} aria-label="Menú principal">
@@ -62,14 +108,20 @@ export default function MenuLateral() {
         </p>
         <ul className={estilos.lista}>
           {MODULOS_MENU.map((modulo) => {
-            if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} />
+            if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
             if (!permitidas.has(modulo.clave)) return null
             const esActivo = activo.modulo === modulo
             return (
               <li key={modulo.texto}>
                 {/* El módulo solo se marca si ninguna de sus entradas lo está: un único activo a la vista. */}
-                <Entrada texto={modulo.texto} ruta={modulo.ruta} activa={esActivo && !activo.hijo} />
-                {modulo.hijos && (
+                {/* Comprimido: sin subentradas, así que el módulo se marca si es el activo. */}
+                <Entrada
+                  texto={modulo.texto}
+                  icono={modulo.icono}
+                  ruta={modulo.ruta}
+                  activa={esActivo && (comprimido || !activo.hijo)}
+                />
+                {modulo.hijos && !comprimido && (
                   <ul className={`${estilos.lista} ${estilos.segundoNivel}`}>
                     {modulo.hijos.map((hijo) =>
                       hijo.ruta ? (
@@ -87,7 +139,7 @@ export default function MenuLateral() {
           })}
 
           {/* Catálogos y parámetros: otro requisito; solo para quien los gestiona. */}
-          {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" />}
+          {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" icono="settings" />}
         </ul>
       </nav>
 

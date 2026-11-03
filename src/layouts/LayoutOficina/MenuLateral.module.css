@@ -12,10 +12,52 @@
 
 .marca {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
   min-height: var(--web-header-height);
-  padding: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+}
+
+/* Logo de Figma: hoja sobre cuadrado de acento. */
+.logo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-6) + var(--space-1));
+  height: calc(var(--space-6) + var(--space-1));
+  border-radius: var(--radius-sm);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.textosMarca {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Botón «Comprimir menú» / «Expandir menú» (icono panel-left de Figma). */
+.alternar {
+  display: flex;
+  flex: none;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.alternar:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.texto {
+  min-width: 0;
 }
 
 .nombreMarca {
@@ -93,11 +135,13 @@ a.activo:hover {
 
 /* Entradas aún no disponibles: sin enlace, atenuadas y con «Próximamente» bajo el nombre. */
 .sinEnlace {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
   color: var(--color-text-disabled);
   cursor: not-allowed;
+}
+
+.textoSinEnlace {
+  display: flex;
+  flex-direction: column;
 }
 
 .proximamente {
@@ -112,4 +156,27 @@ a.activo:hover {
   font-size: var(--type-leyenda-size);
   line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
+}
+
+/* Menú comprimido («Elemento compacto» de Figma): solo iconos de primer nivel, centrados. */
+.comprimido .marca {
+  justify-content: center;
+  padding: var(--space-2);
+}
+
+.comprimido .logo,
+.comprimido .textosMarca,
+.comprimido .rotulo,
+.comprimido .texto,
+.comprimido .pie {
+  display: none;
+}
+
+.comprimido .navegacion {
+  padding: var(--space-4) var(--space-2);
+}
+
+.comprimido .item {
+  justify-content: center;
+  padding: 0;
 }
