@@ -1,0 +1,217 @@
+/* Revisión de inconsistencias con IA (RF-IA-002): ajustes sobre los estilos de Asistencia IA. */
+
+.periodo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+/* Filtros de la bandeja: chips de estado y selectores de tipo y conjunto. */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+.filtros > :first-child {
+  flex: 1 1 100%;
+}
+.filtros > * {
+  flex: 0 1 16rem;
+}
+
+.datoObservado {
+  display: inline-block;
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.celdaDato {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.insignias {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Detalle: secciones apiladas. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.panelIa {
+  background: var(--color-info-bg);
+  border-color: var(--web-info-border);
+}
+
+.etiquetaIa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+.valorDestacado {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+  overflow-wrap: anywhere;
+}
+
+.cambio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.secundario {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+/* Registros implicados. */
+.registro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.encabezadoRegistro {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nombreRegistro {
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.contenedorTabla {
+  overflow-x: auto;
+}
+
+.comparacion {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+.comparacion th,
+.comparacion td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--web-border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+.comparacion thead th {
+  background: var(--color-bg-subtle);
+}
+
+/* Diferencias: fondo de advertencia y, siempre, la insignia «Distinto». */
+.distinto td,
+.distinto.bloqueCampo {
+  background: var(--color-warning-bg);
+}
+
+.nombreCampo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--type-label-md-weight);
+}
+
+.bloquesComparacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.registrosMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.listaCampos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bloqueCampo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--web-border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.valoresCampo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+.valoresCampo dt {
+  color: var(--color-text-secondary);
+}
+.valoresCampo dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Decisión. */
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .periodo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filtros > * {
+    flex: 1 1 100%;
+  }
+
+  .datoObservado {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .acciones {
+    flex-direction: column-reverse;
+  }
+  .acciones > button {
+    width: 100%;
+  }
+}
