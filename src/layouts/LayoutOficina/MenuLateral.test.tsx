@@ -77,21 +77,23 @@ describe('MenuLateral comprimido', () => {
     return { menu: screen.getByRole('navigation', { name: 'Menú principal' }), alternar }
   }
 
-  it('solo muestra el primer nivel, con su nombre accesible, y marca el módulo activo', () => {
+  it('sigue habiendo un único elemento actual y el módulo queda marcado para la vista comprimida', () => {
     const { menu } = pintarComprimido(RUTAS_INVENTARIO.coberturas)
 
-    expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
-    const activo = within(menu).getByRole('link', { current: 'page' })
-    expect(activo.textContent).toBe('Áreas verdes y mapa')
-    expect(activo.querySelector('svg')).not.toBeNull()
+    expect(within(menu).getAllByRole('link', { current: 'page' }).map((a) => a.textContent)).toEqual([
+      'Coberturas vegetales',
+    ])
+    const modulo = within(menu).getByRole('link', { name: 'Áreas verdes y mapa' })
+    expect(modulo.hasAttribute('data-modulo-activo')).toBe(true)
+    expect(modulo.querySelector('svg')).not.toBeNull()
   })
 
-  it('el botón de la marca dice qué hará y avisa al pulsarlo', async () => {
+  it('el botón de la marca es un interruptor para fijar el menú abierto', async () => {
     const usuario = userEvent.setup()
     const { alternar } = pintarComprimido(RUTAS_PLANIFICACION.servicios)
 
-    const boton = screen.getByRole('button', { name: 'Expandir menú' })
-    expect(boton.getAttribute('aria-pressed')).toBe('true')
+    const boton = screen.getByRole('button', { name: 'Fijar menú abierto' })
+    expect(boton.getAttribute('aria-pressed')).toBe('false')
     await usuario.click(boton)
     expect(alternar).toHaveBeenCalledTimes(1)
   })

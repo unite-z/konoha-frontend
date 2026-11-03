@@ -164,30 +164,50 @@ a.activo:hover {
   color: var(--color-text-muted);
 }
 
-/* Menú comprimido («Elemento compacto» de Figma): solo iconos de primer nivel, centrados. */
-.comprimido .marca {
-  justify-content: center;
-  padding: var(--space-2);
+/*
+ * Menú comprimido («Elemento compacto» de Figma), solo en escritorio: iconos de primer nivel centrados.
+ * Al pasar el cursor, o con el foco dentro, se despliega por encima del contenido sin moverlo.
+ */
+@media (min-width: 768px) {
+  .comprimido {
+    z-index: 25;
+    width: var(--web-sidebar-rail);
+    transition:
+      width var(--duracion-transicion),
+      box-shadow var(--duracion-transicion);
+  }
+
+  .comprimido:hover,
+  .comprimido:focus-within {
+    width: var(--web-sidebar-width);
+    box-shadow: var(--web-elev-3);
+  }
+
+  .comprimido:not(:hover):not(:focus-within) .marca {
+    justify-content: center;
+    padding: var(--space-2);
+  }
+
+  .comprimido:not(:hover):not(:focus-within) :is(.logo, .textosMarca, .rotulo, .texto, .pie, .segundoNivel) {
+    display: none;
+  }
+
+  .comprimido:not(:hover):not(:focus-within) .navegacion {
+    padding: var(--space-4) var(--space-2);
+  }
+
+  .comprimido:not(:hover):not(:focus-within) .item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .comprimido:not(:hover):not(:focus-within) .item[data-modulo-activo] {
+    background: var(--color-sidebar-active-bg);
+    color: var(--color-sidebar-active-text);
+  }
 }
 
-.comprimido .logo,
-.comprimido .textosMarca,
-.comprimido .rotulo,
-.comprimido .texto,
-.comprimido .pie {
-  display: none;
-}
-
-.comprimido .navegacion {
-  padding: var(--space-4) var(--space-2);
-}
-
-.comprimido .item {
-  justify-content: center;
-  padding: 0;
-}
-
-/* Móvil: el menú es un panel completo (nunca comprimido) con botón de cierre en lugar del de comprimir. */
+/* Móvil: el menú es un panel completo con botón de cierre en lugar del de fijar. */
 @media (max-width: 767px) {
   .lateral {
     height: 100%;
@@ -199,27 +219,5 @@ a.activo:hover {
 
   .cerrarMovil {
     display: flex;
-  }
-
-  .comprimido .marca {
-    justify-content: flex-start;
-    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
-  }
-
-  .comprimido .logo,
-  .comprimido .textosMarca,
-  .comprimido .texto,
-  .comprimido .rotulo,
-  .comprimido .pie {
-    display: flex;
-  }
-
-  .comprimido .navegacion {
-    padding: var(--space-4) var(--space-3);
-  }
-
-  .comprimido .item {
-    justify-content: flex-start;
-    padding: 0 var(--space-3);
   }
 }

@@ -17,14 +17,14 @@ import { ContextoPagina, type DatosPagina } from './ContextoPagina'
 import MenuLateral from './MenuLateral'
 import estilos from './LayoutOficina.module.css'
 
-/** Preferencia de menú comprimido: comodidad por navegador, sin datos de la sesión. */
+/** Preferencia de menú fijado abierto: comodidad por navegador, sin datos de la sesión. Por defecto, comprimido. */
 const CLAVE_MENU_COMPRIMIDO = 'areas-verdes:menu-comprimido'
 
 function leerComprimido(): boolean {
   try {
-    return window.localStorage.getItem(CLAVE_MENU_COMPRIMIDO) === '1'
+    return window.localStorage.getItem(CLAVE_MENU_COMPRIMIDO) !== '0'
   } catch {
-    return false
+    return true
   }
 }
 
