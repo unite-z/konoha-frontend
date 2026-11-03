@@ -105,6 +105,30 @@ export interface CuerpoValidacion {
   decisiones: Record<string, { accion: AccionDecision; valor_final?: ValorCampo }>
 }
 
+// =============================================================================
+// Genéricos de las sugerencias de IA de S12 (RN-IA-002 y siguientes)
+// =============================================================================
+
+/** Suficiencia de los datos con los que trabajó la IA (A3 de los CU de IA). */
+export type SuficienciaDatos = 'suficiente' | 'parcial' | 'insuficiente'
+
+/** Bloque común del `contenido` de las sugerencias de S12. */
+export interface MetadatosIA {
+  ia: LlamadaIA
+  suficiencia: SuficienciaDatos
+  /** Qué faltó para una recomendación confiable (vacío si la suficiencia es `suficiente`). */
+  faltantes: string[]
+  /** Datos de entrada que se usaron, en texto legible. */
+  datos_utilizados: string[]
+  /** Advertencias y límites de la propuesta. */
+  limitaciones: string[]
+  /** Explicación breve de los criterios. */
+  explicacion: string
+}
+
+/** Sugerencia de IA (SugerenciaIA del Modelo BD 4.6.3) con los mismos campos que `SugerenciaIA` y su `contenido` tipado. */
+export type SugerenciaIAGenerica<C> = Omit<SugerenciaIA, 'contenido'> & { contenido: C }
+
 /** Clave estable de un campo dentro de `propuesta` y `decision.por_campo`. */
 export function claveCampo(campoId: number): string {
   return `campo_${campoId}`
