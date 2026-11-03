@@ -72,7 +72,7 @@
   width: 70%;
 }
 
-/* Fila de 3 a 4 tarjetas con 16px entre ellas. */
+/* Fila de 3 a 4 tarjetas, separadas por --space-4. */
 .fila {
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
