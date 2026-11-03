@@ -1,0 +1,270 @@
+/*
+ * Calendario de la propuesta de cronograma (RF-IA-003), al estilo de Teams: semanas en 7 columnas con bloques de día
+ * completo en carriles. Programado (bloque lleno) frente a propuesta de la IA (azul con borde discontinuo), siempre
+ * con texto: nunca solo color.
+ */
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.titulo {
+  margin-left: var(--space-2);
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line);
+  font-weight: var(--type-heading-md-weight);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.casillaLeyenda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+.casillaLeyenda input {
+  accent-color: var(--green-700);
+}
+
+.ayudaLeyenda {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.muestra {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+/* Una semana: cabecera de días y carriles de bloques sobre la misma rejilla de 7 columnas. */
+.semana {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+/* Sin «overflow: hidden» para que las burbujas no se corten: las esquinas se redondean en la cabecera. */
+.cabeceraDia:first-child {
+  border-top-left-radius: var(--radius-md);
+}
+.cabeceraDia:last-child {
+  border-top-right-radius: var(--radius-md);
+}
+
+.mes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cabeceraDias,
+.carriles {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cabeceraDia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: var(--space-12);
+  padding: var(--space-2);
+  border-right: 1px solid var(--web-border-subtle);
+  border-bottom: 1px solid var(--web-border-subtle);
+}
+.cabeceraDia:last-child {
+  border-right: 0;
+}
+
+.nombreDia {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--color-text-secondary);
+}
+
+.hoy {
+  background: var(--green-50);
+}
+.hoy .nombreDia {
+  color: var(--green-900);
+}
+
+.fueraDeMes {
+  background: var(--color-bg-subtle);
+}
+
+.restriccion {
+  position: relative;
+  display: inline-flex;
+  align-self: flex-start;
+  border-radius: var(--radius-full);
+  cursor: help;
+}
+.restriccion:focus-visible {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Burbuja con el texto completo de la restricción (mismo aspecto que AyudaEmergente). */
+.burbuja {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 3;
+  width: max-content;
+  max-width: 18rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--neutral-950);
+  color: var(--color-bg-surface);
+  box-shadow: var(--web-elev-2);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  font-weight: normal;
+  white-space: normal;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--duracion-transicion);
+}
+
+/* En los últimos días de la semana, la burbuja se abre hacia la izquierda. */
+.burbujaIzquierda {
+  left: auto;
+  right: 0;
+}
+
+.restriccion:hover .burbuja,
+.restriccion:focus-within .burbuja {
+  visibility: visible;
+  opacity: 1;
+}
+
+.carriles {
+  gap: var(--space-1);
+  min-height: calc(var(--space-12) * 2);
+  padding: var(--space-2) var(--space-1);
+}
+
+/* Bloque de día completo. */
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  font: inherit;
+}
+
+.etiquetaBloque {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+}
+
+.textoBloque,
+.avisoBloque {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+
+.avisoBloque {
+  font-weight: var(--type-label-md-weight);
+}
+
+/* Programado: bloque lleno y neutro. */
+.existente {
+  background: var(--color-neutral-bg);
+  border: 1px solid var(--color-border-default);
+  border-left: var(--space-1) solid var(--color-neutral-text);
+  color: var(--neutral-700);
+}
+
+/* Propuesta de la IA: azul con borde discontinuo. */
+.propuesta {
+  background: var(--color-info-bg);
+  border: 2px dashed var(--color-info);
+  color: var(--color-info);
+  cursor: pointer;
+}
+button.propuesta:hover {
+  box-shadow: var(--web-elev-2);
+}
+button.propuesta:focus-visible {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Estado de la decisión (el texto del bloque también lo dice). */
+.aceptar {
+  border-style: solid;
+  border-color: var(--green-700);
+  background: var(--green-50);
+  color: var(--green-900);
+}
+.corregir {
+  border-style: solid;
+}
+.descartar {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+.descartar .textoBloque {
+  text-decoration: line-through;
+}
+
+.elegida {
+  box-shadow: 0 0 0 2px var(--color-info);
+}
+
+/* El bloque sigue en la semana anterior o en la siguiente. */
+.sigueAntes {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.sigueDespues {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+@media (max-width: 1023px) {
+  .titulo {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+}
