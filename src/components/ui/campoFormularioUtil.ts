@@ -15,6 +15,8 @@ export interface PropsMarcoCampo {
   bloqueadoMotivo?: string
   /** Oculta la etiqueta visualmente (sigue disponible para lectores de pantalla). */
   etiquetaOculta?: boolean
+  /** «Campo · compacto» de Figma: 32px, para filtros en barra y celdas de tabla. */
+  compacto?: boolean
 }
 
 /** Ids de la ayuda, del motivo de bloqueo y del error, para `aria-describedby`. */
@@ -24,6 +26,8 @@ export function idsDescripcion({ id, ayuda, error, bloqueadoMotivo }: PropsMarco
 }
 
 /** Clases del control según su estado. */
-export function clasesDeControl(error?: string, bloqueado?: boolean, extra?: string): string {
-  return [estilos.control, error && estilos.conError, bloqueado && estilos.bloqueado, extra].filter(Boolean).join(' ')
+export function clasesDeControl(error?: string, bloqueado?: boolean, extra?: string, compacto?: boolean): string {
+  return [estilos.control, compacto && estilos.compacto, error && estilos.conError, bloqueado && estilos.bloqueado, extra]
+    .filter(Boolean)
+    .join(' ')
 }
