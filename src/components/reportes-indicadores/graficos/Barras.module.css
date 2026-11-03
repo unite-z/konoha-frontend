@@ -49,7 +49,7 @@
   padding: var(--space-2) 0;
   font-size: var(--type-body-lg-size);
   line-height: var(--type-body-lg-line);
-  font-weight: var(--type-label-md-weight);
+  font-weight: var(--type-cuerpo-medio-weight);
   overflow-wrap: anywhere;
 }
 
@@ -67,14 +67,14 @@
   display: block;
   height: var(--space-6);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 
 .valorBarra {
   grid-area: valor;
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
   text-align: right;
   white-space: nowrap;
 }
@@ -85,39 +85,39 @@
 }
 .barraTipo .nombreBarra {
   padding: var(--space-1) 0 var(--space-1) var(--space-4);
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
-  font-weight: var(--type-body-md-weight);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-weight);
   color: var(--color-text-secondary);
 }
 .barraTipo .relleno {
   height: var(--space-4);
   /* Más claro que la barra de su grupo para distinguirlos (solo con tokens). */
-  background: color-mix(in srgb, var(--green-500) 55%, var(--color-bg-surface));
+  background: color-mix(in srgb, var(--color-action-primary) 55%, var(--color-bg-surface));
 }
 .barraTipo .valorBarra {
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
-  font-weight: var(--type-label-md-weight);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
 }
 
 /* Barra elegida. */
 .barraActiva,
 .barraActiva:hover {
-  background: var(--green-50);
-  border-color: var(--green-700);
+  background: var(--color-action-subtle);
+  border-color: var(--color-action-primary);
 }
 .barraActiva .relleno {
-  background: var(--green-900);
+  background: var(--color-action-primary-hover);
 }
 
 /* Marcas del eje, alineadas con la columna de las barras. */
 .ejeMarcas {
   grid-column: 2;
   position: relative;
-  height: var(--type-body-sm-line);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  height: var(--type-leyenda-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 .ejeMarcas > span {
@@ -151,10 +151,10 @@
   width: var(--space-6);
   height: var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 .muestraTipo {
-  background: var(--green-500);
+  background: color-mix(in srgb, var(--color-action-primary) 55%, var(--color-bg-surface));
 }
 
 /* Móvil: nombre y valor arriba; la barra debajo, a todo el ancho. */

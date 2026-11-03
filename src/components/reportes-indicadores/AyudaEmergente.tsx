@@ -1,6 +1,8 @@
 /**
  * Ayuda emergente: icono de información que muestra un texto breve al pasar el ratón o al enfocarlo con el
  * teclado. El texto describe al botón (`aria-describedby`), así que también lo leen los lectores de pantalla.
+ *
+ * Excepción al sistema (AV-351): botón de solo icono con burbuja; pasa a `components/ui` en la fase 5.
  */
 import Icono from '../ui/Icono'
 import estilos from './AyudaEmergente.module.css'

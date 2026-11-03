@@ -1,6 +1,9 @@
 /**
  * Columnas por fecha de los gráficos del MOD-06, en orden de fecha, con eje vertical y líneas guía.
  * Con muchas fechas se desplazan en horizontal.
+ *
+ * Excepción al sistema (AV-351): cada barra es un `<button>` con `aria-pressed` porque es un dato que filtra el
+ * detalle; su aspecto es el de la barra, no el de `Boton`.
  */
 import { fechaCorta, porcentaje } from './escala'
 import estilos from './Columnas.module.css'
