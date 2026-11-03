@@ -2,7 +2,7 @@
 
 Componentes base del sistema de diseño: el equivalente en código de la página «Sistema de diseño · Áreas Verdes» de Figma. Cambiar uno cambia todas las pantallas. Qué componente usar y con qué variante: [`DESIGN.md`](../../../DESIGN.md).
 
-**Va aquí:** controles y piezas visuales sin lógica de negocio: `Boton`, `Estado`, `CampoFormulario`, `Selector`, `TablaDatos`, `DialogoConfirmacion`, `EstadoCarga`, `EstadoSinAcceso`…
+**Va aquí:** controles y piezas visuales sin lógica de negocio: `Boton`, `Estado`, `CampoFormulario`, `Selector`, `TablaDatos`, `DialogoConfirmacion`, `Casilla`, `GrupoOpciones`, `EstadoCarga`, `EstadoSinAcceso`…
 
 **Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`.
 

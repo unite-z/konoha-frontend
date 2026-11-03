@@ -1,0 +1,113 @@
+/* Radio compacto y Opción: sistema de diseño de Figma (DESIGN.md, 4.1). */
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.etiqueta {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  color: var(--color-text-primary);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Una fila por opción, con borde; la elegida en acento. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--web-control);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion),
+    border-color var(--duracion-transicion);
+}
+
+.opcion:hover {
+  background: var(--color-bg-hover);
+}
+
+.elegida,
+.elegida:hover {
+  border-color: var(--color-action-primary);
+  background: var(--color-action-subtle);
+}
+
+/* Opción (tarjeta): más aire y borde de 2 px en la elegida, como en Figma. */
+.tarjetas .opcion {
+  padding: var(--space-3) var(--space-4);
+}
+
+.tarjetas .elegida {
+  box-shadow: inset 0 0 0 1px var(--color-action-primary);
+}
+
+.deshabilitada,
+.deshabilitada:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.control {
+  flex: none;
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: 0;
+  accent-color: var(--color-action-primary);
+  cursor: inherit;
+}
+
+/* Foco visible en la fila entera al recorrer el grupo con el teclado. */
+.opcion:has(.control:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.texto {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+}
+
+.tarjetas .texto {
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.descripcion {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-error);
+}

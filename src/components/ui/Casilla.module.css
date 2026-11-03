@@ -1,0 +1,43 @@
+/* Casilla: sistema de diseño de Figma (DESIGN.md, 4.1). */
+.casilla {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* Control nativo de 16 px con el color de acento de Figma. */
+.control {
+  flex: none;
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: calc(var(--space-1) / 2) 0 0;
+  accent-color: var(--color-action-primary);
+  cursor: pointer;
+}
+
+.control:disabled {
+  cursor: not-allowed;
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+}
+
+.etiqueta {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.control:disabled + .textos .etiqueta {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.ayuda {
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
+}
