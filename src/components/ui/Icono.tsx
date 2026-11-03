@@ -1,67 +1,138 @@
 /**
- * Icono: SVG de trazo en línea, sin librería (la librería de iconos está pendiente de decisión).
+ * Icono: iconos lucide del sistema de diseño de Figma (DESIGN.md, 4.5), con `lucide-react` (D3).
  *
- * Solo contiene los iconos que necesitan los componentes de la guía. Usan `currentColor`, así que toman el
- * color del texto que acompañan. Tamaño `md` (20px, por defecto) o `sm` (13px, en insignias).
+ * Los nombres son los de la página de iconos de Figma (`house`, `calendar`, `triangle-alert`…), para que la
+ * correspondencia sea directa. Los nombres antiguos de la Guía Web (`aspa`, `triangulo`…) siguen como alias.
+ * Usan `currentColor`, así que toman el color del texto. Tamaños: `base` 16px (el de Figma), `md` 20px y
+ * `sm` 13px (insignias).
  *
  * Accesibilidad: sin `titulo` es decorativo (`aria-hidden`), porque siempre acompaña a un texto.
  * Con `titulo` se anuncia como imagen.
+ *
+ * Para añadir un icono: primero en la página de iconos de Figma, después aquí con el mismo nombre.
  */
-import type { ReactNode } from 'react'
+import {
+  ArrowRightLeft,
+  ArrowUpDown,
+  Bell,
+  Calendar,
+  Camera,
+  ChartColumn,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  Circle,
+  CircleCheck,
+  CirclePlus,
+  CircleX,
+  Clipboard,
+  Download,
+  Ellipsis,
+  FileText,
+  Funnel,
+  House,
+  Image,
+  Info,
+  LayoutDashboard,
+  Leaf,
+  List,
+  Loader,
+  Locate,
+  Map as Mapa,
+  MapPin,
+  Menu,
+  Moon,
+  PanelLeft,
+  Paperclip,
+  Pause,
+  Plus,
+  RefreshCw,
+  Repeat,
+  Scissors,
+  Search,
+  Settings,
+  SlidersHorizontal,
+  Sparkles,
+  Sun,
+  TreeDeciduous,
+  TriangleAlert,
+  Truck,
+  WifiOff,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import estilos from './Icono.module.css'
 
-export type NombreIcono =
-  | 'circulo'
-  | 'info'
-  | 'verificacion'
-  | 'triangulo'
-  | 'aspa'
-  | 'flechaOrden'
-  | 'chevronDerecha'
-  | 'documento'
-  | 'destello'
+/** Iconos de la página «Iconos» del sistema de diseño de Figma, con su nombre de Figma. */
+const ICONOS_FIGMA = {
+  'arrow-right-left': ArrowRightLeft,
+  bell: Bell,
+  calendar: Calendar,
+  camera: Camera,
+  chart: ChartColumn,
+  check: Check,
+  'chevron-down': ChevronDown,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
+  'chevrons-up-down': ChevronsUpDown,
+  'circle-check': CircleCheck,
+  'circle-x': CircleX,
+  clipboard: Clipboard,
+  dashboard: LayoutDashboard,
+  download: Download,
+  ellipsis: Ellipsis,
+  filter: Funnel,
+  house: House,
+  image: Image,
+  info: Info,
+  leaf: Leaf,
+  list: List,
+  loader: Loader,
+  locate: Locate,
+  map: Mapa,
+  'map-pin': MapPin,
+  menu: Menu,
+  moon: Moon,
+  'panel-left': PanelLeft,
+  paperclip: Paperclip,
+  pause: Pause,
+  plus: Plus,
+  'plus-circle': CirclePlus,
+  refresh: RefreshCw,
+  repeat: Repeat,
+  scissors: Scissors,
+  search: Search,
+  settings: Settings,
+  sliders: SlidersHorizontal,
+  sun: Sun,
+  tree: TreeDeciduous,
+  'triangle-alert': TriangleAlert,
+  truck: Truck,
+  'wifi-off': WifiOff,
+  x: X,
+} satisfies Record<string, LucideIcon>
 
-const TRAZOS: Record<NombreIcono, ReactNode> = {
-  circulo: <circle cx="12" cy="12" r="5" />,
-  info: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <line x1="12" y1="11" x2="12" y2="16" />
-      <line x1="12" y1="8" x2="12.01" y2="8" />
-    </>
-  ),
-  verificacion: <polyline points="5 12.5 10 17.5 19 7" />,
-  triangulo: (
-    <>
-      <path d="M12 3.5 21.5 20h-19z" />
-      <line x1="12" y1="10" x2="12" y2="14" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </>
-  ),
-  aspa: (
-    <>
-      <line x1="6" y1="6" x2="18" y2="18" />
-      <line x1="18" y1="6" x2="6" y2="18" />
-    </>
-  ),
-  flechaOrden: <path d="M8 19V5m-4 4 4-4 4 4m4-4v14m-4-4 4 4 4-4" />,
-  chevronDerecha: <polyline points="9 6 15 12 9 18" />,
-  documento: (
-    <>
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 3 14 8 19 8" />
-      <line x1="9" y1="13" x2="15" y2="13" />
-      <line x1="9" y1="17" x2="15" y2="17" />
-    </>
-  ),
-  // Asistencia con IA.
-  destello: (
-    <>
-      <path d="M10 3.5 11.8 8.2 16.5 10l-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8z" />
-      <path d="M18 14v6m-3-3h6" />
-    </>
-  ),
-}
+/** Nombres antiguos de la Guía Web: no los uses en código nuevo. */
+const ALIAS_ANTIGUOS = {
+  circulo: Circle,
+  verificacion: Check,
+  triangulo: TriangleAlert,
+  aspa: X,
+  flechaOrden: ArrowUpDown,
+  chevronDerecha: ChevronRight,
+  documento: FileText,
+  destello: Sparkles,
+} satisfies Record<string, LucideIcon>
+
+const ICONOS: Record<NombreIcono, LucideIcon> = { ...ICONOS_FIGMA, ...ALIAS_ANTIGUOS }
+
+export type NombreIconoFigma = keyof typeof ICONOS_FIGMA
+export type NombreIcono = NombreIconoFigma | keyof typeof ALIAS_ANTIGUOS
+
+/** Nombres de los iconos de Figma, en el orden de su página (para pruebas y catálogos). */
+export const NOMBRES_ICONOS_FIGMA = Object.keys(ICONOS_FIGMA) as NombreIconoFigma[]
 
 export interface IconoProps {
   nombre: NombreIcono
@@ -73,19 +144,13 @@ export interface IconoProps {
 }
 
 export default function Icono({ nombre, tamano = 'md', titulo, className }: IconoProps) {
+  const Componente = ICONOS[nombre]
   return (
-    <svg
+    <Componente
       className={[estilos.icono, estilos[tamano], className].filter(Boolean).join(' ')}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth={2}
       focusable="false"
-      {...(titulo ? { role: 'img', 'aria-label': titulo } : { 'aria-hidden': true })}
-    >
-      {TRAZOS[nombre]}
-    </svg>
+      {...(titulo ? { role: 'img', 'aria-label': titulo, 'aria-hidden': false } : { 'aria-hidden': true })}
+    />
   )
 }

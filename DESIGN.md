@@ -166,7 +166,7 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 
 ### 4.5 Iconos
 
-Lucide, 16 px, trazo heredando el color del texto (45 iconos en la página del sistema). Decidido (D3): `lucide-react` envuelto en `Icono` (AV-340). Hasta entonces, `Icono` tiene 9 SVG propios a 20 y 13 px. Un icono nunca va solo si la acción no es obvia: lleva texto o `aria-label`.
+Lucide, 16 px, trazo heredando el color del texto (45 iconos en la página del sistema). `Icono` usa `lucide-react` (D3) con **los mismos nombres que en Figma**: `<Icono nombre="calendar" tamano="base" />`. Los 45 iconos de la página de Figma están disponibles; los nombres antiguos (`aspa`, `triangulo`…) siguen como alias y no se usan en código nuevo. Un icono nuevo se añade primero en Figma y después en `Icono.tsx`. Un icono nunca va solo si la acción no es obvia: lleva texto o `aria-label`.
 
 ## 5. Patrones de pantalla
 
