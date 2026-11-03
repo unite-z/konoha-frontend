@@ -5,6 +5,7 @@
  * entradas de segundo nivel. El activo se calcula en un solo sitio: gana la coincidencia de prefijo más larga,
  * primero entre módulos y después entre las entradas del módulo activo. Así nunca hay dos marcados a la vez.
  */
+import type { NombreIconoFigma } from '../../components/ui/Icono'
 import type { EntradaMenu } from '../../config/permisosCore'
 import { RUTAS_CAMPO, BASE_CAMPO } from '../../router/rutasCampo'
 import {
@@ -29,6 +30,8 @@ export interface ModuloMenu {
   /** Entrada de `entradasMenu()`; sin clave, el módulo aún no está disponible. */
   clave?: EntradaMenu
   texto: string
+  /** Icono del Elemento de menú (nombre de Figma); en el menú comprimido es lo único visible. */
+  icono: NombreIconoFigma
   ruta?: string
   /** Prefijos de URL del módulo: cualquier ruta que empiece por uno de ellos lo marca como activo. */
   prefijos?: string[]
@@ -37,10 +40,11 @@ export interface ModuloMenu {
 
 /** Primer nivel, en el orden de la Arquitectura de la Información. */
 export const MODULOS_MENU: ModuloMenu[] = [
-  { texto: 'Inicio' },
+  { texto: 'Inicio', icono: 'house' },
   {
     clave: 'planificacion',
     texto: 'Planificación',
+    icono: 'calendar',
     ruta: RUTAS_PLANIFICACION.servicios,
     prefijos: [PREFIJO_PLANIFICACION],
     hijos: [
@@ -53,6 +57,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
   {
     clave: 'inventario',
     texto: 'Áreas verdes y mapa',
+    icono: 'map',
     ruta: RUTAS_INVENTARIO.areasVerdes,
     prefijos: [RUTAS_INVENTARIO.areasVerdes],
     hijos: [
@@ -66,6 +71,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
   {
     clave: 'campo',
     texto: 'Operación de campo',
+    icono: 'clipboard',
     ruta: RUTAS_CAMPO.cuadrillas,
     prefijos: [BASE_CAMPO],
     hijos: [
@@ -77,6 +83,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
   {
     clave: 'tercerizados',
     texto: 'Servicios tercerizados',
+    icono: 'truck',
     ruta: RUTAS_TERCERIZADOS.atenciones,
     prefijos: [PREFIJO_TERCERIZADOS],
     hijos: [
@@ -85,10 +92,11 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
     ],
   },
-  { texto: 'Incidencias' },
+  { texto: 'Incidencias', icono: 'triangle-alert' },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',
+    icono: 'chart',
     ruta: RUTAS.reportes,
     prefijos: [PREFIJO_MODULO],
     hijos: [
@@ -99,10 +107,11 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
     ],
   },
-  { clave: 'repositorio', texto: 'Repositorio', ruta: RUTAS_CORE.repositorio, prefijos: [RUTAS_CORE.repositorio] },
+  { clave: 'repositorio', texto: 'Repositorio', icono: 'paperclip', ruta: RUTAS_CORE.repositorio, prefijos: [RUTAS_CORE.repositorio] },
   {
     clave: 'usuarios',
     texto: 'Usuarios y roles',
+    icono: 'sliders',
     ruta: RUTAS_CORE.usuarios,
     prefijos: [PREFIJO_USUARIOS],
     hijos: [
