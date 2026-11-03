@@ -13,6 +13,8 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 
 ## Mapa
 
+Detalle por carpeta, reglas de dependencias y comunicación entre módulos: `src/README.md`.
+
 | Ruta | Qué hay |
 |---|---|
 | `src/pages/<modulo>/` | Pantallas: `acceso/`, `usuarios-roles/` y `repositorio/` (MOD-01), `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
@@ -25,7 +27,7 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 | `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
 | `src/config/` | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión) |
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
-| `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía |
+| `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`) |
 | `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
 | `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
 | `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR |
@@ -120,6 +122,8 @@ Los planes, notas y borradores de trabajo de personas y agentes van en `.notas/`
 | `AGENTS.md` | Esta guía: estado, gates, reglas y decisiones |
 | `CLAUDE.md` | Solo importa `AGENTS.md` |
 | `README.md` | Qué es y cómo arrancarlo |
+| `DESIGN.md` | Sistema de diseño: tokens, componentes y patrones de Figma, y qué usar en cada caso |
+| `src/README.md` y `src/**/README.md` | Dónde va cada cosa en `src/`, dependencias permitidas y comunicación entre módulos |
 | `CONTRIBUTING.md` | Ciclo de trabajo y checklist de revisión del frontend |
 | `SECURITY.md` | Cómo avisar de una vulnerabilidad |
 | `docs/estandares/*.md` | TypeScript y React, pruebas, PWA y modo sin conexión |
