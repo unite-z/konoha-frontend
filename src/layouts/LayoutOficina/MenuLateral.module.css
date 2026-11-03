@@ -1,32 +1,48 @@
-/* Menú lateral y Elemento de menú: sistema de diseño de Figma (DESIGN.md, 4.3). */
+/*
+ * Menú lateral y Elemento de menú (DESIGN.md, 4.3), con la geometría de la referencia «Sidebar» que pidió
+ * Marcos (AV-358): margen de 24, elementos de 40 con icono de 20, submódulos de 32 y conectores curvos.
+ * Tipografía, colores y botón de fijar, del sistema de diseño.
+ */
 .lateral {
   position: sticky;
   top: 0;
-  display: flex;
-  flex-direction: column;
   height: 100vh;
   background: var(--color-bg-surface);
   border-right: 1px solid var(--color-border-default);
-  overflow-y: auto;
 }
 
+.desplazable {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/*
+ * Los iconos ocupan el mismo sitio comprimido y desplegado: los márgenes no cambian entre estados (24 + 12 de
+ * relleno + 10 de medio icono = 46, la mitad de los 92 del menú comprimido). Solo se desvanecen los textos.
+ */
 .marca {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: var(--web-header-height);
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  gap: var(--space-3);
+  margin: 0 var(--space-6);
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--color-border-default);
+  white-space: nowrap;
 }
 
-/* Logo de Figma: hoja sobre cuadrado de acento. */
+/* Logo de Figma: hoja sobre cuadrado de acento, del tamaño del avatar de la referencia (44). */
 .logo {
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: calc(var(--space-6) + var(--space-1));
-  height: calc(var(--space-6) + var(--space-1));
-  border-radius: var(--radius-sm);
+  width: calc(var(--space-8) + var(--space-3));
+  height: calc(var(--space-8) + var(--space-3));
+  border-radius: var(--radius-md);
   background: var(--color-action-primary);
   color: var(--color-text-on-action);
 }
@@ -35,36 +51,6 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-width: 0;
-  white-space: nowrap;
-}
-
-/* Botón «Comprimir menú» / «Expandir menú» (icono panel-left de Figma) y chevron de los grupos. */
-.alternar,
-.cerrarMovil,
-.desplegar {
-  display: flex;
-  flex: none;
-  padding: var(--space-2);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-
-.cerrarMovil {
-  display: none;
-}
-
-.alternar:hover,
-.cerrarMovil:hover,
-.desplegar:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
-}
-
-.texto {
   min-width: 0;
 }
 
@@ -81,9 +67,44 @@
   color: var(--color-text-muted);
 }
 
+/* Lo que desaparece al comprimir: se desvanece, sin cambiar el sitio de nada. */
+.seDesvanece,
+.texto,
+.textoSinEnlace {
+  transition: opacity var(--duracion-transicion);
+}
+
+/* Botón «Fijar menú abierto» (icono panel-left del sistema): en la marca, visible con el menú desplegado. */
+.alternar,
+.cerrarMovil {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.alternar:hover,
+.cerrarMovil:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.desplegar svg {
+  transition: transform var(--duracion-transicion);
+}
+
+.cerrarMovil {
+  display: none;
+}
+
 .navegacion {
   flex: 1;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-6);
 }
 
 .rotulo {
@@ -92,66 +113,45 @@
   line-height: var(--type-etiqueta-line);
   font-weight: var(--type-etiqueta-weight);
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .lista {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Módulo con submódulos: enlace del módulo y chevron que pliega o despliega su grupo. */
-.filaModulo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.filaModulo > .item {
-  flex: 1;
-  min-width: 0;
-}
-
-.desplegar {
-  padding: var(--space-1);
-}
-
-/* Grupo plegado con la página activa dentro: se marca el módulo para no perder dónde se está. */
-.filaModulo:has(+ .segundoNivel[hidden]) .item[data-modulo-activo] {
-  background: var(--color-sidebar-active-bg);
-  color: var(--color-sidebar-active-text);
-}
-
-.segundoNivel {
-  margin-top: var(--space-1);
-  padding-left: var(--space-4);
-}
-
-.segundoNivel[hidden] {
-  display: none;
-}
-
-/* Elemento de menú, nivel Principal. */
+/* Elemento de menú (Link de la referencia): 40 de alto e icono de 20; texto Pequeño y hueco de 8 del sistema. */
 .item {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--web-control-compact);
+  min-height: calc(var(--space-8) + var(--space-2));
   padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: var(--type-pequeno-size);
   line-height: var(--type-pequeno-line);
   color: var(--color-text-primary);
   text-decoration: none;
-  transition: background-color var(--duracion-transicion);
+  white-space: nowrap;
+  transition:
+    background-color var(--duracion-transicion),
+    color var(--duracion-transicion);
 }
 
-/* Elemento de menú, nivel Sub. */
-.sub {
-  color: var(--color-text-muted);
+.item > svg {
+  flex: none;
+}
+
+.texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 a.item:hover {
@@ -160,15 +160,108 @@ a.item:hover {
 }
 
 /* Activo: solo fondo y texto de menú activo, sin barra lateral. */
-.activo,
-a.activo:hover {
+.item.activo,
+a.item.activo:hover {
   background: var(--color-sidebar-active-bg);
   color: var(--color-sidebar-active-text);
   font-weight: var(--type-pequeno-medio-weight);
 }
 
+/* Módulo con submódulos: el chevron va dentro de la fila, a la derecha, como en la referencia. */
+.filaModulo {
+  position: relative;
+}
+
+.filaModulo > .item {
+  padding-right: calc(var(--space-2) + var(--space-4) + var(--space-1));
+}
+
+.desplegar {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  display: flex;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.desplegar:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+
+/* Chevron hacia abajo con el grupo cerrado; gira hacia arriba al abrirlo. */
+.desplegar[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+/* Grupo de submódulos: la altura se anima de 0 a la del contenido (filas de rejilla de 0fr a 1fr). */
+.grupo {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duracion-transicion) ease-out;
+}
+
+.grupo[data-abierto] {
+  grid-template-rows: 1fr;
+}
+
+.grupo > .segundoNivel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Grupo plegado con la página activa dentro: se marca el módulo para no perder dónde se está. */
+.filaModulo:has(+ .grupo:not([data-abierto])) .item[data-modulo-activo] {
+  background: var(--color-sidebar-active-bg);
+  color: var(--color-sidebar-active-text);
+}
+
+/*
+ * Submódulos en árbol: cada uno dibuja su tramo de línea guía con una curva hasta su texto (Line y Radius de
+ * la referencia). La línea cae bajo el centro del icono del módulo.
+ */
+.segundoNivel {
+  gap: var(--space-1);
+  margin-left: calc(var(--space-3) + var(--space-2) + 1px);
+}
+
+/* El hueco con el módulo va dentro del recorte: plegado, el grupo mide 0 y no asoma la línea guía. */
+.segundoNivel > li:first-child {
+  margin-top: var(--space-1);
+}
+
+.segundoNivel > li {
+  position: relative;
+  padding-left: var(--space-3);
+}
+
+.segundoNivel > li::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--space-1) * -1);
+  bottom: 50%;
+  left: 0;
+  width: var(--space-3);
+  border-bottom: 2px solid var(--color-border-default);
+  border-left: 2px solid var(--color-border-default);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+/* Submódulo: 32 de alto, texto Pequeño en gris. */
+.sub {
+  min-height: var(--space-8);
+  color: var(--color-text-muted);
+}
+
 /* Entradas aún no disponibles: sin enlace, atenuadas y con «Próximamente» bajo el nombre. */
-.sinEnlace {
+.sinEnlace,
+.sinEnlace.item {
   color: var(--color-text-disabled);
   cursor: not-allowed;
 }
@@ -181,7 +274,6 @@ a.activo:hover {
 .proximamente {
   font-size: var(--type-leyenda-size);
   line-height: var(--type-leyenda-line);
-  color: var(--color-text-disabled);
 }
 
 .pie {
@@ -190,33 +282,26 @@ a.activo:hover {
   font-size: var(--type-leyenda-size);
   line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /*
- * Menú comprimido («Elemento compacto» de Figma), solo en escritorio: logo e iconos de primer nivel centrados.
- * Al pasar el cursor, o con el foco dentro, se despliega; el ancho lo da la columna del layout, así que el
- * contenido se desplaza con el menú (LayoutOficina.module.css).
+ * Menú comprimido («Elemento compacto» de Figma), solo en escritorio. Se despliega al pasar el cursor o con el
+ * foco del teclado dentro (`:focus-visible`: un clic no lo deja abierto). El ancho lo da la columna del layout,
+ * así que el contenido se desplaza con el menú (LayoutOficina.module.css). Comprimido, los textos se vuelven
+ * transparentes y los grupos se pliegan.
  */
 @media (min-width: 768px) {
-  .comprimido:not(:hover):not(:focus-within) .marca {
-    justify-content: center;
-    padding: var(--space-2);
+  .comprimido:not(:hover):not(:has(:focus-visible)) :is(.seDesvanece, .texto, .textoSinEnlace) {
+    opacity: 0;
+    pointer-events: none;
   }
 
-  .comprimido:not(:hover):not(:focus-within) :is(.alternar, .textosMarca, .rotulo, .texto, .pie, .segundoNivel, .desplegar) {
-    display: none;
+  .comprimido:not(:hover):not(:has(:focus-visible)) .grupo {
+    grid-template-rows: 0fr;
   }
 
-  .comprimido:not(:hover):not(:focus-within) .navegacion {
-    padding: var(--space-4) var(--space-2);
-  }
-
-  .comprimido:not(:hover):not(:focus-within) .item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .comprimido:not(:hover):not(:focus-within) .item[data-modulo-activo] {
+  .comprimido:not(:hover):not(:has(:focus-visible)) .item[data-modulo-activo] {
     background: var(--color-sidebar-active-bg);
     color: var(--color-sidebar-active-text);
   }

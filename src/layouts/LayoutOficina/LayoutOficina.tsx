@@ -1,8 +1,8 @@
 /**
  * Layout de la aplicación web de oficina, según el sistema de diseño de Figma (DESIGN.md, 4.3 y 5).
  *
- * Zonas: menú lateral de 256px (izquierda, a toda la altura), cabecera de 52px con las migas y contenido con
- * margen de 32px y ancho máximo de 1440px. El contenido empieza por el título de la página (h1, estilo
+ * Zonas: menú lateral de 288px, o 92px comprimido (izquierda, a toda la altura), cabecera de 52px con las
+ * migas y contenido con margen de 32px y ancho máximo de 1440px. El contenido empieza por el título de la página (h1, estilo
  * Título página), que cada página declara con `usePaginaActual`; su acción principal va a la derecha del
  * título con `AccionesPagina`. Incluye el enlace «Saltar al contenido».
  *

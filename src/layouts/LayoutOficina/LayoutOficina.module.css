@@ -9,13 +9,17 @@
   grid-template-columns: var(--web-sidebar-rail) minmax(0, 1fr);
 }
 
-/* Menú comprimido desplegado (cursor o foco dentro): la columna se ensancha y el contenido se desplaza. */
+/*
+ * Menú comprimido desplegado (cursor, o foco del teclado dentro): la columna se ensancha y el contenido se
+ * desplaza. Un clic con el ratón no lo deja abierto: al salir el cursor, se contrae.
+ */
 @media (min-width: 768px) {
   .layout {
     transition: grid-template-columns var(--duracion-transicion);
   }
 
-  .menuComprimido:has(> aside:hover, > aside:focus-within) {
+  .menuComprimido:has(> aside:hover),
+  .menuComprimido:has(> aside :focus-visible) {
     grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
   }
 }

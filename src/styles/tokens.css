@@ -159,8 +159,8 @@
 /* Medidas de layout sin variable en Figma */
 :root {
   --web-header-height: 52px; /* Cabecera de Figma */
-  --web-sidebar-width: 256px;
-  --web-sidebar-rail: 72px;
+  --web-sidebar-width: 288px; /* menú desplegado: caben los nombres largos de submódulo (AV-358) */
+  --web-sidebar-rail: 92px; /* menú comprimido: 24 de margen + elemento de 44 + 24 (referencia «Sidebar», AV-358) */
   --web-content-max: 1440px;
   --web-row-height: 48px;
   --web-row-height-compact: 40px;
