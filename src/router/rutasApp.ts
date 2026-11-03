@@ -15,6 +15,7 @@ export const RUTAS = {
   extraccionReportes: `${BASE}/asistencia-ia/extraccion-reportes`, // RF-IA-001
   priorizacionIa: `${BASE}/asistencia-ia/priorizacion`, // RN-IA-002
   inconsistenciasIa: `${BASE}/asistencia-ia/inconsistencias`, // RF-IA-002
+  cronogramaIa: `${BASE}/asistencia-ia/cronograma`, // RF-IA-003
   panel: `${BASE}/panel`, // RF-REP-001
   mapaAtenciones: `${BASE}/mapa-atenciones`, // RF-REP-007
   materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
@@ -46,6 +47,11 @@ export function rutaRevisionInconsistencia(id: number | string): string {
   return `${RUTAS.inconsistenciasIa}/${id}`
 }
 
+/** Ruta de la revisión de una propuesta de cronograma (RF-IA-003). */
+export function rutaRevisionCronograma(id: number | string): string {
+  return `${RUTAS.cronogramaIa}/${id}`
+}
+
 /** Niveles de migas reutilizados por las páginas (Guía Web 4.2). */
 export const MIGAS = {
   reportesIndicadores: { texto: 'Reportes e indicadores', ruta: RUTAS.reportes },
@@ -54,6 +60,7 @@ export const MIGAS = {
   extraccionReportes: { texto: 'Extracción de informes de proveedores', ruta: RUTAS.extraccionReportes },
   priorizacionIa: { texto: 'Prioridades de atención', ruta: RUTAS.priorizacionIa },
   inconsistenciasIa: { texto: 'Revisión de inconsistencias', ruta: RUTAS.inconsistenciasIa },
+  cronogramaIa: { texto: 'Planificación asistida', ruta: RUTAS.cronogramaIa },
   panel: { texto: 'Panel', ruta: RUTAS.panel },
   mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
