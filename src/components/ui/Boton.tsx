@@ -1,10 +1,12 @@
 /**
- * Boton: Guía de Estilo Web, sección 5.2.
+ * Boton: componente «Botón» del sistema de diseño de Figma (DESIGN.md, sección 4.1).
  *
- * Variantes: primario, secundario, terciario y destructivo. Alto de 40px (`compacto`: 32px, solo en barras
- * de tabla). Etiqueta con verbo en infinitivo + objeto («Aplicar filtros»); nunca «Aceptar», «OK» ni «Enviar».
+ * Tipos: primario, secundario, fantasma y destructivo. Alto de 36px (`compacto`: 32px, solo en barras de
+ * tabla). `terciario` es el nombre antiguo de `fantasma` y se mantiene mientras migran las pantallas.
+ * Etiqueta con verbo en infinitivo + objeto («Aplicar filtros»); nunca «Aceptar», «OK» ni «Enviar».
  * Regla de pantalla: una sola acción primaria visible por pantalla o paso.
  *
+ * - Icono opcional (`icono`) delante del texto, a 16px como en Figma.
  * - Deshabilitado: usa `deshabilitado` y explica el motivo en una ayuda cercana (`ayudaDeshabilitado`).
  *   El botón sigue recibiendo el foco (aria-disabled) para que la ayuda sea descubrible.
  * - Cargando: mantiene el ancho, muestra un indicador, pone `aria-busy` y bloquea el doble envío.
@@ -13,14 +15,18 @@
  */
 import { useId, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router'
+import Icono, { type NombreIcono } from './Icono'
 import estilos from './Boton.module.css'
 
-export type VarianteBoton = 'primario' | 'secundario' | 'terciario' | 'destructivo'
+/** `terciario` es el nombre antiguo de `fantasma`: no lo uses en código nuevo. */
+export type VarianteBoton = 'primario' | 'secundario' | 'fantasma' | 'destructivo' | 'terciario'
 
 interface PropsComunes {
   variante?: VarianteBoton
   /** 32px de alto, solo en barras de tabla. */
   compacto?: boolean
+  /** Icono delante del texto (decorativo: el texto ya da el nombre accesible). */
+  icono?: NombreIcono
   children: ReactNode
 }
 
@@ -39,12 +45,23 @@ export interface BotonProps
 }
 
 function clases(variante: VarianteBoton, compacto?: boolean, extra?: string) {
-  return [estilos.boton, estilos[variante], compacto && estilos.compacto, extra].filter(Boolean).join(' ')
+  const tipo = variante === 'terciario' ? 'fantasma' : variante
+  return [estilos.boton, estilos[tipo], compacto && estilos.compacto, extra].filter(Boolean).join(' ')
+}
+
+function Contenido({ icono, children }: { icono?: NombreIcono; children: ReactNode }) {
+  return (
+    <span className={estilos.contenido}>
+      {icono && <Icono nombre={icono} tamano="base" />}
+      {children}
+    </span>
+  )
 }
 
 export default function Boton({
   variante = 'primario',
   compacto,
+  icono,
   cargando = false,
   deshabilitado = false,
   ayudaDeshabilitado,
@@ -79,7 +96,7 @@ export default function Boton({
       data-deshabilitado={deshabilitado || undefined}
       data-cargando={cargando || undefined}
     >
-      <span className={estilos.contenido}>{children}</span>
+      <Contenido icono={icono}>{children}</Contenido>
       {cargando && <span className={estilos.indicador} aria-hidden="true" />}
     </button>
   )
@@ -100,10 +117,10 @@ export default function Boton({
 export interface BotonEnlaceProps extends PropsComunes, Omit<LinkProps, 'children'> {}
 
 /** Enlace con aspecto de botón (por ejemplo, «Volver a la bandeja»). */
-export function BotonEnlace({ variante = 'terciario', compacto, className, children, ...resto }: BotonEnlaceProps) {
+export function BotonEnlace({ variante = 'fantasma', compacto, icono, className, children, ...resto }: BotonEnlaceProps) {
   return (
     <Link {...resto} className={clases(variante, compacto, className)}>
-      <span className={estilos.contenido}>{children}</span>
+      <Contenido icono={icono}>{children}</Contenido>
     </Link>
   )
 }

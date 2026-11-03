@@ -12,6 +12,12 @@
   height: var(--icono-md);
 }
 
+/* 16 px: tamaño de los iconos lucide del sistema de diseño de Figma. */
+.base {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
 .sm {
   width: var(--icono-sm);
   height: var(--icono-sm);
