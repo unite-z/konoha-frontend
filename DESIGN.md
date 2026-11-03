@@ -117,15 +117,15 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Casilla | pendiente, fase 1 | Marcada: Sí, No | elegir varias opciones; aceptar una condición | elegir una sola opción (Radio) |
 | Radio compacto | pendiente, fase 1 | Estado: Normal, Seleccionado, Deshabilitado | una opción entre pocas, visibles | más de 5 opciones (Desplegable) |
 | Opción | pendiente, fase 1 | Seleccionada: Sí, No | una opción entre pocas con descripción, como tarjeta | listas largas |
-| Campo | `CampoFormulario` | Estado: Normal, Foco, Error, Deshabilitado · Etiqueta, Valor, Ayuda, Desplegable | cualquier entrada de formulario, con etiqueta siempre visible | dentro de una tabla (Campo · compacto) |
+| Campo | `CampoFormulario`, `AreaTexto` | 36 px · `error` · `bloqueadoMotivo` (deshabilitado) · `ayuda` debajo del control · `obligatorio` | cualquier entrada de formulario, con etiqueta siempre visible | dentro de una tabla (Campo · compacto) |
 | Campo · compacto | pendiente, fase 1 | Estado: Normal, Error | filtros en barra y celdas de tabla editables | formularios completos |
 | Campo · fecha | pendiente, fase 1 (sobre `input type="date"`) | Estado: Normal, Seleccionada, Error | fechas sueltas o rangos «Desde / Hasta» | fecha con hora en un solo campo |
 | Campo · hora | pendiente, fase 1 (sobre `input type="time"`) | Estado: Vacío, Seleccionada, Error | franjas horarias | duraciones (Campo numérico) |
 | Desplegable · campo | `Selector`, `SelectorBuscable` | Estado: Normal, Seleccionado, Deshabilitado | elegir uno de un catálogo; `SelectorBuscable` si pasa de 10 | 2 o 3 opciones (Radio) |
 | Desplegable · opción | dentro de `SelectorBuscable` | Estado: Normal, Hover, Seleccionada, Deshabilitada | lista abierta del desplegable | fuera de un desplegable |
-| Pestaña | `Pestanas` | Activa: Sí, No · contador opcional | alternar vistas o filtros de estado de una misma lista | navegar a otro módulo (menú) |
-| Aviso | `AvisoEnLinea` | Tono: Info, Éxito, Aviso, Error | mensaje fijo en la página (plazo, bloqueo, coincidencia) | confirmar una acción ya hecha (Toast) |
-| Toast | `AvisoTemporal` | Tono: Éxito, Error | confirmar que algo se guardó o falló, y desaparece | errores que el usuario tiene que corregir (Aviso o error de campo) |
+| Pestaña | `Pestanas` | control segmentado sobre fondo sutil · activa en blanco con Sombra sm · `contador` | alternar vistas o filtros de estado de una misma lista | navegar a otro módulo (menú) |
+| Aviso | `AvisoEnLinea` | `tono`: `info`, `exito`, `advertencia` (Aviso), `error` · `titulo` del color del tono · `accion` | mensaje fijo en la página (plazo, bloqueo, coincidencia) | confirmar una acción ya hecha (Toast) |
+| Toast | `AvisoTemporal` | `tono`: `exito` o `error` · `mensaje` y `detalle` · cierre manual o a los 6 s | confirmar que algo se guardó o falló, y desaparece | errores que el usuario tiene que corregir (Aviso o error de campo) |
 | Indicador | `TarjetaIndicador` | título, Cifra, detalle y leyenda | cifras clave arriba de una ficha o del panel | listas de datos (Tabla) |
 | Barra de avance | `BarraAvance` | Valor: 0 a 100 de 10 en 10 | avance de una ruta, ciclo o carga | estados sin porcentaje (Estado) |
 | Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`; «Sin acceso» pendiente, fase 1 | Estado: Vacío, Cargando, Error, Sin acceso | toda zona con datos remotos | errores de un campo concreto |

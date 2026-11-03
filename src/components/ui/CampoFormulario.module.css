@@ -1,6 +1,5 @@
-/* Controles de formulario: Guía Web 5.3 y 5.4. */
+/* Campo: sistema de diseño de Figma (DESIGN.md, 4.1). */
 .campo {
-  --control-height: 40px; /* Guía Web 5.3: campo de 40px de alto */
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -8,9 +7,9 @@
 }
 
 .etiqueta {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
   color: var(--color-text-primary);
 }
 
@@ -19,20 +18,20 @@
 }
 
 .ayuda {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
 }
 
 .control {
   width: 100%;
-  min-height: var(--control-height);
+  min-height: var(--web-control);
   padding: 0 var(--space-3);
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-primary);
   transition: border-color var(--duracion-transicion);
 }
@@ -43,8 +42,9 @@
 
 .control:focus,
 .control:focus-visible {
+  /* Foco de Figma: borde de acento de 2 px (1 px de borde y 1 px de contorno). */
   border-color: var(--web-focus-ring-color);
-  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline: 1px solid var(--web-focus-ring-color);
   outline-offset: 0;
 }
 
@@ -59,15 +59,15 @@
 
 .bloqueado {
   background: var(--color-bg-subtle);
-  color: var(--color-text-secondary);
+  color: var(--color-text-disabled);
 }
 
 .error {
   display: flex;
   align-items: flex-start;
   gap: var(--space-1);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-error);
 }
 
@@ -76,9 +76,9 @@
 }
 
 .leyenda {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
 }
 
 .resumen {

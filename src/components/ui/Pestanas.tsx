@@ -1,5 +1,6 @@
 /**
- * Pestanas: pestañas de contenido (Guía Web 4.2), patrón «tabs» de WAI-ARIA con activación manual.
+ * Pestanas: componente «Pestaña» del sistema de diseño de Figma (DESIGN.md, 4.1), como control segmentado.
+ * Patrón «tabs» de WAI-ARIA con activación manual.
  * Flechas izquierda/derecha, Inicio y Fin mueven entre pestañas; solo la activa está en el orden de tabulación.
  */
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
@@ -8,7 +9,9 @@ import estilos from './Pestanas.module.css'
 export interface Pestana {
   valor: string
   texto: string
-  /** Contador o insignia junto al texto. */
+  /** Número de elementos de la pestaña («Abiertas 2»). */
+  contador?: number
+  /** Otro contenido junto al texto (por ejemplo, un `Estado`). */
   extra?: ReactNode
 }
 
@@ -60,6 +63,8 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, childre
               onKeyDown={(e) => teclado(e, indice)}
             >
               {pestana.texto}
+              {/* El espacio no se ve (flex), pero separa el número en el nombre accesible: «Abiertas 2». */}
+              {pestana.contador !== undefined && <> <span className={estilos.contador}>{pestana.contador}</span></>}
               {pestana.extra}
             </button>
           )

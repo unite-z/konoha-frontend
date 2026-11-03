@@ -1,7 +1,7 @@
 /**
- * AvisoEnLinea: Guía de Estilo Web, sección 5.10.
+ * AvisoEnLinea: componente «Aviso» del sistema de diseño de Figma (DESIGN.md, 4.1).
  *
- * Aviso dentro de la página con icono del tono, título, explicación y acción opcional (botón terciario).
+ * Aviso dentro de la página con icono y título del color del tono, explicación y acción opcional (botón fantasma).
  * Se anuncia con `role="status"` (o `role="alert"` en el tono `error`).
  */
 import type { ReactNode } from 'react'
@@ -24,14 +24,14 @@ export default function AvisoEnLinea({ tono, titulo, children, accion }: AvisoEn
   return (
     <div className={`${estilos.aviso} ${estilos[tono]}`} role={tono === 'error' ? 'alert' : 'status'}>
       <span className={estilos.icono}>
-        <Icono nombre={ICONO_TONO[tono]} />
+        <Icono nombre={ICONO_TONO[tono]} tamano="base" />
       </span>
       <div className={estilos.cuerpo}>
         {titulo && <p className={estilos.titulo}>{titulo}</p>}
         {children && <div className={estilos.explicacion}>{children}</div>}
         {accion && (
           <div className={estilos.accion}>
-            <Boton variante="terciario" compacto onClick={accion.onClick}>
+            <Boton variante="fantasma" compacto onClick={accion.onClick}>
               {accion.texto}
             </Boton>
           </div>

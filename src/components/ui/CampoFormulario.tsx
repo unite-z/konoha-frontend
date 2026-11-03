@@ -1,5 +1,5 @@
 /**
- * Controles de formulario: Guía de Estilo Web, secciones 5.3 y 5.4.
+ * Controles de formulario: componente «Campo» del sistema de diseño de Figma (DESIGN.md, sección 4.1).
  *
  * - `CampoFormulario`: campo de una línea (`<input>`).
  * - `AreaTexto`: campo de varias líneas (`<textarea>`).
@@ -7,8 +7,8 @@
  * - `LeyendaObligatorio`: leyenda «* Campo obligatorio» encima del formulario.
  * - `ResumenErrores`: resumen encima del formulario con enlaces a cada campo con error.
  *
- * Reglas: etiqueta siempre visible encima (el placeholder nunca la sustituye), obligatorios con asterisco,
- * error debajo del campo que dice qué hacer y enlazado con `aria-describedby`, bloqueado con explicación.
+ * Reglas: etiqueta siempre visible encima (el placeholder nunca la sustituye), ayuda debajo del control,
+ * obligatorios con asterisco, error debajo del campo que dice qué hacer y enlazado con `aria-describedby`, bloqueado con explicación.
  * La validación de formato se hace al salir del campo (blur) y la de obligatoriedad al enviar: la decide la
  * página o el componente que usa el campo.
  */
@@ -41,12 +41,12 @@ export function MarcoCampo({
           </span>
         )}
       </label>
+      {children}
       {ayuda && (
         <p id={`${id}-ayuda`} className={estilos.ayuda}>
           {ayuda}
         </p>
       )}
-      {children}
       {bloqueadoMotivo && (
         <p id={`${id}-bloqueo`} className={estilos.ayuda}>
           {bloqueadoMotivo}
