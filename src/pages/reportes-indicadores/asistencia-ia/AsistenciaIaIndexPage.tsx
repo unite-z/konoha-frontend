@@ -1,5 +1,5 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002 y RF-IA-002).
+ * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002 y RF-IA-003).
  */
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
@@ -32,6 +32,13 @@ export default function AsistenciaIaIndexPage() {
             'Posibles duplicados, valores atípicos, campos incompatibles o nombres no normalizados detectados con IA, para revisarlos antes de corregir.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado, tipo de hallazgo y conjunto de datos' },
           ruta: RUTAS.inconsistenciasIa,
+        },
+        {
+          titulo: 'Planificación asistida',
+          descripcion:
+            'Propuesta de cronograma con fechas, ubicaciones y recursos según frecuencias, restricciones y disponibilidad, para revisarla antes de programar.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado y periodo' },
+          ruta: RUTAS.cronogramaIa,
         },
       ]}
     />
