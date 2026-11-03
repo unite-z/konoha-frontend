@@ -1,8 +1,8 @@
-/* AvisoEnLinea: Guía Web 5.10. */
+/* Aviso: sistema de diseño de Figma (DESIGN.md, 4.1). Icono y título del color del tono. */
 .aviso {
   display: flex;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   border: 1px solid;
   border-radius: var(--radius-md);
 }
@@ -10,38 +10,31 @@
 .info {
   background: var(--color-info-bg);
   border-color: var(--web-info-border);
-}
-.info .icono {
   color: var(--color-info);
 }
 
 .exito {
   background: var(--color-success-bg);
   border-color: var(--web-success-border);
-}
-.exito .icono {
   color: var(--color-success);
 }
 
 .advertencia {
   background: var(--color-warning-bg);
   border-color: var(--web-warning-border);
-}
-.advertencia .icono {
-  color: var(--web-warning-text);
+  color: var(--color-warning);
 }
 
 .error {
   background: var(--color-error-bg);
   border-color: var(--web-error-border);
-}
-.error .icono {
   color: var(--color-error);
 }
 
+/* El icono y el título heredan el color del tono; la explicación va en texto principal. */
 .icono {
   display: flex;
-  padding-top: var(--space-1);
+  padding-top: calc(var(--space-1) / 2);
 }
 
 .cuerpo {
@@ -52,16 +45,15 @@
 }
 
 .titulo {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
 }
 
 .explicacion {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-primary);
 }
 
 .explicacion ul {
@@ -70,4 +62,5 @@
 
 .accion {
   margin-left: calc(-1 * var(--space-3));
+  color: var(--color-text-primary);
 }

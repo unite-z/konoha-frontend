@@ -1,4 +1,4 @@
-/* Pestanas: Guía Web 4.2 (subrayado verde en la activa). */
+/* Pestaña: sistema de diseño de Figma (DESIGN.md, 4.1). Control segmentado sobre fondo sutil. */
 .contenedor {
   display: flex;
   flex-direction: column;
@@ -8,8 +8,12 @@
 
 .lista {
   display: flex;
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--color-border-default);
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--space-1);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
   overflow-x: auto;
 }
 
@@ -17,17 +21,21 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 44px;
-  padding: 0 var(--space-4);
+  min-height: var(--web-control-compact);
+  padding: 0 var(--space-3);
   border: 0;
-  border-bottom: 3px solid transparent;
+  border-radius: var(--radius-sm);
   background: none;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   font: inherit;
-  font-size: var(--type-label-md-size);
-  font-weight: var(--type-label-md-weight);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion),
+    color var(--duracion-transicion);
 }
 
 .pestana:hover {
@@ -35,9 +43,20 @@
 }
 
 .activa {
-  border-bottom-color: var(--color-action-primary);
-  color: var(--color-action-text);
-  font-weight: 600;
+  background: var(--color-bg-surface);
+  box-shadow: var(--web-elev-1);
+  color: var(--color-text-primary);
+}
+
+/* Contador junto al texto («Todas 19»). */
+.contador {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  font-variant-numeric: tabular-nums;
 }
 
 .panel {
