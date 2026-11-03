@@ -61,7 +61,7 @@ npm run typecheck && npm run lint && npm test && npm run build
 - **El backend decide los permisos.** La interfaz solo oculta, y siempre se maneja el 403.
 - **Nada secreto en variables `VITE_*`**: llegan al navegador.
 - Colores, espacios y tipografía solo con tokens de `tokens.css`.
-- Toda pantalla con datos remotos muestra carga, error y vacío (`EstadoCarga`, `EstadoError`, `EstadoVacio`).
+- Toda pantalla con datos remotos muestra carga, error y vacío (`EstadoCarga`, `EstadoError`, `EstadoVacio`), y `EstadoSinAcceso` si el backend responde 403.
 - Fechas con `utils/instanteLima.ts` (America/Lima), nunca con la zona del navegador.
 - Operaciones de campo sin conexión: a la cola de IndexedDB con UUID del cliente como `Idempotency-Key`. Background Sync es solo una mejora (no existe en iOS). Ver `docs/estandares/pwa-offline.md`.
 - Nombres:

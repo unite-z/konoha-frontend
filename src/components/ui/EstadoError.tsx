@@ -1,11 +1,9 @@
 /**
- * EstadoError: Guía de Estilo Web, sección 5.12.
+ * EstadoError: «Estado de contenido · Error» del sistema de diseño de Figma (DESIGN.md, 4.1).
  *
- * Icono, título, causa probable y botón «Reintentar». La página conserva los filtros y el contexto:
- * este componente solo sustituye al contenido que no se pudo cargar.
+ * Título, causa probable y la acción «Reintentar». La página conserva los filtros y el contexto: este
+ * componente solo sustituye al contenido que no se pudo cargar. Para un 403, usa `EstadoSinAcceso`.
  */
-import Boton from './Boton'
-import Icono from './Icono'
 import estilos from './EstadosContenido.module.css'
 
 export interface EstadoErrorProps {
@@ -20,15 +18,12 @@ export default function EstadoError({ titulo, descripcion, onReintentar, nivel =
   const Encabezado = nivel === 2 ? 'h2' : 'h3'
   return (
     <div className={estilos.estado} role="alert">
-      <span className={`${estilos.icono} ${estilos.iconoError}`}>
-        <Icono nombre="triangulo" />
-      </span>
       <Encabezado className={estilos.titulo}>{titulo}</Encabezado>
       <p className={estilos.descripcion}>{descripcion}</p>
       <div className={estilos.accion}>
-        <Boton variante="secundario" onClick={onReintentar}>
+        <button type="button" className={estilos.enlace} onClick={onReintentar}>
           Reintentar
-        </Boton>
+        </button>
       </div>
     </div>
   )

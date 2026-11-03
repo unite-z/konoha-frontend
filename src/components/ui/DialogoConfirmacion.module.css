@@ -1,4 +1,4 @@
-/* DialogoConfirmacion: Guía Web 5.10. */
+/* Diálogo · confirmación: sistema de diseño de Figma (DESIGN.md, 4.1). */
 .dialogo {
   width: min(32rem, calc(100vw - 2 * var(--space-6)));
   padding: var(--space-6);
@@ -14,14 +14,17 @@
 }
 
 .titulo {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  letter-spacing: var(--type-titulo-seccion-tracking);
 }
 
 .consecuencia {
-  margin-top: var(--space-2);
-  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
 }
 
 .contenido {
@@ -31,6 +34,6 @@
 .acciones {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin-top: var(--space-6);
 }
