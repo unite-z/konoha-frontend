@@ -7,7 +7,7 @@
  * Los estados que el back-end ya devuelve en texto legible se muestran tal cual; aquí solo se elige el tono.
  */
 import type { Tono } from '../components/ui/Badge'
-import type { AccionDecision, EstadoSugerencia } from '../types/ia'
+import type { AccionDecision, EstadoSugerencia, SuficienciaDatos } from '../types/ia'
 import type { EstadoDuracion, EstadoFrecuencia, Modalidad } from '../types/reportes'
 
 // --- RF-REP-002 ---------------------------------------------------------------
@@ -93,4 +93,17 @@ export const ETIQUETA_OPCION_ACCION: Record<AccionDecision, string> = {
   aceptar: 'Aceptar',
   corregir: 'Corregir',
   descartar: 'Descartar',
+}
+
+// --- Sugerencias de IA de S12 (RN-IA-002 y siguientes) ----------------------------------------------------
+
+const SUFICIENCIA: Record<SuficienciaDatos, { texto: string; tono: Tono }> = {
+  suficiente: { texto: 'Datos suficientes', tono: 'exito' },
+  parcial: { texto: 'Datos parciales', tono: 'advertencia' },
+  insuficiente: { texto: 'Datos insuficientes', tono: 'error' },
+}
+
+/** Insignia de la suficiencia de los datos con los que trabajó la IA (siempre con texto). */
+export function insigniaSuficiencia(suficiencia: SuficienciaDatos): { texto: string; tono: Tono } {
+  return SUFICIENCIA[suficiencia]
 }
