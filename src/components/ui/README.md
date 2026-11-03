@@ -4,7 +4,7 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Va aquí:** controles y piezas visuales sin lógica de negocio: `Boton`, `Estado`, `CampoFormulario`, `Selector`, `TablaDatos`, `DialogoConfirmacion`, `Tarjeta`, `Casilla`, `GrupoOpciones`, `EstadoCarga`, `EstadoSinAcceso`…
 
-**Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`.
+**Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`. Para pasar a `Estado` una insignia de `utils/` con tono antiguo: `<Estado {...insigniaAEstado(insigniaEstado(x))} />` (`tonos.ts`).
 
 **No va aquí:**
 - Nada que conozca un módulo, un endpoint o un permiso. Lo de negocio compartido va en `components/core/` y lo de un módulo, junto a sus páginas.

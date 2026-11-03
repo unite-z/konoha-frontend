@@ -8,15 +8,16 @@
  * al registrar una para recargar la lista.
  */
 import { useState } from 'react'
-import Badge from '../../components/ui/Badge'
-import Boton from '../../components/ui/Boton'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
+import Boton from '../../components/ui/Boton'
+import Estado from '../../components/ui/Estado'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import Icono from '../../components/ui/Icono'
 import ListaDescripcion from '../../components/ui/ListaDescripcion'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
+import Tarjeta from '../../components/ui/Tarjeta'
 import { useConsulta } from '../../hooks/useConsulta'
 import { aErrorApi } from '../../services/api/cliente'
 import { descargarDocumento, listarReportes } from '../../services/api/tercerizados'
@@ -76,7 +77,7 @@ function RevisionReporte({
       titulo: 'Acción',
       render: (d) => (
         <Boton
-          variante="terciario"
+          variante="fantasma"
           compacto
           cargando={descarga.enCurso === d.id}
           deshabilitado={descarga.enCurso !== null && descarga.enCurso !== d.id}
@@ -95,7 +96,7 @@ function RevisionReporte({
         <h3 id={`revision-${reporte.id}`} className={estilos.tituloSeccion}>
           Revisión {reporte.revision}
         </h3>
-        {vigente ? <Badge tono="exito" texto="Vigente" /> : <Badge tono="neutral" texto="Anterior" />}
+        {vigente ? <Estado tono="exito" texto="Vigente" /> : <Estado tono="neutro" texto="Anterior" />}
       </div>
       <ListaDescripcion
         elementos={[
@@ -239,18 +240,19 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
   }
 
   return (
-    <section className={estilos.superficie} aria-labelledby="titulo-documentos">
-      <div className={estilos.cabeceraSeccion}>
-        <h2 id="titulo-documentos" className={estilos.tituloSeccion}>
-          Reporte y documentos del proveedor
-        </h2>
-        {consulta.datos && consulta.datos.count > 0 && (
+    <Tarjeta
+      titulo="Reporte y documentos del proveedor"
+      relleno="amplio"
+      acciones={
+        consulta.datos &&
+        consulta.datos.count > 0 && (
           <span className={estilos.ayuda}>
             {consulta.datos.count} {consulta.datos.count === 1 ? 'revisión' : 'revisiones'}
           </span>
-        )}
-      </div>
+        )
+      }
+    >
       {contenido}
-    </section>
+    </Tarjeta>
   )
 }

@@ -11,16 +11,20 @@
  */
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import Badge from '../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../components/ui/Boton'
 import CampoFormulario from '../../components/ui/CampoFormulario'
-import { ChipsFiltrosActivos, GrupoChips, type FiltroActivo } from '../../components/ui/ChipsFiltro'
+import { ChipsFiltrosActivos, type FiltroActivo } from '../../components/ui/ChipsFiltro'
+import Estado from '../../components/ui/Estado'
 import EstadoVacio from '../../components/ui/EstadoVacio'
+import Pestanas from '../../components/ui/Pestanas'
 import Selector, { OPCION_TODOS, type OpcionSelector } from '../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
+import Tarjeta from '../../components/ui/Tarjeta'
+import { insigniaAEstado } from '../../components/ui/tonos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { puedeRegistrarAtencion } from '../../config/permisosTercerizados'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '../../router/rutasApp'
 import { useRolTercerizados } from '../../sesion/ContextoSesion'
@@ -56,8 +60,10 @@ export interface EstadoNavegacionBandeja {
   volverA: string
 }
 
+/** Pestañas de estado: «Todos» quita el filtro. */
+const TODOS = 'todos'
 const OPCIONES_ESTADO = [
-  { valor: '', texto: 'Todos' },
+  { valor: TODOS, texto: 'Todos' },
   ...ESTADOS_ATENCION.map((estado) => ({ valor: estado, texto: estado })),
 ]
 
@@ -117,8 +123,8 @@ const COLUMNAS: ColumnaTabla<Atencion>[] = [
     titulo: 'Estado',
     render: (a) => (
       <span className={estilos.enLinea}>
-        <Badge {...insigniaEstado(a.estado)} />
-        {a.es_riesgo && <Badge tono="advertencia" texto="Riesgo" />}
+        <Estado {...insigniaAEstado(insigniaEstado(a.estado))} />
+        {a.es_riesgo && <Estado tono="aviso" texto="Riesgo" />}
       </span>
     ),
   },
@@ -192,71 +198,61 @@ export default function AtencionesPage() {
 
   return (
     <div className={estilos.pagina}>
-      {esJefe && (
-        <div className={estilos.barraAcciones}>
+      <AccionesPagina>
+        {esJefe && (
           <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="primario">
             Registrar atención
           </BotonEnlace>
-        </div>
-      )}
-      <form role="search" aria-label="Filtrar atenciones" className={estilos.barraFiltros} onSubmit={buscar}>
-        <div className={estilos.busqueda}>
-          <CampoFormulario
-            id={ID_BUSQUEDA}
-            etiqueta="Buscar atenciones"
-            type="search"
-            ayuda="Código, descripción, OC, contrato, proveedor, servicio o unidad"
-            maxLength={LARGO_MAXIMO_BUSQUEDA}
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+        )}
+      </AccionesPagina>
+      <Tarjeta>
+        <form role="search" aria-label="Filtrar atenciones" className={estilos.barraFiltros} onSubmit={buscar}>
+          <div className={estilos.busqueda}>
+            <CampoFormulario
+              id={ID_BUSQUEDA}
+              etiqueta="Buscar atenciones"
+              type="search"
+              ayuda="Código, descripción, OC, contrato, proveedor, servicio o unidad"
+              maxLength={LARGO_MAXIMO_BUSQUEDA}
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
+          <Selector
+            id="filtro-origen"
+            etiqueta="Origen"
+            valor={filtros.origen ?? ''}
+            opciones={OPCIONES_ORIGEN}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => aplicar({ origen: valor || null })}
           />
-        </div>
-        <Selector
-          id="filtro-origen"
-          etiqueta="Origen"
-          valor={filtros.origen ?? ''}
-          opciones={OPCIONES_ORIGEN}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => aplicar({ origen: valor || null })}
-        />
-        <Selector
-          id="filtro-contrato"
-          etiqueta="Contrato"
-          valor={filtros.contrato_id ? String(filtros.contrato_id) : ''}
-          opciones={
-            contratoAplicado || !filtros.contrato_id
-              ? opcionesContrato
-              : [...opcionesContrato, { valor: String(filtros.contrato_id), texto: `n.º ${filtros.contrato_id}` }]
-          }
-          opcionTodos={OPCION_TODOS}
-          ayuda={contratos.datos && !contratos.datos.completo ? 'Se muestran los primeros 500 contratos' : undefined}
-          bloqueadoMotivo={
-            contratos.estado === 'error'
-              ? 'No se pudieron cargar los contratos. Recarga la página para filtrar por contrato'
-              : contratos.cargaVisible
-                ? 'Cargando contratos…'
-                : undefined
-          }
-          onCambiar={(valor) => aplicar({ contrato_id: valor || null })}
-        />
-        <div className={estilos.accionFiltros}>
-          <Boton type="submit" variante="secundario">
-            Buscar
-          </Boton>
-        </div>
-      </form>
-
-      <div className={estilos.filaEstados}>
-        <span className={estilos.rotulo} aria-hidden="true">
-          Estado
-        </span>
-        <GrupoChips
-          etiqueta="Filtrar por estado"
-          opciones={OPCIONES_ESTADO}
-          valor={filtros.estado ?? ''}
-          onCambiar={(valor) => aplicar({ estado: valor || null })}
-        />
-      </div>
+          <Selector
+            id="filtro-contrato"
+            etiqueta="Contrato"
+            valor={filtros.contrato_id ? String(filtros.contrato_id) : ''}
+            opciones={
+              contratoAplicado || !filtros.contrato_id
+                ? opcionesContrato
+                : [...opcionesContrato, { valor: String(filtros.contrato_id), texto: `n.º ${filtros.contrato_id}` }]
+            }
+            opcionTodos={OPCION_TODOS}
+            ayuda={contratos.datos && !contratos.datos.completo ? 'Se muestran los primeros 500 contratos' : undefined}
+            bloqueadoMotivo={
+              contratos.estado === 'error'
+                ? 'No se pudieron cargar los contratos. Recarga la página para filtrar por contrato'
+                : contratos.cargaVisible
+                  ? 'Cargando contratos…'
+                  : undefined
+            }
+            onCambiar={(valor) => aplicar({ contrato_id: valor || null })}
+          />
+          <div className={estilos.accionFiltros}>
+            <Boton type="submit" variante="secundario">
+              Buscar
+            </Boton>
+          </div>
+        </form>
+      </Tarjeta>
 
       <ChipsFiltrosActivos
         filtros={activos}
@@ -264,68 +260,77 @@ export default function AtencionesPage() {
         onLimpiar={limpiarFiltros}
       />
 
-      {/* Encabezado de la sección de resultados (orden de encabezados para lectores de pantalla). */}
-      <h2 className="sr-only">Resultados</h2>
-      <p className={`${estilos.resumenResultados} cifra`} aria-live="polite">
-        {consulta.estado === 'exito' || consulta.estado === 'vacio'
-          ? `${formatearNumero(total)} ${total === 1 ? 'atención' : 'atenciones'}${conFiltros ? ' con estos filtros' : ''}`
-          : ''}
-      </p>
+      <Pestanas
+        etiqueta="Filtrar por estado"
+        pestanas={OPCIONES_ESTADO}
+        valor={filtros.estado ?? TODOS}
+        onCambiar={(valor) => aplicar({ estado: valor === TODOS ? null : valor })}
+      >
+        <div className={estilos.seccion}>
+          {/* Encabezado de la sección de resultados (orden de encabezados para lectores de pantalla). */}
+          <h2 className="sr-only">Resultados</h2>
+          <p className={`${estilos.resumenResultados} cifra`} aria-live="polite">
+            {consulta.estado === 'exito' || consulta.estado === 'vacio'
+              ? `${formatearNumero(total)} ${total === 1 ? 'atención' : 'atenciones'}${conFiltros ? ' con estos filtros' : ''}`
+              : ''}
+          </p>
 
-      {paginaInexistente ? (
-        <EstadoVacio
-          titulo="Esta página ya no tiene atenciones"
-          descripcion="Los resultados cambiaron desde que se abrió la bandeja."
-          accion={
-            <Boton variante="secundario" onClick={() => establecer({ pagina: null })}>
-              Ir a la primera página
-            </Boton>
-          }
-        />
-      ) : (
-        <TablaDatos
-          titulo={TITULO}
-          columnas={COLUMNAS}
-          filas={consulta.datos?.results ?? []}
-          claveFila={(a) => String(a.id)}
-          estado={estadoTabla === 'inactivo' ? 'cargando' : estadoTabla}
-          onFilaClick={(a) =>
-            navegar(rutaDetalleAtencion(a.id), { state: { volverA: search } satisfies EstadoNavegacionBandeja })
-          }
-          paginacionServidor={{
-            pagina,
-            total,
-            porPagina: POR_PAGINA,
-            onCambiarPagina: (nueva) => establecer({ pagina: nueva > 1 ? String(nueva) : null }),
-          }}
-          vacio={
-            conFiltros
-              ? {
-                  titulo: 'Sin atenciones con estos filtros',
-                  descripcion: 'Prueba con otra búsqueda o quita algún filtro.',
-                  accion: (
-                    <Boton variante="secundario" onClick={limpiarFiltros}>
-                      Limpiar filtros
-                    </Boton>
-                  ),
-                }
-              : {
-                  titulo: 'Aún no hay atenciones tercerizadas',
-                  descripcion: 'Aparecerán aquí cuando el jefe de sección registre la primera.',
-                  accion: esJefe ? (
-                    <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="secundario">
-                      Registrar atención
-                    </BotonEnlace>
-                  ) : undefined,
-                }
-          }
-          error={{
-            titulo: 'No pudimos cargar las atenciones',
-            descripcion: consulta.error?.detalle ?? '',
-            onReintentar: consulta.reintentar,
-          }}
-        />
-      )}
+          {paginaInexistente ? (
+            <EstadoVacio
+              titulo="Esta página ya no tiene atenciones"
+              descripcion="Los resultados cambiaron desde que se abrió la bandeja."
+              accion={
+                <Boton variante="secundario" onClick={() => establecer({ pagina: null })}>
+                  Ir a la primera página
+                </Boton>
+              }
+            />
+          ) : (
+            <TablaDatos
+              titulo={TITULO}
+              columnas={COLUMNAS}
+              filas={consulta.datos?.results ?? []}
+              claveFila={(a) => String(a.id)}
+              estado={estadoTabla === 'inactivo' ? 'cargando' : estadoTabla}
+              onFilaClick={(a) =>
+                navegar(rutaDetalleAtencion(a.id), { state: { volverA: search } satisfies EstadoNavegacionBandeja })
+              }
+              paginacionServidor={{
+                pagina,
+                total,
+                porPagina: POR_PAGINA,
+                onCambiarPagina: (nueva) => establecer({ pagina: nueva > 1 ? String(nueva) : null }),
+              }}
+              vacio={
+                conFiltros
+                  ? {
+                      titulo: 'Sin atenciones con estos filtros',
+                      descripcion: 'Prueba con otra búsqueda o quita algún filtro.',
+                      accion: (
+                        <Boton variante="secundario" onClick={limpiarFiltros}>
+                          Limpiar filtros
+                        </Boton>
+                      ),
+                    }
+                  : {
+                      titulo: 'Aún no hay atenciones tercerizadas',
+                      descripcion: 'Aparecerán aquí cuando el jefe de sección registre la primera.',
+                      accion: esJefe ? (
+                        <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="secundario">
+                          Registrar atención
+                        </BotonEnlace>
+                      ) : undefined,
+                    }
+              }
+              error={{
+                titulo: 'No pudimos cargar las atenciones',
+                descripcion: consulta.error?.detalle ?? '',
+                onReintentar: consulta.reintentar,
+              }}
+            />
+          )}
+        </div>
+      </Pestanas>
     </div>
   )
 }
