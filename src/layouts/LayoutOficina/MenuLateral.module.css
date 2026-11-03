@@ -39,9 +39,10 @@
   white-space: nowrap;
 }
 
-/* Botón «Comprimir menú» / «Expandir menú» (icono panel-left de Figma). */
+/* Botón «Comprimir menú» / «Expandir menú» (icono panel-left de Figma) y chevron de los grupos. */
 .alternar,
-.cerrarMovil {
+.cerrarMovil,
+.desplegar {
   display: flex;
   flex: none;
   padding: var(--space-2);
@@ -57,7 +58,8 @@
 }
 
 .alternar:hover,
-.cerrarMovil:hover {
+.cerrarMovil:hover,
+.desplegar:hover {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
@@ -101,9 +103,35 @@
   list-style: none;
 }
 
+/* Módulo con submódulos: enlace del módulo y chevron que pliega o despliega su grupo. */
+.filaModulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.filaModulo > .item {
+  flex: 1;
+  min-width: 0;
+}
+
+.desplegar {
+  padding: var(--space-1);
+}
+
+/* Grupo plegado con la página activa dentro: se marca el módulo para no perder dónde se está. */
+.filaModulo:has(+ .segundoNivel[hidden]) .item[data-modulo-activo] {
+  background: var(--color-sidebar-active-bg);
+  color: var(--color-sidebar-active-text);
+}
+
 .segundoNivel {
   margin-top: var(--space-1);
   padding-left: var(--space-4);
+}
+
+.segundoNivel[hidden] {
+  display: none;
 }
 
 /* Elemento de menú, nivel Principal. */
@@ -165,30 +193,17 @@ a.activo:hover {
 }
 
 /*
- * Menú comprimido («Elemento compacto» de Figma), solo en escritorio: iconos de primer nivel centrados.
- * Al pasar el cursor, o con el foco dentro, se despliega por encima del contenido sin moverlo.
+ * Menú comprimido («Elemento compacto» de Figma), solo en escritorio: logo e iconos de primer nivel centrados.
+ * Al pasar el cursor, o con el foco dentro, se despliega; el ancho lo da la columna del layout, así que el
+ * contenido se desplaza con el menú (LayoutOficina.module.css).
  */
 @media (min-width: 768px) {
-  .comprimido {
-    z-index: 25;
-    width: var(--web-sidebar-rail);
-    transition:
-      width var(--duracion-transicion),
-      box-shadow var(--duracion-transicion);
-  }
-
-  .comprimido:hover,
-  .comprimido:focus-within {
-    width: var(--web-sidebar-width);
-    box-shadow: var(--web-elev-3);
-  }
-
   .comprimido:not(:hover):not(:focus-within) .marca {
     justify-content: center;
     padding: var(--space-2);
   }
 
-  .comprimido:not(:hover):not(:focus-within) :is(.logo, .textosMarca, .rotulo, .texto, .pie, .segundoNivel) {
+  .comprimido:not(:hover):not(:focus-within) :is(.alternar, .textosMarca, .rotulo, .texto, .pie, .segundoNivel, .desplegar) {
     display: none;
   }
 

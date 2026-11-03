@@ -9,6 +9,17 @@
   grid-template-columns: var(--web-sidebar-rail) minmax(0, 1fr);
 }
 
+/* Menú comprimido desplegado (cursor o foco dentro): la columna se ensancha y el contenido se desplaza. */
+@media (min-width: 768px) {
+  .layout {
+    transition: grid-template-columns var(--duracion-transicion);
+  }
+
+  .menuComprimido:has(> aside:hover, > aside:focus-within) {
+    grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
+  }
+}
+
 .columna {
   display: flex;
   flex-direction: column;

@@ -6,13 +6,18 @@
  * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
  * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
  *
- * Comprimido por defecto («Menú lateral · Comprimido» y «Elemento compacto» de Figma): solo los iconos de primer
- * nivel, con el nombre como texto accesible y `title`. Al pasar el cursor, o con el foco del teclado dentro, se
- * despliega por encima del contenido sin moverlo. El botón de la marca fija el menú abierto.
+ * Comprimido por defecto («Menú lateral · Comprimido» y «Elemento compacto» de Figma): el logo arriba y solo los
+ * iconos de primer nivel, con el nombre como texto accesible y `title`. Al pasar el cursor, o con el foco del
+ * teclado dentro, se despliega y el contenido se desplaza con él (el layout ensancha su columna). El botón de la
+ * marca, visible al desplegarse, fija el menú abierto.
+ *
+ * Los módulos con submódulos llevan un chevron que pliega o despliega su grupo (`aria-expanded`). Solo el grupo
+ * del módulo activo empieza abierto; al navegar a otro módulo, se abre el suyo.
  *
  * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
  * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
  */
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
 import Icono, { type NombreIconoFigma } from '../../components/ui/Icono'
@@ -90,6 +95,21 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
   const permitidas = entradasMenu(sesion)
   const activo = activoEnMenu(pathname)
 
+  // Grupos abiertos: el del módulo activo; al cambiar de módulo se abre el nuevo (ajuste durante el render).
+  const textoActivo = activo.modulo?.texto ?? null
+  const [abiertos, setAbiertos] = useState<ReadonlySet<string>>(() => new Set(textoActivo ? [textoActivo] : []))
+  const [activoPrevio, setActivoPrevio] = useState(textoActivo)
+  if (textoActivo !== activoPrevio) {
+    setActivoPrevio(textoActivo)
+    if (textoActivo && !abiertos.has(textoActivo)) setAbiertos(new Set([...abiertos, textoActivo]))
+  }
+  function alternarGrupo(texto: string) {
+    const siguiente = new Set(abiertos)
+    if (siguiente.has(texto)) siguiente.delete(texto)
+    else siguiente.add(texto)
+    setAbiertos(siguiente)
+  }
+
   return (
     <aside className={`${estilos.lateral} ${comprimido ? estilos.comprimido : ''}`}>
       <div className={estilos.marca}>
@@ -128,18 +148,34 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
             if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
             if (!permitidas.has(modulo.clave)) return null
             const esActivo = activo.modulo === modulo
+            const abierto = abiertos.has(modulo.texto)
+            const idGrupo = `menu-grupo-${modulo.clave}`
             return (
               <li key={modulo.texto}>
-                {/* El módulo solo se marca si ninguna de sus entradas lo está: un único activo a la vista. */}
-                <Entrada
-                  texto={modulo.texto}
-                  icono={modulo.icono}
-                  ruta={modulo.ruta}
-                  activa={esActivo && !activo.hijo}
-                  moduloActivo={esActivo && Boolean(activo.hijo)}
-                />
+                <div className={estilos.filaModulo}>
+                  {/* El módulo solo se marca si ninguna de sus entradas lo está: un único activo a la vista. */}
+                  <Entrada
+                    texto={modulo.texto}
+                    icono={modulo.icono}
+                    ruta={modulo.ruta}
+                    activa={esActivo && !activo.hijo}
+                    moduloActivo={esActivo && Boolean(activo.hijo)}
+                  />
+                  {modulo.hijos && (
+                    <button
+                      type="button"
+                      className={estilos.desplegar}
+                      aria-expanded={abierto}
+                      aria-controls={idGrupo}
+                      aria-label={`${abierto ? 'Plegar' : 'Desplegar'} ${modulo.texto}`}
+                      onClick={() => alternarGrupo(modulo.texto)}
+                    >
+                      <Icono nombre={abierto ? 'chevron-down' : 'chevron-right'} tamano="base" />
+                    </button>
+                  )}
+                </div>
                 {modulo.hijos && (
-                  <ul className={`${estilos.lista} ${estilos.segundoNivel}`}>
+                  <ul id={idGrupo} className={`${estilos.lista} ${estilos.segundoNivel}`} hidden={!abierto}>
                     {modulo.hijos.map((hijo) =>
                       hijo.ruta ? (
                         <li key={hijo.texto}>
