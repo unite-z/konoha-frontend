@@ -280,7 +280,7 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
                     </span>
                     <Boton
                       id={`${d.clave}-quitar`}
-                      variante="terciario"
+                      variante="fantasma"
                       compacto
                       deshabilitado={enviando}
                       aria-label={`Quitar ${d.archivo.name}`}

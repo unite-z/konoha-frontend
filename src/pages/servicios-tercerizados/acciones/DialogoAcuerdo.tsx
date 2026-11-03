@@ -10,7 +10,7 @@ import { useState } from 'react'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import CampoFormulario, { AreaTexto } from '../../../components/ui/CampoFormulario'
 import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import Icono from '../../../components/ui/Icono'
+import GrupoOpciones from '../../../components/ui/GrupoOpciones'
 import { registrarAcuerdoUnidad } from '../../../services/api/tercerizados'
 import type { AcuerdoUnidadEntrada, Atencion } from '../../../types/tercerizados'
 import { formatearFecha } from '../../../utils/formato'
@@ -21,7 +21,6 @@ import {
   type ErroresAcuerdo,
   type RespuestaUnidad,
 } from '../../../utils/validacionTercerizados'
-import estilosNueva from '../nueva/NuevaAtencion.module.css'
 import { useOperacionAtencion } from './useOperacionAtencion'
 
 const ID_RESPUESTA = 'acuerdo-respuesta-pendiente'
@@ -100,33 +99,16 @@ function Formulario({ atencion, onCerrar, onActualizada, onExito }: Omit<Dialogo
         El acuerdo de la unidad no sustituye la conformidad del jefe de sección, no cierra la atención y no cambia su
         estado.
       </AvisoEnLinea>
-      <fieldset className={estilosNueva.opciones} disabled={enviando} aria-describedby={errores.respuesta ? 'acuerdo-respuesta-error' : undefined}>
-        <legend className={estilosNueva.leyenda}>
-          Respuesta de la unidad
-          <span className={estilosNueva.asterisco} aria-hidden="true">
-            {' '}
-            *
-          </span>
-        </legend>
-        {OPCIONES.map((opcion) => (
-          <label key={opcion.valor} className={estilosNueva.radio}>
-            <input
-              id={`acuerdo-respuesta-${opcion.valor}`}
-              type="radio"
-              name="acuerdo-respuesta"
-              checked={respuesta === opcion.valor}
-              onChange={() => setRespuesta(opcion.valor)}
-            />
-            {opcion.texto}
-          </label>
-        ))}
-        {errores.respuesta && (
-          <p id="acuerdo-respuesta-error" className={estilosNueva.error}>
-            <Icono nombre="aspa" tamano="sm" />
-            <span>{errores.respuesta}</span>
-          </p>
-        )}
-      </fieldset>
+      <GrupoOpciones
+        etiqueta="Respuesta de la unidad"
+        idBase="acuerdo-respuesta"
+        opciones={OPCIONES}
+        valor={respuesta}
+        onCambiar={setRespuesta}
+        obligatorio
+        error={errores.respuesta}
+        deshabilitado={enviando}
+      />
       {respuesta !== 'pendiente' && (
         <CampoFormulario
           id={ID_FECHA}

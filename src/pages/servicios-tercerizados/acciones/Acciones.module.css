@@ -1,7 +1,7 @@
 /* Diálogos de acciones de la ficha (MOD-05). */
 .ayuda {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
@@ -9,8 +9,8 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-1);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-error);
 }
 
@@ -28,9 +28,9 @@
 }
 
 .tituloDocumentos {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .listaDocumentos {

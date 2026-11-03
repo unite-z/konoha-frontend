@@ -7,7 +7,7 @@
  */
 import type { ReactNode } from 'react'
 import CampoFormulario from '../../components/ui/CampoFormulario'
-import Icono from '../../components/ui/Icono'
+import GrupoOpciones from '../../components/ui/GrupoOpciones'
 import SelectorBuscable from '../../components/ui/SelectorBuscable'
 import { listarUnidadesInstitucionales } from '../../services/api/tercerizados'
 import type { OrigenAtencion, UnidadInstitucional } from '../../types/tercerizados'
@@ -31,6 +31,11 @@ export interface CamposOrigenProps extends ValorCamposOrigen {
   notaUnidad?: ReactNode
 }
 
+const MODOS_UNIDAD: { valor: ValorCamposOrigen['unidadModo']; texto: string }[] = [
+  { valor: 'existente', texto: 'Unidad registrada' },
+  { valor: 'provisional', texto: 'No figura en la lista' },
+]
+
 export default function CamposOrigen({
   prefijo,
   origen,
@@ -42,61 +47,29 @@ export default function CamposOrigen({
   onCambiar,
   notaUnidad,
 }: CamposOrigenProps) {
-  const idError = `${prefijo}-origen-error`
   return (
     <>
-      <fieldset className={estilos.opciones} aria-describedby={errores.origen ? idError : undefined} disabled={deshabilitado}>
-        <legend className={estilos.leyenda}>
-          ¿Por qué surge la atención?
-          <span className={estilos.asterisco} aria-hidden="true">
-            {' '}
-            *
-          </span>
-        </legend>
-        {OPCIONES_ORIGEN.map((opcion) => (
-          <label key={opcion.valor} className={estilos.radio}>
-            <input
-              id={`${prefijo}-origen-${opcion.valor}`}
-              type="radio"
-              name={`${prefijo}-origen`}
-              value={opcion.valor}
-              checked={origen === opcion.valor}
-              onChange={() => onCambiar({ origen: opcion.valor })}
-            />
-            {opcion.texto}
-          </label>
-        ))}
-        {errores.origen && (
-          <p id={idError} className={estilos.error}>
-            <Icono nombre="aspa" tamano="sm" />
-            <span>{errores.origen}</span>
-          </p>
-        )}
-      </fieldset>
+      <GrupoOpciones
+        etiqueta="¿Por qué surge la atención?"
+        idBase={`${prefijo}-origen`}
+        opciones={OPCIONES_ORIGEN}
+        valor={origen || null}
+        onCambiar={(valor) => onCambiar({ origen: valor })}
+        obligatorio
+        error={errores.origen}
+        deshabilitado={deshabilitado}
+      />
 
       {origen === 'SolicitudUnidad' && (
         <div className={estilos.subgrupo}>
-          <fieldset className={estilos.opciones} disabled={deshabilitado}>
-            <legend className={estilos.leyenda}>Unidad solicitante</legend>
-            <label className={estilos.radio}>
-              <input
-                type="radio"
-                name={`${prefijo}-unidad-modo`}
-                checked={unidadModo === 'existente'}
-                onChange={() => onCambiar({ unidadModo: 'existente' })}
-              />
-              Unidad registrada
-            </label>
-            <label className={estilos.radio}>
-              <input
-                type="radio"
-                name={`${prefijo}-unidad-modo`}
-                checked={unidadModo === 'provisional'}
-                onChange={() => onCambiar({ unidadModo: 'provisional' })}
-              />
-              No figura en la lista
-            </label>
-          </fieldset>
+          <GrupoOpciones
+            etiqueta="Unidad solicitante"
+            idBase={`${prefijo}-unidad-modo`}
+            opciones={MODOS_UNIDAD}
+            valor={unidadModo}
+            onCambiar={(valor) => onCambiar({ unidadModo: valor })}
+            deshabilitado={deshabilitado}
+          />
           {unidadModo === 'existente' ? (
             <SelectorBuscable<UnidadInstitucional>
               id={`${prefijo}-unidad`}

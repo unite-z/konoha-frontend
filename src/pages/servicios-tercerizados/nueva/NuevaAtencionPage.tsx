@@ -268,7 +268,7 @@ export default function NuevaAtencionPage() {
               <AvisoEnLinea tono="error" titulo="El servidor rechazó algunos datos">
                 <p>Revisa: {[...new Set(errorRegistro.campos.map(nombreCampo))].join(', ')}.</p>
                 <p>
-                  <Boton variante="terciario" compacto onClick={() => irA(Math.min(...errorRegistro.campos.map(pasoDeCampo)) - 1)}>
+                  <Boton variante="fantasma" compacto onClick={() => irA(Math.min(...errorRegistro.campos.map(pasoDeCampo)) - 1)}>
                     Ir al paso con datos por revisar
                   </Boton>
                 </p>
@@ -284,11 +284,11 @@ export default function NuevaAtencionPage() {
 
       <div className={estilos.navegacion}>
         {paso === 0 ? (
-          <BotonEnlace to={RUTAS_TERCERIZADOS.atenciones} variante="terciario">
+          <BotonEnlace to={RUTAS_TERCERIZADOS.atenciones} variante="fantasma">
             Cancelar
           </BotonEnlace>
         ) : (
-          <Boton variante="terciario" onClick={() => irA(paso - 1)} deshabilitado={enviando}>
+          <Boton variante="fantasma" onClick={() => irA(paso - 1)} deshabilitado={enviando}>
             Atrás
           </Boton>
         )}

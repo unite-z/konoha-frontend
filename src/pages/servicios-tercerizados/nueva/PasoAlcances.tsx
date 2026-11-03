@@ -6,8 +6,9 @@
  */
 import { useState } from 'react'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
+import Casilla from '../../../components/ui/Casilla'
 import Boton from '../../../components/ui/Boton'
+import Estado from '../../../components/ui/Estado'
 import CampoFormulario from '../../../components/ui/CampoFormulario'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
@@ -15,6 +16,7 @@ import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Icono from '../../../components/ui/Icono'
 import Pestanas from '../../../components/ui/Pestanas'
 import Selector, { type OpcionSelector } from '../../../components/ui/Selector'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useDemora } from '../../../hooks/useDemora'
 import { listarAreasVerdes, listarEjemplares } from '../../../services/api/tercerizados'
@@ -115,16 +117,13 @@ function Buscador({
           const id = `opcion-${clave.replace(':', '-')}`
           return (
             <li key={clave} className={estilos.opcionCasilla}>
-              <input
+              <Casilla
                 id={id}
-                type="checkbox"
-                checked={elegidos.has(clave)}
-                onChange={() => onCambiar(alternarAlcance(alcances, fila))}
+                etiqueta={fila.etiqueta}
+                ayuda={fila.detalle || undefined}
+                marcada={elegidos.has(clave)}
+                onCambiar={() => onCambiar(alternarAlcance(alcances, fila))}
               />
-              <label htmlFor={id}>
-                <span>{fila.etiqueta}</span>
-                {fila.detalle && <span className={estilos.ayuda}>{fila.detalle}</span>}
-              </label>
             </li>
           )
         })}
@@ -194,17 +193,14 @@ export default function PasoAlcances({ alcances, onCambiar, errores, unidadesMed
 
   return (
     <div className={estilos.columnasAlcances}>
-      <section className={estilos.grupo} aria-labelledby="titulo-buscar-alcances">
-        <h2 id="titulo-buscar-alcances" className={estilos.tituloGrupo}>
-          Buscar y seleccionar
-        </h2>
+      <Tarjeta titulo="Buscar y seleccionar" relleno="amplio">
         <Pestanas
           etiqueta="Tipo de alcance"
           valor={pestana}
           onCambiar={(v) => setPestana(v as TipoAlcance)}
           pestanas={[
-            { valor: 'area', texto: 'Áreas verdes', extra: cuenta('area') > 0 ? <Badge tono="info" texto={String(cuenta('area'))} /> : undefined },
-            { valor: 'ejemplar', texto: 'Ejemplares', extra: cuenta('ejemplar') > 0 ? <Badge tono="info" texto={String(cuenta('ejemplar'))} /> : undefined },
+            { valor: 'area', texto: 'Áreas verdes', contador: cuenta('area') || undefined },
+            { valor: 'ejemplar', texto: 'Ejemplares', contador: cuenta('ejemplar') || undefined },
           ]}
         >
           {/* Cada pestaña conserva su búsqueda mientras se monta; la selección vive en el borrador. */}
@@ -214,12 +210,9 @@ export default function PasoAlcances({ alcances, onCambiar, errores, unidadesMed
           Elegir un área verde no incluye sus ejemplares. Si el trabajo es sobre ejemplares concretos, selecciónalos en la
           pestaña «Ejemplares».
         </AvisoEnLinea>
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.grupo} aria-labelledby="titulo-seleccionados">
-        <h2 id="titulo-seleccionados" className={estilos.tituloGrupo}>
-          Seleccionados ({formatearNumero(alcances.length)})
-        </h2>
+      <Tarjeta titulo={`Seleccionados (${formatearNumero(alcances.length)})`} relleno="amplio">
         {errores.general && (
           <p id={ID_LISTA_SELECCIONADOS} tabIndex={-1} className={estilos.error} role="alert">
             <Icono nombre="aspa" tamano="sm" />
@@ -237,12 +230,12 @@ export default function PasoAlcances({ alcances, onCambiar, errores, unidadesMed
                 <li key={a.clave} className={estilos.seleccionado}>
                   <div className={estilos.cabeceraSeleccionado}>
                     <span>
-                      <Badge tono="neutral" texto={a.tipo === 'area' ? 'Área verde' : 'Ejemplar'} />{' '}
+                      <Estado tono="neutro" texto={a.tipo === 'area' ? 'Área verde' : 'Ejemplar'} />{' '}
                       <strong>{a.etiqueta}</strong>
                       {a.detalle && <span className={estilos.ayuda}> · {a.detalle}</span>}
                     </span>
                     <Boton
-                      variante="terciario"
+                      variante="fantasma"
                       compacto
                       aria-label={`Quitar ${a.etiqueta}`}
                       onClick={() => onCambiar(alcances.filter((x) => x.clave !== a.clave))}
@@ -275,7 +268,7 @@ export default function PasoAlcances({ alcances, onCambiar, errores, unidadesMed
             })}
           </ul>
         )}
-      </section>
+      </Tarjeta>
     </div>
   )
 }

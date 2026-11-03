@@ -45,8 +45,8 @@
 }
 
 .ayuda {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
