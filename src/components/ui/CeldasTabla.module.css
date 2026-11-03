@@ -1,0 +1,39 @@
+/* Tabla · celda: tipos de texto del sistema de diseño de Figma (DESIGN.md, 4.2). */
+.principal {
+  color: var(--color-text-primary);
+}
+
+.secundario {
+  color: var(--color-text-muted);
+}
+
+.deshabilitado {
+  color: var(--color-text-disabled);
+}
+
+.aviso {
+  color: var(--color-warning);
+}
+
+.destacado {
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.dobleLinea {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalle,
+.codigo {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.detalle {
+  color: var(--color-text-muted);
+}
+
+.codigo {
+  color: var(--color-action-text);
+}

@@ -1,0 +1,55 @@
+/* Paginación: sistema de diseño de Figma (DESIGN.md, 4.2). */
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.resumen {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.paginas {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.numero {
+  min-width: var(--web-control-compact);
+  min-height: var(--web-control-compact);
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.numero:hover {
+  background: var(--color-bg-hover);
+}
+
+.actual,
+.actual:hover {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-surface);
+  cursor: default;
+}

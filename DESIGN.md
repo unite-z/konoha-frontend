@@ -136,9 +136,9 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 
 | Figma | Código | Variantes y propiedades | Cuándo sí | Cuándo no |
 |---|---|---|---|---|
-| Tabla · celda | dentro de `TablaDatos`; tipos de celda pendientes, fase 1 | Tipo: Texto, Texto secundario, Texto deshabilitado, Texto aviso, Texto destacado, Doble línea, Doble línea con código, Estado, Acción, Entrada, Avance | cada celda de una tabla, eligiendo el tipo por el dato | maquetar contenido que no es tabular |
-| Tabla · celda de cabecera | dentro de `TablaDatos` | Con orden | cabecera de columna en Cabecera tabla (mayúsculas) | títulos de sección |
-| Paginación | dentro de `TablaDatos`; componente propio pendiente, fase 1 | Estado: Intermedia, Primera, Última | listas de más de 25 filas | listas cortas |
+| Tabla · celda | `CeldaTexto` (`tono`: `principal`, `secundario`, `deshabilitado`, `aviso`; `destacado`), `CeldaDobleLinea` (`codigo`) en el `render` de cada columna; Estado → `Estado`, Acción → `Boton` fantasma compacto, Avance → `BarraAvance`, Entrada → Campo compacto (AV-338) | los 11 tipos de Figma | cada celda de una tabla, eligiendo el tipo por el dato | maquetar contenido que no es tabular |
+| Tabla · celda de cabecera | dentro de `TablaDatos` | Cabecera tabla (11 px, mayúsculas) · `ordenable` | cabecera de columna en Cabecera tabla (mayúsculas) | títulos de sección |
+| Paginación | `Paginacion` (también dentro de `TablaDatos`) | «Mostrando 11 a 20 de 128» · Anterior, tres números y Siguiente · `aria-current` en la actual | listas de más de 25 filas | listas cortas |
 
 Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro en «Doble línea con código» y en `acento/texto` si enlaza. Sin valor: la constante `SIN_VALOR` de `utils/formato.ts`, en texto deshabilitado.
 
