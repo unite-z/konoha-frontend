@@ -1,9 +1,9 @@
 /**
- * Layout de la aplicación web de oficina (Guía Web, sección 3).
- * Layout temporal del MOD-06: se sustituirá por el layout común cuando el MOD-01 lo publique.
+ * Layout de la aplicación web de oficina, según el sistema de diseño de Figma (DESIGN.md, 4.3 y 5).
  *
- * Zonas: menú lateral de 256px (izquierda, a toda la altura), cabecera de 64px y contenido con margen de
- * 32px y ancho máximo de 1440px. Incluye el enlace «Saltar al contenido».
+ * Zonas: menú lateral de 256px (izquierda, a toda la altura), cabecera de 52px con las migas y contenido con
+ * margen de 32px y ancho máximo de 1440px. El contenido empieza por el título de la página (h1, estilo
+ * Título página), que cada página declara con `usePaginaActual`. Incluye el enlace «Saltar al contenido».
  */
 import { useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
@@ -26,8 +26,9 @@ export default function LayoutOficina() {
       <div className={`${estilos.layout} ${enCampo ? estilos.campo : ''}`}>
         <MenuLateral />
         <div className={estilos.columna}>
-          <Cabecera titulo={pagina.titulo} migas={pagina.migas} />
+          <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
+            {pagina.titulo && <h1 className={estilos.titulo}>{pagina.titulo}</h1>}
             <Outlet />
           </main>
         </div>
