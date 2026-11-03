@@ -21,11 +21,11 @@
   content: '';
   width: var(--space-8);
   height: 2px;
-  background: var(--neutral-300);
+  background: var(--color-border-strong);
 }
 
 .completado:not(:last-child)::after {
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 
 .boton {
@@ -56,23 +56,23 @@ button.boton:hover .nombre {
   justify-content: center;
   width: var(--marca);
   height: var(--marca);
-  border: 2px solid var(--neutral-500);
+  border: 2px solid var(--color-border-strong);
   border-radius: var(--radius-full);
   background: var(--color-bg-surface);
-  color: var(--neutral-700);
+  color: var(--color-text-muted);
   font-size: var(--type-label-md-size);
   font-weight: 600;
 }
 
 .completado .marca {
-  border-color: var(--green-700);
-  background: var(--green-700);
+  border-color: var(--color-action-primary);
+  background: var(--color-action-primary);
   color: var(--color-bg-surface);
 }
 
 .actual .marca {
-  border-color: var(--green-700);
-  color: var(--green-900);
+  border-color: var(--color-action-primary);
+  color: var(--color-action-text);
 }
 
 .nombre {

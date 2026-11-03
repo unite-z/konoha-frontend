@@ -19,6 +19,6 @@ Tokens y estilos globales. Aspecto y equivalencia con Figma: [`DESIGN.md`](../..
 
 **Ejemplo:** `--color-action-primary` es «acento/default» en Figma. Cambiar su valor aquí cambia el fondo de todos los botones primarios. Por eso no se escribe `--green-700` en un `.module.css`: ese color no cambiaría.
 
-**Estado:** los valores aún son los de la guía antigua (verde, Inter). La fase 0 del plan los cambia a los de Figma.
+**Estado:** valores de Figma y fuente Geist desde AV-331. Los primitivos `--green-*` y `--neutral-*` siguen definidos hasta que AV-332 quite sus últimos usos en páginas.
 
 **Destino:** `design-system/`.

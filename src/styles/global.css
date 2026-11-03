@@ -47,7 +47,7 @@ textarea {
 }
 
 a {
-  color: var(--green-700);
+  color: var(--color-action-text);
 }
 
 /* Foco visible en todo elemento interactivo (Guía Web 8). */

@@ -20,7 +20,7 @@
   font-size: var(--type-label-md-size);
   line-height: var(--type-label-md-line);
   font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  color: var(--color-text-muted);
 }
 
 .valor {
@@ -50,7 +50,7 @@
   font-size: var(--type-label-md-size);
   line-height: var(--type-label-md-line);
   font-weight: var(--type-label-md-weight);
-  color: var(--green-700);
+  color: var(--color-action-text);
   text-decoration: none;
 }
 .enlace:hover {

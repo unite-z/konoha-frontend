@@ -11,7 +11,7 @@
 .relleno {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 
 .alerta {
