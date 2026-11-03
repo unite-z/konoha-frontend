@@ -72,7 +72,7 @@ No hay `--space-5`: no se usa.
 
 | Figma | Token | Valor | Se usa en |
 |---|---|---|---|
-| radio/sm | `--radius-sm` | 6 (hoy 4 en código) | Estado, chips, celdas de calendario |
+| radio/sm | `--radius-sm` | 6 | Estado, chips, celdas de calendario |
 | radio/md | `--radius-md` | 8 | Botón, Campo, Desplegable, Elemento de menú, Pestaña, celda de tabla con entrada |
 | radio/lg | `--radius-lg` | 12 | Tarjeta, Indicador, Diálogo, Toast, tabla completa, panel lateral |
 | radio/full | `--radius-full` | 999 | avatar, punto de estado, indicador de carga |
