@@ -1,30 +1,47 @@
+/*
+ * Tokens del sistema de diseño de Áreas Verdes (Figma KXRcYHPgVOkPZskPCFPoQj, página «Sistema de diseño · Áreas Verdes»).
+ * Los nombres son los «nombres de código» de las variables de Figma: cambiar un valor aquí lo cambia en toda la aplicación.
+ * En componentes y páginas, solo tokens semánticos (--color-*, --space-*, --radius-*, --type-*). Ver DESIGN.md.
+ */
+
+/* AV · Color, modo Claro */
 :root {
-  --color-bg-page: #F9FAFB;
-  --color-bg-surface: #FFFFFF;
-  --color-bg-subtle: #F3F4F6;
-  --color-text-primary: #1F2937;
-  --color-text-secondary: #374151;
-  --color-text-muted: #6B7280;
-  --color-border-default: #D1D5DB;
-  --color-action-primary: #2E7D32;
-  --color-action-primary-hover: #1B5E20;
-  --color-info: #1565C0;
-  --color-success: #2E7D32;
-  --color-warning: #9A6700;
-  --color-error: #B42318;
-  --map-uso-1: #1B5E20;
-  --map-uso-2: #1565C0;
-  --map-uso-3: #9A6700;
-  --map-uso-4: #6A1B9A;
-  --map-uso-5: #00838F;
-  --map-uso-6: #AD3A16;
-  --map-grid-color: #E7EEE9;
-  --map-outline-color: #C7D5CC;
-  --map-label-color: #84928A;
-  --map-label-strong-color: #37443D;
-  --map-label-outline-width: 3px;
-  --map-swatch-outline: color-mix(in srgb, var(--neutral-950) 55%, transparent);
-  --font-family-base: Inter, system-ui, sans-serif;
+  --color-bg-page: #f8fafc; /* fondo/app */
+  --color-bg-surface: #ffffff; /* fondo/panel */
+  --color-bg-subtle: #f1f5f9; /* fondo/sutil */
+  --color-bg-hover: #f1f5f9; /* fondo/hover */
+  --color-text-primary: #0f172a; /* texto/principal */
+  --color-text-muted: #64748b; /* texto/secundario */
+  --color-text-disabled: #94a3b8; /* texto/deshabilitado */
+  --color-text-on-action: #ffffff; /* texto/sobre-acento */
+  --color-border-default: #e2e8f0; /* borde/default */
+  --color-border-strong: #cbd5e1; /* borde/fuerte */
+  --color-action-primary: #2563eb; /* acento/default */
+  --color-action-primary-hover: #1d4ed8; /* acento/hover */
+  --color-action-text: #2563eb; /* acento/texto */
+  --color-action-subtle: #eff6ff; /* acento/sutil */
+  --color-sidebar-active-bg: #dbeafe; /* menu/activo */
+  --color-sidebar-active-text: #1d4ed8; /* menu/texto-activo */
+  --web-focus-ring-color: #2563eb; /* foco */
+  --color-info: #1d4ed8; /* estado/info/texto */
+  --color-info-bg: #eff6ff; /* estado/info/fondo */
+  --web-info-border: #bfdbfe; /* estado/info/borde */
+  --color-success: #15803d; /* estado/exito/texto */
+  --color-success-bg: #f0fdf4; /* estado/exito/fondo */
+  --web-success-border: #bbf7d0; /* estado/exito/borde */
+  --color-warning: #b45309; /* estado/aviso/texto */
+  --color-warning-bg: #fffbeb; /* estado/aviso/fondo */
+  --web-warning-border: #fde68a; /* estado/aviso/borde */
+  --color-error: #b91c1c; /* estado/error/texto */
+  --color-error-bg: #fef2f2; /* estado/error/fondo */
+  --web-error-border: #fecaca; /* estado/error/borde */
+  --web-error-hover: #991b1b; /* hover del botón destructivo (sin variable en Figma) */
+  --web-scrim: rgba(15, 23, 42, 0.5); /* velo de diálogos y paneles */
+  color-scheme: light;
+}
+
+/* AV · Dimensiones */
+:root {
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -32,12 +49,100 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
-  --radius-sm: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-full: 999px;
 }
 
-/* Tabla 16 de la Guía Web: tokens reutilizados no incluidos en el bloque anterior */
+/* Sombras: AV/Sombra sm y AV/Sombra lg */
+:root {
+  --web-elev-1: 0 1px 2px rgba(15, 23, 42, 0.06); /* AV/Sombra sm */
+  --web-elev-2: 0 4px 12px rgba(15, 23, 42, 0.1);
+  --web-elev-3: 0 12px 32px rgba(15, 23, 42, 0.14); /* AV/Sombra lg */
+}
+
+/* Estilos de texto AV/* (Geist). El espaciado de letra de Figma va en porcentaje: aquí, en em. */
+:root {
+  --font-family-base: Geist, system-ui, sans-serif;
+  --type-titulo-pagina-size: 24px;
+  --type-titulo-pagina-line: 32px;
+  --type-titulo-pagina-weight: 600;
+  --type-titulo-pagina-tracking: -0.015em;
+  --type-titulo-seccion-size: 18px;
+  --type-titulo-seccion-line: 28px;
+  --type-titulo-seccion-weight: 600;
+  --type-titulo-seccion-tracking: -0.01em;
+  --type-titulo-tarjeta-size: 15px;
+  --type-titulo-tarjeta-line: 22px;
+  --type-titulo-tarjeta-weight: 600;
+  --type-cifra-size: 30px;
+  --type-cifra-line: 36px;
+  --type-cifra-weight: 600;
+  --type-cifra-tracking: -0.015em;
+  --type-cuerpo-size: 14px;
+  --type-cuerpo-line: 20px;
+  --type-cuerpo-weight: 400;
+  --type-cuerpo-medio-weight: 500;
+  --type-pequeno-size: 13px;
+  --type-pequeno-line: 18px;
+  --type-pequeno-weight: 400;
+  --type-pequeno-medio-weight: 500;
+  --type-leyenda-size: 12px;
+  --type-leyenda-line: 16px;
+  --type-leyenda-weight: 400;
+  --type-etiqueta-size: 12px;
+  --type-etiqueta-line: 16px;
+  --type-etiqueta-weight: 500;
+  --type-cabecera-tabla-size: 11px;
+  --type-cabecera-tabla-line: 16px;
+  --type-cabecera-tabla-weight: 500;
+  --type-cabecera-tabla-tracking: 0.06em;
+}
+
+/*
+ * Nombres de la Guía Web antigua, como alias de los anteriores mientras se migra (AV-330).
+ * No se usan en código nuevo.
+ */
+:root {
+  --color-text-secondary: var(--color-text-primary); /* sin equivalente en Figma (D5, pendiente de diseño) */
+  --color-neutral-text: var(--color-text-muted);
+  --color-neutral-bg: var(--color-bg-subtle);
+  --web-border-subtle: var(--color-border-default);
+  --web-warning-text: var(--color-warning);
+  --type-display-sm-size: var(--type-cifra-size);
+  --type-display-sm-line: var(--type-cifra-line);
+  --type-display-sm-weight: var(--type-cifra-weight);
+  --type-heading-lg-size: var(--type-titulo-pagina-size);
+  --type-heading-lg-line: var(--type-titulo-pagina-line);
+  --type-heading-lg-weight: var(--type-titulo-pagina-weight);
+  --type-heading-md-size: var(--type-titulo-seccion-size);
+  --type-heading-md-line: var(--type-titulo-seccion-line);
+  --type-heading-md-weight: var(--type-titulo-seccion-weight);
+  --type-heading-sm-size: var(--type-titulo-tarjeta-size);
+  --type-heading-sm-line: var(--type-titulo-tarjeta-line);
+  --type-heading-sm-weight: var(--type-titulo-tarjeta-weight);
+  --type-body-lg-size: 16px; /* sin equivalente en Figma */
+  --type-body-lg-line: 24px;
+  --type-body-lg-weight: 400;
+  --type-body-md-size: var(--type-cuerpo-size);
+  --type-body-md-line: var(--type-cuerpo-line);
+  --type-body-md-weight: var(--type-cuerpo-weight);
+  --type-body-sm-size: var(--type-leyenda-size);
+  --type-body-sm-line: var(--type-leyenda-line);
+  --type-body-sm-weight: var(--type-leyenda-weight);
+  --type-label-md-size: var(--type-cuerpo-size);
+  --type-label-md-line: var(--type-cuerpo-line);
+  --type-label-md-weight: var(--type-cuerpo-medio-weight);
+  --type-label-sm-size: var(--type-etiqueta-size);
+  --type-label-sm-line: var(--type-etiqueta-line);
+  --type-label-sm-weight: var(--type-etiqueta-weight);
+}
+
+/*
+ * Primitivos de la Guía Web antigua. Siguen aquí solo porque algunas páginas aún los usan;
+ * AV-332 los sustituye por tokens semánticos y después se borran. No se usan en código nuevo.
+ */
 :root {
   --green-900: #1B5E20;
   --green-700: #2E7D32;
@@ -49,29 +154,10 @@
   --neutral-500: #6B7280;
   --neutral-300: #D1D5DB;
   --neutral-50: #F9FAFB;
-  --color-info-bg: #EAF2FD;
-  --color-success-bg: #E8F5E9;
-  --color-warning-bg: #FFF4CC;
-  --color-error-bg: #FDECEC;
-  --color-neutral-text: #5F6B65;
-  --color-neutral-bg: #F3F4F6;
-  --radius-full: 999px;
 }
 
-/* Tabla 17 de la Guía Web: EXTENSIONES PROPUESTAS, pendientes de aprobación (Maria Fernanda Ramos) */
+/* Medidas de layout sin variable en Figma */
 :root {
-  --web-warning-text: #8A5D00;
-  --web-focus-ring-color: #1565C0;
-  --web-error-hover: #8F1C13;
-  --web-border-subtle: #E5E7EB;
-  --web-info-border: #B7D1F2;
-  --web-success-border: #B5DCB8;
-  --web-warning-border: #E8D48A;
-  --web-error-border: #F3B8B3;
-  --web-scrim: rgba(17, 24, 39, 0.50);
-  --web-elev-1: 0 1px 2px rgba(17, 24, 39, 0.08);
-  --web-elev-2: 0 4px 12px rgba(17, 24, 39, 0.12);
-  --web-elev-3: 0 12px 32px rgba(17, 24, 39, 0.20);
   --web-header-height: 64px;
   --web-sidebar-width: 256px;
   --web-sidebar-rail: 72px;
@@ -86,34 +172,56 @@
   --web-map-panel-width: 320px; /* panel de capas: 300 a 320 px */
 }
 
-/* Tabla 16 de la Guía Web: escala tipográfica (Inter) */
+/* Colores de los mapas (maplibre). Fuera del sistema de diseño de Figma. */
 :root {
-  --type-display-sm-size: 30px;
-  --type-display-sm-line: 38px;
-  --type-display-sm-weight: 600;
-  --type-heading-lg-size: 24px;
-  --type-heading-lg-line: 32px;
-  --type-heading-lg-weight: 600;
-  --type-heading-md-size: 20px;
-  --type-heading-md-line: 28px;
-  --type-heading-md-weight: 600;
-  --type-heading-sm-size: 16px;
-  --type-heading-sm-line: 24px;
-  --type-heading-sm-weight: 600;
-  --type-body-lg-size: 16px;
-  --type-body-lg-line: 24px;
-  --type-body-lg-weight: 400;
-  --type-body-md-size: 14px;
-  --type-body-md-line: 20px;
-  --type-body-md-weight: 400;
-  --type-body-sm-size: 12px;
-  --type-body-sm-line: 18px;
-  --type-body-sm-weight: 400;
-  --type-label-md-size: 14px;
-  --type-label-md-line: 20px;
-  --type-label-md-weight: 500;
-  /* Extensión propuesta (texto de insignias y chips) */
-  --type-label-sm-size: 12px;
-  --type-label-sm-line: 16px;
-  --type-label-sm-weight: 500;
+  --map-uso-1: #1B5E20;
+  --map-uso-2: #1565C0;
+  --map-uso-3: #9A6700;
+  --map-uso-4: #6A1B9A;
+  --map-uso-5: #00838F;
+  --map-uso-6: #AD3A16;
+  --map-grid-color: #E7EEE9;
+  --map-outline-color: #C7D5CC;
+  --map-label-color: #84928A;
+  --map-label-strong-color: #37443D;
+  --map-label-outline-width: 3px;
+  --map-swatch-outline: color-mix(in srgb, var(--neutral-950) 55%, transparent);
+}
+
+/*
+ * AV · Color, modo Oscuro. Preparado, sin selector visible para el usuario (D6):
+ * se prueba poniendo data-tema="oscuro" en <html>.
+ */
+:root[data-tema='oscuro'] {
+  --color-bg-page: #020617;
+  --color-bg-surface: #0f172a;
+  --color-bg-subtle: #1e293b;
+  --color-bg-hover: #1e293b;
+  --color-text-primary: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-disabled: #475569;
+  --color-text-on-action: #ffffff;
+  --color-border-default: #1e293b;
+  --color-border-strong: #334155;
+  --color-action-primary: #2563eb;
+  --color-action-primary-hover: #1d4ed8;
+  --color-action-text: #60a5fa;
+  --color-action-subtle: #172a4f;
+  --color-sidebar-active-bg: #172a4f;
+  --color-sidebar-active-text: #60a5fa;
+  --web-focus-ring-color: #60a5fa;
+  --color-info: #60a5fa;
+  --color-info-bg: #1c2e4b;
+  --web-info-border: #1e40af;
+  --color-success: #4ade80;
+  --color-success-bg: #173336;
+  --web-success-border: #166534;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #302f29;
+  --web-warning-border: #92400e;
+  --color-error: #f87171;
+  --color-error-bg: #342535;
+  --web-error-border: #991b1b;
+  --web-error-hover: #7f1d1d;
+  color-scheme: dark;
 }

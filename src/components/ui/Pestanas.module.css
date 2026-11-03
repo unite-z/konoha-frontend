@@ -35,8 +35,8 @@
 }
 
 .activa {
-  border-bottom-color: var(--green-700);
-  color: var(--green-900);
+  border-bottom-color: var(--color-action-primary);
+  color: var(--color-action-text);
   font-weight: 600;
 }
 

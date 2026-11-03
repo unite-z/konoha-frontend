@@ -5,17 +5,17 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-6) var(--space-4);
-  border: 2px dashed var(--neutral-300);
+  border: 2px dashed var(--color-border-strong);
   border-radius: var(--radius-md);
-  background: var(--neutral-50);
+  background: var(--color-bg-page);
   color: var(--color-text-secondary);
   text-align: center;
   transition: border-color var(--duracion-transicion), background-color var(--duracion-transicion);
 }
 
 .encima {
-  border-color: var(--green-700);
-  background: var(--green-50);
+  border-color: var(--color-action-primary);
+  background: var(--color-action-subtle);
 }
 
 .conError {

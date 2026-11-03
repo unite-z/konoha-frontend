@@ -40,9 +40,9 @@
 
 .activo,
 .activo:hover {
-  background: var(--green-100);
-  border-color: var(--green-700);
-  color: var(--green-900);
+  background: var(--color-action-subtle);
+  border-color: var(--color-action-primary);
+  color: var(--color-action-text);
 }
 
 .quitar {
@@ -52,7 +52,7 @@
   border: 0;
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--green-900);
+  color: var(--color-action-text);
   cursor: pointer;
 }
 .quitar:hover {
@@ -63,7 +63,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--green-700);
+  color: var(--color-action-text);
   font-size: var(--type-label-md-size);
   line-height: var(--type-label-md-line);
   font-weight: var(--type-label-md-weight);

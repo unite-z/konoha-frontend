@@ -9,7 +9,7 @@
   min-height: var(--web-header-height);
   padding: var(--space-2) var(--space-8);
   background: var(--color-bg-surface);
-  border-bottom: 1px solid var(--neutral-300);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .titulos {
@@ -68,7 +68,7 @@
   width: min(var(--busqueda-ancho), 20vw);
   min-height: var(--busqueda-alto);
   padding: 0 var(--space-3);
-  border: 1px solid var(--neutral-300);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-subtle);
   font-size: var(--type-body-md-size);
@@ -83,7 +83,7 @@
   align-items: center;
   gap: var(--space-2);
   padding-left: var(--space-6);
-  border-left: 1px solid var(--neutral-300);
+  border-left: 1px solid var(--color-border-default);
 }
 
 .iniciales {
@@ -93,8 +93,8 @@
   width: var(--web-control-compact);
   height: var(--web-control-compact);
   border-radius: var(--radius-full);
-  background: var(--green-100);
-  color: var(--green-900);
+  background: var(--color-action-subtle);
+  color: var(--color-action-text);
   font-size: var(--type-label-sm-size);
   font-weight: 600;
 }

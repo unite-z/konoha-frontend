@@ -34,7 +34,7 @@
 
 .primario {
   background: var(--color-action-primary);
-  color: var(--color-bg-surface);
+  color: var(--color-text-on-action);
 }
 .primario:hover {
   background: var(--color-action-primary-hover);
@@ -42,16 +42,16 @@
 
 .secundario {
   background: var(--color-bg-surface);
-  border-color: var(--green-700);
-  color: var(--green-700);
+  border-color: var(--color-action-primary);
+  color: var(--color-action-text);
 }
 .secundario:hover {
-  background: var(--green-50);
+  background: var(--color-action-subtle);
 }
 
 .terciario {
   background: transparent;
-  color: var(--green-700);
+  color: var(--color-action-text);
 }
 .terciario:hover {
   background: var(--color-bg-subtle);
@@ -59,7 +59,7 @@
 
 .destructivo {
   background: var(--color-error);
-  color: var(--color-bg-surface);
+  color: var(--color-text-on-action);
 }
 .destructivo:hover {
   background: var(--web-error-hover);
@@ -69,8 +69,8 @@
 .boton[data-deshabilitado],
 .boton[data-deshabilitado]:hover {
   background: var(--color-bg-subtle);
-  border-color: var(--neutral-300);
-  color: var(--neutral-500);
+  border-color: var(--color-border-default);
+  color: var(--color-text-disabled);
   cursor: not-allowed;
 }
 
