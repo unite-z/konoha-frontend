@@ -32,6 +32,13 @@ export interface GrupoOpcionesProps<V extends string> {
   error?: string
   /** Oculta el legend visualmente (sigue disponible para lectores de pantalla). */
   etiquetaOculta?: boolean
+  /**
+   * Base de los ids: cada radio es `${idBase}-${valor}` y el error `${idBase}-error`, para enlazarlos desde un
+   * resumen de errores. Por defecto, una propia.
+   */
+  idBase?: string
+  /** Deshabilita todo el grupo (por ejemplo, mientras se envía el formulario). */
+  deshabilitado?: boolean
 }
 
 export default function GrupoOpciones<V extends string>({
@@ -43,8 +50,11 @@ export default function GrupoOpciones<V extends string>({
   obligatorio = false,
   error,
   etiquetaOculta = false,
+  idBase,
+  deshabilitado = false,
 }: GrupoOpcionesProps<V>) {
-  const base = useId()
+  const idPropio = useId()
+  const base = idBase ?? idPropio
   const nombreGrupo = nombre ?? base
   const idError = `${base}-error`
   const tarjeta = opciones.some((opcion) => opcion.descripcion)
@@ -52,6 +62,7 @@ export default function GrupoOpciones<V extends string>({
   return (
     <fieldset
       className={estilos.grupo}
+      disabled={deshabilitado}
       aria-required={obligatorio || undefined}
       aria-invalid={error ? true : undefined}
       aria-describedby={error ? idError : undefined}
@@ -73,7 +84,11 @@ export default function GrupoOpciones<V extends string>({
             <label
               key={opcion.valor}
               htmlFor={id}
-              className={[estilos.opcion, elegida && estilos.elegida, opcion.deshabilitada && estilos.deshabilitada]
+              className={[
+                estilos.opcion,
+                elegida && estilos.elegida,
+                (opcion.deshabilitada || deshabilitado) && estilos.deshabilitada,
+              ]
                 .filter(Boolean)
                 .join(' ')}
             >

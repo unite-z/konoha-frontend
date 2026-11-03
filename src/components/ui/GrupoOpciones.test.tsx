@@ -66,4 +66,19 @@ describe('GrupoOpciones', () => {
     expect(grupo.getAttribute('aria-invalid')).toBe('true')
     expect(document.getElementById(grupo.getAttribute('aria-describedby') ?? '')?.textContent).toBe('Elige un rol.')
   })
+
+  it('con idBase, los radios y el error tienen ids estables para el resumen de errores', () => {
+    render(
+      <GrupoOpciones etiqueta="Origen" opciones={OPCIONES} valor={null} onCambiar={vi.fn()} idBase="nueva-origen" error="Elige el origen." />,
+    )
+
+    expect(document.getElementById('nueva-origen-demanda')?.getAttribute('type')).toBe('radio')
+    expect(document.getElementById('nueva-origen-error')?.textContent).toBe('Elige el origen.')
+  })
+
+  it('deshabilitado, ningún radio se puede elegir', () => {
+    render(<GrupoOpciones etiqueta="Origen" opciones={OPCIONES} valor={null} onCambiar={vi.fn()} deshabilitado />)
+
+    for (const radio of screen.getAllByRole('radio')) expect((radio as HTMLInputElement).matches(':disabled')).toBe(true)
+  })
 })

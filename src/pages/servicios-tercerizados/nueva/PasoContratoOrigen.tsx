@@ -1,8 +1,10 @@
 // RF-SER-003 y RF-SER-011 · Paso 1: contrato, descripción y origen
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
+import Casilla from '../../../components/ui/Casilla'
 import { AreaTexto } from '../../../components/ui/CampoFormulario'
 import ListaDescripcion from '../../../components/ui/ListaDescripcion'
 import SelectorBuscable from '../../../components/ui/SelectorBuscable'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import { listarContratos } from '../../../services/api/tercerizados'
 import type { Contrato, TipoServicio } from '../../../types/tercerizados'
 import { formatearFecha } from '../../../utils/formato'
@@ -28,10 +30,7 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
 
   return (
     <div className={estilos.paso}>
-      <section className={estilos.grupo} aria-labelledby="titulo-contrato">
-        <h2 id="titulo-contrato" className={estilos.tituloGrupo}>
-          Contrato
-        </h2>
+      <Tarjeta titulo="Contrato" relleno="amplio">
         <SelectorBuscable<Contrato>
           id={IDS_PASO1.contrato}
           etiqueta="Contrato vigente"
@@ -57,31 +56,21 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
             ]}
           />
         )}
-        <div className={estilos.casilla}>
-          <input
-            id="nueva-riesgo"
-            type="checkbox"
-            checked={borrador.es_riesgo || riesgoCatalogo}
-            disabled={riesgoCatalogo}
-            aria-describedby="nueva-riesgo-ayuda"
-            onChange={(e) => cambiar({ es_riesgo: e.target.checked })}
-          />
-          <div>
-            <label htmlFor="nueva-riesgo">Atención de riesgo</label>
-            <p id="nueva-riesgo-ayuda" className={estilos.ayuda}>
-              {riesgoCatalogo
-                ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo; la marca no se puede quitar.`
-                : 'Márcala si el trabajo implica riesgo para las personas.'}{' '}
-              El inicio de una atención de riesgo queda bloqueado hasta integrar la revisión de seguridad.
-            </p>
-          </div>
-        </div>
-      </section>
+        <Casilla
+          id="nueva-riesgo"
+          etiqueta="Atención de riesgo"
+          marcada={borrador.es_riesgo || riesgoCatalogo}
+          disabled={riesgoCatalogo}
+          onCambiar={(marcada) => cambiar({ es_riesgo: marcada })}
+          ayuda={`${
+            riesgoCatalogo
+              ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo; la marca no se puede quitar.`
+              : 'Márcala si el trabajo implica riesgo para las personas.'
+          } El inicio de una atención de riesgo queda bloqueado hasta integrar la revisión de seguridad.`}
+        />
+      </Tarjeta>
 
-      <section className={estilos.grupo} aria-labelledby="titulo-requerimiento">
-        <h2 id="titulo-requerimiento" className={estilos.tituloGrupo}>
-          Requerimiento
-        </h2>
+      <Tarjeta titulo="Requerimiento" relleno="amplio">
         <AreaTexto
           id={IDS_PASO1.descripcion}
           etiqueta="Descripción del trabajo"
@@ -92,12 +81,9 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
           onChange={(e) => cambiar({ descripcion: e.target.value })}
           error={errores.descripcion}
         />
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.grupo} aria-labelledby="titulo-origen">
-        <h2 id="titulo-origen" className={estilos.tituloGrupo}>
-          Origen
-        </h2>
+      <Tarjeta titulo="Origen" relleno="amplio">
         <CamposOrigen
           prefijo="nueva"
           origen={borrador.origen}
@@ -113,7 +99,7 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
             </AvisoEnLinea>
           }
         />
-      </section>
+      </Tarjeta>
     </div>
   )
 }
