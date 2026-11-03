@@ -65,8 +65,8 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
 
 export interface IconoProps {
   nombre: NombreIcono
-  /** `md`: 20px (por defecto); `sm`: 13px, para insignias. */
-  tamano?: 'md' | 'sm'
+  /** `md`: 20px (por defecto); `base`: 16px, el de Figma (botones y menú); `sm`: 13px, para insignias. */
+  tamano?: 'md' | 'base' | 'sm'
   /** Texto accesible. Solo si el icono va sin texto visible al lado. */
   titulo?: string
   className?: string

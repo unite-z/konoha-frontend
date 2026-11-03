@@ -40,6 +40,28 @@ describe('Boton', () => {
     expect(alPulsar).toHaveBeenCalledTimes(2)
   })
 
+  it('«terciario» es el nombre antiguo de «fantasma»: pinta el mismo botón', () => {
+    render(
+      <>
+        <Boton variante="fantasma">Ver detalle</Boton>
+        <Boton variante="terciario">Ver historial</Boton>
+      </>,
+    )
+
+    const fantasma = screen.getByRole('button', { name: 'Ver detalle' })
+    const terciario = screen.getByRole('button', { name: 'Ver historial' })
+    expect(terciario.className).toBe(fantasma.className)
+  })
+
+  it('el icono es decorativo: no cambia el nombre accesible', () => {
+    render(<Boton icono="documento">Exportar informe</Boton>)
+
+    const boton = screen.getByRole('button', { name: 'Exportar informe' })
+    const icono = boton.querySelector('svg')
+    expect(icono).not.toBeNull()
+    expect(icono?.getAttribute('aria-hidden')).toBe('true')
+  })
+
   describe('deshabilitado', () => {
     it('sigue recibiendo el foco, se anuncia como deshabilitado y no ejecuta la acción', async () => {
       const usuario = userEvent.setup()
@@ -105,5 +127,18 @@ describe('BotonEnlace', () => {
     const enlace = screen.getByRole('link', { name: 'Volver a la bandeja' })
     expect(enlace.getAttribute('href')).toBe('/servicios-tercerizados/atenciones')
     expect(screen.queryByRole('button')).toBeNull()
+  })
+
+  it('por defecto es fantasma', () => {
+    render(
+      <MemoryRouter>
+        <BotonEnlace to="/a">Volver</BotonEnlace>
+        <Boton variante="fantasma">Comparar</Boton>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('link', { name: 'Volver' }).className).toBe(
+      screen.getByRole('button', { name: 'Comparar' }).className,
+    )
   })
 })

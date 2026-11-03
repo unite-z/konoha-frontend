@@ -165,6 +165,7 @@
   --web-row-height: 48px;
   --web-row-height-compact: 40px;
   --web-table-head: 40px;
+  --web-control: 36px; /* alto de Botón y Campo en Figma */
   --web-control-compact: 32px;
   /* Mapa con capas (Guía Web 5.8) */
   --web-map-marker: 14px; /* atención tercerizada: cuadrado de 14 px */

@@ -112,8 +112,8 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 
 | Figma | Código | Variantes y propiedades | Cuándo sí | Cuándo no |
 |---|---|---|---|---|
-| Botón | `Boton`, `BotonEnlace` | Tipo: Primario, Secundario, Fantasma (hoy `terciario`), Destructivo · Estado: Normal, Deshabilitado · Texto, Con icono, Icono. En código además `compacto` y `cargando` | cualquier acción; `BotonEnlace` si navega | más de un Primario por pantalla o paso; texto genérico («Aceptar», «OK») |
-| Estado | `Badge` (se renombrará a Estado) | Tono: Neutro, Info, Éxito, Aviso, Error, Acento · Texto · Con punto | estado de un registro en tabla, ficha o cabecera | como botón o filtro (para eso, Pestaña u Opción) |
+| Botón | `Boton`, `BotonEnlace` | `variante`: `primario`, `secundario`, `fantasma`, `destructivo` (`terciario` es el nombre antiguo de `fantasma`) · `deshabilitado` (50 % de opacidad) · `icono`. En código además `compacto` y `cargando` | cualquier acción; `BotonEnlace` si navega | más de un Primario por pantalla o paso; texto genérico («Aceptar», «OK») |
+| Estado | `Estado` (`Badge` es su nombre antiguo) | `tono`: `neutro`, `info`, `exito`, `aviso`, `error`, `acento` · `texto` · `punto` (por defecto) o `icono` | estado de un registro en tabla, ficha o cabecera | como botón o filtro (para eso, Pestaña u Opción) |
 | Casilla | pendiente, fase 1 | Marcada: Sí, No | elegir varias opciones; aceptar una condición | elegir una sola opción (Radio) |
 | Radio compacto | pendiente, fase 1 | Estado: Normal, Seleccionado, Deshabilitado | una opción entre pocas, visibles | más de 5 opciones (Desplegable) |
 | Opción | pendiente, fase 1 | Seleccionada: Sí, No | una opción entre pocas con descripción, como tarjeta | listas largas |
