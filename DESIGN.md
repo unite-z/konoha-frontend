@@ -1,0 +1,214 @@
+# DESIGN.md: sistema de diseño de Áreas Verdes
+
+> **Estado actual.** El sistema de diseño está aprobado (AV-272). El código se migra por fases ([AV-330](https://linear.app/unite-z/issue/AV-330)): los tokens y la fuente llegan en la fase 0 (AV-331) y los componentes en la fase 1. Lo que aún no existe en código se marca como **pendiente**.
+
+Los README de `src/` dicen dónde va el código. Este documento dice cómo tiene que verse.
+
+## 1. Principios
+
+1. **Todo sale del sistema de diseño.** Cada pantalla se compone con componentes de `src/components/ui` y tokens de `src/styles/tokens.css`.
+2. **Un cambio en un componente cambia todo el sistema.** Si un botón tiene que cambiar, se cambia `Boton`, no la pantalla.
+3. **Nada de componentes rehechos en páginas.** Ni botones, ni tarjetas, ni chips, ni campos con CSS propio.
+4. **Solo tokens semánticos.** `--color-*`, `--space-*`, `--radius-*` y `--type-*`. Nunca primitivos (`--green-700`), colores ni px.
+5. **Claro y oscuro a través de variables.** Ningún componente sabe en qué modo está: solo usa tokens.
+
+## 2. Fuente de verdad
+
+- Figma `KXRcYHPgVOkPZskPCFPoQj`, página «Sistema de diseño · Áreas Verdes» (nodo 333-2): https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=333-2
+- Ejemplo vivo de pantallas: «MOD-03 · Propuesta SaaS» (nodo 344-2): https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=344-2
+- **Si Figma y el código discrepan, manda Figma** y se abre una incidencia en Linear (equipo AV) para corregir el código, o el diseño si el error está en Figma.
+- Las variables de color y dimensión de Figma ya llevan como nombre de código el de `tokens.css` (por ejemplo, «acento/default» se llama `--color-action-primary`).
+
+## 3. Tokens
+
+### 3.1 Color (colección «AV · Color»)
+
+| Figma | Token CSS | Claro | Oscuro | Uso |
+|---|---|---|---|---|
+| fondo/app | `--color-bg-page` | #f8fafc | #020617 | fondo de la aplicación |
+| fondo/panel | `--color-bg-surface` | #ffffff | #0f172a | tarjetas, tablas, diálogos, menú |
+| fondo/sutil | `--color-bg-subtle` | #f1f5f9 | #1e293b | cabecera de tabla, pestañas, zonas secundarias |
+| fondo/hover | `--color-bg-hover` | #f1f5f9 | #1e293b | fila o elemento al pasar el ratón |
+| texto/principal | `--color-text-primary` | #0f172a | #f8fafc | texto normal y títulos |
+| texto/secundario | `--color-text-muted` | #64748b | #94a3b8 | descripciones, leyendas, metadatos |
+| texto/deshabilitado | `--color-text-disabled` | #94a3b8 | #475569 | controles deshabilitados, celdas sin valor |
+| texto/sobre-acento | `--color-text-on-action` | #ffffff | #ffffff | texto sobre botón primario o destructivo |
+| borde/default | `--color-border-default` | #e2e8f0 | #1e293b | bordes de tarjeta, tabla y campo |
+| borde/fuerte | `--color-border-strong` | #cbd5e1 | #334155 | bordes que deben verse más (campo con foco perdido, separadores) |
+| acento/default | `--color-action-primary` | #2563eb | #2563eb | botón primario, elemento seleccionado |
+| acento/hover | `--color-action-primary-hover` | #1d4ed8 | #1d4ed8 | hover del botón primario |
+| acento/texto | `--color-action-text` | #2563eb | #60a5fa | enlaces, botón fantasma, códigos enlazados |
+| acento/sutil | `--color-action-subtle` | #eff6ff | #172a4f | fondo de un elemento seleccionado suave |
+| foco | `--web-focus-ring-color` | #2563eb | #60a5fa | anillo de foco de 2 px |
+| menu/activo | `--color-sidebar-active-bg` | #dbeafe | #172a4f | fondo del elemento de menú activo |
+| menu/texto-activo | `--color-sidebar-active-text` | #1d4ed8 | #60a5fa | texto del elemento de menú activo |
+
+Estados (texto, fondo y borde, en claro / oscuro):
+
+| Figma | Texto | Fondo | Borde | Uso |
+|---|---|---|---|---|
+| estado/info | `--color-info` #1d4ed8 / #60a5fa | `--color-info-bg` #eff6ff / #1c2e4b | `--web-info-border` #bfdbfe / #1e40af | información, «en curso» |
+| estado/exito | `--color-success` #15803d / #4ade80 | `--color-success-bg` #f0fdf4 / #173336 | `--web-success-border` #bbf7d0 / #166534 | conforme, completado |
+| estado/aviso | `--color-warning` #b45309 / #fbbf24 | `--color-warning-bg` #fffbeb / #302f29 | `--web-warning-border` #fde68a / #92400e | requiere atención, plazo cerca |
+| estado/error | `--color-error` #b91c1c / #f87171 | `--color-error-bg` #fef2f2 / #342535 | `--web-error-border` #fecaca / #991b1b | incumple, error, acción destructiva |
+
+Los 8 tokens que faltaban en `tokens.css` (`--color-bg-hover`, `--color-text-disabled`, `--color-text-on-action`, `--color-border-strong`, `--color-action-text`, `--color-action-subtle`, `--color-sidebar-active-bg` y `--color-sidebar-active-text`) y el bloque del modo oscuro llegan con AV-331. `--color-text-secondary` no existe en Figma: queda como alias de `--color-text-muted` (D5) y no se usa en código nuevo.
+
+### 3.2 Espacio (colección «AV · Dimensiones»)
+
+| Figma | Token | Valor | Uso típico |
+|---|---|---|---|
+| espacio/1 | `--space-1` | 4 | entre icono y texto pequeño |
+| espacio/2 | `--space-2` | 8 | entre icono y texto, dentro de un chip, entre botones |
+| espacio/3 | `--space-3` | 12 | relleno vertical de celdas y campos |
+| espacio/4 | `--space-4` | 16 | relleno horizontal de celdas, campos y botones; relleno de diálogos |
+| espacio/6 | `--space-6` | 24 | relleno de tarjetas (Indicador), separación entre secciones |
+| espacio/8 | `--space-8` | 32 | margen del contenido de la página |
+| espacio/12 | `--space-12` | 48 | separación entre bloques grandes |
+
+No hay `--space-5`: no se usa.
+
+### 3.3 Radios
+
+| Figma | Token | Valor | Se usa en |
+|---|---|---|---|
+| radio/sm | `--radius-sm` | 6 (hoy 4 en código) | Estado, chips, celdas de calendario |
+| radio/md | `--radius-md` | 8 | Botón, Campo, Desplegable, Elemento de menú, Pestaña, celda de tabla con entrada |
+| radio/lg | `--radius-lg` | 12 | Tarjeta, Indicador, Diálogo, Toast, tabla completa, panel lateral |
+| radio/full | `--radius-full` | 999 | avatar, punto de estado, indicador de carga |
+
+### 3.4 Tipografía (estilos de texto «AV/*»)
+
+Fuente: **Geist** (D1), con Fontsource, desde AV-331. Los tokens `--type-*` con estos nombres llegan en la misma fase; los nombres antiguos (`--type-heading-*`, `--type-body-*`, `--type-label-*`) quedan como alias y no se usan en código nuevo.
+
+| Estilo de Figma | Tamaño / línea | Peso | Token propuesto | Token actual más cercano | Uso |
+|---|---|---|---|---|---|
+| Título página | 24 / 32 | 600 | `--type-titulo-pagina-*` | `--type-heading-lg-*` | `h1` de cada pantalla |
+| Título sección | 18 / 28 | 600 | `--type-titulo-seccion-*` | `--type-heading-md-*` (20) | `h2`, título de diálogo y de panel |
+| Título tarjeta | 15 / 22 | 600 | `--type-titulo-tarjeta-*` | `--type-heading-sm-*` (16) | título dentro de una tarjeta |
+| Cifra | 30 / 36 | 600 | `--type-cifra-*` | `--type-display-sm-*` | número principal de un Indicador |
+| Cuerpo | 14 / 20 | 400 | `--type-cuerpo-*` | `--type-body-md-*` | texto normal, celdas |
+| Cuerpo medio | 14 / 20 | 500 | `--type-cuerpo-medio-*` | `--type-label-md-*` | texto de botón, dato destacado |
+| Pequeño | 13 / 18 | 400 | `--type-pequeno-*` | no existe | descripciones, texto secundario de celda |
+| Pequeño medio | 13 / 18 | 500 | `--type-pequeno-medio-*` | no existe | etiquetas de menú, pestañas |
+| Leyenda | 12 / 16 | 400 | `--type-leyenda-*` | `--type-body-sm-*` | ayudas, pies, metadatos |
+| Etiqueta | 12 / 16 | 500 | `--type-etiqueta-*` | `--type-label-sm-*` | etiqueta de campo, texto de Estado |
+| Cabecera tabla | 11 / 16, mayúsculas | 500 | `--type-cabecera-tabla-*` | no existe | cabeceras de columna |
+
+Títulos de página y cifras llevan espaciado de letra negativo en Figma: se copia el valor de Figma en el token, no a mano.
+
+### 3.5 Sombras
+
+| Figma | Valor | Uso |
+|---|---|---|
+| AV/Sombra sm | 0 1 2, #0F172A al 6 % | tarjetas e Indicador |
+| AV/Sombra lg | 0 12 32, #0F172A al 14 % | Toast, Diálogo, desplegables abiertos, panel lateral |
+
+## 4. Catálogo de componentes
+
+«Pendiente, fase 1» significa que todavía no existe en `components/ui`: hasta entonces, se pide a quien lleve el sistema de diseño antes de improvisar uno.
+
+### 4.1 Básicos
+
+| Figma | Código | Variantes y propiedades | Cuándo sí | Cuándo no |
+|---|---|---|---|---|
+| Botón | `Boton`, `BotonEnlace` | Tipo: Primario, Secundario, Fantasma (hoy `terciario`), Destructivo · Estado: Normal, Deshabilitado · Texto, Con icono, Icono. En código además `compacto` y `cargando` | cualquier acción; `BotonEnlace` si navega | más de un Primario por pantalla o paso; texto genérico («Aceptar», «OK») |
+| Estado | `Badge` (se renombrará a Estado) | Tono: Neutro, Info, Éxito, Aviso, Error, Acento · Texto · Con punto | estado de un registro en tabla, ficha o cabecera | como botón o filtro (para eso, Pestaña u Opción) |
+| Casilla | pendiente, fase 1 | Marcada: Sí, No | elegir varias opciones; aceptar una condición | elegir una sola opción (Radio) |
+| Radio compacto | pendiente, fase 1 | Estado: Normal, Seleccionado, Deshabilitado | una opción entre pocas, visibles | más de 5 opciones (Desplegable) |
+| Opción | pendiente, fase 1 | Seleccionada: Sí, No | una opción entre pocas con descripción, como tarjeta | listas largas |
+| Campo | `CampoFormulario` | Estado: Normal, Foco, Error, Deshabilitado · Etiqueta, Valor, Ayuda, Desplegable | cualquier entrada de formulario, con etiqueta siempre visible | dentro de una tabla (Campo · compacto) |
+| Campo · compacto | pendiente, fase 1 | Estado: Normal, Error | filtros en barra y celdas de tabla editables | formularios completos |
+| Campo · fecha | pendiente, fase 1 (sobre `input type="date"`) | Estado: Normal, Seleccionada, Error | fechas sueltas o rangos «Desde / Hasta» | fecha con hora en un solo campo |
+| Campo · hora | pendiente, fase 1 (sobre `input type="time"`) | Estado: Vacío, Seleccionada, Error | franjas horarias | duraciones (Campo numérico) |
+| Desplegable · campo | `Selector`, `SelectorBuscable` | Estado: Normal, Seleccionado, Deshabilitado | elegir uno de un catálogo; `SelectorBuscable` si pasa de 10 | 2 o 3 opciones (Radio) |
+| Desplegable · opción | dentro de `SelectorBuscable` | Estado: Normal, Hover, Seleccionada, Deshabilitada | lista abierta del desplegable | fuera de un desplegable |
+| Pestaña | `Pestanas` | Activa: Sí, No · contador opcional | alternar vistas o filtros de estado de una misma lista | navegar a otro módulo (menú) |
+| Aviso | `AvisoEnLinea` | Tono: Info, Éxito, Aviso, Error | mensaje fijo en la página (plazo, bloqueo, coincidencia) | confirmar una acción ya hecha (Toast) |
+| Toast | `AvisoTemporal` | Tono: Éxito, Error | confirmar que algo se guardó o falló, y desaparece | errores que el usuario tiene que corregir (Aviso o error de campo) |
+| Indicador | `TarjetaIndicador` | título, Cifra, detalle y leyenda | cifras clave arriba de una ficha o del panel | listas de datos (Tabla) |
+| Barra de avance | `BarraAvance` | Valor: 0 a 100 de 10 en 10 | avance de una ruta, ciclo o carga | estados sin porcentaje (Estado) |
+| Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`; «Sin acceso» pendiente, fase 1 | Estado: Vacío, Cargando, Error, Sin acceso | toda zona con datos remotos | errores de un campo concreto |
+| Carga de archivo | `ZonaCarga` | Estado: Vacío, Adjunto, Error | adjuntar evidencias o informes | elegir ficheros ya subidos |
+| Diálogo · confirmación | `DialogoConfirmacion` | Tipo: Estándar, Destructivo · descripción y campo opcionales (por ejemplo, motivo) | confirmar una acción que no se deshace fácilmente | formularios largos (panel lateral) |
+
+### 4.2 Tablas
+
+| Figma | Código | Variantes y propiedades | Cuándo sí | Cuándo no |
+|---|---|---|---|---|
+| Tabla · celda | dentro de `TablaDatos`; tipos de celda pendientes, fase 1 | Tipo: Texto, Texto secundario, Texto deshabilitado, Texto aviso, Texto destacado, Doble línea, Doble línea con código, Estado, Acción, Entrada, Avance | cada celda de una tabla, eligiendo el tipo por el dato | maquetar contenido que no es tabular |
+| Tabla · celda de cabecera | dentro de `TablaDatos` | Con orden | cabecera de columna en Cabecera tabla (mayúsculas) | títulos de sección |
+| Paginación | dentro de `TablaDatos`; componente propio pendiente, fase 1 | Estado: Intermedia, Primera, Última | listas de más de 25 filas | listas cortas |
+
+Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro en «Doble línea con código» y en `acento/texto` si enlaza. Sin valor: la constante `SIN_VALOR` de `utils/formato.ts`, en texto deshabilitado.
+
+### 4.3 Navegación
+
+| Figma | Código | Variantes | Notas |
+|---|---|---|---|
+| Menú lateral | `layouts/LayoutOficina/MenuLateral` | Estado: Expandido, Comprimido (pendiente, fase 2) | un solo módulo activo |
+| Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo, Deshabilitado | activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
+| Elemento compacto | pendiente, fase 2 | Estado: Normal, Activo | menú comprimido, solo icono |
+| Cabecera | `layouts/LayoutOficina/Cabecera` | migas, acciones de la derecha | el título de página va en el contenido, no en la cabecera |
+| Barra superior móvil | pendiente, fase 2 | | título y acción principal en móvil |
+| Barra inferior y Pestaña inferior | pendiente, fase 2 | Barra inferior · Planificación, · Capataz · Activa: Sí, No | de 3 a 5 secciones en móvil |
+
+### 4.4 Calendario y campo
+
+| Figma | Código | Variantes | Cuándo sí |
+|---|---|---|---|
+| Celda de calendario | pendiente (tickets de MOD-03) | Tipo: Normal, Hoy, Fuera de mes, Seleccionado; hasta 3 eventos y «+N más» | vista mes |
+| Evento de calendario | pendiente (tickets de MOD-03) | Tipo: Programada, En curso, Completada, Favorable, Aviso, Prohibición, Más, Hueco | dentro de una celda o de la vista lista |
+| Chip de actividad | pendiente (tickets de MOD-03) | Estado: Programada, En curso, Completada, Prohibida | actividad en leyendas y listas |
+| Día del selector | pendiente (tickets de MOD-03) | Tipo: Normal, Vacío, Aviso, Prohibido, Seleccionado | selector de fechas al programar |
+| Día de la semana | pendiente (tickets de MOD-03) | Activo: Sí, No | repetición semanal (L M X J V S D) |
+| Fila de checklist | pendiente (MOD-04) | Estado: Pendiente, Marcado, Sin sincronizar | marcar jardines de una ruta en campo |
+
+### 4.5 Iconos
+
+Lucide, 16 px, trazo heredando el color del texto (45 iconos en la página del sistema). Decidido (D3): `lucide-react` envuelto en `Icono` (AV-340). Hasta entonces, `Icono` tiene 9 SVG propios a 20 y 13 px. Un icono nunca va solo si la acción no es obvia: lleva texto o `aria-label`.
+
+## 5. Patrones de pantalla
+
+| Patrón | Cómo se compone | Referencia en Figma |
+|---|---|---|
+| **Página de listado** | Cabecera con migas. Título página a la izquierda y un Botón primario a la derecha. Aviso opcional. Pestañas con contador para filtrar por estado. Tabla dentro de un panel con `radio/lg`. Paginación debajo si hay más de 25 filas. | «Incidencias · bandeja» [388-7027](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=388-7027), «Ciclos» [346-1032](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=346-1032) |
+| **Formulario en panel lateral** | Panel a la derecha sobre la pantalla atenuada, con Título sección y cierre arriba. Campos en una o dos columnas, Avisos en línea y botones abajo a la derecha (Secundario «Cancelar» y Primario con verbo). **Pendiente:** el panel lateral aún no es componente en Figma. | «Nueva restricción» [364-2570](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=364-2570) |
+| **Diálogo de confirmación** | Diálogo · confirmación centrado sobre velo. Título con el objeto («Cancelar CC-2026-11»), una línea de consecuencia y un campo opcional (motivo). Botones: «Volver» (Secundario) y la acción (Destructivo si no se deshace). | «Cancelar ciclo» [370-4167](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=370-4167) |
+| **Estados de contenido** | Estado de contenido dentro del panel que tendría los datos, nunca a pantalla completa: Cargando (tras 300 ms), Vacío con acción si la hay, Error con «Reintentar» y Sin acceso para el 403. | «Calendario · sin resultados» [374-6421](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=374-6421), «Acceso denegado» [374-7925](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=374-7925) |
+| **Calendario** | Barra con mes, flechas y «Hoy». Rejilla de Celdas de calendario (máximo 3 eventos y «+N más»). Leyenda de actividades y restricciones al pie. Vistas Mes, Semana y Lista con Pestañas. **Pendiente:** la vista semana no es componente todavía. | «Calendario con capas» [344-436](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=344-436), «Calendario · Semana» [361-2252](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=361-2252) |
+| **Móvil** | Barra superior móvil con título y acción. Contenido en una columna. Barra inferior con 3 a 5 Pestañas inferiores. **Pendientes:** la hoja inferior para formularios y la tira semanal todavía no son componentes. | «Móvil · Calendario» [352-2192](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=352-2192), «Móvil · Programar ciclo» [352-2324](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=352-2324) |
+| **Modo oscuro** | Las mismas pantallas cambiando el modo de la colección «AV · Color». Decidido (D6): antes del 18/11 solo se preparan los tokens, sin selector visible; se prueba con `data-tema="oscuro"` en `<html>`. | «Calendario · oscuro y menú comprimido» [347-1492](https://www.figma.com/design/KXRcYHPgVOkPZskPCFPoQj/?node-id=347-1492) |
+
+## 6. Sí / No
+
+Reglas que salen de la revisión del profesor del 29/10.
+
+| Sí | No |
+|---|---|
+| Controles con `radio/md`, contenedores con `radio/lg` y estados con `radio/sm` | radios distintos para la misma pieza (hasta 7 en un módulo) |
+| Texto como mínimo a `--space-3` del borde de su caja; tarjetas con `--space-4` o `--space-6` | texto pegado al borde de una caja o una tarjeta |
+| Todos los botones con `Boton` y sus cuatro tipos | botones con CSS propio, cuadrados en una pantalla y redondeados en otra |
+| Un solo elemento activo en el menú, marcado con fondo y texto | dos módulos marcados a la vez; barra vertical de acento |
+| Un Botón primario por pantalla o paso | dos acciones primarias compitiendo, o el mismo botón duplicado |
+| Estado con texto visible (y punto si hace falta) | estado comunicado solo con color |
+| Fechas como «05 nov. 2026» con `utils/formato.ts` | formatos de fecha distintos según la pantalla |
+| Toda zona con datos muestra carga, vacío, error y sin acceso | pantallas en blanco mientras carga o tras un 403 |
+
+## 7. Cómo añadir o cambiar un componente
+
+1. **Primero en Figma**, en la página del sistema de diseño, con sus variantes y las variables de «AV · Color» y «AV · Dimensiones». Lo revisa quien lleve diseño.
+2. **Después en `src/components/ui`**: mismo nombre (sin tildes, en PascalCase), mismas variantes, solo tokens, y su prueba.
+3. Se actualiza la fila del componente en este documento en el mismo PR.
+4. **Nunca al revés sin avisar a diseño.** Si una urgencia obliga a tocar el código antes, se abre una incidencia para llevarlo a Figma y se enlaza en el PR.
+5. Una variante para una sola pantalla no es motivo para crear un componente: o entra en el sistema para todos, o la pantalla usa lo que hay.
+
+## 8. Decisiones
+
+| Decisión | Estado |
+|---|---|
+| D1. Fuente Geist en lugar de Inter | decidido: Geist (AV-331) |
+| D3. Iconos `lucide-react` en lugar de `Icono` | decidido: `lucide-react` (AV-340) |
+| D5. Qué hacer con `--color-text-secondary` | decidido: alias de `--color-text-muted` |
+| D6. Modo oscuro visible para usuarios | decidido: antes del 18/11 solo tokens |
+| AV-272. Aprobación del sistema de diseño y la propuesta de MOD-03 | aprobado |

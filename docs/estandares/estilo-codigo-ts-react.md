@@ -4,24 +4,11 @@
 
 - TypeScript en modo `strict`. `tsc -b` sin errores.
 - oxlint sin errores (`npm run lint`).
-- CSS Modules con los tokens de `src/styles/tokens.css` (Guía de Estilo Web).
+- CSS Modules con los tokens de `src/styles/tokens.css`. Qué componente y qué token usar: `DESIGN.md`.
 
 ## Estructura de `src/`
 
-| Carpeta | Qué va |
-|---|---|
-| `pages/<modulo-en-kebab-case>/` | Pantallas por módulo (`servicios-tercerizados/`, `reportes-indicadores/`) |
-| `components/ui/` | Componentes base reutilizables (botones, diálogos, estados). Antes de crear uno, mira si ya existe |
-| `components/<modulo>/` | Componentes propios de un módulo |
-| `layouts/` | Estructura de página (cabecera, menú) |
-| `services/api/` | Un cliente por módulo y sus funciones tipadas. Ninguna pantalla llama a `fetch` directamente |
-| `hooks/` | Hooks compartidos (`useConsulta`, `useFiltrosUrl`) |
-| `types/` | Tipos del contrato de la API, por módulo |
-| `utils/` | Lógica pura: formato, fechas, validaciones. Con pruebas |
-| `config/` | Permisos de interfaz por rol y configuración |
-| `sesion/` | Proveedor de sesión y guardián de rutas |
-| `router/` | Definición de rutas |
-| `styles/` | Tokens y estilos globales |
+Qué va en cada carpeta, qué puede importar a qué y cómo se comunican los módulos: `src/README.md` y el README de cada carpeta.
 
 ## Nombres
 
