@@ -19,6 +19,8 @@ export interface DatosPagina {
 export interface ValorContextoPagina {
   pagina: DatosPagina
   establecerPagina: (pagina: DatosPagina) => void
+  /** Hueco a la derecha del título donde `AccionesPagina` pinta la acción principal (null hasta montarse). */
+  nodoAcciones?: HTMLElement | null
 }
 
 export const ContextoPagina = createContext<ValorContextoPagina | null>(null)

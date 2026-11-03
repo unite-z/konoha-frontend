@@ -26,9 +26,28 @@
   outline: none;
 }
 
+/* Fila del título: Título página a la izquierda y la acción principal (AccionesPagina) a la derecha. */
+.filaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.accionesTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.accionesTitulo:empty {
+  display: none;
+}
+
 /* Título de la página: estilo Título página de Figma, encima del contenido. */
 .titulo {
-  margin-bottom: var(--space-6);
   font-size: var(--type-titulo-pagina-size);
   line-height: var(--type-titulo-pagina-line);
   font-weight: var(--type-titulo-pagina-weight);

@@ -13,6 +13,7 @@ import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector from '../../../components/ui/Selector'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import SelectorBuscable from '../../../components/ui/SelectorBuscable'
 import { puedeMarcarAtencionEspecial } from '../../../config/permisosMaestros'
 import { useConsulta } from '../../../hooks/useConsulta'
@@ -120,10 +121,7 @@ export default function MarcarEjemplarPage() {
       <LeyendaObligatorio />
       <ResumenErrores titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de guardar`} errores={resumen} />
 
-      <section className={estilos.grupo} aria-labelledby="titulo-datos-especial">
-        <h2 id="titulo-datos-especial" className={estilos.tituloGrupo}>
-          Datos de la atención especial
-        </h2>
+      <Tarjeta titulo="Datos de la atención especial" relleno="amplio">
         <div className={estilos.cuadricula}>
           <SelectorBuscable<Ejemplar>
             id={IDS.ejemplar}
@@ -160,7 +158,7 @@ export default function MarcarEjemplarPage() {
             onCambiar={(valor) => cambiar({ aplicaciones: valor })}
           />
         </div>
-      </section>
+      </Tarjeta>
 
       <AvisoEnLinea tono="info" titulo="Una tercera aplicación se tramita como extraordinaria">
         Un ejemplar con atención especial recibe una o dos aplicaciones adicionales al año; superarlas exige un motivo.

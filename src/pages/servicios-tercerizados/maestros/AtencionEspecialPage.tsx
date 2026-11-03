@@ -8,7 +8,7 @@
 import { useCallback, useState } from 'react'
 import { useLocation } from 'react-router'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import Badge from '../../../components/ui/Badge'
+import Estado from '../../../components/ui/Estado'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
@@ -17,6 +17,7 @@ import { puedeMarcarAtencionEspecial } from '../../../config/permisosMaestros'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
+import AccionesPagina from '../../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { listarAtencionesEspeciales, listarPlagas } from '../../../services/api/maestrosTercerizados'
 import { listarTodo } from '../../../services/api/tercerizados'
@@ -66,9 +67,9 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
     titulo: 'Estado',
     render: (e) =>
       e.estado === 'Aplicaciones completas' ? (
-        <Badge tono="exito" texto="Aplicaciones completas" />
+        <Estado tono="exito" texto="Aplicaciones completas" />
       ) : (
-        <Badge tono="info" texto="En seguimiento" />
+        <Estado tono="info" texto="En seguimiento" />
       ),
   },
 ]
@@ -110,14 +111,14 @@ export default function AtencionEspecialPage() {
   return (
     <div className={estilos.pagina}>
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
-      <div className={estilos.barraAcciones}>
-        <p className={estilos.descripcion}>Árboles con plaga recurrente y el avance de sus aplicaciones adicionales.</p>
+      <AccionesPagina>
         {puedeMarcar && (
           <BotonEnlace to={RUTAS_TERCERIZADOS.marcarEjemplar} variante="primario">
             Marcar ejemplar
           </BotonEnlace>
         )}
-      </div>
+      </AccionesPagina>
+      <p className={estilos.descripcion}>Árboles con plaga recurrente y el avance de sus aplicaciones adicionales.</p>
 
       <BarraFiltros
         id="especiales"
@@ -148,7 +149,7 @@ export default function AtencionEspecialPage() {
 
       {conFiltros && (
         <div>
-          <Boton variante="terciario" onClick={limpiar}>
+          <Boton variante="fantasma" onClick={limpiar}>
             Limpiar filtros
           </Boton>
         </div>

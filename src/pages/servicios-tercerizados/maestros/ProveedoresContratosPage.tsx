@@ -14,6 +14,7 @@ import Pestanas from '../../../components/ui/Pestanas'
 import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMaestros'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
+import AccionesPagina from '../../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
 import { useRolTercerizados } from '../../../sesion/ContextoSesion'
 import { avisoDeNavegacion, FILTROS_MAESTROS_VACIOS, type ClaveFiltroMaestros } from './filtrosMaestros'
@@ -41,8 +42,7 @@ export default function ProveedoresContratosPage() {
   return (
     <div className={estilos.pagina}>
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
-      <div className={estilos.barraAcciones}>
-        <p className={estilos.descripcion}>Empresas que prestan servicios tercerizados y los contratos que los respaldan.</p>
+      <AccionesPagina>
         {puedeRegistrar && (
           <BotonEnlace
             to={pestana === 'contratos' ? RUTAS_TERCERIZADOS.nuevoContrato : RUTAS_TERCERIZADOS.nuevoProveedor}
@@ -51,7 +51,8 @@ export default function ProveedoresContratosPage() {
             {pestana === 'contratos' ? 'Registrar contrato' : 'Registrar proveedor'}
           </BotonEnlace>
         )}
-      </div>
+      </AccionesPagina>
+      <p className={estilos.descripcion}>Empresas que prestan servicios tercerizados y los contratos que los respaldan.</p>
 
       <Pestanas
         etiqueta="Proveedores y contratos"

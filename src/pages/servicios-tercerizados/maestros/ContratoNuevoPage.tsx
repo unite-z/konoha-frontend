@@ -20,6 +20,7 @@ import CampoFormulario, {
 } from '../../../components/ui/CampoFormulario'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector from '../../../components/ui/Selector'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import SelectorBuscable from '../../../components/ui/SelectorBuscable'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMaestros'
@@ -141,10 +142,7 @@ export default function ContratoNuevoPage() {
         errores={resumen}
       />
 
-      <section className={estilos.grupo} aria-labelledby="titulo-proveedor-servicio">
-        <h2 id="titulo-proveedor-servicio" className={estilos.tituloGrupo}>
-          Proveedor y servicio
-        </h2>
+      <Tarjeta titulo="Proveedor y servicio" relleno="amplio">
         <div className={estilos.cuadricula}>
           <SelectorBuscable<ProveedorMaestro>
             id={IDS.proveedor}
@@ -185,12 +183,9 @@ export default function ContratoNuevoPage() {
             error={errores.area}
           />
         </div>
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.grupo} aria-labelledby="titulo-costo">
-        <h2 id="titulo-costo" className={estilos.tituloGrupo}>
-          Costo, vigencia y condiciones
-        </h2>
+      <Tarjeta titulo="Costo, vigencia y condiciones" relleno="amplio">
         <div className={estilos.cuadricula}>
           <CampoFormulario
             id={IDS.monto}
@@ -246,7 +241,7 @@ export default function ContratoNuevoPage() {
           value={borrador.condiciones}
           onChange={(e) => cambiar({ condiciones: e.target.value })}
         />
-      </section>
+      </Tarjeta>
 
       {fallo && <AvisoFallo fallo={fallo} onReintentar={() => void confirmar()} />}
 
