@@ -1,0 +1,154 @@
+/* Planificación asistida del cronograma (RF-IA-003): ajustes sobre los estilos de Asistencia IA. */
+
+.periodo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.tituloPanel {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.secundario {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.criterios {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.listaRestricciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.listaRestricciones li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* Lista agrupada por semana. */
+.semana {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tituloSemana {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+/* Ficha de propuesta. */
+.fechas {
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+.motivo summary {
+  cursor: pointer;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+.motivo p {
+  margin-top: var(--space-1);
+}
+
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+.casilla input {
+  margin-top: var(--space-1);
+  accent-color: var(--green-700);
+}
+
+/* Calendario con el panel lateral de la propuesta elegida (escritorio). */
+.conPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.panelLateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: var(--space-4);
+}
+
+.cabeceraPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.fichaPanel {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* En el panel lateral, sugerencia y decisión van una debajo de otra. */
+.fichaPanel > li > article > div:last-child {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 1023px) {
+  .conPanel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panelLateral {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .periodo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
