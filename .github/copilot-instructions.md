@@ -25,5 +25,5 @@ Proyecto de curso (PUCP, DP2): gestión de las áreas verdes del campus. Fronten
 ## Seguridad abierta, deuda y decisiones cerradas (ver `AGENTS.md`)
 
 - Las credenciales de MOD-05 (HTTP Basic) están en `sessionStorage` hasta la sesión de MOD-01, y MOD-06 usa una sesión simulada. Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `localStorage`).
-- La deuda conocida tiene ticket propio y no se arregla de paso: falta la PWA (manifiesto, service worker y cola), hay dos formatos de error del backend (ADR 0004) y no hay Testing Library. Señala si un PR mezcla esos arreglos con su cambio.
+- La deuda conocida tiene ticket propio y no se arregla de paso: falta la PWA (manifiesto, service worker y cola), hay dos formatos de error del backend (ADR 0004) y casi ningún componente tiene prueba todavía (AV-330). Señala si un PR mezcla esos arreglos con su cambio.
 - Las decisiones de los ADR no se rediscuten en un PR: cambiarlas exige un ADR nuevo.

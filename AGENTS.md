@@ -100,7 +100,7 @@ Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `lo
 
 - Aún no es PWA: faltan el manifiesto, el service worker y la cola sin conexión.
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
-- No hay Testing Library: los componentes no tienen pruebas.
+- Solo `Boton` tiene prueba de componente; el resto de `components/ui` las recibe al alinearse con Figma (AV-330).
 
 ## Qué no entra al repo
 
