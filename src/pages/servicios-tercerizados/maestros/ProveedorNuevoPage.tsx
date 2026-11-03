@@ -14,6 +14,7 @@ import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import CampoFormulario, { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector from '../../../components/ui/Selector'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import SelectorBuscable from '../../../components/ui/SelectorBuscable'
 import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMaestros'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
@@ -114,10 +115,7 @@ export default function ProveedorNuevoPage() {
       <LeyendaObligatorio />
       <ResumenErrores titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de guardar`} errores={resumen} />
 
-      <section className={estilos.grupo} aria-labelledby="titulo-datos-proveedor">
-        <h2 id="titulo-datos-proveedor" className={estilos.tituloGrupo}>
-          Datos del proveedor
-        </h2>
+      <Tarjeta titulo="Datos del proveedor" relleno="amplio">
         <div className={estilos.cuadricula}>
           <CampoFormulario
             id={IDS.razonSocial}
@@ -149,12 +147,9 @@ export default function ProveedorNuevoPage() {
             onChange={(e) => cambiar({ contacto: e.target.value })}
           />
         </div>
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.grupo} aria-labelledby="titulo-vinculo">
-        <h2 id="titulo-vinculo" className={estilos.tituloGrupo}>
-          Vínculo con otras empresas
-        </h2>
+      <Tarjeta titulo="Vínculo con otras empresas" relleno="amplio">
         <div className={estilos.cuadricula}>
           <Selector
             id="proveedor-vinculo"
@@ -185,7 +180,7 @@ export default function ProveedorNuevoPage() {
             />
           )}
         </div>
-      </section>
+      </Tarjeta>
 
       {fallo && (
         <AvisoFallo

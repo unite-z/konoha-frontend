@@ -1,5 +1,5 @@
 // RF-SER-002 · Lista de contratos
-import Badge from '../../../components/ui/Badge'
+import Estado from '../../../components/ui/Estado'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
@@ -44,9 +44,9 @@ const COLUMNAS: ColumnaTabla<ContratoMaestro>[] = [
     titulo: 'Estado',
     render: (c) =>
       c.vigente ? (
-        <Badge tono="exito" texto="Vigente" />
+        <Estado tono="exito" texto="Vigente" />
       ) : (
-        <Badge tono="advertencia" texto="Vencido" ayuda="Se conserva como histórico: no se puede usar en nuevas atenciones" />
+        <Estado tono="aviso" texto="Vencido" ayuda="Se conserva como histórico: no se puede usar en nuevas atenciones" />
       ),
   },
 ]
@@ -94,7 +94,7 @@ export default function ListaContratos({ filtros, establecer, puedeRegistrar }: 
 
       {conFiltros && (
         <div>
-          <Boton variante="terciario" onClick={limpiar}>
+          <Boton variante="fantasma" onClick={limpiar}>
             Limpiar filtros
           </Boton>
         </div>

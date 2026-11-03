@@ -1,5 +1,5 @@
 // RF-SER-001 · Lista de proveedores
-import Badge from '../../../components/ui/Badge'
+import Estado from '../../../components/ui/Estado'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import EstadoVacio from '../../../components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
@@ -28,7 +28,7 @@ const COLUMNAS: ColumnaTabla<ProveedorMaestro>[] = [
   {
     clave: 'estado',
     titulo: 'Estado',
-    render: (p) => <Badge tono={p.activo ? 'exito' : 'neutral'} texto={p.activo ? 'Habilitado' : 'Inhabilitado'} />,
+    render: (p) => <Estado tono={p.activo ? 'exito' : 'neutro'} texto={p.activo ? 'Habilitado' : 'Inhabilitado'} />,
   },
 ]
 
@@ -96,7 +96,7 @@ export default function ListaProveedores({ filtros, establecer, puedeRegistrar }
 
       {conFiltros && (
         <div>
-          <Boton variante="terciario" onClick={limpiar}>
+          <Boton variante="fantasma" onClick={limpiar}>
             Limpiar filtros
           </Boton>
         </div>

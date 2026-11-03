@@ -1,11 +1,12 @@
 /**
  * Barra de búsqueda y filtros de las listas de proveedores, contratos y atención especial (Guía Web 5.5).
  * La búsqueda se aplica al enviar; los filtros (`children`) se aplican al elegirlos. Todo se filtra en el
- * servidor, nunca solo en la página cargada.
+ * servidor, nunca solo en la página cargada. Va dentro de una `Tarjeta`.
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
 import Boton from '../../../components/ui/Boton'
 import CampoFormulario from '../../../components/ui/CampoFormulario'
+import Tarjeta from '../../../components/ui/Tarjeta'
 import estilos from './Maestros.module.css'
 
 const LARGO_MAXIMO_BUSQUEDA = 100
@@ -38,24 +39,26 @@ export default function BarraFiltros({ id, nombre, etiquetaBusqueda, ayudaBusque
   }
 
   return (
-    <form role="search" aria-label={nombre} className={estilos.barraFiltros} onSubmit={enviar}>
-      <div className={estilos.busqueda}>
-        <CampoFormulario
-          id={`${id}-busqueda`}
-          etiqueta={etiquetaBusqueda}
-          type="search"
-          ayuda={ayudaBusqueda}
-          maxLength={LARGO_MAXIMO_BUSQUEDA}
-          value={borrador}
-          onChange={(e) => setBorrador(e.target.value)}
-        />
-      </div>
-      {children}
-      <div className={estilos.accionFiltros}>
-        <Boton type="submit" variante="secundario">
-          Buscar
-        </Boton>
-      </div>
-    </form>
+    <Tarjeta>
+      <form role="search" aria-label={nombre} className={estilos.barraFiltros} onSubmit={enviar}>
+        <div className={estilos.busqueda}>
+          <CampoFormulario
+            id={`${id}-busqueda`}
+            etiqueta={etiquetaBusqueda}
+            type="search"
+            ayuda={ayudaBusqueda}
+            maxLength={LARGO_MAXIMO_BUSQUEDA}
+            value={borrador}
+            onChange={(e) => setBorrador(e.target.value)}
+          />
+        </div>
+        {children}
+        <div className={estilos.accionFiltros}>
+          <Boton type="submit" variante="secundario">
+            Buscar
+          </Boton>
+        </div>
+      </form>
+    </Tarjeta>
   )
 }

@@ -3,7 +3,8 @@
  *
  * Zonas: menú lateral de 256px (izquierda, a toda la altura), cabecera de 52px con las migas y contenido con
  * margen de 32px y ancho máximo de 1440px. El contenido empieza por el título de la página (h1, estilo
- * Título página), que cada página declara con `usePaginaActual`. Incluye el enlace «Saltar al contenido».
+ * Título página), que cada página declara con `usePaginaActual`; su acción principal va a la derecha del
+ * título con `AccionesPagina`. Incluye el enlace «Saltar al contenido».
  *
  * Por debajo de 768px: Barra superior móvil en lugar de la cabecera, menú lateral como panel sobre velo
  * (se cierra con su botón, el velo, Esc o al navegar; el resto queda inerte) y Barra inferior con las
@@ -39,7 +40,8 @@ function guardarComprimido(valor: boolean) {
 export default function LayoutOficina() {
   const { pathname } = useLocation()
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
-  const valor = useMemo(() => ({ pagina, establecerPagina }), [pagina])
+  const [nodoAcciones, setNodoAcciones] = useState<HTMLElement | null>(null)
+  const valor = useMemo(() => ({ pagina, establecerPagina, nodoAcciones }), [pagina, nodoAcciones])
   const [comprimido, setComprimido] = useState(leerComprimido)
   const alternarComprimido = useCallback(() => {
     setComprimido((actual) => {
@@ -84,7 +86,12 @@ export default function LayoutOficina() {
           <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} />
           <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
-            {pagina.titulo && <h1 className={estilos.titulo}>{pagina.titulo}</h1>}
+            {pagina.titulo && (
+              <div className={estilos.filaTitulo}>
+                <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
+              </div>
+            )}
             <Outlet />
           </main>
           <BarraInferior />

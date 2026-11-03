@@ -1,16 +1,8 @@
-/* Proveedores, contratos y atención especial (MOD-05): mismo espaciado y tokens que la bandeja de atenciones. */
+/* Proveedores, contratos y atención especial (MOD-05): solo layout; paneles con Tarjeta y estados con Estado. */
 .pagina {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-}
-
-.barraAcciones {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
 }
 
 .descripcion {
@@ -20,13 +12,9 @@
 .barraFiltros {
   display: flex;
   flex-wrap: wrap;
-  /* Los controles quedan en la misma línea aunque solo la búsqueda tenga texto de ayuda encima. */
-  align-items: flex-end;
+  /* Alineados por arriba: la ayuda de la búsqueda va debajo del control y no desplaza la fila. */
+  align-items: flex-start;
   gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
 }
 
 .barraFiltros > .busqueda {
@@ -37,14 +25,18 @@
   flex: 1 1 12rem;
 }
 
-/* El botón queda en la línea de los controles (la barra alinea todo por abajo). */
+/* El botón no tiene etiqueta: baja lo que ocupa la etiqueta de los campos para quedar en su línea. */
 .accionFiltros {
-  padding-top: 0;
+  padding-top: calc(var(--type-pequeno-line) + var(--space-1));
 }
 
 @media (max-width: 40rem) {
   .barraFiltros > * {
     flex-basis: 100%;
+  }
+
+  .accionFiltros {
+    padding-top: 0;
   }
 }
 
@@ -77,23 +69,6 @@
   flex-direction: column;
   gap: var(--space-6);
   max-width: 64rem;
-}
-
-.grupo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  min-width: 0;
-}
-
-.tituloGrupo {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
 }
 
 /* Hasta tres campos por fila; en pantallas angostas, uno por fila. */

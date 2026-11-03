@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import type { SesionCore } from '../../types/core'
+import AccionesPagina from './AccionesPagina'
 import LayoutOficina from './LayoutOficina'
 
 const sesion: SesionCore = {
@@ -24,7 +25,14 @@ afterEach(cleanup)
 
 function Coberturas() {
   usePaginaActual('Coberturas vegetales', [{ texto: 'Áreas verdes', ruta: '/areas-verdes' }, { texto: 'Coberturas vegetales' }])
-  return <p>Contenido de coberturas</p>
+  return (
+    <>
+      <AccionesPagina>
+        <button type="button">Registrar cobertura</button>
+      </AccionesPagina>
+      <p>Contenido de coberturas</p>
+    </>
+  )
 }
 
 function pintar() {
@@ -46,8 +54,16 @@ describe('LayoutOficina', () => {
 
     const titulo = screen.getByRole('heading', { level: 1, name: 'Coberturas vegetales' })
     const contenido = screen.getByRole('main')
-    expect(contenido.firstElementChild).toBe(titulo)
+    expect(contenido.firstElementChild?.firstElementChild).toBe(titulo)
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+  })
+
+  it('AccionesPagina lleva la acción principal a la fila del título', () => {
+    pintar()
+
+    const fila = screen.getByRole('heading', { level: 1 }).parentElement
+    const boton = screen.getByRole('button', { name: 'Registrar cobertura' })
+    expect(fila?.contains(boton)).toBe(true)
   })
 
   it('la cabecera lleva las migas y el usuario, sin título', () => {
