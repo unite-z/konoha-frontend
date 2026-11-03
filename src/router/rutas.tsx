@@ -22,6 +22,8 @@ import ExportacionesPage from '../pages/reportes-indicadores/exportaciones/Expor
 import ProgramadoEjecutadoPage from '../pages/reportes-indicadores/reportes/ProgramadoEjecutadoPage'
 import PriorizacionIaPage from '../pages/reportes-indicadores/asistencia-ia/PriorizacionIaPage'
 import RevisionPriorizacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionPriorizacionPage'
+import InconsistenciasIaPage from '../pages/reportes-indicadores/asistencia-ia/InconsistenciasIaPage'
+import RevisionInconsistenciaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionInconsistenciaPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
@@ -94,6 +96,8 @@ export const router = createBrowserRouter([
               { path: `${RUTAS.extraccionReportes}/:id`, element: <RevisionExtraccionPage /> }, // RF-IA-001
               { path: RUTAS.priorizacionIa, element: <PriorizacionIaPage /> }, // RN-IA-002
               { path: `${RUTAS.priorizacionIa}/:id`, element: <RevisionPriorizacionPage /> }, // RN-IA-002
+              { path: RUTAS.inconsistenciasIa, element: <InconsistenciasIaPage /> }, // RF-IA-002
+              { path: `${RUTAS.inconsistenciasIa}/:id`, element: <RevisionInconsistenciaPage /> }, // RF-IA-002
               { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
               { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005

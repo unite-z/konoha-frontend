@@ -1,5 +1,5 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001 y RN-IA-002).
+ * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002 y RF-IA-002).
  */
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
@@ -25,6 +25,13 @@ export default function AsistenciaIaIndexPage() {
             'Propuestas de prioridad para espacios (áreas y jardines) y ejemplares según historial, incidencias, frecuencia y estado, para revisarlas antes de programar.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado de la propuesta' },
           ruta: RUTAS.priorizacionIa,
+        },
+        {
+          titulo: 'Revisión de inconsistencias',
+          descripcion:
+            'Posibles duplicados, valores atípicos, campos incompatibles o nombres no normalizados detectados con IA, para revisarlos antes de corregir.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado, tipo de hallazgo y conjunto de datos' },
+          ruta: RUTAS.inconsistenciasIa,
         },
       ]}
     />
