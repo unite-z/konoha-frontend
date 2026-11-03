@@ -13,6 +13,7 @@ export const RUTAS = {
   atencionesEspacioSector: `${BASE}/reportes/atenciones-espacio-sector`, // RF-REP-006
   asistenciaIa: `${BASE}/asistencia-ia`,
   extraccionReportes: `${BASE}/asistencia-ia/extraccion-reportes`, // RF-IA-001
+  priorizacionIa: `${BASE}/asistencia-ia/priorizacion`, // RN-IA-002
   panel: `${BASE}/panel`, // RF-REP-001
   mapaAtenciones: `${BASE}/mapa-atenciones`, // RF-REP-007
   materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
@@ -34,12 +35,18 @@ export function rutaRevisionExtraccion(id: number | string): string {
   return `${RUTAS.extraccionReportes}/${id}`
 }
 
+/** Ruta de la revisión de una propuesta de prioridades de IA (RN-IA-002). */
+export function rutaRevisionPriorizacion(id: number | string): string {
+  return `${RUTAS.priorizacionIa}/${id}`
+}
+
 /** Niveles de migas reutilizados por las páginas (Guía Web 4.2). */
 export const MIGAS = {
   reportesIndicadores: { texto: 'Reportes e indicadores', ruta: RUTAS.reportes },
   reportes: { texto: 'Reportes', ruta: RUTAS.reportes },
   asistenciaIa: { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
   extraccionReportes: { texto: 'Extracción de informes de proveedores', ruta: RUTAS.extraccionReportes },
+  priorizacionIa: { texto: 'Prioridades de atención', ruta: RUTAS.priorizacionIa },
   panel: { texto: 'Panel', ruta: RUTAS.panel },
   mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
