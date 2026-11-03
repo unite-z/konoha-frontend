@@ -1,5 +1,5 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001).
+ * Índice de «Asistencia IA» (RF-IA-001 y RN-IA-002).
  */
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
@@ -18,6 +18,13 @@ export default function AsistenciaIaIndexPage() {
             'Propuestas de datos extraídos con IA de los informes de los proveedores, para revisarlas antes de registrarlas.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado de la propuesta' },
           ruta: RUTAS.extraccionReportes,
+        },
+        {
+          titulo: 'Prioridades de atención',
+          descripcion:
+            'Propuestas de prioridad para espacios (áreas y jardines) y ejemplares según historial, incidencias, frecuencia y estado, para revisarlas antes de programar.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado de la propuesta' },
+          ruta: RUTAS.priorizacionIa,
         },
       ]}
     />
