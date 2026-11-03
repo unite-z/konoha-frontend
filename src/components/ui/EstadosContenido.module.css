@@ -1,43 +1,53 @@
-/* EstadoVacio, EstadoCarga y EstadoError: Guía Web 5.12. */
+/* Estado de contenido: sistema de diseño de Figma (DESIGN.md, 4.1). Tarjeta alineada a la izquierda. */
 .estado {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
-  padding: var(--space-12) var(--space-6);
-  text-align: center;
+  padding: var(--space-6);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 .icono {
   display: flex;
-  padding: var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-subtle);
-  color: var(--color-text-secondary);
-}
-
-.iconoError {
-  background: var(--color-error-bg);
-  color: var(--color-error);
+  color: var(--color-text-muted);
 }
 
 .titulo {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
   color: var(--color-text-primary);
 }
 
 .descripcion {
   max-width: 60ch;
-  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
 }
 
 .accion {
   margin-top: var(--space-2);
+}
+
+/* Acción de texto en color de acento («Reintentar», «Crear registro»). */
+.enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-action-text);
+  font: inherit;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration: underline;
 }
 
 /* Esqueletos (sin animación llamativa). */
@@ -48,7 +58,7 @@
 }
 
 .textoCarga {
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .bloque {
@@ -85,13 +95,13 @@
   padding: var(--space-4);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 .esqueletoTabla {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 

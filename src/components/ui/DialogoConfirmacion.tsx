@@ -1,8 +1,9 @@
 /**
- * DialogoConfirmacion: Guía de Estilo Web, sección 5.10.
+ * DialogoConfirmacion: componente «Diálogo · confirmación» del sistema de diseño de Figma (DESIGN.md, 4.1).
  *
- * Para acciones con efecto formal o irreversible. Título con la acción, la consecuencia en una frase y dos
- * botones: «Cancelar» (secundario) y la acción con su nombre (primario o destructivo).
+ * Para acciones con efecto formal o irreversible. Título con la acción y su objeto («Cancelar CC-2026-11»),
+ * la consecuencia en una frase y dos botones: «Volver» (secundario) y la acción con su nombre (primario o
+ * destructivo). «Volver» evita confundir la salida con acciones como «Cancelar ciclo».
  *
  * Usa `<dialog>` nativo con `showModal()`: el resto de la página queda inerte, así que el foco no sale del
  * diálogo; Esc lo cierra y, al cerrarse, el foco vuelve al botón que lo abrió.
@@ -19,6 +20,8 @@ export interface DialogoConfirmacionProps {
   consecuencia: string
   /** Nombre de la acción (etiqueta del botón de confirmar). */
   textoConfirmar: string
+  /** Etiqueta del botón que cierra sin hacer nada. */
+  textoVolver?: string
   variante?: 'primario' | 'destructivo'
   cargando?: boolean
   onConfirmar: () => void
@@ -31,6 +34,7 @@ export default function DialogoConfirmacion({
   titulo,
   consecuencia,
   textoConfirmar,
+  textoVolver = 'Volver',
   variante = 'primario',
   cargando = false,
   onConfirmar,
@@ -86,7 +90,7 @@ export default function DialogoConfirmacion({
       {children && <div className={estilos.contenido}>{children}</div>}
       <div className={estilos.acciones}>
         <Boton variante="secundario" onClick={onCancelar} deshabilitado={cargando}>
-          Cancelar
+          {textoVolver}
         </Boton>
         <Boton variante={variante} onClick={onConfirmar} cargando={cargando}>
           {textoConfirmar}

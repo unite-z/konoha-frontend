@@ -128,9 +128,9 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Toast | `AvisoTemporal` | `tono`: `exito` o `error` · `mensaje` y `detalle` · cierre manual o a los 6 s | confirmar que algo se guardó o falló, y desaparece | errores que el usuario tiene que corregir (Aviso o error de campo) |
 | Indicador | `TarjetaIndicador` | título, Cifra, detalle y leyenda | cifras clave arriba de una ficha o del panel | listas de datos (Tabla) |
 | Barra de avance | `BarraAvance` | Valor: 0 a 100 de 10 en 10 | avance de una ruta, ciclo o carga | estados sin porcentaje (Estado) |
-| Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`; «Sin acceso» pendiente, fase 1 | Estado: Vacío, Cargando, Error, Sin acceso | toda zona con datos remotos | errores de un campo concreto |
+| Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`, `EstadoSinAcceso` | tarjeta alineada a la izquierda · título, descripción y acción de texto («Reintentar») | toda zona con datos remotos; `EstadoSinAcceso` para el 403 | errores de un campo concreto |
 | Carga de archivo | `ZonaCarga` | Estado: Vacío, Adjunto, Error | adjuntar evidencias o informes | elegir ficheros ya subidos |
-| Diálogo · confirmación | `DialogoConfirmacion` | Tipo: Estándar, Destructivo · descripción y campo opcionales (por ejemplo, motivo) | confirmar una acción que no se deshace fácilmente | formularios largos (panel lateral) |
+| Diálogo · confirmación | `DialogoConfirmacion` | `variante`: `primario` o `destructivo` · `consecuencia` · campo opcional en `children` (motivo) · «Volver» (`textoVolver`) | confirmar una acción que no se deshace fácilmente | formularios largos (panel lateral) |
 
 ### 4.2 Tablas
 
