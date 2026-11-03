@@ -1,0 +1,43 @@
+/* Ajustes de la ficha de un elemento priorizado sobre los estilos de FichaCampo (RF-IA-001). */
+.prioridad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.puntuacion {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.subtitulo {
+  font-size: var(--type-label-md-size);
+  line-height: var(--type-label-md-line);
+  font-weight: var(--type-label-md-weight);
+  color: var(--neutral-700);
+}
+
+/* «Datos que la sustentan»: pares compactos en dos columnas. */
+.sustento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+.sustento dt {
+  color: var(--color-text-secondary);
+}
+.sustento dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .sustento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
