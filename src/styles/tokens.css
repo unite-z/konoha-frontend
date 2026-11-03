@@ -158,7 +158,7 @@
 
 /* Medidas de layout sin variable en Figma */
 :root {
-  --web-header-height: 64px;
+  --web-header-height: 52px; /* Cabecera de Figma */
   --web-sidebar-width: 256px;
   --web-sidebar-rail: 72px;
   --web-content-max: 1440px;

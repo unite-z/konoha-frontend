@@ -4,15 +4,15 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 
 | Fichero | Qué hace |
 |---|---|
-| `LayoutOficina.tsx` | rejilla con menú lateral, cabecera y contenido |
+| `LayoutOficina.tsx` | rejilla con menú lateral, cabecera y contenido; pinta el h1 de la página al principio del contenido |
 | `MenuLateral.tsx` | menú principal por permisos |
 | `entradasMenuLateral.ts` | entradas de cada módulo y regla única del elemento activo, con prueba |
-| `Cabecera.tsx` | migas y título de la página; búsqueda global y usuario con su rol |
+| `Cabecera.tsx` | migas de la página; búsqueda global y usuario con su rol (sin título) |
 | `BarraContexto.tsx` | migas de pan |
 | `ContextoPagina.ts` | título y migas que declara cada página con `usePaginaActual` |
 
 **Reglas:**
-- Cada página declara su título y sus migas con `usePaginaActual`. La cabecera no conoce las páginas.
+- Cada página declara su título y sus migas con `usePaginaActual`, y no pinta su propio h1: el layout lo pone al principio del contenido. La cabecera no conoce las páginas.
 - En el menú solo puede haber **un elemento activo**. Un módulo nuevo añade su entrada en `MODULOS_MENU` (`entradasMenuLateral.ts`), con sus prefijos de URL; nunca se calcula el activo a mano en `MenuLateral.tsx`.
 - Sin barra de acento vertical en el elemento activo: el diseño de Figma marca el activo con fondo (`menu/activo`) y texto (`menu/texto-activo`).
 

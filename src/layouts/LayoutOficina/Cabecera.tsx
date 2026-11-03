@@ -1,6 +1,7 @@
 /**
- * Cabecera global (Guía Web 3.2 y mockup, pantalla 2): alto de 64px, fondo blanco y borde inferior.
- * Izquierda: migas de pan sobre el título de la página (h1). Derecha: búsqueda global y usuario con su rol.
+ * Cabecera: componente «Cabecera» del sistema de diseño de Figma (DESIGN.md, 4.3). Alto de 52px, fondo de
+ * panel y borde inferior. Izquierda: migas de pan. Derecha: búsqueda global y usuario con su rol.
+ * El título de la página (h1) no va aquí: lo pinta `LayoutOficina` al principio del contenido.
  *
  * Usuario mostrado: el de la sesión de MOD-01, con «Cambiar contraseña» y «Cerrar sesión» (toda la aplicación
  * entra por esa sesión desde AV-234).
@@ -25,7 +26,6 @@ function iniciales(nombre: string): string {
 }
 
 export interface CabeceraProps {
-  titulo: string
   migas: Miga[]
 }
 
@@ -53,12 +53,12 @@ function BloqueUsuario({
         <span className={estilos.rol}>{usuario.rol}</span>
       </span>
       {conCambioContrasena && (
-        <BotonEnlace to={RUTAS_CORE.cambiarContrasena} variante="terciario" compacto>
+        <BotonEnlace to={RUTAS_CORE.cambiarContrasena} variante="fantasma" compacto>
           Cambiar contraseña
         </BotonEnlace>
       )}
       {onCerrarSesion && (
-        <Boton variante="terciario" compacto onClick={onCerrarSesion}>
+        <Boton variante="fantasma" compacto onClick={onCerrarSesion}>
           Cerrar sesión
         </Boton>
       )}
@@ -66,7 +66,7 @@ function BloqueUsuario({
   )
 }
 
-export default function Cabecera({ titulo, migas }: CabeceraProps) {
+export default function Cabecera({ migas }: CabeceraProps) {
   const { estado: sesionCore, cerrarSesion: cerrarSesionCore } = useSesion()
   const bloque: ReactNode =
     sesionCore.tipo === 'activa' ? (
@@ -81,7 +81,6 @@ export default function Cabecera({ titulo, migas }: CabeceraProps) {
     <header className={estilos.cabecera}>
       <div className={estilos.titulos}>
         <BarraContexto migas={migas} />
-        {titulo && <h1 className={estilos.titulo}>{titulo}</h1>}
       </div>
       <div className={estilos.derecha}>
         {/* TODO: búsqueda global (otro módulo). Se muestra deshabilitada. */}

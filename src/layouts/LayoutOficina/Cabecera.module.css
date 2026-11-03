@@ -1,13 +1,12 @@
-/* Cabecera y migas de pan: Guía Web 3.2 y 4.2. */
+/* Cabecera y migas de pan: sistema de diseño de Figma (DESIGN.md, 4.3). */
 .cabecera {
   --busqueda-ancho: 420px; /* Guía Web 3.2: campo de búsqueda global */
-  --busqueda-alto: 40px; /* Guía Web 5.3: control estándar */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
   min-height: var(--web-header-height);
-  padding: var(--space-2) var(--space-8);
+  padding: var(--space-1) var(--space-8);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-default);
 }
@@ -19,22 +18,15 @@
   min-width: 0;
 }
 
-.titulo {
-  font-size: var(--type-heading-lg-size);
-  line-height: var(--type-heading-lg-line);
-  font-weight: var(--type-heading-lg-weight);
-  color: var(--color-text-primary);
-}
-
 .migas {
   display: flex;
   flex-wrap: wrap;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
 }
 
 .migas li + li::before {
@@ -44,7 +36,7 @@
 }
 
 .migas a {
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-decoration: none;
 }
 .migas a:hover {
@@ -52,7 +44,7 @@
 }
 
 .migaActual {
-  font-weight: 600;
+  font-weight: var(--type-pequeno-medio-weight);
   color: var(--color-text-primary);
 }
 
@@ -66,16 +58,16 @@
 .busqueda {
   /* 420px a partir de 1920px; más estrecho en pantallas menores para no partir el título. */
   width: min(var(--busqueda-ancho), 20vw);
-  min-height: var(--busqueda-alto);
+  min-height: var(--web-control);
   padding: 0 var(--space-3);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-subtle);
-  font-size: var(--type-body-md-size);
+  font-size: var(--type-pequeno-size);
 }
 
 .busqueda::placeholder {
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .usuario {
@@ -95,8 +87,8 @@
   border-radius: var(--radius-full);
   background: var(--color-action-subtle);
   color: var(--color-action-text);
-  font-size: var(--type-label-sm-size);
-  font-weight: 600;
+  font-size: var(--type-etiqueta-size);
+  font-weight: var(--type-cuerpo-medio-weight);
 }
 
 .datosUsuario {
@@ -105,14 +97,14 @@
 }
 
 .nombre {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: 600;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
 }
 
 .rol {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 

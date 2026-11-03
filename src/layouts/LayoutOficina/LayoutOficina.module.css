@@ -1,4 +1,4 @@
-/* Layout de oficina: Guía Web 3.2. */
+/* Layout de oficina: sistema de diseño de Figma (DESIGN.md, 4.3 y 5). */
 .layout {
   display: grid;
   grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
@@ -20,6 +20,16 @@
 
 .contenido:focus {
   outline: none;
+}
+
+/* Título de la página: estilo Título página de Figma, encima del contenido. */
+.titulo {
+  margin-bottom: var(--space-6);
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  letter-spacing: var(--type-titulo-pagina-tracking);
+  color: var(--color-text-primary);
 }
 
 /* «Saltar al contenido»: visible solo al recibir el foco. */

@@ -149,7 +149,7 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 | Menú lateral | `layouts/LayoutOficina/MenuLateral`, entradas en `entradasMenuLateral.ts` | Estado: Expandido; Comprimido pendiente (AV-342) | un solo elemento activo: prefijo más largo, módulo o subentrada |
 | Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo (`aria-current="page"`), Deshabilitado («Próximamente») | 32 px, Pequeño; activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
 | Elemento compacto | pendiente, fase 2 | Estado: Normal, Activo | menú comprimido, solo icono |
-| Cabecera | `layouts/LayoutOficina/Cabecera` | migas, acciones de la derecha | el título de página va en el contenido, no en la cabecera |
+| Cabecera | `layouts/LayoutOficina/Cabecera` | 52 px · migas a la izquierda; búsqueda y usuario a la derecha | el título de página (h1) lo pinta `LayoutOficina` al principio del contenido |
 | Barra superior móvil | pendiente, fase 2 | | título y acción principal en móvil |
 | Barra inferior y Pestaña inferior | pendiente, fase 2 | Barra inferior · Planificación, · Capataz · Activa: Sí, No | de 3 a 5 secciones en móvil |
 
