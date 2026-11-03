@@ -4,7 +4,8 @@
  *
  * Fondo de panel, borde neutro, radio lg y Sombra sm. Relleno `normal` (16px) o `amplio` (24px): el texto nunca
  * queda pegado al borde. Con `titulo` es una región con nombre (`section` + encabezado); `acciones` va a la
- * derecha del título. Sustituye a las tarjetas que cada pantalla componía con su propio CSS.
+ * derecha del título. Sin título, `etiqueta` o `etiquetadaPor` la nombran como región. Sustituye a las
+ * tarjetas que cada pantalla componía con su propio CSS.
  */
 import { useId, type ReactNode } from 'react'
 import estilos from './Tarjeta.module.css'
@@ -19,6 +20,10 @@ export interface TarjetaProps {
   /** Botones o enlaces a la derecha del título. */
   acciones?: ReactNode
   relleno?: 'normal' | 'amplio'
+  /** Nombre accesible sin título visible: la tarjeta pasa a ser una región (`section` con `aria-label`). */
+  etiqueta?: string
+  /** Id del encabezado propio que nombra la región, cuando el título no es el estándar (`aria-labelledby`). */
+  etiquetadaPor?: string
   className?: string
   children?: ReactNode
 }
@@ -29,12 +34,21 @@ export default function Tarjeta({
   descripcion,
   acciones,
   relleno = 'normal',
+  etiqueta,
+  etiquetadaPor,
   className,
   children,
 }: TarjetaProps) {
   const idTitulo = useId()
   const clases = [estilos.tarjeta, estilos[relleno], className].filter(Boolean).join(' ')
-  if (!titulo) return <div className={clases}>{children}</div>
+  if (!titulo) {
+    if (!etiqueta && !etiquetadaPor) return <div className={clases}>{children}</div>
+    return (
+      <section className={clases} aria-label={etiqueta} aria-labelledby={etiquetadaPor}>
+        {children}
+      </section>
+    )
+  }
 
   const Encabezado = (`h${nivel}` as const)
   return (

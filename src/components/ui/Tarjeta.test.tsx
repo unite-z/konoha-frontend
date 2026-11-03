@@ -28,6 +28,20 @@ describe('Tarjeta', () => {
     expect(screen.getByText('Solo contenido')).toBeTruthy()
   })
 
+  it('sin título, con etiqueta o con un encabezado propio, es una región con nombre', () => {
+    render(
+      <>
+        <Tarjeta etiqueta="Evidencias">x</Tarjeta>
+        <Tarjeta etiquetadaPor="titulo-propio">
+          <h2 id="titulo-propio">Poda del jardín central</h2>
+        </Tarjeta>
+      </>,
+    )
+
+    expect(screen.getByRole('region', { name: 'Evidencias' })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Poda del jardín central' })).toBeTruthy()
+  })
+
   it('los dos rellenos tienen aspecto distinto', () => {
     const { container } = render(
       <>

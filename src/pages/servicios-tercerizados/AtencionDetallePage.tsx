@@ -12,13 +12,15 @@ import { useLocation, useParams } from 'react-router'
 import LineaEstados from '../../components/tercerizados/LineaEstados'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
 import AvisoTemporal from '../../components/ui/AvisoTemporal'
-import Badge from '../../components/ui/Badge'
 import { BotonEnlace } from '../../components/ui/Boton'
+import Estado from '../../components/ui/Estado'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import ListaDescripcion from '../../components/ui/ListaDescripcion'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
+import Tarjeta from '../../components/ui/Tarjeta'
+import { insigniaAEstado } from '../../components/ui/tonos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../router/rutasApp'
@@ -100,15 +102,15 @@ function Ficha({
 
   return (
     <>
-      <section className={estilos.superficie} aria-labelledby="titulo-atencion">
+      <Tarjeta relleno="amplio" etiquetadaPor="titulo-atencion">
         <div className={estilos.cabeceraFicha}>
           <h2 id="titulo-atencion" ref={titulo} tabIndex={-1} className={`${estilos.tituloPrincipal} ${estilos.textoLargo}`}>
             {atencion.descripcion}
           </h2>
           <span className={estilos.enLinea}>
-            <Badge {...insigniaEstado(atencion.estado)} />
+            <Estado {...insigniaAEstado(insigniaEstado(atencion.estado))} />
             {atencion.es_riesgo && (
-              <Badge tono="advertencia" texto="Atención de riesgo" ayuda="El inicio queda bloqueado hasta integrar la revisión de seguridad" />
+              <Estado tono="aviso" texto="Atención de riesgo" ayuda="El inicio queda bloqueado hasta integrar la revisión de seguridad" />
             )}
           </span>
         </div>
@@ -133,13 +135,10 @@ function Ficha({
         />
         <LineaEstados estado={atencion.estado} historial={atencion.historial} />
         {acciones}
-      </section>
+      </Tarjeta>
 
       <div className={estilos.columnas}>
-        <section className={estilos.superficie} aria-labelledby="titulo-ejecucion">
-          <h2 id="titulo-ejecucion" className={estilos.tituloSeccion}>
-            Ejecución
-          </h2>
+        <Tarjeta titulo="Ejecución" relleno="amplio">
           <ListaDescripcion
             columnas="una"
             elementos={[
@@ -149,16 +148,10 @@ function Ficha({
             ]}
           />
           <p className={estilos.ayuda}>Fechas y horas de Lima.</p>
-        </section>
+        </Tarjeta>
 
         {esSolicitudUnidad ? (
-          <section className={estilos.superficie} aria-labelledby="titulo-acuerdo">
-            <div className={estilos.cabeceraSeccion}>
-              <h2 id="titulo-acuerdo" className={estilos.tituloSeccion}>
-                Acuerdo de la unidad
-              </h2>
-              <Badge {...acuerdo} />
-            </div>
+          <Tarjeta titulo="Acuerdo de la unidad" relleno="amplio" acciones={<Estado {...insigniaAEstado(acuerdo)} />}>
             <ListaDescripcion
               columnas="una"
               elementos={[
@@ -173,15 +166,12 @@ function Ficha({
             <AvisoEnLinea tono="info">
               El acuerdo de la unidad no sustituye la conformidad del jefe de sección ni cierra la atención.
             </AvisoEnLinea>
-          </section>
+          </Tarjeta>
         ) : (
-          <section className={estilos.superficie} aria-labelledby="titulo-origen">
-            <h2 id="titulo-origen" className={estilos.tituloSeccion}>
-              Origen
-            </h2>
+          <Tarjeta titulo="Origen" relleno="amplio">
             <p>{textoOrigen(atencion.origen)}</p>
             <p className={estilos.ayuda}>El acuerdo de una unidad solo aplica a atenciones solicitadas por una unidad.</p>
-          </section>
+          </Tarjeta>
         )}
       </div>
 
@@ -204,10 +194,7 @@ function Ficha({
 
       <DocumentosProveedor atencion={atencion} version={versionDocumentos} />
 
-      <section className={estilos.superficie} aria-labelledby="titulo-historial">
-        <h2 id="titulo-historial" className={estilos.tituloSeccion}>
-          Historial de estados
-        </h2>
+      <Tarjeta titulo="Historial de estados" relleno="amplio">
         <ol className={estilos.historial}>
           {[...atencion.historial].reverse().map((cambio, indice) => (
             <li key={`${cambio.fecha_hora}-${indice}`}>
@@ -220,16 +207,16 @@ function Ficha({
             </li>
           ))}
         </ol>
-      </section>
+      </Tarjeta>
 
       {/* RF-T-007 y RF-T-008: componentes comunes de MOD-01, con la sesión de MOD-01. */}
-      <section className={estilos.superficie} aria-label="Evidencias de la atención">
+      <Tarjeta relleno="amplio" etiqueta="Evidencias de la atención">
         <Adjuntos entidad="atencion" registroId={atencion.id} puedeAdjuntar={puedeAdjuntar} />
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.superficie} aria-label="Historial de cambios de la atención">
+      <Tarjeta relleno="amplio" etiqueta="Historial de cambios de la atención">
         <HistorialCambios entidad="atencion" registroId={atencion.id} />
-      </section>
+      </Tarjeta>
     </>
   )
 }
@@ -259,7 +246,7 @@ export default function AtencionDetallePage() {
   ])
 
   const volver = (
-    <BotonEnlace to={volverA} variante="terciario">
+    <BotonEnlace to={volverA} variante="fantasma">
       Volver a la bandeja
     </BotonEnlace>
   )

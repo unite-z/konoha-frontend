@@ -1,4 +1,4 @@
-/* Pantallas de MOD-05 «Servicios tercerizados»: espaciado de la Guía Web 4.1. */
+/* Pantallas de MOD-05 «Servicios tercerizados»: solo layout; paneles con Tarjeta y estados con Estado. */
 
 /* Entre grupos: 24px. */
 .pagina {
@@ -14,16 +14,6 @@
   gap: var(--space-4);
 }
 
-.superficie {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  min-width: 0;
-}
 
 .cabeceraSeccion {
   display: flex;
@@ -33,16 +23,17 @@
   gap: var(--space-2) var(--space-4);
 }
 
+/* Encabezados dentro de una Tarjeta o sobre una tabla: estilo Título tarjeta. */
 .tituloSeccion {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .tituloPrincipal {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
   overflow-wrap: anywhere;
 }
 
@@ -52,8 +43,8 @@
 }
 
 .ayuda {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
@@ -75,20 +66,12 @@
 
 /* --- Bandeja ---------------------------------------------------------------------------------------- */
 
-.barraAcciones {
-  display: flex;
-  justify-content: flex-end;
-}
 
 .barraFiltros {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
 }
 
 .barraFiltros > .busqueda {
@@ -99,23 +82,12 @@
   flex: 1 1 12rem;
 }
 
-/* El botón se alinea con los campos: deja el espacio de la etiqueta encima. */
+/* El botón no tiene etiqueta: baja lo que ocupa la etiqueta de los campos para quedar en su línea. */
 .accionFiltros {
-  padding-top: calc(var(--type-label-md-line) + var(--space-1));
+  padding-top: calc(var(--type-pequeno-line) + var(--space-1));
 }
 
-.filaEstados {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-}
 
-.rotulo {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-}
 
 .resumenResultados {
   color: var(--color-text-secondary);
@@ -194,8 +166,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--green-100);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--web-border-subtle);
+}
+
+.historial li:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 @media (max-width: 1023px) {
@@ -203,9 +180,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .superficie {
-    padding: var(--space-4);
-  }
 }
 
 @media (max-width: 767px) {
@@ -238,7 +212,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
