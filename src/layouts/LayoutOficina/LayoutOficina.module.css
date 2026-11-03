@@ -53,15 +53,37 @@
   transform: none;
 }
 
-/* Adaptación de MOD-04 para el registro en campo; los otros módulos conservan su layout. */
+/* Móvil: una columna, menú lateral como panel sobre velo y hueco para la Barra inferior. */
 @media (max-width: 767px) {
-  .campo { grid-template-columns: minmax(0,1fr); }
-  .campo > aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--color-border-default); }
-  .campo > aside > p, .campo > aside nav > p { display: none; }
-  .campo > aside nav { padding: var(--space-2) var(--space-4); }
-  .campo > aside nav > ul > li:not(:has(> a[href^='/operacion-campo'])) { display: none; }
-  .campo > aside nav > ul > li > ul { flex-direction: row; padding-left: 0; overflow-x: auto; }
-  .campo > aside nav > ul > li > ul a { white-space: nowrap; }
-  .campo header { align-items: stretch; flex-direction: column; padding: var(--space-4); gap: var(--space-3); }
-  .campo .contenido { padding: var(--space-4); }
+  .layout,
+  .menuComprimido {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .layout > aside {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    width: var(--web-sidebar-width);
+    box-shadow: var(--web-elev-3);
+    transform: translateX(-100%);
+    transition: transform var(--duracion-transicion);
+  }
+
+  .menuAbierto > aside {
+    transform: none;
+  }
+
+  .velo {
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: var(--web-scrim);
+  }
+
+  .contenido {
+    padding: var(--space-4) var(--space-4) calc(var(--space-12) + var(--space-6));
+  }
 }

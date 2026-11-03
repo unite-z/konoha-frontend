@@ -11,7 +11,7 @@ import {
   rutaDetalleUsuario,
   rutaRevisionExtraccion,
 } from '../../router/rutasApp'
-import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
+import { MODULOS_MENU, activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
 
 /** Todas las rutas con menú de la aplicación, más ejemplos de rutas con parámetros. */
 const RUTAS_CON_MENU = [
@@ -54,5 +54,17 @@ describe('activoEnMenu', () => {
   it('las rutas sin menú no marcan nada', () => {
     expect(activoEnMenu('/')).toEqual({ modulo: null, hijo: null })
     expect(activoEnMenu(RUTAS_CORE.ingreso)).toEqual({ modulo: null, hijo: null })
+  })
+})
+
+describe('seccionesMoviles', () => {
+  it('devuelve las subentradas con enlace del módulo activo, como mucho 5', () => {
+    expect(seccionesMoviles(RUTAS_PLANIFICACION.restricciones).map((s) => s.texto)).toEqual([
+      'Servicios periódicos',
+      'Calendario de restricciones',
+    ])
+    expect(seccionesMoviles(RUTAS.panel)).toHaveLength(5)
+    expect(seccionesMoviles(RUTAS_CORE.repositorio)).toEqual([])
+    expect(seccionesMoviles('/')).toEqual([])
   })
 })

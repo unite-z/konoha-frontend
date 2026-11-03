@@ -70,9 +70,11 @@ export interface MenuLateralProps {
   /** Solo iconos de primer nivel. */
   comprimido?: boolean
   onAlternarComprimido?: () => void
+  /** En móvil el menú es un panel: botón «Cerrar menú». */
+  onCerrarMovil?: () => void
 }
 
-export default function MenuLateral({ comprimido = false, onAlternarComprimido }: MenuLateralProps) {
+export default function MenuLateral({ comprimido = false, onAlternarComprimido, onCerrarMovil }: MenuLateralProps) {
   const { pathname } = useLocation()
   const sesion = useSesionActiva()
   const permitidas = entradasMenu(sesion)
@@ -98,6 +100,11 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido }
             onClick={onAlternarComprimido}
           >
             <Icono nombre="panel-left" tamano="base" />
+          </button>
+        )}
+        {onCerrarMovil && (
+          <button type="button" className={estilos.cerrarMovil} aria-label="Cerrar menú" onClick={onCerrarMovil}>
+            <Icono nombre="x" tamano="base" />
           </button>
         )}
       </div>

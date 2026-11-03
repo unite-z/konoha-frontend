@@ -6,7 +6,8 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 |---|---|
 | `LayoutOficina.tsx` | rejilla con menú lateral, cabecera y contenido; pinta el h1 de la página al principio del contenido |
 | `MenuLateral.tsx` | menú principal por permisos |
-| `entradasMenuLateral.ts` | entradas de cada módulo y regla única del elemento activo, con prueba |
+| `entradasMenuLateral.ts` | entradas de cada módulo (con iconos), regla única del elemento activo y secciones móviles, con prueba |
+| `BarrasMoviles.tsx` | Barra superior móvil y Barra inferior, por debajo de 768 px |
 | `Cabecera.tsx` | migas de la página; búsqueda global y usuario con su rol (sin título) |
 | `BarraContexto.tsx` | migas de pan |
 | `ContextoPagina.ts` | título y migas que declara cada página con `usePaginaActual` |
@@ -17,7 +18,7 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 - Sin barra de acento vertical en el elemento activo: el diseño de Figma marca el activo con fondo (`menu/activo`) y texto (`menu/texto-activo`).
 
 **No va aquí:**
-- Estilos de pantallas concretas. La excepción heredada de MOD-04 (`@media` con `a[href^='/operacion-campo']` en `LayoutOficina.module.css`) se sustituirá por la navegación móvil.
+- Estilos de pantallas concretas: la navegación móvil es la misma para todos los módulos.
 - Permisos: el menú los lee de `config/permisosCore.ts` (`entradasMenu`, `puede`).
 
 **Ejemplo:** `CoberturasPage.tsx` llama a `usePaginaActual` con `MIGAS_INVENTARIO` y la cabecera pinta «Áreas verdes / Coberturas vegetales».

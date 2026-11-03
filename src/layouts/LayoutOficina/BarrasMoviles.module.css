@@ -1,0 +1,78 @@
+/* Barra superior móvil, Barra inferior y Pestaña inferior: sistema de diseño de Figma (DESIGN.md, 4.3). */
+.superior,
+.inferior {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .superior {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--web-header-height);
+    padding: 0 var(--space-2);
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  .inferior {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    background: var(--color-bg-surface);
+    border-top: 1px solid var(--color-border-default);
+  }
+}
+
+.botonMenu {
+  display: flex;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.titulo {
+  overflow: hidden;
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pestaña inferior: icono sobre texto; la actual con el color de menú activo. */
+.pestana {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2) var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  text-align: center;
+  text-decoration: none;
+}
+
+.pestana span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actual {
+  color: var(--color-sidebar-active-text);
+  font-weight: var(--type-pequeno-medio-weight);
+}
