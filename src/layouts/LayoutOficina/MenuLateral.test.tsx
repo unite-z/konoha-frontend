@@ -64,6 +64,25 @@ describe('MenuLateral', () => {
     expect(within(menu).queryByRole('link', { name: 'Áreas verdes y mapa' })).toBeNull()
     expect(within(menu).queryByRole('link', { name: 'Usuarios y roles' })).toBeNull()
   })
+
+  it('solo el grupo del módulo activo empieza desplegado; el chevron lo pliega y despliega', async () => {
+    const usuario = userEvent.setup()
+    const menu = pintar(RUTAS_INVENTARIO.coberturas)
+
+    const inventario = within(menu).getByRole('button', { name: 'Plegar Áreas verdes y mapa' })
+    expect(inventario.getAttribute('aria-expanded')).toBe('true')
+    const planificacion = within(menu).getByRole('button', { name: 'Desplegar Planificación' })
+    expect(planificacion.getAttribute('aria-expanded')).toBe('false')
+    expect(within(menu).queryByRole('link', { name: 'Servicios periódicos' })).toBeNull()
+
+    await usuario.click(planificacion)
+    expect(planificacion.getAttribute('aria-expanded')).toBe('true')
+    expect(within(menu).getByRole('link', { name: 'Servicios periódicos' })).toBeTruthy()
+
+    await usuario.click(inventario)
+    expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
+    expect(within(menu).getByRole('link', { name: 'Áreas verdes y mapa' }).hasAttribute('data-modulo-activo')).toBe(true)
+  })
 })
 
 describe('MenuLateral comprimido', () => {
@@ -86,6 +105,13 @@ describe('MenuLateral comprimido', () => {
     const modulo = within(menu).getByRole('link', { name: 'Áreas verdes y mapa' })
     expect(modulo.hasAttribute('data-modulo-activo')).toBe(true)
     expect(modulo.querySelector('svg')).not.toBeNull()
+  })
+
+  it('arriba está el logo de la marca', () => {
+    pintarComprimido(RUTAS_PLANIFICACION.servicios)
+
+    const marca = screen.getByText('Áreas Verdes').closest('div')
+    expect(marca?.querySelector('[aria-hidden="true"] svg')).not.toBeNull()
   })
 
   it('el botón de la marca es un interruptor para fijar el menú abierto', async () => {
