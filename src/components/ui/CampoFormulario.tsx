@@ -1,7 +1,8 @@
 /**
  * Controles de formulario: componente «Campo» del sistema de diseño de Figma (DESIGN.md, sección 4.1).
  *
- * - `CampoFormulario`: campo de una línea (`<input>`).
+ * - `CampoFormulario`: campo de una línea (`<input>`). Con `type="date"` o `type="time"` es «Campo · fecha»
+ *   o «Campo · hora» (selector nativo del navegador). Con `compacto`, «Campo · compacto».
  * - `AreaTexto`: campo de varias líneas (`<textarea>`).
  * - `MarcoCampo`: etiqueta, ayuda y error comunes (también lo usa `Selector`).
  * - `LeyendaObligatorio`: leyenda «* Campo obligatorio» encima del formulario.
@@ -66,14 +67,14 @@ export type CampoFormularioProps = PropsMarcoCampo & Omit<InputHTMLAttributes<HT
 
 /** Campo de una línea. */
 export default function CampoFormulario(props: CampoFormularioProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, className, ...resto } = props
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, ...resto } = props
   const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
   return (
     <MarcoCampo {...marco}>
       <input
         {...resto}
         id={id}
-        className={clasesDeControl(error, Boolean(bloqueadoMotivo), className)}
+        className={clasesDeControl(error, Boolean(bloqueadoMotivo), className, compacto)}
         aria-invalid={error ? true : undefined}
         aria-required={obligatorio || undefined}
         aria-describedby={idsDescripcion(marco)}
@@ -87,7 +88,7 @@ export type AreaTextoProps = PropsMarcoCampo & Omit<TextareaHTMLAttributes<HTMLT
 
 /** Campo de varias líneas. */
 export function AreaTexto(props: AreaTextoProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, className, ...resto } = props
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, ...resto } = props
   const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
   return (
     <MarcoCampo {...marco}>
@@ -95,7 +96,7 @@ export function AreaTexto(props: AreaTextoProps) {
         rows={3}
         {...resto}
         id={id}
-        className={clasesDeControl(error, Boolean(bloqueadoMotivo), `${estilos.area} ${className ?? ''}`)}
+        className={clasesDeControl(error, Boolean(bloqueadoMotivo), `${estilos.area} ${className ?? ''}`, compacto)}
         aria-invalid={error ? true : undefined}
         aria-required={obligatorio || undefined}
         aria-describedby={idsDescripcion(marco)}

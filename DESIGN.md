@@ -118,10 +118,10 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Radio compacto | `GrupoOpciones` | `fieldset` con `legend` · filas con borde, la elegida en acento · `deshabilitada` y `error` | una opción entre pocas, visibles | más de 5 opciones (Desplegable) |
 | Opción | `GrupoOpciones` con `descripcion` en las opciones | tarjeta con texto y descripción · la elegida con borde de 2 px en acento | una opción entre pocas con descripción | listas largas |
 | Campo | `CampoFormulario`, `AreaTexto` | 36 px · `error` · `bloqueadoMotivo` (deshabilitado) · `ayuda` debajo del control · `obligatorio` | cualquier entrada de formulario, con etiqueta siempre visible | dentro de una tabla (Campo · compacto) |
-| Campo · compacto | pendiente, fase 1 | Estado: Normal, Error | filtros en barra y celdas de tabla editables | formularios completos |
-| Campo · fecha | pendiente, fase 1 (sobre `input type="date"`) | Estado: Normal, Seleccionada, Error | fechas sueltas o rangos «Desde / Hasta» | fecha con hora en un solo campo |
-| Campo · hora | pendiente, fase 1 (sobre `input type="time"`) | Estado: Vacío, Seleccionada, Error | franjas horarias | duraciones (Campo numérico) |
-| Desplegable · campo | `Selector`, `SelectorBuscable` | Estado: Normal, Seleccionado, Deshabilitado | elegir uno de un catálogo; `SelectorBuscable` si pasa de 10 | 2 o 3 opciones (Radio) |
+| Campo · compacto | `CampoFormulario compacto`, `Selector compacto` | 32 px, texto Pequeño · `error` | filtros en barra y celdas de tabla editables | formularios completos |
+| Campo · fecha | `CampoFormulario type="date"` | selector nativo del navegador con el icono atenuado · `error` | fechas sueltas o rangos «Desde / Hasta» | fecha con hora en un solo campo |
+| Campo · hora | `CampoFormulario type="time"` | selector nativo del navegador · `error` | franjas horarias | duraciones (Campo numérico) |
+| Desplegable · campo | `Selector`, `SelectorBuscable` | `select` nativo con `chevron-down` · sin valor, en gris · `bloqueadoMotivo` · `compacto` | elegir uno de un catálogo; `SelectorBuscable` si pasa de 10 | 2 o 3 opciones (`GrupoOpciones`) |
 | Desplegable · opción | dentro de `SelectorBuscable` | Estado: Normal, Hover, Seleccionada, Deshabilitada | lista abierta del desplegable | fuera de un desplegable |
 | Pestaña | `Pestanas` | control segmentado sobre fondo sutil · activa en blanco con Sombra sm · `contador` | alternar vistas o filtros de estado de una misma lista | navegar a otro módulo (menú) |
 | Aviso | `AvisoEnLinea` | `tono`: `info`, `exito`, `advertencia` (Aviso), `error` · `titulo` del color del tono · `accion` | mensaje fijo en la página (plazo, bloqueo, coincidencia) | confirmar una acción ya hecha (Toast) |

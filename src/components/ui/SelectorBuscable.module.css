@@ -1,4 +1,4 @@
-/* SelectorBuscable: Guía Web 5.4. */
+/* SelectorBuscable: «Desplegable · campo» y «Desplegable · opción» de Figma (DESIGN.md, 4.1). */
 .contenedor {
   position: relative;
 }
@@ -14,7 +14,7 @@
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
-  box-shadow: var(--web-elev-2);
+  box-shadow: var(--web-elev-3);
 }
 
 .lista {
@@ -37,16 +37,16 @@
 }
 
 .detalle {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
 }
 
 .estado {
   padding: var(--space-2) var(--space-3);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
 }
 
 .estado:empty {
@@ -60,7 +60,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--type-body-sm-size);
+  font-size: var(--type-leyenda-size);
   color: var(--color-error);
 }
 
@@ -79,7 +79,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  min-height: 40px;
+  min-height: var(--web-control);
   padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
