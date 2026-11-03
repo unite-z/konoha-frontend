@@ -105,7 +105,7 @@
  * No se usan en código nuevo.
  */
 :root {
-  --color-text-secondary: var(--color-text-primary); /* sin equivalente en Figma (D5, pendiente de diseño) */
+  --color-text-secondary: var(--color-text-muted); /* Figma llama «texto/secundario» a --color-text-muted (D5) */
   --color-neutral-text: var(--color-text-muted);
   --color-neutral-bg: var(--color-bg-subtle);
   --web-border-subtle: var(--color-border-default);
