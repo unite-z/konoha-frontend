@@ -6,8 +6,9 @@
  * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
  * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
  *
- * Comprimido («Menú lateral · Comprimido» y «Elemento compacto» de Figma): solo los iconos de primer nivel, con
- * el nombre como texto accesible y `title`. El botón de la marca alterna entre expandido y comprimido.
+ * Comprimido por defecto («Menú lateral · Comprimido» y «Elemento compacto» de Figma): solo los iconos de primer
+ * nivel, con el nombre como texto accesible y `title`. Al pasar el cursor, o con el foco del teclado dentro, se
+ * despliega por encima del contenido sin moverlo. El botón de la marca fija el menú abierto.
  *
  * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
  * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
@@ -53,12 +54,21 @@ function SinEnlace({ texto, icono, secundaria = false }: PropsEntrada) {
   )
 }
 
-function Entrada({ texto, icono, ruta, activa, secundaria = false }: PropsEntrada & { ruta: string; activa: boolean }) {
+function Entrada({
+  texto,
+  icono,
+  ruta,
+  activa,
+  moduloActivo = false,
+  secundaria = false,
+}: PropsEntrada & { ruta: string; activa: boolean; moduloActivo?: boolean }) {
   return (
     <Link
       to={ruta}
       className={[estilos.item, secundaria && estilos.sub, activa && estilos.activo].filter(Boolean).join(' ')}
       aria-current={activa ? 'page' : undefined}
+      // Comprimido sin desplegar: se marca el módulo, porque sus subentradas no se ven.
+      data-modulo-activo={moduloActivo || undefined}
       title={texto}
     >
       <Etiqueta texto={texto} icono={icono} />
@@ -67,7 +77,7 @@ function Entrada({ texto, icono, ruta, activa, secundaria = false }: PropsEntrad
 }
 
 export interface MenuLateralProps {
-  /** Solo iconos de primer nivel. */
+  /** Solo iconos de primer nivel hasta que se pasa el cursor o el foco entra en el menú. */
   comprimido?: boolean
   onAlternarComprimido?: () => void
   /** En móvil el menú es un panel: botón «Cerrar menú». */
@@ -94,9 +104,9 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
           <button
             type="button"
             className={estilos.alternar}
-            aria-label={comprimido ? 'Expandir menú' : 'Comprimir menú'}
-            aria-pressed={comprimido}
-            title={comprimido ? 'Expandir menú' : 'Comprimir menú'}
+            aria-label="Fijar menú abierto"
+            aria-pressed={!comprimido}
+            title={comprimido ? 'Fijar menú abierto' : 'Comprimir menú'}
             onClick={onAlternarComprimido}
           >
             <Icono nombre="panel-left" tamano="base" />
@@ -121,14 +131,14 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
             return (
               <li key={modulo.texto}>
                 {/* El módulo solo se marca si ninguna de sus entradas lo está: un único activo a la vista. */}
-                {/* Comprimido: sin subentradas, así que el módulo se marca si es el activo. */}
                 <Entrada
                   texto={modulo.texto}
                   icono={modulo.icono}
                   ruta={modulo.ruta}
-                  activa={esActivo && (comprimido || !activo.hijo)}
+                  activa={esActivo && !activo.hijo}
+                  moduloActivo={esActivo && Boolean(activo.hijo)}
                 />
-                {modulo.hijos && !comprimido && (
+                {modulo.hijos && (
                   <ul className={`${estilos.lista} ${estilos.segundoNivel}`}>
                     {modulo.hijos.map((hijo) =>
                       hijo.ruta ? (

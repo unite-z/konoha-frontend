@@ -146,7 +146,7 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 
 | Figma | Código | Variantes | Notas |
 |---|---|---|---|
-| Menú lateral | `layouts/LayoutOficina/MenuLateral`, entradas en `entradasMenuLateral.ts` | Estado: Expandido, Comprimido (botón `panel-left`; se recuerda en el navegador) · marca con logo de hoja | un solo elemento activo: prefijo más largo, módulo o subentrada |
+| Menú lateral | `layouts/LayoutOficina/MenuLateral`, entradas en `entradasMenuLateral.ts` | **comprimido por defecto**; se despliega al pasar el cursor o con el foco dentro, por encima del contenido; el botón `panel-left` lo fija abierto (se recuerda en el navegador) · marca con logo de hoja | un solo elemento activo: prefijo más largo, módulo o subentrada |
 | Elemento de menú | dentro de `MenuLateral` | Nivel: Principal, Sub · Estado: Normal, Activo (`aria-current="page"`), Deshabilitado («Próximamente») | 32 px, Pequeño; activo con `menu/activo` y `menu/texto-activo`, sin barra lateral |
 | Elemento compacto | `MenuLateral comprimido` | Estado: Normal, Activo | solo el icono del módulo, con su nombre como texto accesible y `title` |
 | Cabecera | `layouts/LayoutOficina/Cabecera` | 52 px · migas a la izquierda; búsqueda y usuario a la derecha | el título de página (h1) lo pinta `LayoutOficina` al principio del contenido |
