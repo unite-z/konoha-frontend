@@ -119,7 +119,7 @@ export default function GraficoAgrupado<F>({ filas, agrupaciones, unidadDe, onVe
           <p className="cifra">
             Mostrando {formatearNumero(visibles.length)} de {formatearNumero(grupos.length)}
           </p>
-          <Boton variante="terciario" onClick={() => setVerTodas((v) => !v)}>
+          <Boton variante="fantasma" onClick={() => setVerTodas((v) => !v)}>
             {verTodas ? 'Ver menos' : `Ver todas (${formatearNumero(grupos.length)})`}
           </Boton>
         </div>

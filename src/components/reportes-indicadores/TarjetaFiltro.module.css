@@ -1,9 +1,9 @@
-/* TarjetaFiltro: TarjetaIndicador (Guía Web 5.7) usada como filtro. */
+/* TarjetaFiltro: TarjetaIndicador usada como filtro; activa, fondo y anillo de acento del sistema. */
 .tarjeta {
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 .tarjeta > :first-child {
@@ -16,8 +16,8 @@
 
 .activa > :first-child,
 .activa:hover > :first-child {
-  background: var(--green-50);
-  box-shadow: 0 0 0 2px var(--green-700);
+  background: var(--color-action-subtle);
+  box-shadow: 0 0 0 2px var(--color-action-primary);
 }
 
 .boton {
@@ -25,7 +25,7 @@
   inset: 0;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: transparent;
   cursor: pointer;
 }

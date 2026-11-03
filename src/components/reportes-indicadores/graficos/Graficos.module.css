@@ -27,9 +27,9 @@
 }
 
 .tituloGrafico {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
 }
 
 .total {
@@ -39,15 +39,15 @@
 }
 
 .etiquetaTotal {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 
 .valorTotal {
-  font-size: var(--type-heading-lg-size);
-  line-height: var(--type-heading-lg-line);
-  font-weight: var(--type-heading-lg-weight);
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
   color: var(--color-text-primary);
 }
 
@@ -65,10 +65,10 @@
 }
 
 .etiquetaControl {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 /* Parte elegida y «Ver detalles». */
@@ -102,8 +102,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-secondary);
 }
 .leyenda li {

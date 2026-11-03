@@ -1,6 +1,9 @@
 /**
  * Barras horizontales de los gráficos del MOD-06, con su eje de valores. En «agrupadas», cada grupo (clase de
  * actividad) va seguido de sus subgrupos (tipos), más claros y finos.
+ *
+ * Excepción al sistema (AV-351): cada barra es un `<button>` con `aria-pressed` porque es un dato que filtra el
+ * detalle; su aspecto es el de la barra, no el de `Boton`.
  */
 import { porcentaje } from './escala'
 import estilos from './Barras.module.css'

@@ -6,8 +6,9 @@
 import type { MetadatosIA } from '../../types/ia'
 import { insigniaSuficiencia } from '../../utils/estados'
 import AvisoEnLinea from '../ui/AvisoEnLinea'
-import Badge from '../ui/Badge'
+import Estado from '../ui/Estado'
 import Icono from '../ui/Icono'
+import { insigniaAEstado } from '../ui/tonos'
 import estilos from './BloqueContextoIA.module.css'
 
 export interface BloqueContextoIAProps {
@@ -37,7 +38,7 @@ export default function BloqueContextoIA({ contexto, tituloFaltantes }: BloqueCo
         <h2 id="titulo-contexto-ia" className={estilos.encabezado}>
           <Icono nombre="destello" tamano="sm" /> Con qué trabajó la IA
         </h2>
-        <Badge {...insigniaSuficiencia(contexto.suficiencia)} />
+        <Estado {...insigniaAEstado(insigniaSuficiencia(contexto.suficiencia))} />
       </div>
       {contexto.faltantes.length > 0 && (
         <AvisoEnLinea tono="advertencia" titulo={tituloFaltantes}>

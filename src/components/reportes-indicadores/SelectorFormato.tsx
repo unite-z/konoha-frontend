@@ -1,10 +1,10 @@
 /**
- * Elección del formato de una exportación (RF-REP-009): radios con aspecto de chip, como las decisiones de la
- * revisión con IA. Solo muestra los formatos que admite el tipo de reporte.
+ * Elección del formato de una exportación (RF-REP-009) con `GrupoOpciones` (Radio compacto del sistema).
+ * Solo muestra los formatos que admite el tipo de reporte.
  */
+import GrupoOpciones from '../ui/GrupoOpciones'
 import type { FormatoSalida } from '../../types/exportaciones'
 import { TEXTO_FORMATO } from '../../utils/exportaciones'
-import estilos from './SelectorFormato.module.css'
 
 export interface SelectorFormatoProps {
   /** Prefijo del `name` de los radios (único en la página). */
@@ -16,22 +16,12 @@ export interface SelectorFormatoProps {
 
 export default function SelectorFormato({ nombre, formatos, valor, onCambiar }: SelectorFormatoProps) {
   return (
-    <fieldset className={estilos.grupo}>
-      <legend className={estilos.leyenda}>Formato</legend>
-      <div className={estilos.opciones}>
-        {formatos.map((formato) => (
-          <label key={formato} className={`${estilos.opcion} ${formato === valor ? estilos.opcionElegida : ''}`}>
-            <input
-              type="radio"
-              name={`${nombre}-formato`}
-              value={formato}
-              checked={formato === valor}
-              onChange={() => onCambiar(formato)}
-            />
-            {TEXTO_FORMATO[formato]}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <GrupoOpciones
+      etiqueta="Formato"
+      nombre={`${nombre}-formato`}
+      opciones={formatos.map((formato) => ({ valor: formato, texto: TEXTO_FORMATO[formato] }))}
+      valor={valor}
+      onCambiar={onCambiar}
+    />
   )
 }

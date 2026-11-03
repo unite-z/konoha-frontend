@@ -1,6 +1,9 @@
 /**
  * TarjetaFiltro: una TarjetaIndicador que también es un filtro. Un botón transparente cubre la tarjeta
- * (`aria-pressed`); activa, la tarjeta se marca con fondo y anillo verdes.
+ * (`aria-pressed`); activa, la tarjeta se marca con fondo y anillo de acento.
+ *
+ * Excepción al sistema (AV-351): el `<button>` superpuesto es transparente y cubre la tarjeta entera; `Boton` no
+ * sirve porque no tiene aspecto propio.
  */
 import type { ReactNode } from 'react'
 import estilos from './TarjetaFiltro.module.css'

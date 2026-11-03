@@ -9,7 +9,7 @@
 
 /* Deja encima el mismo espacio que el valor de cada columna para alinear las marcas con las líneas guía. */
 .eje {
-  padding-top: calc(1px + var(--space-2) + var(--type-body-md-line) + var(--space-1));
+  padding-top: calc(1px + var(--space-2) + var(--type-cuerpo-line) + var(--space-1));
 }
 
 .marcas {
@@ -17,8 +17,8 @@
   flex-direction: column;
   justify-content: space-between;
   height: var(--altura-columnas);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
   text-align: right;
   white-space: nowrap;
@@ -67,15 +67,15 @@
 }
 
 .valor {
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
   white-space: nowrap;
 }
 
 .fecha {
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -95,17 +95,17 @@
   width: 60%;
   max-width: 4rem;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 
 /* Columna elegida. */
 .activa,
 .activa:hover {
-  background: var(--green-50);
-  border-color: var(--green-700);
+  background: var(--color-action-subtle);
+  border-color: var(--color-action-primary);
 }
 .activa .relleno {
-  background: var(--green-900);
+  background: var(--color-action-primary-hover);
 }
 
 @media (max-width: 767px) {
