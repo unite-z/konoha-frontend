@@ -1,90 +1,29 @@
 /**
- * Menú lateral (Arquitectura de la Información 1.3 y 1.4.1; Guía Web 3.2 y 4.2).
+ * Menú lateral: «Menú lateral» y «Elemento de menú» del sistema de diseño de Figma (DESIGN.md, 4.3).
  *
- * Primer nivel con las 8 etiquetas de negocio. «Reportes e indicadores» (MOD-06), «Servicios tercerizados»
- * (MOD-05) y «Planificación» (MOD-03) tienen enlaces; el resto aún no está disponible y se muestra sin enlace (`aria-disabled`), atenuado
- * y con «Próximamente» bajo el nombre. «Configuración» solo es visible en la vista de Administrador.
+ * Las entradas salen de `MODULOS_MENU` (`entradasMenuLateral.ts`) y el activo, de `activoEnMenu`: una única regla
+ * (prefijo más largo) para el módulo y para la entrada de segundo nivel, así que nunca hay dos marcados.
+ * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
+ * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
  *
- * Segundo nivel de «Servicios tercerizados»: Atenciones (con enlace), Proveedores y contratos y Control
- * fitosanitario (sin enlace: fuera de esta entrega).
- *
- * Segundo nivel de «Reportes e indicadores»: Panel, Reportes, Mapa de atenciones, Exportaciones y
- * Asistencia IA. «Panel», «Mapa de atenciones» y «Exportaciones» exigen la sesión de MOD-05 (su API usa HTTP
- * Basic).
- *
- * Sin iconos: la librería de iconos de menú está pendiente de decisión y el menú expandido lleva siempre
- * etiqueta.
- *
- * RF-T-004 («Menú por rol»): cada entrada con enlace aparece solo si el rol tiene el permiso. El capataz no
- * ve usuarios, contratos ni conformidades. Es usabilidad: el servidor vuelve a comprobarlo.
+ * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
+ * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
  */
-import { NavLink, useLocation } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
 import { useSesionActiva } from '../../sesion/ContextoSesion'
-import { RUTAS_CAMPO, esRutaCampo } from '../../router/rutasCampo'
-import {
-  PREFIJO_MODULO,
-  PREFIJO_USUARIOS,
-  RUTAS,
-  RUTAS_CORE,
-  RUTAS_INVENTARIO,
-  RUTAS_PLANIFICACION,
-  RUTAS_TERCERIZADOS,
-  esRutaPlanificacion,
-  esRutaInventario,
-  esRutaTercerizados,
-} from '../../router/rutasApp'
+import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
 import estilos from './MenuLateral.module.css'
 
-/** Entradas de primer nivel que pertenecen a otros módulos (sin enlace). */
-const OTROS_MODULOS_ANTES = ['Inicio']
-
-/** Entradas de primer nivel de otros módulos entre «Servicios tercerizados» y «Reportes e indicadores». */
-const OTROS_MODULOS_ENTRE = ['Incidencias']
-
-interface EntradaSegundoNivel {
-  texto: string
-  ruta?: string
-}
-
-/** Segundo nivel de «Servicios tercerizados» (MOD-05). */
-const SEGUNDO_NIVEL_TERCERIZADOS: EntradaSegundoNivel[] = [
-  { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones }, // RF-SER-003 a 006 y 011
-  { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos }, // RF-SER-001 y RF-SER-002
-  { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario }, // RF-INV-011
-]
-
-/** Segundo nivel de «Planificación» (MOD-03). */
-const SEGUNDO_NIVEL_PLANIFICACION: EntradaSegundoNivel[] = [
-  { texto: 'Servicios periódicos', ruta: RUTAS_PLANIFICACION.servicios },
-  { texto: 'Calendario de restricciones', ruta: RUTAS_PLANIFICACION.restricciones },
-  { texto: 'Programación' }, // otro requisito
-  { texto: 'Calendario de actividades' }, // otro requisito
-]
-
-/** Segundo nivel de «Usuarios y roles» (MOD-01). */
-const SEGUNDO_NIVEL_USUARIOS: EntradaSegundoNivel[] = [
-  { texto: 'Usuarios', ruta: RUTAS_CORE.usuarios }, // RF-T-002 y RF-T-003
-  { texto: 'Registro de accesos', ruta: RUTAS_CORE.accesos }, // CU-MOD01-007
-]
-
-const SEGUNDO_NIVEL: EntradaSegundoNivel[] = [
-  { texto: 'Reportes', ruta: RUTAS.reportes },
-  { texto: 'Panel', ruta: RUTAS.panel }, // RF-REP-001
-  { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones }, // RF-REP-007
-  { texto: 'Exportaciones', ruta: RUTAS.exportaciones }, // RF-REP-009
-  { texto: 'Asistencia IA', ruta: RUTAS.asistenciaIa },
-]
-
-function claseItem({ isActive }: { isActive: boolean }) {
-  return `${estilos.item} ${isActive ? estilos.activo : ''}`
-}
-
 /** Entrada que aún no está disponible: sin enlace y con «Próximamente» bajo el nombre. */
-function SinEnlace({ texto }: { texto: string }) {
+function SinEnlace({ texto, secundaria = false }: { texto: string; secundaria?: boolean }) {
   return (
     <li>
-      <span className={`${estilos.item} ${estilos.sinEnlace}`} aria-disabled="true" title="Disponible próximamente">
+      <span
+        className={`${estilos.item} ${secundaria ? estilos.sub : ''} ${estilos.sinEnlace}`}
+        aria-disabled="true"
+        title="Disponible próximamente"
+      >
         <span>{texto}</span>
         <span className={estilos.proximamente}>Próximamente</span>
       </span>
@@ -92,34 +31,23 @@ function SinEnlace({ texto }: { texto: string }) {
   )
 }
 
-function ListaSegundoNivel({ entradas }: { entradas: EntradaSegundoNivel[] }) {
+function Entrada({ texto, ruta, activa, secundaria = false }: { texto: string; ruta: string; activa: boolean; secundaria?: boolean }) {
   return (
-    <ul className={`${estilos.lista} ${estilos.segundoNivel}`}>
-      {entradas.map((entrada) =>
-        entrada.ruta ? (
-          <li key={entrada.texto}>
-            <NavLink to={entrada.ruta} className={claseItem}>
-              {entrada.texto}
-            </NavLink>
-          </li>
-        ) : (
-          // Pertenece a otro requisito o queda fuera de esta entrega.
-          <SinEnlace key={entrada.texto} texto={entrada.texto} />
-        ),
-      )}
-    </ul>
+    <Link
+      to={ruta}
+      className={[estilos.item, secundaria && estilos.sub, activa && estilos.activo].filter(Boolean).join(' ')}
+      aria-current={activa ? 'page' : undefined}
+    >
+      {texto}
+    </Link>
   )
 }
 
 export default function MenuLateral() {
   const { pathname } = useLocation()
   const sesion = useSesionActiva()
-  const entradas = entradasMenu(sesion)
-  const enUsuarios = pathname.startsWith(PREFIJO_USUARIOS)
-  const enModulo = pathname.startsWith(PREFIJO_MODULO)
-  const enTercerizados = esRutaTercerizados(pathname)
-  const enPlanificacion = esRutaPlanificacion(pathname)
-  const enInventario = esRutaInventario(pathname)
+  const permitidas = entradasMenu(sesion)
+  const activo = activoEnMenu(pathname)
 
   return (
     <aside className={estilos.lateral}>
@@ -133,116 +61,30 @@ export default function MenuLateral() {
           Menú principal
         </p>
         <ul className={estilos.lista}>
-          {/* Pertenecen a otros módulos. */}
-          {OTROS_MODULOS_ANTES.map((texto) => (
-            <SinEnlace key={texto} texto={texto} />
-          ))}
-
-          {entradas.has('planificacion') && (
-            <li>
-              <NavLink
-                to={RUTAS_PLANIFICACION.servicios}
-                className={() => `${estilos.item} ${enPlanificacion ? estilos.activo : ''}`}
-                aria-current={enPlanificacion ? 'true' : undefined}
-                end={false}
-              >
-                Planificación
-              </NavLink>
-              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_PLANIFICACION} />
-            </li>
-          )}
-
-          {entradas.has('inventario') && (
-            <li>
-              <NavLink
-                to={RUTAS_INVENTARIO.areasVerdes}
-                className={() => `${estilos.item} ${enInventario ? estilos.activo : ''}`}
-                aria-current={enInventario ? 'true' : undefined}
-                end={false}
-              >
-                Áreas verdes y mapa
-              </NavLink>
-              <ListaSegundoNivel entradas={[
-                { texto: 'Inventario de áreas', ruta: RUTAS_INVENTARIO.areasVerdes },
-                { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
-                { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
-                { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
-                { texto: 'Mapa del campus', ruta: RUTAS_INVENTARIO.mapa },
-              ]} />
-            </li>
-          )}
-
-          {entradas.has('campo') && (
-            <li>
-              <NavLink
-                to={RUTAS_CAMPO.cuadrillas}
-                className={() => `${estilos.item} ${esRutaCampo(pathname) ? estilos.activo : ''}`}
-                aria-current={esRutaCampo(pathname) ? 'true' : undefined}
-                end={false}
-              >
-                Operación de campo
-              </NavLink>
-              <ListaSegundoNivel entradas={[
-                { texto: 'Cuadrillas', ruta: RUTAS_CAMPO.cuadrillas },
-                { texto: 'Encargos', ruta: RUTAS_CAMPO.encargos },
-                { texto: 'Participantes por actividad', ruta: RUTAS_CAMPO.participantes },
-              ]} />
-            </li>
-          )}
-
-          {entradas.has('tercerizados') && (
-            <li>
-              <NavLink
-                to={RUTAS_TERCERIZADOS.atenciones}
-                className={() => `${estilos.item} ${enTercerizados ? estilos.activo : ''}`}
-                aria-current={enTercerizados ? 'true' : undefined}
-                end={false}
-              >
-                Servicios tercerizados
-              </NavLink>
-              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_TERCERIZADOS} />
-            </li>
-          )}
-
-          {OTROS_MODULOS_ENTRE.map((texto) => (
-            <SinEnlace key={texto} texto={texto} />
-          ))}
-
-          {entradas.has('reportes') && (
-            <li>
-              <NavLink
-                to={RUTAS.reportes}
-                className={() => `${estilos.item} ${enModulo ? estilos.activo : ''}`}
-                aria-current={enModulo ? 'true' : undefined}
-                end={false}
-              >
-                Reportes e indicadores
-              </NavLink>
-              <ListaSegundoNivel entradas={SEGUNDO_NIVEL} />
-            </li>
-          )}
-
-          {entradas.has('repositorio') && (
-            <li>
-              <NavLink to={RUTAS_CORE.repositorio} className={claseItem}>
-                Repositorio
-              </NavLink>
-            </li>
-          )}
-
-          {entradas.has('usuarios') && (
-            <li>
-              <NavLink
-                to={RUTAS_CORE.usuarios}
-                className={() => `${estilos.item} ${enUsuarios ? estilos.activo : ''}`}
-                aria-current={enUsuarios ? 'true' : undefined}
-                end={false}
-              >
-                Usuarios y roles
-              </NavLink>
-              <ListaSegundoNivel entradas={SEGUNDO_NIVEL_USUARIOS} />
-            </li>
-          )}
+          {MODULOS_MENU.map((modulo) => {
+            if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} />
+            if (!permitidas.has(modulo.clave)) return null
+            const esActivo = activo.modulo === modulo
+            return (
+              <li key={modulo.texto}>
+                {/* El módulo solo se marca si ninguna de sus entradas lo está: un único activo a la vista. */}
+                <Entrada texto={modulo.texto} ruta={modulo.ruta} activa={esActivo && !activo.hijo} />
+                {modulo.hijos && (
+                  <ul className={`${estilos.lista} ${estilos.segundoNivel}`}>
+                    {modulo.hijos.map((hijo) =>
+                      hijo.ruta ? (
+                        <li key={hijo.texto}>
+                          <Entrada texto={hijo.texto} ruta={hijo.ruta} activa={activo.hijo === hijo} secundaria />
+                        </li>
+                      ) : (
+                        <SinEnlace key={hijo.texto} texto={hijo.texto} secundaria />
+                      ),
+                    )}
+                  </ul>
+                )}
+              </li>
+            )
+          })}
 
           {/* Catálogos y parámetros: otro requisito; solo para quien los gestiona. */}
           {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" />}
