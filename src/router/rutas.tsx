@@ -24,6 +24,8 @@ import PriorizacionIaPage from '../pages/reportes-indicadores/asistencia-ia/Prio
 import RevisionPriorizacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionPriorizacionPage'
 import InconsistenciasIaPage from '../pages/reportes-indicadores/asistencia-ia/InconsistenciasIaPage'
 import RevisionInconsistenciaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionInconsistenciaPage'
+import CronogramaIaPage from '../pages/reportes-indicadores/asistencia-ia/CronogramaIaPage'
+import RevisionCronogramaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionCronogramaPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
@@ -98,6 +100,8 @@ export const router = createBrowserRouter([
               { path: `${RUTAS.priorizacionIa}/:id`, element: <RevisionPriorizacionPage /> }, // RN-IA-002
               { path: RUTAS.inconsistenciasIa, element: <InconsistenciasIaPage /> }, // RF-IA-002
               { path: `${RUTAS.inconsistenciasIa}/:id`, element: <RevisionInconsistenciaPage /> }, // RF-IA-002
+              { path: RUTAS.cronogramaIa, element: <CronogramaIaPage /> }, // RF-IA-003
+              { path: `${RUTAS.cronogramaIa}/:id`, element: <RevisionCronogramaPage /> }, // RF-IA-003
               { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
               { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
