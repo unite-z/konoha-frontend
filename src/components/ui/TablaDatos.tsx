@@ -1,5 +1,6 @@
 /**
- * TablaDatos: Guía de Estilo Web, sección 5.5.
+ * TablaDatos: tabla del sistema de diseño de Figma (DESIGN.md, 4.2): «Tabla · celda de cabecera», filas con los
+ * tipos de «Tabla · celda» (ver `CeldasTabla.tsx`) y «Paginación».
  *
  * - Cabecera de 40px en gris claro con `<th scope="col">`; filas de 48px (compacta: 40px).
  * - Columnas por props: `clave`, `titulo`, `alineacion` (texto a la izquierda, cifras a la derecha),
@@ -13,12 +14,12 @@
  * - Desplazamiento horizontal propio si no cabe, con la primera columna fija.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { formatearNumero, SIN_VALOR } from '../../utils/formato'
-import Boton from './Boton'
+import { SIN_VALOR } from '../../utils/formato'
 import EstadoCarga from './EstadoCarga'
 import EstadoError, { type EstadoErrorProps } from './EstadoError'
 import EstadoVacio, { type EstadoVacioProps } from './EstadoVacio'
 import Icono from './Icono'
+import Paginacion from './Paginacion'
 import estilos from './TablaDatos.module.css'
 
 export interface ColumnaTabla<F> {
@@ -136,7 +137,6 @@ export default function TablaDatos<F>({
   const total = paginacionServidor ? paginacionServidor.total : ordenadas.length
   const tamanoPagina = paginacionServidor ? paginacionServidor.porPagina : porPagina
   const paginaActual = paginacionServidor ? paginacionServidor.pagina : pagina
-  const totalPaginas = Math.max(1, Math.ceil(total / tamanoPagina))
   const visibles = enCliente ? ordenadas.slice((pagina - 1) * porPagina, pagina * porPagina) : ordenadas
   const mostrarPaginacion = total > OPCIONES_POR_PAGINA[0]
   const cabeceraFija = visibles.length > FILAS_CABECERA_FIJA
@@ -164,9 +164,6 @@ export default function TablaDatos<F>({
       </div>
     )
   }
-
-  const primero = total === 0 ? 0 : (paginaActual - 1) * tamanoPagina + 1
-  const ultimo = Math.min(total, paginaActual * tamanoPagina)
 
   return (
     <div className={estilos.contenedor}>
@@ -258,46 +255,33 @@ export default function TablaDatos<F>({
       </div>
 
       {mostrarPaginacion && (
-        <div className={estilos.paginacion}>
-          <p className="cifra">
-            Mostrando {formatearNumero(primero)} a {formatearNumero(ultimo)} de {formatearNumero(total)}
-          </p>
-          <div className={estilos.controlesPaginacion}>
-            {enCliente && (
-              <label className={estilos.porPagina}>
-                Filas por página
-                <select
-                  value={porPagina}
-                  onChange={(evento) => {
-                    setPorPagina(Number(evento.target.value))
-                    setPagina(1)
-                  }}
-                >
-                  {OPCIONES_POR_PAGINA.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            <Boton
-              variante="secundario"
-              compacto
-              deshabilitado={paginaActual <= 1}
-              onClick={() => cambiarPagina(paginaActual - 1)}
-            >
-              Anterior
-            </Boton>
-            <Boton
-              variante="secundario"
-              compacto
-              deshabilitado={paginaActual >= totalPaginas}
-              onClick={() => cambiarPagina(paginaActual + 1)}
-            >
-              Siguiente
-            </Boton>
-          </div>
+        <div className={estilos.pie}>
+          <Paginacion
+            pagina={paginaActual}
+            porPagina={tamanoPagina}
+            total={total}
+            onCambiar={cambiarPagina}
+            extra={
+              enCliente && (
+                <label className={estilos.porPagina}>
+                  Filas por página
+                  <select
+                    value={porPagina}
+                    onChange={(evento) => {
+                      setPorPagina(Number(evento.target.value))
+                      setPagina(1)
+                    }}
+                  >
+                    {OPCIONES_POR_PAGINA.map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )
+            }
+          />
         </div>
       )}
     </div>

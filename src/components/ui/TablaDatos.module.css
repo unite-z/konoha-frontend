@@ -1,9 +1,8 @@
-/* TablaDatos: Guía Web 5.5. */
+/* TablaDatos: sistema de diseño de Figma (DESIGN.md, 4.2). */
 .contenedor {
-  --tabla-texto-cabecera: 13px; /* Guía Web 5.5: texto de 13px en la cabecera de tabla */
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   min-width: 0;
 }
@@ -28,25 +27,29 @@
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
 }
 
 .caption {
   padding: var(--space-3) var(--space-4);
   text-align: left;
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
+/* Tabla · celda de cabecera: Cabecera tabla, 11 px en mayúsculas. */
 .tabla th {
   height: var(--web-table-head);
   padding: 0 var(--space-4);
   background: var(--color-bg-subtle);
   color: var(--color-text-muted);
-  font-size: var(--tabla-texto-cabecera);
-  font-weight: 600;
+  font-size: var(--type-cabecera-tabla-size);
+  line-height: var(--type-cabecera-tabla-line);
+  font-weight: var(--type-cabecera-tabla-weight);
+  letter-spacing: var(--type-cabecera-tabla-tracking);
+  text-transform: uppercase;
   text-align: left;
   white-space: nowrap;
   vertical-align: middle;
@@ -54,8 +57,8 @@
 
 .tabla td {
   height: var(--web-row-height);
-  padding: var(--space-2) var(--space-4);
-  border-top: 1px solid var(--web-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-default);
   color: var(--color-text-primary);
   vertical-align: middle;
   white-space: nowrap;
@@ -99,10 +102,12 @@
 
 .subtitulo {
   display: block;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
-  font-weight: var(--type-body-sm-weight);
-  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  font-weight: var(--type-leyenda-weight);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text-muted);
 }
 
 .ordenar {
@@ -130,41 +135,30 @@
   cursor: pointer;
 }
 .clicable:hover td {
-  background: var(--color-bg-page);
+  background: var(--color-bg-hover);
 }
 .clicable:focus-visible {
   outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
   outline-offset: calc(-1 * var(--focus-ring-width));
 }
 
-.paginacion {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--web-border-subtle);
-  color: var(--color-text-secondary);
-}
-
-.controlesPaginacion {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.pie {
+  border-top: 1px solid var(--color-border-default);
 }
 
 .porPagina {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-right: var(--space-2);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
 }
 
 .porPagina select {
   min-height: var(--web-control-compact);
   padding: 0 var(--space-2);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-surface);
 }
@@ -176,7 +170,7 @@
 }
 
 .tituloVisible {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
