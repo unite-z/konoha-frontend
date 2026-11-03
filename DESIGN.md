@@ -126,7 +126,8 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Pestaña | `Pestanas` | control segmentado sobre fondo sutil · activa en blanco con Sombra sm · `contador` | alternar vistas o filtros de estado de una misma lista | navegar a otro módulo (menú) |
 | Aviso | `AvisoEnLinea` | `tono`: `info`, `exito`, `advertencia` (Aviso), `error` · `titulo` del color del tono · `accion` | mensaje fijo en la página (plazo, bloqueo, coincidencia) | confirmar una acción ya hecha (Toast) |
 | Toast | `AvisoTemporal` | `tono`: `exito` o `error` · `mensaje` y `detalle` · cierre manual o a los 6 s | confirmar que algo se guardó o falló, y desaparece | errores que el usuario tiene que corregir (Aviso o error de campo) |
-| Indicador | `TarjetaIndicador` | título, Cifra, detalle y leyenda | cifras clave arriba de una ficha o del panel | listas de datos (Tabla) |
+| Indicador | `TarjetaIndicador` | relleno 24, radio lg, Sombra sm · etiqueta, Cifra, contexto · `alerta` con borde de error y Estado (sin barra lateral) · `sinDatos`, `cargando` | cifras clave arriba de una ficha o del panel | listas de datos (Tabla) |
+| Tarjeta | `Tarjeta` | `titulo` (región con nombre), `nivel`, `descripcion`, `acciones` · `relleno` `normal` (16) o `amplio` (24) · radio lg, borde y Sombra sm | agrupar contenido en un panel: filtros, resúmenes, secciones de ficha | componer tarjetas con CSS propio en la página |
 | Barra de avance | `BarraAvance` | Valor: 0 a 100 de 10 en 10 | avance de una ruta, ciclo o carga | estados sin porcentaje (Estado) |
 | Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`, `EstadoSinAcceso` | tarjeta alineada a la izquierda · título, descripción y acción de texto («Reintentar») | toda zona con datos remotos; `EstadoSinAcceso` para el 403 | errores de un campo concreto |
 | Carga de archivo | `ZonaCarga` | Estado: Vacío, Adjunto, Error | adjuntar evidencias o informes | elegir ficheros ya subidos |

@@ -1,12 +1,12 @@
 /**
- * TarjetaIndicador: Guía de Estilo Web, sección 5.7 (y tarjetas del panel ejecutivo del mockup, pantalla 2).
+ * TarjetaIndicador: componente «Indicador» del sistema de diseño de Figma (DESIGN.md, 4.1).
  *
  * Anatomía: etiqueta, valor principal, unidad y contexto, insignia de estado opcional, barra de avance
  * opcional y enlace opcional al detalle.
  *
  * Estados:
  * - `normal`;
- * - `alerta`: borde izquierdo rojo y, obligatoriamente, una insignia con la causa (nunca solo el borde);
+ * - `alerta`: borde de error y, obligatoriamente, un `Estado` con la causa (nunca solo el color);
  * - `sinDatos`: el valor se sustituye por «Sin datos» y el motivo. Nunca se muestra un cero;
  * - `cargando`: esqueleto sin animación.
  *
@@ -16,6 +16,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import Badge, { type BadgeProps } from './Badge'
 import BarraAvance, { type BarraAvanceProps } from './BarraAvance'
+import Icono from './Icono'
 import estilos from './TarjetaIndicador.module.css'
 
 export type EstadoTarjeta = 'normal' | 'alerta' | 'sinDatos' | 'cargando'
@@ -27,7 +28,7 @@ export interface TarjetaIndicadorProps {
   unidad?: string
   /** Texto de contexto bajo el valor. */
   contexto?: ReactNode
-  /** Insignia de estado. Obligatoria en estado `alerta`. */
+  /** Estado del indicador (se pinta como `Estado`). Obligatorio en estado `alerta`. */
   insignia?: BadgeProps
   avance?: BarraAvanceProps
   enlace?: { texto: string; a: string }
@@ -36,7 +37,7 @@ export interface TarjetaIndicadorProps {
   motivoSinDatos?: string
 }
 
-/** Texto que sustituye al valor cuando no hay datos (Guía Web 5.7). */
+/** Texto que sustituye al valor cuando no hay datos. */
 const TEXTO_SIN_DATOS = 'Sin datos'
 
 export default function TarjetaIndicador({
@@ -86,14 +87,15 @@ export default function TarjetaIndicador({
       {avance && !sinDatos && <BarraAvance {...avance} />}
       {enlace && (
         <Link to={enlace.a} className={estilos.enlace}>
-          {enlace.texto} ›
+          {enlace.texto}
+          <Icono nombre="chevron-right" tamano="base" />
         </Link>
       )}
     </div>
   )
 }
 
-/** Fila de 3 a 4 tarjetas de indicador (Guía Web 5.7). */
+/** Fila de 3 a 4 tarjetas de indicador. */
 export function FilaTarjetas({ children, etiqueta }: { children: ReactNode; etiqueta?: string }) {
   return (
     <div className={estilos.fila} role={etiqueta ? 'group' : undefined} aria-label={etiqueta}>
