@@ -111,4 +111,11 @@ describe('TablaDatos', () => {
     )
     expect(screen.getByRole('alert')).toBeTruthy()
   })
+
+  it('sin filas y con vacío definido pinta el vacío aunque no se pase estado', () => {
+    render(<TablaDatos titulo="Ruta" columnas={COLUMNAS} filas={[]} claveFila={(f) => String(f.id)} vacio={{ titulo: 'No hay jardines' }} />)
+
+    expect(screen.getByRole('heading', { name: 'No hay jardines' })).toBeTruthy()
+    expect(screen.queryByRole('table')).toBeNull()
+  })
 })

@@ -10,7 +10,7 @@
  *   (`paginacionServidor`). Texto «Mostrando 1 a 25 de 38».
  * - Con más de 25 filas visibles, la cabecera queda fija al desplazar.
  * - Fila clicable opcional (`onFilaClick`): toda la fila es el área de clic y también responde a Enter.
- * - Estados integrados: vacío, carga y error.
+ * - Estados integrados: vacío, carga y error. Sin filas y con `vacio` definido, pinta el vacío aunque no se pase `estado`.
  * - Desplazamiento horizontal propio si no cabe, con la primera columna fija.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
@@ -154,13 +154,16 @@ export default function TablaDatos<F>({
     )
   }
 
-  if (estado !== 'exito') {
+  // Sin filas y con estado vacío definido, se pinta el vacío aunque la página no pase `estado` (AV-361).
+  const estadoEfectivo: EstadoTabla = estado === 'exito' && filas.length === 0 && vacio ? 'vacio' : estado
+
+  if (estadoEfectivo !== 'exito') {
     return (
       <div className={estilos.estado}>
         {tituloVisible && <p className={estilos.tituloVisible}>{titulo}</p>}
-        {estado === 'cargando' && <EstadoCarga forma="tabla" />}
-        {estado === 'vacio' && vacio && <EstadoVacio nivel={3} {...vacio} />}
-        {estado === 'error' && error && <EstadoError nivel={3} {...error} />}
+        {estadoEfectivo === 'cargando' && <EstadoCarga forma="tabla" />}
+        {estadoEfectivo === 'vacio' && vacio && <EstadoVacio nivel={3} {...vacio} />}
+        {estadoEfectivo === 'error' && error && <EstadoError nivel={3} {...error} />}
       </div>
     )
   }
