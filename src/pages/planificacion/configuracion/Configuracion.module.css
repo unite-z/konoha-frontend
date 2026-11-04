@@ -1,0 +1,42 @@
+/* Configuración (MOD-03, AV-268): solo layout; los campos son CampoFormulario. */
+
+/* Títulos de los apartados del panel «Editar servicio». */
+.apartado {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  line-height: var(--type-titulo-tarjeta-line);
+}
+
+/* Una estación: teórica, práctica y máxima en una fila. */
+.estacion {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-items: start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.leyenda {
+  grid-column: 1 / -1;
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+/* Duración: dos campos por fila. */
+.pareja {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.modificado {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}

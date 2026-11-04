@@ -37,8 +37,8 @@ import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtenci
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
 import CicloDetallePage from '../pages/planificacion/ciclos/CicloDetallePage'
 import CiclosPage from '../pages/planificacion/ciclos/CiclosPage'
+import ConfiguracionPage from '../pages/planificacion/configuracion/ConfiguracionPage'
 import ResumenPlanificacionPage from '../pages/planificacion/resumen/ResumenPlanificacionPage'
-import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
 import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
@@ -174,7 +174,7 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioPage /> }, // HU-MOD03-003 y 005, RF-PLA-003 y 007
               { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
               { path: `${RUTAS_PLANIFICACION.ciclos}/:id`, element: <CicloDetallePage /> }, // CU-004 y CU-007
-              { path: RUTAS_PLANIFICACION.configuracion, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
+              { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
               { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
             ],
