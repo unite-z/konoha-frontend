@@ -60,8 +60,19 @@ export function cortadosPorDia(jardines: JardinRuta[], inicio: FechaIso, hasta: 
   return dias
 }
 
+/** Jardines por cortar: primero uno de cada zona, en el orden de la ruta, y luego el resto (Figma 371-4306). */
 export function porCortar(jardines: JardinRuta[]): JardinRuta[] {
-  return jardines.filter((j) => j.estado === 'Pendiente')
+  const pendientes = jardines.filter((j) => j.estado === 'Pendiente')
+  const zonas = new Set<string>()
+  const primeros = pendientes.filter((j) => (zonas.has(j.zona) ? false : (zonas.add(j.zona), true)))
+  return [...primeros, ...pendientes.filter((j) => !primeros.includes(j))]
+}
+
+/** Último día que se enseña en «Cortados por día»: hoy o, si es antes, el último día de corte previsto. */
+export function ultimoDiaCorte(inicio: FechaIso, hoy: FechaIso, servicio: ServicioPeriodico | undefined, finReal: FechaIso | null): FechaIso {
+  if (finReal) return finReal
+  const ultimoPrevisto = sumarDias(inicio, (servicio?.duracion?.duracion_maxima_dias ?? 1) - 1)
+  return ultimoPrevisto > hoy ? ultimoPrevisto : hoy
 }
 
 /** «Hoy 10:42 · J. Ramos», «Detenido por interrupción» o `null` (sin marca). */

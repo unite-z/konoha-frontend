@@ -19,7 +19,7 @@ import type { FechaIso } from '@/types/comun'
 import { registrarLimpieza } from '@/services/api/corte'
 import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, fechaCompleta, momento, porCortar, textoMarcado, totalLimpieza } from './corte'
+import { avanceRuta, cortadosPorDia, fechaCompleta, momento, porCortar, textoMarcado, totalLimpieza, ultimoDiaCorte } from './corte'
 import estilos from './Ciclos.module.css'
 
 const VISIBLES_POR_CORTAR = 3
@@ -56,7 +56,7 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
   const completa = avance.total > 0 && avance.cortados === avance.total
   const pendientes = porCortar(corte.jardines)
   const inicio = ciclo.fecha_inicio_real
-  const dias = inicio ? cortadosPorDia(corte.jardines, inicio, ciclo.fecha_fin_real ?? hoy) : []
+  const dias = inicio ? cortadosPorDia(corte.jardines, inicio, ultimoDiaCorte(inicio, hoy, servicio, ciclo.fecha_fin_real)) : []
   const maximoDia = Math.max(1, ...dias.map((d) => d.cortados))
 
   const columnasRuta: ColumnaTabla<JardinRuta>[] = [

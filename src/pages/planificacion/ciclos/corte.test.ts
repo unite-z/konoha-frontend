@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { cicloCorteSimulado } from '@/services/simulados/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, esCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
+import { avanceRuta, cortadosPorDia, esCorte, ultimoDiaCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
 
 const ciclo: Programacion = {
   id: 1,
@@ -30,6 +30,8 @@ describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
     expect([esCorte('Corte de césped'), esCorte('Poda')]).toEqual([true, false])
     expect(avanceRuta(datos.jardines)).toEqual({ cortados: 28, total: 45, porcentaje: 62 })
     expect(porCortar(datos.jardines)).toHaveLength(17)
+    expect(porCortar(datos.jardines).slice(0, 3).map((j) => j.codigo)).toEqual(['J-016', 'J-031', 'J-040'])
+    expect([ultimoDiaCorte('2026-11-16', '2026-11-17', corte, null), ultimoDiaCorte('2026-11-16', '2026-11-20', corte, null)]).toEqual(['2026-11-18', '2026-11-20'])
   })
 
   it('dice la última marca y la destaca si pasan más de 24 h', () => {
