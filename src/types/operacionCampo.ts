@@ -15,6 +15,12 @@ export interface CuadrillaCampo {
 export interface EntradaCuadrilla { nombre: string; capataz_id: number; activa: boolean; operarios: number[] }
 export interface CatalogoCampo { id: number; nombre: string; activo: boolean }
 export interface UnidadMedidaCampo { id: number; nombre: string; simbolo: string }
+export type MaterialCatalogoCampo = CatalogoCampo
+export interface MaterialActividadCampo {
+  id: number; actividad_id: number; material_id: number | null; descripcion_otro: string | null
+  nombre_material: string; cantidad: number; unidad_medida_id: number; unidad_simbolo: string
+  origen: string | null; destino: string | null
+}
 export interface TipoActividadCampo extends CatalogoCampo { clase_id: number }
 export interface EntradaTipoActividadCampo { nombre: string; clase_id: number; activo: boolean }
 export interface EntradaEncargo {

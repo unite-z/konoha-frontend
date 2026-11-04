@@ -17,6 +17,7 @@ import { formatearFecha } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import DialogoNuevaActividad from './DialogoNuevaActividad'
+import MaterialesActividad from './MaterialesActividad'
 import estilos from './OperacionCampo.module.css'
 import Estado from '@/components/ui/Estado'
 import { TONO_ESTADO } from '@/components/ui/tonos'
@@ -26,7 +27,7 @@ export default function ParticipantesPage() {
   const {usuario}=useSesionCampo(), puedeRegistrar=puedeRegistrarCampo(usuario)
   const listado=useListadoCampo<ActividadCampo>('actividades',['fecha','cuadrilla_id'])
   const cuadrillas=useConsulta('filtro-cuadrillas',signal=>todosCampo<CuadrillaCampo>('cuadrillas/',{},signal))
-  const [actual,setActual]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
+  const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
     <AccionesPagina><ExportarExcel listado="actividades" />{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
     <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
@@ -47,9 +48,11 @@ export default function ParticipantesPage() {
       {clave:'operarios',titulo:'Operarios',multilinea:true,render:a=>a.participantes.operarios.length?a.participantes.operarios.map(p=>`${p.nombres} ${p.apellidos}`).join(', '):'Sin selección registrada'},
       {clave:'estado',titulo:'Parte',render:a=><Estado tono={TONO_ESTADO[a.estado==='Abierto'?'info':'neutral']} texto={a.estado}/>},
       {clave:'acciones',titulo:'Acciones',render:a=><Boton variante="fantasma" compacto aria-label={`${puedeRegistrar&&a.estado==='Abierto'?'Seleccionar':'Ver'} operarios de actividad ${a.id}`} onClick={()=>setActual(a)}>{puedeRegistrar&&a.estado==='Abierto'?'Seleccionar operarios':'Ver participantes'}</Boton>},
+      {clave:'materiales',titulo:'Materiales',render:a=><Boton variante="fantasma" compacto aria-label={`Materiales de actividad ${a.id}`} onClick={()=>setMaterialActividad(a)}>Materiales</Boton>},
     ]}/>
     {nueva&&<DialogoNuevaActividad onCerrar={()=>setNueva(false)} onGuardado={actividad=>{setNueva(false);setActual(actividad);setAviso('Actividad registrada. Selecciona los operarios que participaron');listado.consulta.reintentar()}}/>}
     {actual&&<DialogoParticipantes actividad={actual} soloLectura={!puedeRegistrar||actual.estado==='Cerrado'} onCerrar={()=>setActual(null)} onGuardado={()=>{setActual(null);setAviso('Los participantes se guardaron correctamente');listado.consulta.reintentar()}}/>}
+    {materialActividad&&<MaterialesActividad actividad={materialActividad} soloLectura={!puedeRegistrar||materialActividad.estado==='Cerrado'} onCerrar={()=>setMaterialActividad(null)}/>}
   </div>
 }
 

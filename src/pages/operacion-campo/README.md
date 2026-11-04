@@ -95,3 +95,14 @@ se expresa en m² y el tiempo en minutos (1 a 1440). Si se registra alguna
 cantidad, se exige una unidad de `GET catalogos/unidades-medida/`.
 El servidor rechaza valores negativos, unidad desconocida y tiempo fuera
 de rango antes de crear la actividad.
+
+## AV-79: materiales y traslados
+
+`GET /api/v1/operacion-campo/catalogos/materiales/` ofrece los materiales
+catalogados; «Otro» envía `material_id: null` y una `descripcion_otro` obligatoria.
+`GET/POST /api/v1/operacion-campo/actividades/{id}/materiales/` consulta y
+registra `{material_id, descripcion_otro, cantidad, unidad_medida_id, origen,
+destino}`. Cantidad y unidad son obligatorias; origen y destino se informan
+juntos para un traslado. La fecha y el espacio pertenecen a la actividad.
+El servidor exige acceso a la cuadrilla para escribir y conserva los registros
+anteriores sin permitir su borrado desde este flujo.
