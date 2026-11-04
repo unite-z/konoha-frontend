@@ -8,6 +8,7 @@ import {
   nombreMes,
   periodoRestriccion,
   proximosCiclos,
+  restriccionesAgrupadas,
   restriccionesProximas,
 } from './resumenPlanificacion'
 
@@ -89,7 +90,7 @@ describe('indicadoresMes', () => {
       ['Alertas', 2, '1 frecuencia por vencer'],
       ['Días con restricción', 3, '1 prohibición'],
     ])
-    expect(indicadores[1].detalle).toBe('Desde el 28 oct.')
+    expect(indicadores[1].detalle).toBe('Desde el 28/10')
     expect(indicadores[2].detalle).toBe('1 duración excedida')
   })
 })
@@ -148,5 +149,22 @@ describe('listas del Resumen', () => {
       restriccion({ id: 3, fecha_inicio: '2026-12-20', fecha_fin: '2026-12-20' }),
     ])
     expect(lista.map((r) => r.id)).toEqual([2])
+  })
+})
+
+describe('restriccionesAgrupadas', () => {
+  it('une las fechas de una serie en una fila, como en Figma', () => {
+    const base = { tipo_restriccion_id: 1, aplica_servicios_ruidosos: true, hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null }
+    const filas = restriccionesAgrupadas('2026-11-04', [
+      { ...base, id: 1, tipo: 'Jueves culturales', efecto: 'Advertencia', fecha_inicio: '2026-11-05', fecha_fin: '2026-11-05', serie: 'a' },
+      { ...base, id: 2, tipo: 'Jueves culturales', efecto: 'Advertencia', fecha_inicio: '2026-11-12', fecha_fin: '2026-11-12', serie: 'a' },
+      { ...base, id: 3, tipo: 'Reserva de jardín', efecto: 'Advertencia', fecha_inicio: '2026-11-07', fecha_fin: '2026-11-07', serie: null },
+      { ...base, id: 4, tipo: 'Evaluaciones', efecto: 'Prohibicion', fecha_inicio: '2026-11-23', fecha_fin: '2026-11-28', serie: null },
+    ])
+    expect(filas.map((f) => [f.fechas, f.tipo])).toEqual([
+      ['Jue 05 y 12', 'Jueves culturales'],
+      ['Sáb 07', 'Reserva de jardín'],
+      ['23 al 28', 'Evaluaciones'],
+    ])
   })
 })

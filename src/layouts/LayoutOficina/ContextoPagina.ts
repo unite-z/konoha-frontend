@@ -14,6 +14,8 @@ export interface Miga {
 export interface DatosPagina {
   titulo: string
   migas: Miga[]
+  /** Línea bajo el título (por ejemplo, el mes del Resumen de planificación). */
+  subtitulo?: string
 }
 
 export interface ValorContextoPagina {
