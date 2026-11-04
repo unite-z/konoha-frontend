@@ -3,6 +3,7 @@
  * más oscura la celda, mayor la medida. Clic en una celda: queda elegida y se habilita «Ver detalles».
  * Es una tabla: con muchas jornadas se desplaza en horizontal con la columna de cuadrillas fija.
  */
+// Excepción al sistema (AV-351): mapa de calor: <table> de datos con celdas pulsables que filtran el detalle.
 import { useMemo, useState } from 'react'
 import type { FilaDistribucion } from '../../../../types/reportes'
 import { formatearFecha, SIN_VALOR } from '../../../../utils/formato'

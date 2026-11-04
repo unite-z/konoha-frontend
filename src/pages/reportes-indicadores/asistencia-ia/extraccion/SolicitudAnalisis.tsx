@@ -7,6 +7,7 @@
  * - Alternativa: escribir el número del reporte (también si MOD-05 no está disponible para el rol).
  * - 400 del back-end junto al campo o en un aviso; 503 ofrece «Registrar manualmente» en MOD-05.
  */
+// Excepción al sistema (AV-351): las opciones de atención e informe tienen contenido rico (insignias y metadatos) que GrupoOpciones no admite.
 import { useState, type FormEvent } from 'react'
 import AsistentePasos from '../../../../components/ui/AsistentePasos'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'

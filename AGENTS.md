@@ -51,7 +51,7 @@ npm run typecheck && npm run lint && npm test && npm run build
 ```
 
 - El hook `pre-push` ya ejecuta typecheck y oxlint. Actívalo con `git config core.hooksPath .githooks`.
-- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css` y `fetch` fuera de `services/api/` y, en las líneas nuevas, medidas en px y `style={…}`.
+- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css` y `fetch` fuera de `services/api/` y, en las líneas nuevas, medidas en px y `style={…}`. En las carpetas ya migradas al sistema de diseño rechaza además primitivos de color, variables `var(--x)` sin definir y controles crudos (`<button>`, `<input>`, `<table>`…) fuera de `components/ui` y `layouts`, salvo con el comentario `Excepción al sistema (AV-351): motivo`.
 - oxlint rechaza `any`, `!` sin justificar (`// oxlint-disable-next-line typescript/no-non-null-assertion -- motivo`) y `console.*`.
 
 ## Reglas no negociables

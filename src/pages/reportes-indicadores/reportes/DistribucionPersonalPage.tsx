@@ -16,6 +16,7 @@
  * La tarjeta «Actividades sin tiempo registrado» filtra los gráficos por esas actividades (parámetro
  * `sin_tiempo` de la URL; el filtro es del cliente, no se envía a la API).
  */
+// Excepción al sistema (AV-351): la tarjeta indicadora conmutable es un <button> con aria-pressed que filtra el detalle.
 import { useMemo, useState } from 'react'
 import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
