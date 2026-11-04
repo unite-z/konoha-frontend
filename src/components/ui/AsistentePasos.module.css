@@ -1,6 +1,6 @@
 /* Indicador de pasos: Guía Web 5.13. */
 .pasos {
-  --marca: 32px;
+  --marca: var(--space-8);
   display: flex;
   flex-wrap: wrap;
   align-items: center;

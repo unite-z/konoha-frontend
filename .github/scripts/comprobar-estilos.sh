@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Reglas de docs/estandares/estilo-codigo-ts-react.md y del sistema de diseño (DESIGN.md) que oxlint no cubre:
 #   1. en todo src/: colores escritos a mano fuera de tokens.css y fetch fuera de services/api/;
-#   2. solo en las líneas añadidas del PR: medidas en px (salvo 0-2 px y @media) y style={...}
-#      (salvo valores calculados marcados con el comentario estilo-calculado);
-#   3. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
+#   2. en todo src/ salvo tokens.css y planificacion (AV-351): medidas en px (salvo 1-2 px, @media y consultas de
+#      matchMedia) y font-size o border-radius que no usen var(--type-*) y var(--radius-*);
+#   3. solo en las líneas añadidas del PR: medidas en px (también en planificacion) y style={...} (salvo valores
+#      calculados marcados con el comentario estilo-calculado);
+#   4. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
 #      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
-# Lo segundo solo mira lo nuevo porque main aún tiene medidas antiguas: se corrigen al tocarlas. Lo tercero no se
-# aplica aún a inventario ni planificación (MOD-02 y MOD-03), que se migran después: así no bloquea sus PR.
+# planificacion (MOD-03) queda fuera de 2 y 4 hasta que la sustituya el rediseño (AV-265 y siguientes).
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -26,10 +27,28 @@ while IFS=: read -r fichero linea _; do
 done < <(git grep -nE '(^|[^a-zA-Z0-9_])fetch\(' -- 'src/*.ts' 'src/*.tsx' ':!src/services' ':!*.test.ts' ':!*.test.tsx' \
   | sin_comentarios)
 
+# --- Medidas y tipografía con tokens en todo src/ (AV-351) ------------------------------------------------
+excluidas=(':!src/styles/tokens.css' ':!src/pages/planificacion' ':!*.test.ts' ':!*.test.tsx')
+
+while IFS=: read -r fichero linea _; do
+  falla "$fichero" "$linea" "Medida en px: usa un token (--space-*, --radius-*...) o rem. Se admiten 1-2 px en bordes y px en @media."
+done < <(git grep -nE '(^|[^0-9.a-zA-Z-])([3-9]|[1-9][0-9]+)(\.[0-9]+)?px' -- 'src/*.css' 'src/*.ts' 'src/*.tsx' "${excluidas[@]}" \
+  | sin_comentarios | grep -vE '@media|\((max|min)-(width|height):[[:space:]]*[0-9]+px\)' || true)
+
+while IFS=: read -r fichero linea _; do
+  falla "$fichero" "$linea" "font-size sin token: usa var(--type-*-size) (DESIGN.md, 3.4)."
+done < <(git grep -nE 'font-size:' -- 'src/*.css' "${excluidas[@]}" | sin_comentarios \
+  | grep -vE 'font-size:[[:space:]]*(var\(--type-[a-z0-9-]+\)|inherit|100%)[[:space:]]*(;|$)' || true)
+
+while IFS=: read -r fichero linea _; do
+  falla "$fichero" "$linea" "border-radius sin token: usa var(--radius-*) (DESIGN.md, 3.3)."
+done < <(git grep -nE 'border-radius:' -- 'src/*.css' "${excluidas[@]}" | sin_comentarios \
+  | grep -vE 'border-radius:[[:space:]]*((var\(--radius-[a-z0-9-]+\)|0|50%|inherit)[[:space:]]*)+(;|$)' || true)
+
 # --- Sistema de diseño en las carpetas migradas (AV-351) --------------------------------------------------
 migradas=(src/components/ui src/components/core src/components/reportes-indicadores src/components/tercerizados
   src/layouts src/pages/servicios-tercerizados src/pages/reportes-indicadores src/pages/acceso
-  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo)
+  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo src/pages/inventario)
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/styles/tokens.css (DESIGN.md, 3.1)."

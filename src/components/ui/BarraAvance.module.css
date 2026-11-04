@@ -1,6 +1,6 @@
 /* BarraAvance: barra de avance de 8px (mockup, pantalla 2; Guía Web 5.7). */
 .barra {
-  --barra-avance-height: 8px; /* Guía Web 5.7 */
+  --barra-avance-height: var(--space-2); /* Guía Web 5.7 */
   width: 100%;
   height: var(--barra-avance-height);
   border-radius: var(--radius-full);
