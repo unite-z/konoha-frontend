@@ -99,6 +99,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Cuadrillas', icono: 'list', ruta: RUTAS_CAMPO.cuadrillas },
       { texto: 'Encargos', icono: 'clipboard', ruta: RUTAS_CAMPO.encargos },
       { texto: 'Participantes por actividad', icono: 'check', ruta: RUTAS_CAMPO.participantes },
+      { texto: 'Catálogo de actividades', icono: 'sliders', ruta: RUTAS_CAMPO.catalogoActividades },
     ],
   },
   {

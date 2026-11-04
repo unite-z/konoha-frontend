@@ -5,6 +5,7 @@ import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import { useConsulta } from '@/hooks/useConsulta'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
+import { clasesActividadParaParte, listarTiposActividad } from '@/services/api/catalogoActividadesCampo'
 import { ErrorApi, aErrorApi } from '@/services/api/cliente'
 import type { ActividadCampo, CatalogoCampo, CuadrillaCampo, EncargoCampo, ParteCampo } from '@/types/operacionCampo'
 import { hoyLima } from '@/utils/operacionCampo'
@@ -14,13 +15,14 @@ import estilos from './OperacionCampo.module.css'
 
 export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()=>void;onGuardado:(a:ActividadCampo)=>void}) {
   const [cuadrilla,setCuadrilla]=useState(''),[tipo,setTipo]=useState(''),[area,setArea]=useState('')
+  const [clase,setClase]=useState('')
   const [fecha,setFecha]=useState(hoyLima()),[hora,setHora]=useState('08:00'),[encargo,setEncargo]=useState(''),[observaciones,setObservaciones]=useState('')
   const [cambios,setCambios]=useState(false),[errores,setErrores]=useState<Record<string,string>>({})
   const mutacion=useMutacionCampo()
   const intento=useRef<{cuerpo:string;clave:string}|null>(null)
   const catalogos=useConsulta('catalogos-actividad',async signal=>{
-    const [cuadrillas,tipos,areas]=await Promise.all([todosCampo<CuadrillaCampo>('cuadrillas/',{activa:true},signal),todosCampo<CatalogoCampo>('catalogos/tipos-actividad/',{activo:true},signal),todosCampo<CatalogoCampo>('catalogos/areas-verdes/',{activo:true},signal)])
-    return {cuadrillas,tipos,areas}
+    const [cuadrillas,tipos,areas,clases]=await Promise.all([todosCampo<CuadrillaCampo>('cuadrillas/',{activa:true},signal),listarTiposActividad(true,signal),todosCampo<CatalogoCampo>('catalogos/areas-verdes/',{activo:true},signal),clasesActividadParaParte(signal)])
+    return {cuadrillas,tipos,areas,clases}
   })
   const encargos=useConsulta(cuadrilla&&fecha?`encargos-actividad-${cuadrilla}-${fecha}`:null,signal=>todosCampo<EncargoCampo>('encargos/',{cuadrilla_id:cuadrilla,desde:fecha,hasta:fecha},signal))
   function cambiar(fn:()=>void) {setCambios(true);setErrores({});fn()}
@@ -38,6 +40,7 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
     const errors:Record<string,string>={}
     if(!cuadrilla) errors.cuadrilla='Selecciona una cuadrilla'
     if(!tipo) errors.tipo='Selecciona una actividad'
+    if(catalogos.datos?.clases.length&&!clase) errors.clase='Selecciona una clase'
     if(!area) errors.area='Selecciona un espacio'
     if(!fecha||fecha>hoyLima()) errors.fecha='Selecciona una fecha válida que no sea futura'
     if(!/^\d{2}:\d{2}$/.test(hora)) errors.hora='Indica la hora de la actividad'
@@ -60,7 +63,8 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
       <div className={estilos.rejilla}>
         <Selector id="nueva-actividad-cuadrilla" etiqueta="Cuadrilla" obligatorio valor={cuadrilla} opcionTodos="Selecciona una cuadrilla" opciones={datos.cuadrillas.map(c=>({valor:String(c.id),texto:c.nombre}))} onCambiar={v=>cambiar(()=>{setCuadrilla(v);setEncargo('')})} error={errores.cuadrilla}/>
         <CampoFormulario id="nueva-actividad-fecha" etiqueta="Fecha de atención" type="date" obligatorio max={hoyLima()} value={fecha} onChange={e=>cambiar(()=>{setFecha(e.target.value);setEncargo('')})} error={errores.fecha}/>
-        <Selector id="nueva-actividad-tipo" etiqueta="Tipo de actividad" obligatorio valor={tipo} opcionTodos="Selecciona una actividad" opciones={datos.tipos.map(t=>({valor:String(t.id),texto:t.nombre}))} onCambiar={v=>cambiar(()=>{setTipo(v);setEncargo('')})} error={errores.tipo}/>
+        {datos.clases.length>0&&<Selector id="nueva-actividad-clase" etiqueta="Clase de actividad" obligatorio valor={clase} opcionTodos="Selecciona una clase" opciones={datos.clases.filter(c=>c.activo).map(c=>({valor:String(c.id),texto:c.nombre}))} onCambiar={v=>cambiar(()=>{setClase(v);setTipo('');setEncargo('')})} error={errores.clase}/>}
+        <Selector id="nueva-actividad-tipo" etiqueta="Tipo de actividad" obligatorio valor={tipo} opcionTodos="Selecciona una actividad" opciones={datos.tipos.filter(t=>t.activo&&(!datos.clases.length||t.clase_id===Number(clase))).map(t=>({valor:String(t.id),texto:t.nombre}))} onCambiar={v=>cambiar(()=>{setTipo(v);setEncargo('')})} error={errores.tipo}/>
         <Selector id="nueva-actividad-area" etiqueta="Espacio" obligatorio valor={area} opcionTodos="Selecciona un espacio" opciones={datos.areas.map(a=>({valor:String(a.id),texto:a.nombre}))} onCambiar={v=>cambiar(()=>{setArea(v);setEncargo('')})} error={errores.area}/>
         <CampoFormulario id="nueva-actividad-hora" etiqueta="Hora de la actividad" type="time" obligatorio value={hora} onChange={e=>cambiar(()=>setHora(e.target.value))} error={errores.hora}/>
         <Selector id="nueva-actividad-encargo" etiqueta="Encargo de origen" valor={encargo} opcionTodos="Sin encargo asociado" opciones={(encargos.datos??[]).filter(e=>e.tipo_actividad_id===Number(tipo)&&e.area_verde_id===Number(area)).map(e=>({valor:String(e.id),texto:e.descripcion}))} onCambiar={v=>cambiar(()=>setEncargo(v))} ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio." disabled={encargos.estado==='cargando'}/>
