@@ -60,6 +60,8 @@ export interface OpcionesSolicitud {
   parametros?: Record<string, ValorParametro>
   /** Cuerpo JSON (solo en POST). */
   cuerpo?: unknown
+  /** Cuerpo multipart (solo en POST; excluye `cuerpo`). El navegador pone el `boundary`. */
+  formulario?: FormData
   signal?: AbortSignal
 }
 
@@ -138,27 +140,7 @@ function aplanarMensajes(valor: unknown): string[] {
  * Lanza `ErrorApi` si la respuesta no es 2xx o no hay conexión, y `DOMException` (AbortError) si se cancela.
  */
 export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Promise<T> {
-  const { metodo = 'GET', parametros, cuerpo, signal } = opciones
-  const token = metodo === 'GET' ? null : leerCookie('XSRF-TOKEN')
-  let respuesta: Response
-  try {
-    respuesta = await fetch(construirUrl(ruta, parametros), {
-      method: metodo,
-      headers: {
-        Accept: 'application/json',
-        ...(cuerpo !== undefined ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
-      },
-      credentials: 'same-origin',
-      body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
-      signal,
-    })
-  } catch (error) {
-    if (esCancelacion(error)) throw error
-    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
-  }
-
-  if (respuesta.status === 401) avisarSesionPerdida()
+  const respuesta = await enviar(ruta, opciones, 'application/json')
 
   let datos: unknown = null
   const texto = await respuesta.text()
@@ -172,4 +154,50 @@ export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {
 
   if (!respuesta.ok) throw interpretarError(respuesta.status, datos)
   return datos as T
+}
+
+/** Hace la petición con la sesión (cookie y token CSRF). Lanza `ErrorApi` sin conexión y avisa del 401. */
+async function enviar(ruta: string, opciones: OpcionesSolicitud, acepta: string): Promise<Response> {
+  const { metodo = 'GET', parametros, cuerpo, formulario, signal } = opciones
+  const token = metodo === 'GET' ? null : leerCookie('XSRF-TOKEN')
+  const json = formulario === undefined && cuerpo !== undefined
+  let respuesta: Response
+  try {
+    respuesta = await fetch(construirUrl(ruta, parametros), {
+      method: metodo,
+      headers: {
+        Accept: acepta,
+        ...(json ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+      },
+      credentials: 'same-origin',
+      body: formulario ?? (json ? JSON.stringify(cuerpo) : undefined),
+      signal,
+    })
+  } catch (error) {
+    if (esCancelacion(error)) throw error
+    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
+  }
+  if (respuesta.status === 401) avisarSesionPerdida()
+  return respuesta
+}
+
+/** Descarga un archivo protegido (por ejemplo, una fotografía) como `Blob`, con la sesión. */
+export async function solicitarBlob(ruta: string, signal?: AbortSignal): Promise<Blob> {
+  const respuesta = await enviar(ruta, { signal }, '*/*')
+  if (!respuesta.ok) {
+    let datos: unknown = null
+    try {
+      datos = JSON.parse(await respuesta.text())
+    } catch {
+      datos = null
+    }
+    throw interpretarError(respuesta.status, datos)
+  }
+  try {
+    return await respuesta.blob()
+  } catch (error) {
+    if (esCancelacion(error)) throw error
+    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
+  }
 }
