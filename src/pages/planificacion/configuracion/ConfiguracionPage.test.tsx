@@ -86,12 +86,14 @@ describe('ConfiguracionPage', () => {
     const usuario = userEvent.setup()
     await usuario.click(await screen.findByRole('tab', { name: 'Series de restricciones 1' }))
     const tabla = screen.getByRole('table')
-    expect(within(tabla).getByText('2 fechas')).toBeTruthy()
-    expect(within(tabla).getByText('Todo el campus')).toBeTruthy()
+    // Como en Figma 366-3687: fechas «Cada lunes · hasta 16/11» y alcance «Ruidosos · todo el campus».
+    expect(within(tabla).getByText('Cada lunes · hasta 16/11')).toBeTruthy()
+    expect(within(tabla).getByText('Ruidosos · todo el campus')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Nueva restricción' })).toBeTruthy()
 
-    await usuario.click(within(tabla).getByRole('button', { name: 'Dar de baja la serie Clases' }))
+    await usuario.click(within(tabla).getByRole('button', { name: 'Dar de baja Clases' }))
     await usuario.click(screen.getByRole('button', { name: 'Dar de baja la serie' }))
     expect(darDeBajaRestriccion).toHaveBeenCalledWith(8, true)
-    expect(await screen.findByText('No hay series de restricciones')).toBeTruthy()
+    expect(await screen.findByText('No hay restricciones próximas')).toBeTruthy()
   })
 })

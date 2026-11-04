@@ -1,10 +1,10 @@
 /**
- * Series de restricciones (AV-268): restricciones creadas con una misma repetición (`serie`). Se agrupan las fechas
- * de hoy en adelante; una restricción suelta no es serie. Se prueba en `series.test.ts`.
+ * Series de restricciones (AV-268, Figma 366-3687): las restricciones de hoy en adelante, una fila por serie (las
+ * creadas con una misma repetición, `serie`) o por restricción suelta. Se prueba en `series.test.ts`.
  */
 import type { FechaIso } from '@/types/comun'
 import type { EfectoRestriccion, Restriccion } from '@/types/planificacion'
-import { sumarDias } from '../resumen/resumenPlanificacion'
+import { fechaNumerica, listaConY, sumarDias } from '../resumen/resumenPlanificacion'
 
 /** Periodo que se consulta: de hoy a 399 días (el backend admite 400 como máximo). */
 export function rangoSeries(hoy: FechaIso): { desde: FechaIso; hasta: FechaIso } {
@@ -12,27 +12,37 @@ export function rangoSeries(hoy: FechaIso): { desde: FechaIso; hasta: FechaIso }
 }
 
 export interface SerieRestriccion {
-  serie: string
+  /** `serie` o, si es suelta, `r-<id>`. */
+  clave: string
+  /** `null`: restricción suelta. */
+  serie: string | null
   tipo: string
   efecto: EfectoRestriccion
   descripcion: string | null
   primera: FechaIso
   ultima: FechaIso
   fechas: number
-  hora_inicio: string | null
-  hora_fin: string | null
+  /** Días de la semana de las fechas (0 domingo a 6 sábado), sin repetir. */
+  diasSemana: number[]
+  aplica_servicios_ruidosos: boolean
   area_verde_id: number | null
-  /** Una restricción de la serie: `DELETE restricciones/{id}/?serie=true` da de baja todas. */
+  /** La restricción que se da de baja: con `serie=true`, `DELETE restricciones/{id}/` da de baja toda la serie. */
   idBaja: number
 }
 
+function diaSemana(fecha: FechaIso): number {
+  return new Date(`${fecha}T00:00:00Z`).getUTCDay()
+}
+
 export function agruparSeries(restricciones: Restriccion[], hoy: FechaIso): SerieRestriccion[] {
-  const series = new Map<string, SerieRestriccion>()
+  const filas = new Map<string, SerieRestriccion>()
   for (const r of restricciones) {
-    if (!r.serie || r.fecha_fin < hoy) continue
-    const actual = series.get(r.serie)
+    if (r.fecha_fin < hoy) continue
+    const clave = r.serie ?? `r-${r.id}`
+    const actual = filas.get(clave)
     if (!actual) {
-      series.set(r.serie, {
+      filas.set(clave, {
+        clave,
         serie: r.serie,
         tipo: r.tipo,
         efecto: r.efecto,
@@ -40,21 +50,40 @@ export function agruparSeries(restricciones: Restriccion[], hoy: FechaIso): Seri
         primera: r.fecha_inicio,
         ultima: r.fecha_fin,
         fechas: 1,
-        hora_inicio: r.hora_inicio,
-        hora_fin: r.hora_fin,
+        diasSemana: [diaSemana(r.fecha_inicio)],
+        aplica_servicios_ruidosos: r.aplica_servicios_ruidosos,
         area_verde_id: r.area_verde_id,
         idBaja: r.id,
       })
       continue
     }
     actual.fechas += 1
+    if (!actual.diasSemana.includes(diaSemana(r.fecha_inicio))) actual.diasSemana.push(diaSemana(r.fecha_inicio))
     if (r.fecha_inicio < actual.primera) actual.primera = r.fecha_inicio
     if (r.fecha_fin > actual.ultima) actual.ultima = r.fecha_fin
   }
-  return [...series.values()].sort((a, b) => a.primera.localeCompare(b.primera) || a.tipo.localeCompare(b.tipo))
+  return [...filas.values()].sort((a, b) => a.primera.localeCompare(b.primera) || a.tipo.localeCompare(b.tipo))
 }
 
-/** Sin área verde, la restricción es de todo el campus. El nombre del área no llega en el contrato. */
-export function textoAlcance(areaVerdeId: number | null): string {
-  return areaVerdeId === null ? 'Todo el campus' : `Área verde ${areaVerdeId}`
+const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
+
+/** «Cada jueves · hasta 31/12», «23 al 28/11» o «15/11», como la columna Fechas de Figma (sin raya). */
+export function textoFechasSerie(serie: SerieRestriccion): string {
+  if (serie.fechas > 1) {
+    const dias = [...serie.diasSemana].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => NOMBRES_DIA[d])
+    return `Cada ${listaConY(dias)} · hasta ${fechaNumerica(serie.ultima)}`
+  }
+  if (serie.primera === serie.ultima) return fechaNumerica(serie.primera)
+  return serie.primera.slice(0, 7) === serie.ultima.slice(0, 7)
+    ? `${serie.primera.slice(8, 10)} al ${fechaNumerica(serie.ultima)}`
+    : `${fechaNumerica(serie.primera)} al ${fechaNumerica(serie.ultima)}`
+}
+
+/**
+ * «Ruidosos · todo el campus» o «Todos · área verde 7»: a qué servicios afecta y dónde. El nombre del área verde
+ * llega con AV-365.
+ */
+export function textoAlcance(serie: Pick<SerieRestriccion, 'aplica_servicios_ruidosos' | 'area_verde_id'>): string {
+  const servicios = serie.aplica_servicios_ruidosos ? 'Ruidosos' : 'Todos'
+  return `${servicios} · ${serie.area_verde_id === null ? 'todo el campus' : `área verde ${serie.area_verde_id}`}`
 }
