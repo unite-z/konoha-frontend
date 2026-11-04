@@ -5,7 +5,10 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 - **Bandeja** (`BandejaIncidenciasPage.tsx`, `/incidencias`, AV-283): pestañas Todas, Abiertas, En proceso y Cerradas con contador, y tabla con incidencia, ubicación, severidad, vía, estado y tiempo abierta. El tiempo se pinta en tono de aviso cuando una sencilla del personal propio pasa las 24 h (RN-019). Encima va la tarjeta «Plazo de incidencias sencillas» (`AlertasPlazo.tsx`, Figma 388-7027 y 394-9392, AV-280), con «Supera el objetivo» a partir de las 24 h, «Cerca del máximo» desde las 40 h y «Vencida» pasadas las 48 h. Cada alerta tiene «Reasignar», que elige otro capataz, y «Anotar causa». Lógica en `bandeja.ts`, con prueba.
 
 - **Detalle** (`IncidenciaDetallePage.tsx`, `/incidencias/:id`, AV-284, Figma 388-7305): foto y ficha (ubicación, ejemplar, descripción y quién la reportó) y, a la derecha, la tarjeta de acción según el estado. Las filas de la bandeja llevan aquí.
-  - La tarjeta de acción («Clasificar» y la derivación por cada vía) llega en los siguientes PR.
+  - **Registrada:** «Clasificar» (`TarjetaClasificar.tsx`) con severidad e impacto, «Quién lo atiende» con la vía sugerida (un árbol de 5 m o más va al proveedor tercerizado) y «Sugerencia de IA» como Próximamente.
+  - **Otra vía:** si se elige otra que la sugerida, la severidad y el impacto quedan como insignias y se pide el motivo del cambio (389-7300).
+  - **Descartar** pide el motivo (394-8700) y **«Solicitar inspección en campo»** abre su tarjeta, con el responsable y qué verificar (394-8782).
+  - La derivación (encargo interno o requerimiento a un proveedor) llega en los siguientes PR.
 
   Lógica en `detalleIncidencia.ts`, con prueba.
 
