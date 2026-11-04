@@ -11,8 +11,9 @@ import { useId, type ReactNode } from 'react'
 import estilos from './Tarjeta.module.css'
 
 export interface TarjetaProps {
-  /** Título (estilo Título tarjeta). Sin él, la tarjeta es un contenedor sin nombre. */
-  titulo?: string
+  /** Título (estilo Título tarjeta). Sin él, la tarjeta es un contenedor sin nombre. Puede llevar texto distinto en
+   * móvil (dos `span`, uno oculto con CSS en cada tamaño, como «Próximos ciclos» del Resumen móvil). */
+  titulo?: ReactNode
   /** Nivel del encabezado del título, según la jerarquía de la página. */
   nivel?: 2 | 3 | 4
   /** Texto bajo el título. */

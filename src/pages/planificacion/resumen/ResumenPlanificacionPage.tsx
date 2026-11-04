@@ -72,17 +72,21 @@ export default function ResumenPlanificacionPage() {
 
   return (
     <div className={estilos.pagina}>
+      {/* En móvil (Figma 352-2038) el Resumen solo lleva «Necesita atención» y los próximos ciclos. */}
       <AccionesPagina>
-        <BotonEnlace to={RUTAS_PLANIFICACION.calendario} variante="secundario" icono="calendar">
-          Ver calendario
-        </BotonEnlace>
-        {puedeEditar && (
-          <BotonEnlace to={`${RUTAS_PLANIFICACION.calendario}?programar=`} variante="primario" icono="plus-circle">
-            Programar ciclo
+        <span className={estilos.accionesEscritorio}>
+          <BotonEnlace to={RUTAS_PLANIFICACION.calendario} variante="secundario" icono="calendar">
+            Ver calendario
           </BotonEnlace>
-        )}
+          {puedeEditar && (
+            <BotonEnlace to={`${RUTAS_PLANIFICACION.calendario}?programar=`} variante="primario" icono="plus-circle">
+              Programar ciclo
+            </BotonEnlace>
+          )}
+        </span>
       </AccionesPagina>
 
+      <div className={estilos.soloEscritorio}>
       <FilaTarjetas etiqueta="Indicadores del mes">
         {indicadores.map((indicador) => (
           <TarjetaIndicador
@@ -94,12 +98,21 @@ export default function ResumenPlanificacionPage() {
           />
         ))}
       </FilaTarjetas>
+      </div>
 
       <div className={estilos.columnas}>
         <div className={estilos.principal}>
           <NecesitaAtencion alertas={alertas.datos} servicios={servicios.datos} programaciones={programaciones.datos} soloLectura={!puedeEditar} />
 
-          <Tarjeta titulo={`Próximos ${DIAS_PROXIMOS} días`} relleno="amplio">
+          <Tarjeta
+            titulo={
+              <>
+                <span className={estilos.soloEscritorio}>Próximos {DIAS_PROXIMOS} días</span>
+                <span className={estilos.soloMovil}>Próximos ciclos</span>
+              </>
+            }
+            relleno="amplio"
+          >
             {ciclos.length === 0 ? (
               <EstadoVacio titulo="Sin ciclos en los próximos días" descripcion="Los ciclos programados aparecerán aquí." nivel={3} />
             ) : (
@@ -117,7 +130,9 @@ export default function ResumenPlanificacionPage() {
                         <span className={estilos.titulo}>{ciclo.servicio}</span>
                         <span className={estilos.detalle}>{detalleCiclo(ciclo.proveedor, servicioDe(ciclo.tipo_servicio_id))}</span>
                       </span>
-                      <Estado tono={estado.tono} texto={estado.texto} punto />
+                      <span className={estilos.soloEscritorio}>
+                        <Estado tono={estado.tono} texto={estado.texto} punto />
+                      </span>
                     </li>
                   )
                 })}
@@ -126,6 +141,7 @@ export default function ResumenPlanificacionPage() {
           </Tarjeta>
         </div>
 
+        <div className={estilos.soloEscritorio}>
         <Tarjeta titulo="Restricciones próximas" relleno="amplio">
           {proximas.length === 0 ? (
             <EstadoVacio titulo="Sin restricciones próximas" descripcion={`Nada restringido en los próximos ${DIAS_RESTRICCIONES} días.`} nivel={3} />
@@ -146,6 +162,7 @@ export default function ResumenPlanificacionPage() {
             </ul>
           )}
         </Tarjeta>
+        </div>
       </div>
     </div>
   )

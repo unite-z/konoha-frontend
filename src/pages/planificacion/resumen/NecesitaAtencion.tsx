@@ -27,6 +27,13 @@ const ACCIONES: Record<Exclude<ElementoAtencion['accion'], 'registrarMotivo'>, {
   configurar: { texto: 'Configurar', ruta: () => RUTAS_PLANIFICACION.configuracion },
 }
 
+/** «Corte de césped · faltan 7 días…» → servicio «Corte de césped» y motivo «Faltan 7 días…» (móvil, Figma 352-2038). */
+export function partesMovil(titulo: string): { servicio: string; motivo: string } {
+  const [servicio, ...resto] = titulo.split(' · ')
+  const motivo = resto.join(' · ')
+  return { servicio, motivo: motivo.charAt(0).toUpperCase() + motivo.slice(1) }
+}
+
 export interface NecesitaAtencionProps {
   alertas: AlertaPlanificacion[]
   servicios: ServicioPeriodico[]
@@ -58,13 +65,31 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones = 
                 <span className={`${estilos.icono} ${estilos[elemento.tono]}`} aria-hidden="true">
                   <Icono nombre={elemento.icono} tamano="base" />
                 </span>
+                {/* En móvil (Figma 352-2038): el servicio como título y el motivo debajo, sin el detalle. */}
                 <span className={estilos.textos}>
-                  <span className={estilos.titulo}>{elemento.titulo}</span>
-                  <span className={estilos.detalle}>{elemento.detalle}</span>
+                  <span className={`${estilos.titulo} ${estilos.soloEscritorio}`}>{elemento.titulo}</span>
+                  <span className={`${estilos.detalle} ${estilos.soloEscritorio}`}>{elemento.detalle}</span>
+                  <span className={`${estilos.titulo} ${estilos.soloMovil}`}>{partesMovil(elemento.titulo).servicio}</span>
+                  <span className={`${estilos.detalle} ${estilos.soloMovil}`}>{partesMovil(elemento.titulo).motivo}</span>
                 </span>
                 {accion ? (
-                  <BotonEnlace to={accion.ruta(elemento)} variante={tipo === 'programar' ? 'primario' : 'secundario'}>
-                    {accion.texto}
+                  <BotonEnlace
+                    to={accion.ruta(elemento)}
+                    variante={tipo === 'programar' ? 'primario' : 'secundario'}
+                    aria-label={tipo === 'verCiclo' ? accion.texto : undefined}
+                  >
+                    {tipo === 'verCiclo' ? (
+                      <>
+                        <span className={estilos.soloEscritorio} aria-hidden="true">
+                          {accion.texto}
+                        </span>
+                        <span className={estilos.soloMovil} aria-hidden="true">
+                          Ver
+                        </span>
+                      </>
+                    ) : (
+                      accion.texto
+                    )}
                   </BotonEnlace>
                 ) : (
                   <Boton variante="secundario" onClick={() => setMotivo(elemento)}>

@@ -27,6 +27,8 @@ export interface EntradaSegundoNivel {
   texto: string
   /** Icono de la Pestaña inferior en móvil (nombre de Figma). */
   icono?: NombreIconoFigma
+  /** Texto más corto en la Pestaña inferior («Ajustes» para «Configuración», Figma 352-2038). */
+  textoMovil?: string
   /** Sin ruta: pertenece a otro requisito y se muestra sin enlace, con «Próximamente». */
   ruta?: string
 }
@@ -55,8 +57,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [
       { texto: 'Resumen', icono: 'dashboard', ruta: RUTAS_PLANIFICACION.resumen },
       { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
-      { texto: 'Ciclos', icono: 'list', ruta: RUTAS_PLANIFICACION.ciclos },
-      { texto: 'Configuración', icono: 'settings', ruta: RUTAS_PLANIFICACION.configuracion },
+      { texto: 'Ciclos', icono: 'arrow-right-left', ruta: RUTAS_PLANIFICACION.ciclos },
+      { texto: 'Configuración', textoMovil: 'Ajustes', icono: 'sliders', ruta: RUTAS_PLANIFICACION.configuracion },
     ],
   },
   {

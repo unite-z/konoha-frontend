@@ -18,6 +18,13 @@
   padding: var(--space-6);
 }
 
+/* En móvil, el relleno amplio baja a 16 (Figma, Resumen móvil 352-2038). */
+@media (max-width: 767px) {
+  .amplio {
+    padding: var(--space-4);
+  }
+}
+
 .cabecera {
   display: flex;
   flex-wrap: wrap;

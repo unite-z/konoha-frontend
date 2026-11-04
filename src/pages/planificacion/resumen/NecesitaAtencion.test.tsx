@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import type { AlertaPlanificacion, ServicioPeriodico } from '@/types/planificacion'
-import NecesitaAtencion from './NecesitaAtencion'
+import NecesitaAtencion, { partesMovil } from './NecesitaAtencion'
 
 const motivo = vi.hoisted(() => vi.fn(async (id: number, texto: string) => ({ id, estado: 'Atendida', motivo: texto })))
 vi.mock('@/services/api/planificacion', () => ({ registrarMotivoAlerta: motivo }))
@@ -87,5 +87,9 @@ describe('NecesitaAtencion', () => {
 
     expect(within(bandeja).getByRole('heading', { name: 'Todo al día' })).toBeTruthy()
     expect(within(bandeja).queryByRole('list')).toBeNull()
+  })
+
+  it('en móvil separa el servicio del motivo (Figma 352-2038)', () => {
+    expect(partesMovil('Corte de césped · faltan 7 días para la frecuencia máxima')).toEqual({ servicio: 'Corte de césped', motivo: 'Faltan 7 días para la frecuencia máxima' })
   })
 })
