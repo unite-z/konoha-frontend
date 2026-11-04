@@ -8,8 +8,14 @@ import { RUTAS_INVENTARIO, RUTAS_PLANIFICACION } from '../../router/rutasApp'
 import type { SesionCore } from '../../types/core'
 import MenuLateral from './MenuLateral'
 
-const sesion = vi.hoisted(() => ({ actual: null as SesionCore | null }))
-vi.mock('../../sesion/ContextoSesion', () => ({ useSesionActiva: () => sesion.actual }))
+const sesion = vi.hoisted(() => ({ actual: null as SesionCore | null, cerrar: vi.fn(async () => {}) }))
+vi.mock('../../sesion/ContextoSesion', () => ({
+  useSesionActiva: () => sesion.actual,
+  useSesion: () => ({
+    estado: { tipo: 'activa', sesion: sesion.actual },
+    cerrarSesion: sesion.cerrar,
+  }),
+}))
 
 afterEach(cleanup)
 
@@ -34,6 +40,40 @@ function pintar(ruta: string, permisos: string[] = Object.values(PERMISOS)) {
 }
 
 describe('MenuLateral', () => {
+  it('el pie lleva el usuario y sus opciones se abren con el botón y se cierran con Esc', async () => {
+    const usuario = userEvent.setup()
+    pintar(RUTAS_INVENTARIO.coberturas)
+
+    expect(screen.getByText('Robert G.')).toBeTruthy()
+    expect(screen.getByText('Jefe de sección')).toBeTruthy()
+    const opciones = screen.getByRole('button', { name: 'Opciones de la cuenta' })
+    expect(opciones.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull()
+
+    await usuario.click(opciones)
+    expect(opciones.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('link', { name: 'Cambiar contraseña' })).toBeTruthy()
+
+    await usuario.keyboard('{Escape}')
+    expect(opciones.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull()
+  })
+
+  it('«Cerrar sesión» cierra la sesión; pulsar fuera solo cierra las opciones', async () => {
+    const usuario = userEvent.setup()
+    pintar(RUTAS_INVENTARIO.coberturas)
+    const opciones = screen.getByRole('button', { name: 'Opciones de la cuenta' })
+
+    await usuario.click(opciones)
+    await usuario.click(document.body)
+    expect(opciones.getAttribute('aria-expanded')).toBe('false')
+    expect(sesion.cerrar).not.toHaveBeenCalled()
+
+    await usuario.click(opciones)
+    await usuario.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+    expect(sesion.cerrar).toHaveBeenCalledOnce()
+  })
+
   it('en una subruta solo hay un elemento marcado como página actual', () => {
     const menu = pintar(RUTAS_INVENTARIO.coberturas)
 

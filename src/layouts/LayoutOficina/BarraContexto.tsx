@@ -1,9 +1,10 @@
 /**
  * Migas de pan de la página actual (Guía Web 4.2).
- * Desde el menú de primer nivel hasta la página actual, separadas por «/». La página actual va en negrita
+ * Desde el menú de primer nivel hasta la página actual, separadas por `chevron-right`. La página actual va en negrita
  * y sin enlace.
  */
 import { Link } from 'react-router'
+import Icono from '../../components/ui/Icono'
 import type { Miga } from './ContextoPagina'
 import estilos from './Cabecera.module.css'
 
@@ -16,6 +17,7 @@ export default function BarraContexto({ migas }: { migas: Miga[] }) {
           const actual = indice === migas.length - 1
           return (
             <li key={`${miga.texto}-${indice}`}>
+              {indice > 0 && <Icono nombre="chevron-right" tamano="base" />}
               {actual || !miga.ruta ? (
                 <span className={actual ? estilos.migaActual : undefined} aria-current={actual ? 'page' : undefined}>
                   {miga.texto}

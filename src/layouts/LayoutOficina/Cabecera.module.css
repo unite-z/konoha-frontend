@@ -1,26 +1,18 @@
 /* Cabecera y migas de pan: sistema de diseño de Figma (DESIGN.md, 4.3). */
 .cabecera {
-  --busqueda-ancho: 420px; /* Guía Web 3.2: campo de búsqueda global */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-6);
   min-height: var(--web-header-height);
-  padding: var(--space-1) var(--space-8);
+  padding: var(--space-1) var(--space-6);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-default);
-}
-
-.titulos {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
 }
 
 .migas {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -29,10 +21,10 @@
   color: var(--color-text-muted);
 }
 
-.migas li + li::before {
-  content: '/';
-  padding: 0 var(--space-1);
-  color: var(--color-text-muted);
+.migas li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .migas a {
@@ -46,89 +38,6 @@
 .migaActual {
   font-weight: var(--type-pequeno-medio-weight);
   color: var(--color-text-primary);
-}
-
-.derecha {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  flex: none;
-}
-
-.busqueda {
-  /* 420px a partir de 1920px; más estrecho en pantallas menores para no partir el título. */
-  width: min(var(--busqueda-ancho), 20vw);
-  min-height: var(--web-control);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-subtle);
-  font-size: var(--type-pequeno-size);
-}
-
-.busqueda::placeholder {
-  color: var(--color-text-muted);
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding-left: var(--space-6);
-  border-left: 1px solid var(--color-border-default);
-}
-
-.iniciales {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--web-control-compact);
-  height: var(--web-control-compact);
-  border-radius: var(--radius-full);
-  background: var(--color-action-subtle);
-  color: var(--color-action-text);
-  font-size: var(--type-etiqueta-size);
-  font-weight: var(--type-cuerpo-medio-weight);
-}
-
-.datosUsuario {
-  display: flex;
-  flex-direction: column;
-}
-
-.nombre {
-  font-size: var(--type-pequeno-size);
-  line-height: var(--type-pequeno-line);
-  font-weight: var(--type-pequeno-medio-weight);
-}
-
-.rol {
-  font-size: var(--type-leyenda-size);
-  line-height: var(--type-leyenda-line);
-  color: var(--color-text-muted);
-}
-
-/*
- * Tablet (extensión de la Guía Web 3.1, menos de 1024px): la búsqueda global (deshabilitada, de otro módulo)
- * se oculta para que el usuario y «Cerrar sesión» quepan sin desplazamiento horizontal.
- */
-@media (max-width: 1023px) {
-  .cabecera {
-    padding: var(--space-2) var(--space-6);
-  }
-
-  .busqueda {
-    display: none;
-  }
-
-  .derecha,
-  .usuario {
-    gap: var(--space-2);
-  }
-
-  .usuario {
-    padding-left: var(--space-4);
-  }
 }
 
 /* Móvil: la Barra superior móvil sustituye a la cabecera. */
