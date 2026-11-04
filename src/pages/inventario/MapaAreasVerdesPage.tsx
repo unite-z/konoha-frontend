@@ -58,14 +58,12 @@ export default function MapaAreasVerdesPage() {
   const contenedorMapa = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<MapaMapLibre | null>(null)
   const usoSeleccionadoRef = useRef('')
-  const tipoUsoSeleccionadoRef = useRef('')
   const mapa = useConsulta('mapa-areas-verdes', cargarAreasVerdesGeoJSON)
   const categorias = useConsulta('mapa-usos-fuente', listarUsosFuenteMapa)
   const asignaciones = useConsulta('mapa-poligonos', listarPoligonosMapa)
   const tiposUso = useConsulta('mapa-tipos-uso', (signal) => listarTiposUso(false, signal))
   const areas = useConsulta('mapa-inventario-areas', listarTodasLasAreasVerdes)
   const [usoSeleccionado, setUsoSeleccionado] = useState('')
-  const [tipoUsoSeleccionado] = useState('')
   const [seleccion, setSeleccion] = useState<PoligonoSeleccionado | null>(null)
   const [, setHoverMapa] = useState<HoverMapa | null>(null)
   const [guardando, setGuardando] = useState<'uso' | 'area' | null>(null)
@@ -125,7 +123,7 @@ export default function MapaAreasVerdesPage() {
           type: 'fill',
           source: ID_FUENTE,
           filter: filtroUso,
-          layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current, tipoUsoSeleccionadoRef.current) ? 'visible' : 'none' },
+          layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current) ? 'visible' : 'none' },
           paint: { 'fill-color': uso.color, 'fill-opacity': 1, 'fill-outline-color': uso.color },
         })
         instancia.addLayer({
@@ -133,7 +131,7 @@ export default function MapaAreasVerdesPage() {
           type: 'line',
           source: ID_FUENTE,
           filter: filtroUso,
-          layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current, tipoUsoSeleccionadoRef.current) ? 'visible' : 'none' },
+          layout: { visibility: usoVisible(uso, usoSeleccionadoRef.current) ? 'visible' : 'none' },
           paint: { 'line-color': uso.color, 'line-width': 2, 'line-opacity': 1 },
         })
       }
@@ -211,16 +209,15 @@ export default function MapaAreasVerdesPage() {
 
   useEffect(() => {
     usoSeleccionadoRef.current = usoSeleccionado
-    tipoUsoSeleccionadoRef.current = tipoUsoSeleccionado
     const instancia = mapaRef.current
     if (!instancia) return
     for (const [indice, uso] of usos.entries()) {
-      const visibilidad = usoVisible(uso, usoSeleccionado, tipoUsoSeleccionado) ? 'visible' : 'none'
+      const visibilidad = usoVisible(uso, usoSeleccionado) ? 'visible' : 'none'
       const idCapaUso = `${ID_CAPA}-${indice}`
       if (instancia.getLayer(idCapaUso)) instancia.setLayoutProperty(idCapaUso, 'visibility', visibilidad)
       if (instancia.getLayer(`${idCapaUso}-contorno`)) instancia.setLayoutProperty(`${idCapaUso}-contorno`, 'visibility', visibilidad)
     }
-  }, [mapa.datos, usoSeleccionado, tipoUsoSeleccionado, usos])
+  }, [mapa.datos, usoSeleccionado, usos])
 
   if (consultaConError) {
     return (
@@ -248,7 +245,7 @@ export default function MapaAreasVerdesPage() {
   const inventarioAreas = areas.datos
   const totalVisible = mapa.datos.features.filter((feature) => {
     const uso = usos.find((item) => item.nombre === texto(feature.properties?.Uso))
-    return uso ? usoVisible(uso, usoSeleccionado, tipoUsoSeleccionado) : false
+    return uso ? usoVisible(uso, usoSeleccionado) : false
   }).length
 
   async function guardarClasificacion() {
@@ -308,7 +305,6 @@ export default function MapaAreasVerdesPage() {
           usos={usos}
           categorias={categorias.datos}
           usoSeleccionado={usoSeleccionado}
-          tipoUsoSeleccionado={tipoUsoSeleccionado}
           onSeleccionar={(feature) => {
             const propiedades = feature.properties
             const idFuente = texto(propiedades.mapa_id)
@@ -404,9 +400,8 @@ function obtenerUsos(geojson: AreasVerdesGeoJSON, categorias: UsoFuenteMapa[]): 
     }))
 }
 
-function usoVisible(uso: UsoMapa, filtroFuente: string, filtroTipo: string): boolean {
-  return (!filtroFuente || uso.nombre === filtroFuente)
-    && (!filtroTipo || String(uso.tipoUsoId ?? '') === filtroTipo)
+function usoVisible(uso: UsoMapa, filtroFuente: string): boolean {
+  return !filtroFuente || uso.nombre === filtroFuente
 }
 
 function obtenerLimites(geojson: AreasVerdesGeoJSON): LimitesMapa | null {
