@@ -8,11 +8,8 @@
  * faltan por enviar y, al volver la conexión, se envían solas. Si otro ya había marcado el jardín, un aviso lo dice
  * («J-015 ya estaba marcado · J. Ramos, 10:18»). Las pendientes viven en la pantalla: la cola persistente en IndexedDB
  * (que sobrevive a cerrar la aplicación) es la común de RF-T-012 (AV-226).
- *
- * El backend (AV-260) aún no existe: con datos simulados responde `services/simulados/corte.ts` (D9).
  */
 import { useEffect, useRef, useState } from 'react'
-import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import BarraAvance from '@/components/ui/BarraAvance'
@@ -294,7 +291,6 @@ export default function RutaDeHoyPage() {
           <span className="sr-only">Actualizar la ruta</span>
         </Boton>
       </AccionMovil>
-      <AvisoDatosSimulados />
       {contenido}
       {ruta && abierto && (
         <HojaYaMarcado

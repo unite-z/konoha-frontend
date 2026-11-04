@@ -13,9 +13,9 @@ Lo que el capataz usa en el móvil (AV-271, RF-COR-002, HU-011 y CU-011). La Pla
   - jardín fuera de ruta (375-6772, CU-MOD03-011 flujo 2b): «Añadir jardín fuera de ruta» al pie de «Por cortar» abre la hoja `HojaFueraDeRuta`, que busca el jardín en el maestro por código o nombre y lo marca con nota obligatoria. Queda pendiente de que el jefe lo incorpore. **Supuesto por validar:** los requisitos no dicen cómo se llega; se eligió el buscador (consultado con dp2-32).
 
   Lógica en `rutaDeHoy.ts`, con prueba.
-- **Calendario** (`CalendarioCuadrillaPage.tsx`, `/corte/calendario`, Figma 380-8307, RF-PLA-007): la semana de su cuadrilla en solo lectura («Cuadrilla B · solo lectura»), con la `VistaMovil` del calendario de Planificación (tira de días y agenda). Datos de `GET calendario-cuadrilla/` (contrato de AV-254); con datos simulados, las programaciones y restricciones de siempre a nombre de «Cuadrilla B».
+- **Calendario** (`CalendarioCuadrillaPage.tsx`, `/corte/calendario`, Figma 380-8307, RF-PLA-007): la semana de su cuadrilla en solo lectura («Cuadrilla B · solo lectura»), con la `VistaMovil` del calendario de Planificación (tira de días y agenda). Datos de `GET calendario-cuadrilla/` (contrato de AV-254).
 
-**Datos simulados (D9):** el backend (AV-260) aún no existe. Con `VITE_DATOS_SIMULADOS=true`, `services/api/corte.ts` responde con `services/simulados/corte.ts` y la pantalla muestra `AvisoDatosSimulados`. Con `?simular=vacio`, hoy no hay corte.
+**Backend:** `services/api/corte.ts` llama a los endpoints de AV-258 a AV-262 y AV-254. La entrada del menú aparece con `PLA.CORTE.REGISTRAR`.
 
 | Qué | Dónde |
 |---|---|

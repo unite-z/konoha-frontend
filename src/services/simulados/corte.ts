@@ -1,14 +1,12 @@
 /**
- * Ciclo de corte simulado de MOD-03 (AV-258 a AV-262), solo con `VITE_DATOS_SIMULADOS=true`: el backend del corte
- * espera a las rutas de MOD-02. Ruta de 45 jardines en cuatro zonas, con las marcas según el estado del ciclo:
+ * Ciclo de corte de ejemplo de MOD-03 (AV-258 a AV-262) para las pruebas de las pantallas del ciclo; la aplicación
+ * usa el backend. Ruta de 45 jardines en cuatro zonas, con las marcas según el estado del ciclo:
  * programado, todo pendiente; en curso, 28 cortados en dos días y una interrupción Sociales a Ciencias (desde el
  * tercer día, la ruta completa; desde el cuarto, una jornada de limpieza, y desde el quinto, dos: «No cumple»);
  * completado, todo cortado y una jornada de limpieza.
  */
-import { ErrorApi } from '../api/cliente'
-import type { CicloCorte, InterrupcionCorte, JardinMaestro, JardinRuta, LimpiezaCorte, NuevaInterrupcion, NuevaMarcaFueraDeRuta, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
-import { escenarioSimulado, responderSimulado } from './simulacion'
 
 const NOMBRES: Record<string, string> = {
   'J-014': 'Jardín de la Biblioteca',
@@ -89,123 +87,4 @@ export function cicloCorteSimulado(ciclo: Programacion, hoy: string = new Date()
     limpiezas,
     dias_interrupcion_descontados: interrupciones.length > 0 ? 0.5 : 0,
   }
-}
-
-export function simularRegistrarLimpieza(fecha: string): Promise<LimpiezaCorte> {
-  return responderSimulado(() => ({ id: Date.now(), fecha, autor: 'Usuario de prueba' }))
-}
-
-export function simularObtenerCicloCorte(ciclo: Programacion, signal?: AbortSignal): Promise<CicloCorte> {
-  return responderSimulado(() => cicloCorteSimulado(ciclo), { signal })
-}
-
-export function simularZonasAlternativas(signal?: AbortSignal): Promise<ZonaAlternativa[]> {
-  return responderSimulado(
-    () => [
-      { zona: 'Ciencias', pendientes: 14, aviso_hoy: null },
-      { zona: 'Letras', pendientes: 9, aviso_hoy: 'Reserva de jardín' },
-    ],
-    { signal },
-  )
-}
-
-export function simularRegistrarInterrupcion(cuerpo: NuevaInterrupcion): Promise<InterrupcionCorte> {
-  return responderSimulado(() => ({
-    id: Date.now(),
-    zona_afectada: cuerpo.zona_afectada,
-    zona_alternativa: cuerpo.zona_alternativa,
-    hora: cuerpo.hora,
-    motivo: cuerpo.motivo,
-    minutos_descontados: 0,
-    aviso_proveedor: cuerpo.aviso_proveedor,
-    registrada_como_restriccion: cuerpo.registrar_restriccion,
-  }))
-}
-
-/** Ruta de 45 jardines en cuatro zonas, más Estacionamientos fuera de ella, y 47 días desde el último corte (máximo 45). */
-export function simularRutaCorte(signal?: AbortSignal): Promise<RutaCorte> {
-  return responderSimulado(
-    () => ({
-      zonas: [
-        { zona: 'Ciencias', jardines: 16, en_ruta: true },
-        { zona: 'Sociales', jardines: 11, en_ruta: true },
-        { zona: 'Letras', jardines: 9, en_ruta: true },
-        { zona: 'Ingeniería', jardines: 9, en_ruta: true },
-        { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
-      ],
-      fuera_de_frecuencia: { dias_desde_ultimo: 47, maximo_dias: 45 },
-    }),
-    { signal },
-  )
-}
-
-/** Marcas hechas en esta sesión del navegador sobre la ruta de hoy simulada (se pierden al recargar). */
-const marcasDeHoy = new Map<number, string>()
-
-/** Ruta de hoy del capataz: CC-2026-11 en curso desde ayer, con las marcas de la sesión encima (28 de 45 al entrar). */
-export function rutaDeHoySimulada(hoy: string = new Date().toISOString().slice(0, 10)): RespuestaRutaDeHoy {
-  const ciclo: Programacion = {
-    id: 11,
-    tipo_servicio_id: 1,
-    servicio: 'Corte de césped',
-    proveedor_id: null,
-    proveedor: null,
-    estacion: 'Primavera',
-    fecha_inicio_prevista: sumarDias(hoy, -1),
-    fecha_fin_prevista: sumarDias(hoy, 2),
-    estado: 'EnCurso',
-    fecha_inicio_real: sumarDias(hoy, -1),
-    fecha_fin_real: null,
-  }
-  const jardines = cicloCorteSimulado(ciclo, hoy).jardines.map((jardin) => {
-    const marca = marcasDeHoy.get(jardin.id)
-    return marca ? { ...jardin, estado: 'Cortado' as const, marcado_en: marca, marcado_por: 'Tú', detenido_por_interrupcion: false } : jardin
-  })
-  return { ruta: { programacion_id: ciclo.id, codigo: 'CC-2026-11', servicio: ciclo.servicio, jardines } }
-}
-
-export function simularRutaDeHoy(signal?: AbortSignal): Promise<RespuestaRutaDeHoy> {
-  // `?simular=vacio`: hoy no hay corte en la cuadrilla.
-  return responderSimulado(() => (escenarioSimulado() === 'vacio' ? { ruta: null } : rutaDeHoySimulada()), { signal })
-}
-
-/** Marca un jardín; si ya estaba cortado, 409 `ya-marcado` como el backend (AV-260). */
-export function simularMarcarJardin(jardinId: number, marcadoEn: string): Promise<JardinRuta> {
-  return responderSimulado(() => {
-    const jardin = rutaDeHoySimulada().ruta?.jardines.find((j) => j.id === jardinId)
-    if (!jardin) throw new ErrorApi(404, 'no-encontrado', 'El jardín no está en la ruta de hoy')
-    if (jardin.estado === 'Cortado') throw new ErrorApi(409, 'ya-marcado', `${jardin.codigo} ya estaba marcado`)
-    marcasDeHoy.set(jardinId, marcadoEn)
-    return { ...jardin, estado: 'Cortado', marcado_en: marcadoEn, marcado_por: 'Tú' }
-  })
-}
-
-export function simularObservacionJardin(texto: string): Promise<{ id: number; texto: string }> {
-  return responderSimulado(() => ({ id: Date.now(), texto }))
-}
-
-/** Jardines del maestro fuera de la ruta simulada: Estacionamientos y el Rectorado. */
-const FUERA_DE_RUTA: JardinMaestro[] = [
-  { id: 101, codigo: 'J-061', nombre: 'Jardín del Rectorado', zona: 'Rectorado' },
-  { id: 102, codigo: 'J-062', nombre: 'Rotonda del Estacionamiento', zona: 'Estacionamientos' },
-  { id: 103, codigo: 'J-063', nombre: 'Berma de la Puerta 2', zona: 'Estacionamientos' },
-]
-
-export function simularJardinesFueraDeRuta(q: string, signal?: AbortSignal): Promise<{ count: number; results: JardinMaestro[] }> {
-  const texto = q.trim().toLowerCase()
-  return responderSimulado(
-    () => {
-      const results = FUERA_DE_RUTA.filter((j) => !texto || `${j.codigo} ${j.nombre}`.toLowerCase().includes(texto))
-      return { count: results.length, results }
-    },
-    { signal },
-  )
-}
-
-export function simularMarcarFueraDeRuta(cuerpo: NuevaMarcaFueraDeRuta): Promise<{ id: number; jardin: JardinMaestro; nota: string; marcado_en: string }> {
-  return responderSimulado(() => {
-    const jardin = FUERA_DE_RUTA.find((j) => j.id === cuerpo.jardin_id)
-    if (!jardin) throw new ErrorApi(404, 'no-encontrado', 'El jardín no está en el maestro')
-    return { id: Date.now(), jardin, nota: cuerpo.nota, marcado_en: cuerpo.marcado_en }
-  })
 }
