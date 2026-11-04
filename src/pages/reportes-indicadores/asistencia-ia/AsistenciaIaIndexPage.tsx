@@ -1,5 +1,5 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003, RF-IA-004 y RF-IA-005).
+ * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003, RF-IA-004, RF-IA-005 y RF-IA-006).
  */
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
@@ -53,6 +53,13 @@ export default function AsistenciaIaIndexPage() {
             'Sugerencia de categoría, prioridad y tipo de atención de una incidencia registrada, para validarla antes de derivar.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado del análisis' },
           ruta: RUTAS.clasificacionIncidencias,
+        },
+        {
+          titulo: 'Evidencia fitosanitaria',
+          descripcion:
+            'Hipótesis de afectación a partir de fotografías de una planta, con su nivel de confianza y limitaciones, para la validación técnica.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado del análisis' },
+          ruta: RUTAS.evidenciaFitosanitaria,
         },
       ]}
     />
