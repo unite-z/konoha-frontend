@@ -36,6 +36,7 @@ export default function Selector(props: SelectorProps) {
     error,
     bloqueadoMotivo,
     etiquetaOculta,
+    idErrorExterno,
     compacto,
     valor,
     opciones,
@@ -44,7 +45,7 @@ export default function Selector(props: SelectorProps) {
     className,
     ...resto
   } = props
-  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
+  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno }
   return (
     <MarcoCampo {...marco}>
       <span className={estilos.desplegable}>

@@ -40,11 +40,15 @@ export interface IncidenciaResumen {
   responsable: string | null
 }
 
-/** Capataz al que se puede reasignar una incidencia (`GET incidencias/{id}/capataces/`, AV-280). */
+/**
+ * Capataz al que se puede reasignar o encargar una incidencia (`GET incidencias/{id}/capataces/?fecha=`, AV-280 y
+ * AV-277), con la carga de su cuadrilla ese día: libre si tiene menos encargos que su capacidad.
+ */
 export interface CapatazDisponible {
   id: number
   nombre: string
   cuadrilla: string
+  carga?: { asignados: number; capacidad: number }
 }
 
 export type ImpactoIncidencia = 'Alto' | 'Medio' | 'Bajo'
@@ -82,4 +86,16 @@ export interface SolicitudInspeccion {
 export interface Inspector {
   id: number
   nombre: string
+}
+
+/** Cuerpo de `POST incidencias/{id}/encargo/` (AV-277): encargo directo a un capataz (vía personal propio). */
+export interface NuevoEncargo {
+  capataz_id: number
+  espacio: string
+  actividad: string
+  /** Fecha límite `AAAA-MM-DD`. */
+  plazo: string
+  /** Lo que va con el encargo: foto, descripción y ejemplar. */
+  incluye: string[]
+  avisar_capataz: boolean
 }
