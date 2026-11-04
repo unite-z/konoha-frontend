@@ -26,6 +26,8 @@ export interface SerieRestriccion {
   diasSemana: number[]
   aplica_servicios_ruidosos: boolean
   area_verde_id: number | null
+  /** Nombre del área verde (AV-365). */
+  area_verde: string | null
   /** La restricción que se da de baja: con `serie=true`, `DELETE restricciones/{id}/` da de baja toda la serie. */
   idBaja: number
 }
@@ -53,6 +55,7 @@ export function agruparSeries(restricciones: Restriccion[], hoy: FechaIso): Seri
         diasSemana: [diaSemana(r.fecha_inicio)],
         aplica_servicios_ruidosos: r.aplica_servicios_ruidosos,
         area_verde_id: r.area_verde_id,
+        area_verde: r.area_verde ?? null,
         idBaja: r.id,
       })
       continue
@@ -80,10 +83,11 @@ export function textoFechasSerie(serie: SerieRestriccion): string {
 }
 
 /**
- * «Ruidosos · todo el campus» o «Todos · área verde 7»: a qué servicios afecta y dónde. El nombre del área verde
- * llega con AV-365.
+ * «Ruidosos · todo el campus» o «Todos · Sociales y Comedor Central»: a qué servicios afecta y dónde, con el nombre
+ * del área verde (AV-365); si no llega, «área verde 7».
  */
-export function textoAlcance(serie: Pick<SerieRestriccion, 'aplica_servicios_ruidosos' | 'area_verde_id'>): string {
+export function textoAlcance(serie: Pick<SerieRestriccion, 'aplica_servicios_ruidosos' | 'area_verde_id' | 'area_verde'>): string {
   const servicios = serie.aplica_servicios_ruidosos ? 'Ruidosos' : 'Todos'
-  return `${servicios} · ${serie.area_verde_id === null ? 'todo el campus' : `área verde ${serie.area_verde_id}`}`
+  const lugar = serie.area_verde_id === null ? 'todo el campus' : (serie.area_verde ?? `área verde ${serie.area_verde_id}`)
+  return `${servicios} · ${lugar}`
 }

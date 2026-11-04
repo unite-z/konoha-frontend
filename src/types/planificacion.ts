@@ -32,9 +32,9 @@ export interface ServicioPeriodico {
   es_ruidoso: boolean
   frecuencias: FrecuenciaEstacion[]
   duracion: DuracionServicio | null
-  /** Contrato de AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
+  /** AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
   via?: 'Tercerizado' | 'PersonalPropio' | null
-  /** Contrato de AV-363: proveedor habitual si es tercerizado. */
+  /** AV-363: proveedor del contrato vigente (o del último) si es tercerizado. */
   proveedor?: string | null
 }
 
@@ -77,6 +77,8 @@ export interface Restriccion {
   hora_inicio: string | null
   hora_fin: string | null
   area_verde_id: number | null
+  /** AV-365: nombre del área verde, o `null` si es de todo el campus. */
+  area_verde?: string | null
   descripcion: string | null
   serie: string | null
 }
