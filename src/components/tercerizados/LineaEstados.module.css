@@ -1,6 +1,6 @@
 /* Línea de estados (mockup, pantalla 6): colores y tipografía del sistema de diseño, sin primitivos. */
 .linea {
-  --marca: 32px;
+  --marca: var(--space-8);
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-2);

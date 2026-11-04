@@ -9,7 +9,7 @@
 }
 
 .tarjeta {
-  --acceso-ancho: 440px;
+  --acceso-ancho: 27.5rem;
   width: 100%;
   max-width: var(--acceso-ancho);
 }

@@ -199,7 +199,7 @@ export default function MapaAreasVerdesPage() {
         detalle.textContent = `${etiqueta}: ${valorTexto}`
         contenido.append(detalle)
       }
-      new Popup({ maxWidth: '300px' }).setLngLat(evento.lngLat).setDOMContent(contenido).addTo(instancia)
+      new Popup({ maxWidth: '18.75rem' }).setLngLat(evento.lngLat).setDOMContent(contenido).addTo(instancia)
     })
 
     return () => {

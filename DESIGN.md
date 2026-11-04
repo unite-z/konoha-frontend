@@ -199,7 +199,7 @@ Reglas que salen de la revisión del profesor del 29/10.
 
 ## 7. Cómo añadir o cambiar un componente
 
-**Lo vigila el CI** (`comprobar-estilos.sh`, AV-351) en las carpetas ya migradas: nada de primitivos de color, ninguna `var(--x)` sin definir y ningún control crudo fuera de `components/ui` y `layouts`. Un dato interactivo que no encaja en un componente (una barra de gráfico, una celda de mapa de calor, una ficha pulsable) lleva el comentario `// Excepción al sistema (AV-351): motivo` en su fichero. Inventario y planificación entran en la regla al migrarse.
+**Lo vigila el CI** (`comprobar-estilos.sh`, AV-351). En todo `src/`: ninguna medida en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` y `border-radius` solo con `var(--type-*)` y `var(--radius-*)`. En las carpetas migradas, que hoy son todas salvo planificación: nada de primitivos de color, ninguna `var(--x)` sin definir y ningún control crudo fuera de `components/ui` y `layouts`. Un dato interactivo que no encaja en un componente (una barra de gráfico, una celda de mapa de calor, una ficha pulsable, la barra de herramientas de un lienzo) lleva el comentario `// Excepción al sistema (AV-351): motivo` en su fichero. Planificación entra en las dos reglas cuando la sustituya el rediseño de MOD-03.
 
 1. **Primero en Figma**, en la página del sistema de diseño, con sus variantes y las variables de «AV · Color» y «AV · Dimensiones». Lo revisa quien lleve diseño.
 2. **Después en `src/components/ui`**: mismo nombre (sin tildes, en PascalCase), mismas variantes, solo tokens, y su prueba.
