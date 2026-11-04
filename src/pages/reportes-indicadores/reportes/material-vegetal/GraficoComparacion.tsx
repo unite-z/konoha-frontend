@@ -21,6 +21,7 @@ import {
   type MesComparacion,
   type Movimiento,
 } from './materialVegetal'
+import Tarjeta from '../../../../components/ui/Tarjeta'
 
 const SIN_MOVIMIENTOS = 'Sin movimientos'
 
@@ -54,7 +55,7 @@ export default function GraficoComparacion({ meses, onVerDetalle }: GraficoCompa
   }
 
   return (
-    <section className={comunes.superficie} aria-label="Comparación con meses anteriores">
+    <Tarjeta etiqueta="Comparación con meses anteriores">
       <CabeceraGrafico titulo={`${textoMovimiento}${unidad ? ` (${unidad})` : ''} por mes`} />
       <div className={comunes.controles}>
         <div className={comunes.control}>
@@ -125,6 +126,6 @@ export default function GraficoComparacion({ meses, onVerDetalle }: GraficoCompa
           />
         </>
       )}
-    </section>
+    </Tarjeta>
   )
 }

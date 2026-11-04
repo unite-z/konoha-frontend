@@ -6,7 +6,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import Badge from '../../../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../../../components/ui/Boton'
 import EstadoVacio from '../../../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
@@ -15,6 +14,8 @@ import type { FilaAtencionServicio } from '../../../../types/reportesGestion'
 import { formatearFechaHora, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import { insigniaEstadoAtencion, numeroDeDecimal } from '../../../../utils/reportesGestion'
 import estilos from './ServicioTercerizado.module.css'
+import Estado from '../../../../components/ui/Estado'
+import { TONO_ESTADO, insigniaAEstado } from '../../../../components/ui/tonos'
 
 const POR_TANDA = 25
 
@@ -31,15 +32,15 @@ function lugar(f: FilaAtencionServicio): string {
 
 function Conformidad({ valor }: { valor: FilaAtencionServicio['conformidad'] }) {
   if (valor === null) return <>{SIN_VALOR}</>
-  return <Badge tono={valor === 'Conforme' ? 'exito' : 'advertencia'} texto={valor} />
+  return <Estado tono={TONO_ESTADO[valor === 'Conforme' ? 'exito' : 'advertencia']} texto={valor} />
 }
 
 function Marcas({ fila }: { fila: FilaAtencionServicio }) {
   if (fila.con_evidencia && !fila.es_riesgo) return null
   return (
     <span className={estilos.marcas}>
-      {!fila.con_evidencia && <Badge tono="advertencia" texto="Sin evidencia" />}
-      {fila.es_riesgo && <Badge tono="info" texto="Riesgo" />}
+      {!fila.con_evidencia && <Estado tono="aviso" texto="Sin evidencia" />}
+      {fila.es_riesgo && <Estado tono="info" texto="Riesgo" />}
     </span>
   )
 }
@@ -57,7 +58,7 @@ const COLUMNAS: ColumnaTabla<FilaAtencionServicio>[] = [
     titulo: 'Estado',
     ordenable: true,
     valorOrden: (f) => f.etiqueta_estado,
-    render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} texto={f.etiqueta_estado} />,
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} texto={f.etiqueta_estado} />,
   },
   { clave: 'espacio', titulo: 'Espacio o ejemplar', ordenable: true, multilinea: true, render: lugar },
   { clave: 'fecha_hora_inicio', titulo: 'Inicio', ordenable: true, render: (f) => formatearFechaHora(f.fecha_hora_inicio) },
@@ -86,7 +87,7 @@ function FichasAtenciones({ filas }: { filas: FilaAtencionServicio[] }) {
             <article className={estilos.ficha}>
               <div className={estilos.cabeceraFicha}>
                 <span className={estilos.codigoFicha}>{f.codigo}</span>
-                <Badge {...insigniaEstadoAtencion(f.estado)} texto={f.etiqueta_estado} />
+                <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} texto={f.etiqueta_estado} />
               </div>
               <p className={estilos.metaFicha}>
                 {f.clase} · {lugar(f)}
@@ -100,7 +101,7 @@ function FichasAtenciones({ filas }: { filas: FilaAtencionServicio[] }) {
                   <Marcas fila={f} />
                   <span className={estilos.metaFicha}>{f.documentos === 1 ? '1 documento' : `${formatearNumero(f.documentos)} documentos`}</span>
                 </span>
-                <BotonEnlace to={rutaDetalleAtencion(f.id)} variante="terciario">
+                <BotonEnlace to={rutaDetalleAtencion(f.id)} variante="fantasma">
                   Ver atención
                 </BotonEnlace>
               </div>

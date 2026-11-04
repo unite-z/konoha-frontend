@@ -10,7 +10,6 @@
  * año actual a hoy, porque los ciclos de corte se repiten cada 30 a 45 días.
  */
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
-import Badge from '../../../components/ui/Badge'
 import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton from '../../../components/ui/Boton'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
@@ -29,6 +28,8 @@ import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
 import estilosCorte from './CumplimientoCorte.module.css'
+import Estado from '../../../components/ui/Estado'
+import { TONO_ESTADO } from '../../../components/ui/tonos'
 
 const TITULO = 'Cumplimiento del corte de césped'
 const ID_PERIODO = 'periodo-corte'
@@ -174,7 +175,7 @@ function FichaCiclo({ ciclo: c }: { ciclo: FilaCumplimiento }) {
             <h3 id={idTitulo} className={estilosCorte.tituloFicha}>
               Inicio: {formatearFecha(c.fecha_inicio_real)}
             </h3>
-            {c.estado_ciclo && <Badge tono="neutral" texto={c.estado_ciclo} />}
+            {c.estado_ciclo && <Estado tono="neutro" texto={c.estado_ciclo} />}
           </div>
           {lugar && <p className={estilosCorte.subtituloFicha}>{lugar}</p>}
         </div>
@@ -182,7 +183,7 @@ function FichaCiclo({ ciclo: c }: { ciclo: FilaCumplimiento }) {
         <div className={estilosCorte.bloque}>
           <div className={estilosCorte.cabeceraBloque}>
             <p className={estilosCorte.tituloBloque}>Frecuencia</p>
-            <Badge tono={tonoCumplimiento(c.estado_frecuencia)} texto={c.estado_frecuencia} />
+            <Estado tono={TONO_ESTADO[tonoCumplimiento(c.estado_frecuencia)]} texto={c.estado_frecuencia} />
           </div>
           <dl className={estilosCorte.datos}>
             <div>
@@ -199,7 +200,7 @@ function FichaCiclo({ ciclo: c }: { ciclo: FilaCumplimiento }) {
         <div className={estilosCorte.bloque}>
           <div className={estilosCorte.cabeceraBloque}>
             <p className={estilosCorte.tituloBloque}>Duración</p>
-            <Badge tono={tonoCumplimiento(c.estado_duracion)} texto={c.estado_duracion} />
+            <Estado tono={TONO_ESTADO[tonoCumplimiento(c.estado_duracion)]} texto={c.estado_duracion} />
           </div>
           <dl className={estilosCorte.datos}>
             <div>
@@ -273,7 +274,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     clave: 'estado_ciclo',
     titulo: 'Estado del ciclo',
     ordenable: true,
-    render: (c) => (c.estado_ciclo ? <Badge tono="neutral" texto={c.estado_ciclo} /> : SIN_VALOR),
+    render: (c) => (c.estado_ciclo ? <Estado tono="neutro" texto={c.estado_ciclo} /> : SIN_VALOR),
   },
   { clave: 'proveedor_razon_social', titulo: 'Proveedor', ordenable: true },
   { clave: 'ruta_nombre', titulo: 'Ruta', ordenable: true },
@@ -297,7 +298,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     clave: 'estado_frecuencia',
     titulo: 'Cumplimiento de frecuencia',
     ordenable: true,
-    render: (c) => <Badge tono={tonoCumplimiento(c.estado_frecuencia)} texto={c.estado_frecuencia} />,
+    render: (c) => <Estado tono={TONO_ESTADO[tonoCumplimiento(c.estado_frecuencia)]} texto={c.estado_frecuencia} />,
   },
   {
     clave: 'dias_corte',
@@ -322,7 +323,7 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     clave: 'estado_duracion',
     titulo: 'Cumplimiento de duración',
     ordenable: true,
-    render: (c) => <Badge tono={tonoCumplimiento(c.estado_duracion)} texto={c.estado_duracion} />,
+    render: (c) => <Estado tono={TONO_ESTADO[tonoCumplimiento(c.estado_duracion)]} texto={c.estado_duracion} />,
   },
   {
     clave: 'faltantes',

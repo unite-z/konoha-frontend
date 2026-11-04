@@ -3,20 +3,20 @@
  * estar programadas. Tabla en escritorio y fichas en móvil.
  */
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import Badge from '../../../../components/ui/Badge'
 import EstadoVacio from '../../../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
 import type { EjecucionVinculada } from '../../../../types/reportesGestion'
 import { formatearFechaHora } from '../../../../utils/formato'
 import CodigoEjecucion from './CodigoEjecucion'
 import estilos from './ProgramadoEjecutado.module.css'
+import Estado from '../../../../components/ui/Estado'
 
 const ORIGEN: Record<EjecucionVinculada['origen'], string> = { Atencion: 'Atención tercerizada', Actividad: 'Actividad de personal propio' }
 
 const COLUMNAS: ColumnaTabla<EjecucionVinculada>[] = [
   { clave: 'codigo', titulo: 'Código', ordenable: true, render: (e) => <CodigoEjecucion ejecucion={e} /> },
   { clave: 'origen', titulo: 'Origen', ordenable: true, render: (e) => ORIGEN[e.origen] },
-  { clave: 'estado', titulo: 'Estado', render: (e) => <Badge tono="neutral" texto={e.etiqueta_estado} /> },
+  { clave: 'estado', titulo: 'Estado', render: (e) => <Estado tono="neutro" texto={e.etiqueta_estado} /> },
   { clave: 'inicio_real', titulo: 'Inicio real', ordenable: true, render: (e) => formatearFechaHora(e.inicio_real) },
   { clave: 'fin_real', titulo: 'Fin real', ordenable: true, render: (e) => formatearFechaHora(e.fin_real) },
 ]
@@ -50,7 +50,7 @@ export default function SinProgramar({ ejecuciones }: { ejecuciones: EjecucionVi
             <span className={estilos.tituloFicha}>
               <CodigoEjecucion ejecucion={e} />
             </span>
-            <Badge tono="neutral" texto={e.etiqueta_estado} />
+            <Estado tono="neutro" texto={e.etiqueta_estado} />
           </div>
           <p className={estilos.metaFicha}>{ORIGEN[e.origen]}</p>
           <p className={`${estilos.metaFicha} cifra`}>

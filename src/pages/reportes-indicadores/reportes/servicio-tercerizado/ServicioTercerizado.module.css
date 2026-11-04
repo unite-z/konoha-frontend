@@ -33,14 +33,14 @@
 }
 
 .cifraGrande {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
 }
 
 .secundario {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   font-weight: normal;
   color: var(--color-text-secondary);
 }
@@ -90,7 +90,7 @@
   padding: var(--space-4);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--web-elev-1);
 }
 
@@ -103,12 +103,12 @@
 }
 
 .codigoFicha {
-  font-weight: var(--type-heading-sm-weight);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .metaFicha {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }

@@ -39,15 +39,15 @@
 }
 
 .tituloSector {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
   overflow-wrap: anywhere;
 }
 
 .ayuda {
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-secondary);
 }
 
@@ -60,16 +60,16 @@
 }
 
 .etiquetaCifra {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 
 .valorCifra {
   margin: 0;
-  font-size: var(--type-heading-lg-size);
-  line-height: var(--type-heading-lg-line);
-  font-weight: var(--type-heading-lg-weight);
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
   color: var(--color-text-primary);
 }
 
@@ -92,7 +92,7 @@
 }
 
 .propio {
-  background: var(--green-700);
+  background: var(--color-action-primary);
 }
 
 .tercerizado {
@@ -100,8 +100,8 @@
 }
 
 .textoModalidad {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -113,8 +113,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-secondary);
 }
 .leyenda li {
@@ -139,9 +139,9 @@
 }
 
 .numeroAtenciones {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 /* --- Tipos de atención: chips ---------------------------------------------- */
@@ -163,9 +163,9 @@
   border-radius: var(--radius-full);
   background: var(--color-bg-surface);
   color: var(--color-text-secondary);
-  font-size: var(--type-label-sm-size);
-  line-height: var(--type-label-sm-line);
-  font-weight: var(--type-label-sm-weight);
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
   white-space: nowrap;
 }
 
@@ -173,8 +173,8 @@
   min-width: var(--space-6);
   padding: 0 var(--space-2);
   border-radius: var(--radius-full);
-  background: var(--green-100);
-  color: var(--green-900);
+  background: var(--color-action-subtle);
+  color: var(--color-action-primary-hover);
   text-align: center;
 }
 

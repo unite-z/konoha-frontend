@@ -19,7 +19,6 @@
 import { useMemo, useState } from 'react'
 import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
 import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
@@ -45,6 +44,7 @@ import estilosPagina from './DistribucionPersonal.module.css'
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
+import Estado from '../../../components/ui/Estado'
 
 const TITULO = 'Distribución del personal'
 
@@ -319,7 +319,7 @@ export default function DistribucionPersonalPage() {
                       <span>
                         {c.cuadrilla_nombre ?? SIN_VALOR} · {formatearFecha(c.jornada)}
                       </span>
-                      <Badge tono="neutral" texto={c.estado} />
+                      <Estado tono="neutro" texto={c.estado} />
                     </li>
                   ))}
                 </ul>

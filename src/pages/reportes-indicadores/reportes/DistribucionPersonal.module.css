@@ -44,8 +44,8 @@
 
 .tarjetaFiltroActiva > :first-child,
 .tarjetaFiltroActiva:hover > :first-child {
-  background: var(--green-50);
-  box-shadow: 0 0 0 2px var(--green-700);
+  background: var(--color-action-subtle);
+  box-shadow: 0 0 0 2px var(--color-action-primary);
 }
 
 @media (max-width: 1023px) {
