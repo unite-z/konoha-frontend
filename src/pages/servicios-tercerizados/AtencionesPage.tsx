@@ -23,6 +23,7 @@ import Tarjeta from '../../components/ui/Tarjeta'
 import { insigniaAEstado } from '../../components/ui/tonos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
+import ExportarExcel from '../../components/core/ExportarExcel'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { puedeRegistrarAtencion } from '../../config/permisosTercerizados'
@@ -199,6 +200,7 @@ export default function AtencionesPage() {
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
+        <ExportarExcel listado="atenciones" />
         {esJefe && (
           <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="primario">
             Registrar atención

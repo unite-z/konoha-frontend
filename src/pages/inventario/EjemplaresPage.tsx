@@ -6,7 +6,9 @@ import EstadoError from '../../components/ui/EstadoError'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import Selector from '../../components/ui/Selector'
 import { useConsulta } from '../../hooks/useConsulta'
+import ExportarExcel from '../../components/core/ExportarExcel'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO } from '../../router/rutasApp'
 import { useSesionActiva } from '../../sesion/ContextoSesion'
 import { PERMISOS, puede } from '../../config/permisosCore'
@@ -61,6 +63,9 @@ export default function EjemplaresPage() {
 
   return (
     <div className={estilos.pagina}>
+      <AccionesPagina>
+        <ExportarExcel listado="ejemplares" />
+      </AccionesPagina>
       <p>Registro de ejemplares del campus con código interno, referencia del catastro y placa antigua independiente.</p>
       {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       {aviso && <AvisoEnLinea tono="exito">{aviso}</AvisoEnLinea>}
