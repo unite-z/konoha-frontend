@@ -336,6 +336,13 @@
   line-height: var(--type-pequeno-line);
 }
 
+/* Restricciones de una fila de la vista Lista. */
+.restriccionesFila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
 @media (max-width: 1023px) {
   .calendarioYAgenda {
     grid-template-columns: minmax(0, 1fr);

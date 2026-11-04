@@ -126,3 +126,18 @@ describe('vista Semana', () => {
     expect(corte && coincidencias(corte, eventos).map((e) => e.clave)).toEqual(['r-9'])
   })
 })
+
+describe('vista Lista', () => {
+  it('deja las actividades del periodo por fecha de inicio, sin restricciones', async () => {
+    const { actividadesDelPeriodo } = await import('./calendarioCapas')
+    const eventos = eventosDeCapas(
+      [restriccion({})],
+      [
+        programacion({ id: 1, fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-19' }),
+        programacion({ id: 2, fecha_inicio_prevista: '2026-11-02', fecha_fin_prevista: '2026-11-02' }),
+        programacion({ id: 3, fecha_inicio_prevista: '2026-12-02', fecha_fin_prevista: '2026-12-02' }),
+      ],
+    )
+    expect(actividadesDelPeriodo('2026-11-01', '2026-11-30', eventos).map((e) => e.clave)).toEqual(['p-2', 'p-1'])
+  })
+})

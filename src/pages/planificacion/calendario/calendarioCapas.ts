@@ -188,3 +188,10 @@ export function coincidencias(actividad: EventoCapa, eventos: EventoCapa[]): Eve
 export function periodoEvento(evento: EventoCapa): string {
   return periodoRestriccion(evento.inicio, evento.fin)
 }
+
+/** Actividades que se solapan con el periodo, por fecha de inicio (vista Lista). */
+export function actividadesDelPeriodo(desde: FechaIso, hasta: FechaIso, eventos: EventoCapa[]): EventoCapa[] {
+  return eventos
+    .filter((evento) => evento.capa === 'actividad' && evento.inicio <= hasta && evento.fin >= desde)
+    .sort((a, b) => a.inicio.localeCompare(b.inicio) || a.texto.localeCompare(b.texto, 'es'))
+}

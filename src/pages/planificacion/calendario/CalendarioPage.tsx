@@ -1,4 +1,4 @@
-// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes y Semana (AV-266, Figma 344-436 y 361-2252)
+// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes, Semana y Lista (AV-266, Figma 344-436, 361-2252 y 361-2782)
 import { useState } from 'react'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
@@ -14,22 +14,24 @@ import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import { desplazarMes, mesDeFecha } from '@/utils/calendarioRestricciones'
+import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
 import DialogoRestriccion from '../DialogoRestriccion'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
 import { diasDeSemana, eventosDeCapas, semanasDelMes, tituloSemana } from './calendarioCapas'
 import DetalleActividad from './DetalleActividad'
+import VistaLista from './VistaLista'
 import VistaMes from './VistaMes'
 import VistaSemana from './VistaSemana'
 import estilos from './Calendario.module.css'
 
-type Vista = 'mes' | 'semana'
+type Vista = 'mes' | 'semana' | 'lista'
 
 const VISTAS = [
   { valor: 'mes', texto: 'Mes' },
   { valor: 'semana', texto: 'Semana' },
+  { valor: 'lista', texto: 'Lista' },
 ]
 
 export default function CalendarioPage() {
@@ -47,8 +49,11 @@ export default function CalendarioPage() {
   const mes = mesDeFecha(fecha)
   const semanas = semanasDelMes(mes)
   const dias = diasDeSemana(fecha)
-  const desde = vista === 'mes' ? semanas[0][0] : dias[0]
-  const hasta = vista === 'mes' ? semanas[semanas.length - 1][6] : dias[6]
+  const rangoMes = rangoDelMes(mes)
+  const { desde, hasta } =
+    vista === 'mes' ? { desde: semanas[0][0], hasta: semanas[semanas.length - 1][6] }
+    : vista === 'semana' ? { desde: dias[0], hasta: dias[6] }
+    : rangoMes
   const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
   const programaciones = useConsulta(`calendario-programaciones:${desde}:${hasta}`, (signal) => listarProgramaciones(desde, hasta, signal))
   const conError = [restricciones, programaciones].find((consulta) => consulta.estado === 'error' && !consulta.datos)
@@ -79,7 +84,9 @@ export default function CalendarioPage() {
         : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
     contenido = (
       <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
-        {vista === 'mes' ? (
+        {vista === 'lista' ? (
+          <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} />
+        ) : vista === 'mes' ? (
           <VistaMes
             semanas={semanas}
             eventos={eventos}
@@ -113,13 +120,13 @@ export default function CalendarioPage() {
         <div className={estilos.pagina}>
           <div className={estilos.barra}>
             <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
-              <span className="sr-only">{vista === 'mes' ? 'Mes anterior' : 'Semana anterior'}</span>
+              <span className="sr-only">{vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}</span>
             </Boton>
             <Boton variante="secundario" compacto icono="chevron-right" onClick={() => desplazar(1)}>
-              <span className="sr-only">{vista === 'mes' ? 'Mes siguiente' : 'Semana siguiente'}</span>
+              <span className="sr-only">{vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}</span>
             </Boton>
             <h2 className={estilos.tituloMes} aria-live="polite">
-              {vista === 'mes' ? nombreMes(fecha) : tituloSemana(dias)}
+              {vista === 'semana' ? tituloSemana(dias) : nombreMes(fecha)}
             </h2>
             <Boton
               variante="fantasma"
