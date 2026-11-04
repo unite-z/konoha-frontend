@@ -13,41 +13,22 @@
   flex-wrap: wrap;
 }
 
-.encabezado h1 {
-  margin: var(--space-3) 0 var(--space-1);
-  color: var(--color-text-primary);
-  font-size: var(--type-heading-lg-size);
-  line-height: var(--type-heading-lg-line);
-}
-
 .encabezado p,
 .fuente {
   margin: 0;
   color: var(--color-text-secondary);
 }
 
-.filtro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-width: min(100%, 20rem);
-  color: var(--color-text-primary);
-}
-
 .filtrosMapa {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  min-width: min(100%, 20rem);
 }
 
-.filtro select {
-  min-height: 2.75rem;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
-  font: inherit;
+/* El enlace de volver no se estira a lo ancho de la columna. */
+.volver {
+  align-self: flex-start;
 }
 
 .panelMapa {
@@ -287,41 +268,6 @@
   font-size: var(--type-heading-sm-size);
 }
 
-.controlEdicion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  color: var(--color-text-primary);
-}
-
-.controlEdicion select {
-  min-height: 2.5rem;
-  max-width: 100%;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
-  font: inherit;
-}
-
-.edicion button {
-  min-height: 2.4rem;
-  padding: 0 var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--color-action-primary);
-  color: var(--color-bg-surface);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.edicion button:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
 .ayuda {
   color: var(--color-text-muted);
 }
@@ -345,7 +291,7 @@
     width: 100%;
   }
 
-  .filtro {
+  .filtrosMapa > * {
     flex: 1;
   }
 }
