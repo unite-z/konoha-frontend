@@ -1,0 +1,79 @@
+/* Evento de calendario: sistema de diseño de Figma (DESIGN.md, 4.4). */
+.evento {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+  min-width: 0;
+  padding: 0 calc(var(--space-1) + var(--space-1) / 2);
+  color: var(--color-text-primary);
+  font-size: var(--type-leyenda-size);
+  font-weight: var(--type-leyenda-weight);
+  line-height: var(--type-leyenda-line);
+}
+
+.texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Punto de 7: hueco si está programada, relleno si está en curso, verde si está completada. */
+.punto {
+  flex: none;
+  width: calc(var(--space-2) - 1px);
+  height: calc(var(--space-2) - 1px);
+  border: 1px solid var(--color-action-primary);
+  border-radius: var(--radius-full);
+}
+
+.enCurso .punto {
+  background: var(--color-action-primary);
+}
+
+.completada {
+  color: var(--color-text-muted);
+}
+
+.completada .punto {
+  border-color: var(--color-success);
+  background: var(--color-success);
+}
+
+/* Actividad de varios días. */
+.barra {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+}
+
+/* Restricciones de todo el día: pastilla del color del efecto. */
+.favorable,
+.aviso,
+.prohibicion {
+  padding-block: 1px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.favorable {
+  border-color: var(--web-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.aviso {
+  border-color: var(--web-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.prohibicion {
+  border-color: var(--web-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.mas {
+  color: var(--color-text-muted);
+}
