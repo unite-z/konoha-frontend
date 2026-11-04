@@ -8,7 +8,7 @@ Respuestas simuladas para las pantallas de MOD-06 cuyos endpoints aún no existe
 
 **No va aquí:**
 - Llamadas reales: van en `services/api/`.
-- Datos de ejemplo para otros módulos: cada módulo nuevo trabaja contra su backend en local. Excepciones de MOD-03, hasta que exista su backend: `incidencias.ts` (AV-274 a 281) `alertasPlanificacion.ts` (id de la alerta y motivo, AV-255) y `ciclosPlanificacion.ts` (código del ciclo, AV-364).
+- Datos de ejemplo para otros módulos: cada módulo nuevo trabaja contra su backend en local. Excepciones de MOD-03, hasta que exista su backend: `incidencias.ts` (AV-274 a 281) `alertasPlanificacion.ts` (id de la alerta y motivo, AV-255) y `ciclosPlanificacion.ts` (código del ciclo, AV-364, e historial, AV-253).
 
 **Decisión D9 (AV-330):** los datos simulados se quedan, con `AvisoDatosSimulados` visible en cada pantalla afectada. Nunca datos simulados en producción sin aviso.
 
