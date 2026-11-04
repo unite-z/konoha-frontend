@@ -97,6 +97,10 @@ export interface RestriccionEntrada {
   area_verde_id?: number
   descripcion?: string
   recurrencia?: RecurrenciaRestriccion
+  /** Contrato de AV-366: si solo afecta a los servicios ruidosos; sin él, el del tipo. */
+  aplica_servicios_ruidosos?: boolean
+  /** Contrato de AV-257: guardar aunque haya otra igual (tras el 409 «posible-duplicado»). */
+  forzar?: boolean
 }
 
 export type EstadoProgramacion = 'Programada' | 'EnCurso' | 'Completada' | 'Cancelada'

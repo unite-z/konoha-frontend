@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { ErrorApi } from '@/services/api/cliente'
 import PanelNuevaRestriccion from './PanelNuevaRestriccion'
 
 const crearRestriccion = vi.fn(async (_cuerpo: unknown) => [])
@@ -24,7 +25,10 @@ beforeAll(() => {
     this.open = false
   }
 })
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  crearRestriccion.mockClear()
+})
 
 describe('PanelNuevaRestriccion', () => {
   it('con repetición semanal muestra las fechas, avisa del ciclo que coincide y envía la recurrencia', async () => {
@@ -43,11 +47,14 @@ describe('PanelNuevaRestriccion', () => {
     await screen.findByRole('option', { name: 'Actividad extracurricular' })
     await usuario.selectOptions(screen.getByLabelText(/^Tipo/), '3')
     expect(screen.getByText('Aviso')).toBeTruthy()
-    expect(screen.getByText('Este tipo solo afecta a los servicios ruidosos.')).toBeTruthy()
+    // Como en Figma 364-2570: «Solo servicios ruidosos» marcada según el tipo y la zona de alta actividad, próximamente.
+    expect(screen.getByRole('checkbox', { name: 'Solo servicios ruidosos' })).toHaveProperty('checked', true)
+    expect(screen.getByRole('checkbox', { name: 'Zona de alta actividad' })).toHaveProperty('disabled', true)
 
     await usuario.click(screen.getByLabelText('Se repite'))
-    await usuario.click(screen.getByLabelText('Jueves'))
-    fireEvent.change(screen.getByLabelText(/Se repite hasta/), { target: { value: '2026-12-31' } })
+    await usuario.click(screen.getByRole('button', { name: 'Jueves' }))
+    expect(screen.getByRole('button', { name: 'Jueves' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.change(screen.getAllByLabelText(/^Hasta/).at(-1) as HTMLElement, { target: { value: '2026-12-31' } })
     expect(screen.getByText('Todos los jueves · 9 fechas')).toBeTruthy()
     expect(await screen.findByText('Coincide con 1 ciclo programado')).toBeTruthy()
 
@@ -57,7 +64,26 @@ describe('PanelNuevaRestriccion', () => {
       fecha_inicio: '2026-11-05',
       fecha_fin: '2026-11-05',
       recurrencia: { dias_semana: [4], hasta: '2026-12-31' },
+      aplica_servicios_ruidosos: true,
     })
     expect(onCreadas).toHaveBeenCalled()
+  })
+
+  it('si ya existe una igual pregunta y guarda igualmente con forzar (AV-257, Figma 366-2810)', async () => {
+    crearRestriccion.mockRejectedValueOnce(new ErrorApi(409, 'posible-duplicado', 'Ya existe una restricción igual'))
+    render(
+      <MemoryRouter>
+        <PanelNuevaRestriccion fechaInicial="2026-11-05" servicios={[]} onCerrar={vi.fn()} onCreadas={vi.fn()} />
+      </MemoryRouter>,
+    )
+    const usuario = userEvent.setup()
+    await screen.findByRole('option', { name: 'Actividad extracurricular' })
+    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), '3')
+    await usuario.click(screen.getByRole('button', { name: 'Guardar restricción' }))
+
+    expect(await screen.findByRole('dialog', { name: 'Ya existe una restricción igual' })).toBeTruthy()
+    expect(screen.getByText('Actividad extracurricular · 05/11 · todo el campus')).toBeTruthy()
+    await usuario.click(screen.getByRole('button', { name: 'Guardar igualmente' }))
+    expect(crearRestriccion).toHaveBeenLastCalledWith(expect.objectContaining({ forzar: true }))
   })
 })

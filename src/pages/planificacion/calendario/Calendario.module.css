@@ -554,19 +554,47 @@
   gap: var(--space-2);
 }
 
-/* Días de la semana de la repetición: tantos por fila como quepan. */
+/* Repetición (Figma 364-2570): los días en círculos L a D y «Hasta» en la misma fila. */
+.repeticion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
 .diasRepeticion {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-.diasRepeticion > legend {
-  margin-bottom: var(--space-2);
+/* «Hasta» cede ancho antes de bajar de línea. */
+.repeticion > :last-child {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.repeticion .diaRepeticion {
+  width: calc(var(--space-8) + var(--space-1));
+  min-width: 0;
   padding: 0;
+  border-radius: 50%;
+}
+
+/* «Añadir franja horaria» y «Añadir nota» como enlaces con su + en azul. */
+.accionesOpcionales .enlaceAccion {
+  padding-inline: 0;
+  color: var(--color-action-text);
+}
+
+.proximamente {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .errorRepeticion {
