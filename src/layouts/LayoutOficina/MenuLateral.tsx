@@ -115,34 +115,34 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
 
   return (
     <aside className={`${estilos.lateral} ${comprimido ? estilos.comprimido : ''}`}>
-      <div className={estilos.desplazable}>
-        <div className={estilos.marca}>
-          <span className={estilos.logo} aria-hidden="true">
-            <Icono nombre="leaf" tamano="md" />
-          </span>
-          <span className={`${estilos.textosMarca} ${estilos.seDesvanece}`}>
-            <span className={estilos.nombreMarca}>Áreas Verdes</span>
-            <span className={estilos.oficina}>Servicios Generales</span>
-          </span>
-          {onAlternarComprimido && (
-            <button
-              type="button"
-              className={`${estilos.alternar} ${estilos.seDesvanece}`}
-              aria-label="Fijar menú abierto"
-              aria-pressed={!comprimido}
-              title={comprimido ? 'Fijar menú abierto' : 'Comprimir menú'}
-              onClick={onAlternarComprimido}
-            >
-              <Icono nombre="panel-left" tamano="base" />
-            </button>
-          )}
-          {onCerrarMovil && (
-            <button type="button" className={estilos.cerrarMovil} aria-label="Cerrar menú" onClick={onCerrarMovil}>
-              <Icono nombre="x" tamano="base" />
-            </button>
-          )}
-        </div>
+      <div className={estilos.marca}>
+        <span className={estilos.logo} aria-hidden="true">
+          <Icono nombre="leaf" tamano="md" />
+        </span>
+        <span className={`${estilos.textosMarca} ${estilos.seDesvanece}`}>
+          <span className={estilos.nombreMarca}>Áreas Verdes</span>
+          <span className={estilos.oficina}>Servicios Generales</span>
+        </span>
+        {onAlternarComprimido && (
+          <button
+            type="button"
+            className={`${estilos.alternar} ${estilos.seDesvanece}`}
+            aria-label="Fijar menú abierto"
+            aria-pressed={!comprimido}
+            title={comprimido ? 'Fijar menú abierto' : 'Comprimir menú'}
+            onClick={onAlternarComprimido}
+          >
+            <Icono nombre="panel-left" tamano="base" />
+          </button>
+        )}
+        {onCerrarMovil && (
+          <button type="button" className={estilos.cerrarMovil} aria-label="Cerrar menú" onClick={onCerrarMovil}>
+            <Icono nombre="x" tamano="base" />
+          </button>
+        )}
+      </div>
 
+      <div className={estilos.desplazable}>
         <nav className={estilos.navegacion} aria-label="Menú principal">
           <p className={`${estilos.rotulo} ${estilos.seDesvanece}`} aria-hidden="true">
             Menú principal
