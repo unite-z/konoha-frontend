@@ -49,8 +49,12 @@ export function crearRestriccion(cuerpo: RestriccionEntrada) {
 }
 
 /** `GET programaciones/?desde&hasta`: ciclos que se solapan con el periodo (máximo 400 días). */
-export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
-  return solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
+export async function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
+  const ciclos = await solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
+  if (!DATOS_SIMULADOS) return ciclos
+  // Hasta AV-364, el código del ciclo se simula (D9).
+  const { simularCodigosCiclos } = await import('../simulados/ciclosPlanificacion')
+  return simularCodigosCiclos(ciclos)
 }
 
 /** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */

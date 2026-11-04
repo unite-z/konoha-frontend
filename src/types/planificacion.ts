@@ -105,6 +105,8 @@ export interface Programacion {
   estado: EstadoProgramacion
   fecha_inicio_real: FechaIso | null
   fecha_fin_real: FechaIso | null
+  /** Contrato de AV-364: código del ciclo («CC-2026-11»). */
+  codigo?: string | null
 }
 
 /**

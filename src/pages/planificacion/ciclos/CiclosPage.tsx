@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import BarraAvance from '@/components/ui/BarraAvance'
 import { BotonEnlace } from '@/components/ui/Boton'
+import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
 import EstadoError from '@/components/ui/EstadoError'
 import Pestanas from '@/components/ui/Pestanas'
@@ -17,9 +18,9 @@ import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { Programacion } from '@/types/planificacion'
 import { SIN_VALOR } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
-import { ESTADO_PROGRAMACION, periodoRestriccion } from '../resumen/resumenPlanificacion'
+import { ESTADO_PROGRAMACION } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
-import { PESTANAS_CICLOS, avanceCiclo, ciclosDePestana, contadoresCiclos, ordenarCiclos, rangoCiclos, type PestanaCiclos } from './ciclos'
+import { PESTANAS_CICLOS, avanceCiclo, ciclosDePestana, contadoresCiclos, fechasCiclo, ordenarCiclos, rangoCiclos, type PestanaCiclos } from './ciclos'
 
 export default function CiclosPage() {
   usePaginaActual('Ciclos', [MIGAS_PLANIFICACION.planificacion, { texto: 'Ciclos' }])
@@ -31,9 +32,15 @@ export default function CiclosPage() {
   const consulta = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
 
   const columnas: ColumnaTabla<Programacion>[] = [
-    { clave: 'ciclo', titulo: 'Ciclo', multilinea: true, render: (c) => c.servicio },
-    { clave: 'proveedor', titulo: 'Proveedor', multilinea: true, render: (c) => c.proveedor ?? 'Personal propio' },
-    { clave: 'fechas', titulo: 'Fechas', render: (c) => periodoRestriccion(c.fecha_inicio_prevista, c.fecha_fin_prevista) },
+    {
+      clave: 'ciclo',
+      titulo: 'Ciclo',
+      multilinea: true,
+      // Con el código de AV-364, «Corte de césped / CC-2026-11»; sin él, solo el servicio.
+      render: (c) => (c.codigo ? <CeldaDobleLinea principal={c.servicio} detalle={c.codigo} codigo /> : c.servicio),
+    },
+    { clave: 'proveedor', titulo: 'Proveedor', multilinea: true, render: (c) => <CeldaTexto texto={c.proveedor ?? 'Personal propio'} tono="secundario" /> },
+    { clave: 'fechas', titulo: 'Fechas', render: (c) => fechasCiclo(c.fecha_inicio_prevista, c.fecha_fin_prevista) },
     {
       clave: 'avance',
       titulo: 'Avance',
@@ -55,7 +62,8 @@ export default function CiclosPage() {
       titulo: 'Estado',
       render: (c) => {
         const estado = ESTADO_PROGRAMACION[c.estado]
-        return <Estado tono={estado.tono} texto={estado.texto} punto />
+        // Como en Figma, «En curso» va relleno y sin punto.
+        return <Estado tono={estado.tono} texto={estado.texto} punto={c.estado !== 'EnCurso'} />
       },
     },
   ]

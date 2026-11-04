@@ -143,11 +143,11 @@ describe('elementosAtencion', () => {
         alerta({ tipo: 'DuracionProxima', servicio: 'Corte de césped', programacion_id: 5, dias: 1, id: 5 }),
       ],
       servicios,
-      [programacion({ id: 5, estado: 'EnCurso', proveedor: 'Fumigaciones Demo S.A.' })],
+      [programacion({ id: 5, estado: 'EnCurso', proveedor: 'Fumigaciones Demo S.A.', codigo: 'FIT-2026-T5' })],
     )
     expect(elementos.map((e) => [e.titulo, e.detalle, e.accion, e.alertaId])).toEqual([
       ['Poda mayor del cierre · 1 día de exceso', 'Podas Altura Demo E.I.R.L. · máximo 10 días', 'registrarMotivo', 4],
-      ['Corte de césped · mañana supera su máximo', 'Fumigaciones Demo S.A. · máximo 3 días', 'verCiclo', 5],
+      ['Corte de césped · mañana supera su máximo', 'FIT-2026-T5 · Fumigaciones Demo S.A. · máximo 3 días', 'verCiclo', 5],
       ['Control fitosanitario · sin duración configurada', 'Necesaria para programar', 'configurar', null],
     ])
   })

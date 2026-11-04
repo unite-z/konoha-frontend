@@ -4,7 +4,7 @@
  */
 import type { FechaIso } from '@/types/comun'
 import type { EstadoProgramacion, Programacion } from '@/types/planificacion'
-import { sumarDias } from '../resumen/resumenPlanificacion'
+import { fechaNumerica, sumarDias } from '../resumen/resumenPlanificacion'
 import { diasDelPeriodo } from '../calendario/programarCiclo'
 
 /** Días hacia atrás y hacia delante que se consultan (el backend admite 400 como máximo). */
@@ -65,4 +65,9 @@ export function avanceCiclo(ciclo: Programacion, hoy: FechaIso): number | null {
   const previstos = diasDelPeriodo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)
   const transcurridos = hoy < inicio ? 0 : diasDelPeriodo(inicio, hoy)
   return Math.min(99, Math.round((transcurridos / previstos) * 100))
+}
+
+/** «16/11 al 19/11» o «30/11», como la columna Fechas de Figma (346-1032). */
+export function fechasCiclo(inicio: FechaIso, fin: FechaIso): string {
+  return inicio === fin ? fechaNumerica(inicio) : `${fechaNumerica(inicio)} al ${fechaNumerica(fin)}`
 }

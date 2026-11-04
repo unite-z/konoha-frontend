@@ -21,7 +21,7 @@ const base: Programacion = {
 }
 vi.mock('@/services/api/planificacion', () => ({
   listarProgramaciones: async () => [
-    base,
+    { ...base, codigo: 'CC-2026-11' },
     { ...base, id: 2, servicio: 'Control fitosanitario', proveedor: null, estado: 'Programada', fecha_inicio_real: null, fecha_inicio_prevista: '2026-11-30', fecha_fin_prevista: '2026-11-30' },
   ],
 }))
@@ -41,6 +41,10 @@ describe('CiclosPage', () => {
     expect(await screen.findByText('Control fitosanitario')).toBeTruthy()
     expect(screen.getByRole('tab', { name: 'Todos 2' })).toBeTruthy()
     expect(within(screen.getByRole('table')).getByText('Personal propio')).toBeTruthy()
+    // Como en Figma 346-1032: código del ciclo bajo el servicio (AV-364) y fechas «16/11 al 19/11».
+    expect(screen.getByText('CC-2026-11')).toBeTruthy()
+    expect(screen.getByText('16/11 al 19/11')).toBeTruthy()
+    expect(screen.getByText('30/11')).toBeTruthy()
 
     await userEvent.setup().click(screen.getByRole('tab', { name: 'En curso 1' }))
     expect(screen.queryByText('Control fitosanitario')).toBeNull()
