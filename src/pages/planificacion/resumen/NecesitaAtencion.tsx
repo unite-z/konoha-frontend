@@ -2,23 +2,23 @@
  * Bandeja «Necesita atención» del Resumen (AV-265): sustituye a la pantalla de alertas. Cada elemento lleva la
  * acción de su tipo: Programar (frecuencia), Ver ciclo (duración) o Configurar (servicio sin duración).
  *
- * Programar abre el panel «Programar ciclo» del Calendario con el servicio elegido (`?programar=`, AV-267). Mientras
- * no exista la pantalla de Ciclos (AV-269), Ver ciclo abre el Calendario con `?ciclo=`. Los botones son secundarios:
- * el primario de la pantalla es «Programar ciclo», en la fila del título.
+ * Programar abre el panel «Programar ciclo» del Calendario con el servicio elegido (`?programar=`, AV-267) y Ver
+ * ciclo, el detalle del ciclo (AV-269). Los botones son secundarios: el primario de la pantalla es «Programar
+ * ciclo», en la fila del título.
  */
 import { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Icono from '@/components/ui/Icono'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { RUTAS_PLANIFICACION, rutaCiclo } from '@/router/rutasApp'
 import type { AlertaPlanificacion, ServicioPeriodico } from '@/types/planificacion'
 import { elementosAtencion, type ElementoAtencion } from './resumenPlanificacion'
 import estilos from './ResumenPlanificacion.module.css'
 
 const ACCIONES: Record<ElementoAtencion['accion'], { texto: string; ruta: (e: ElementoAtencion) => string }> = {
   programar: { texto: 'Programar', ruta: (e) => `${RUTAS_PLANIFICACION.calendario}?programar=${e.servicioId}` },
-  verCiclo: { texto: 'Ver ciclo', ruta: (e) => `${RUTAS_PLANIFICACION.calendario}?ciclo=${e.programacionId ?? ''}` },
+  verCiclo: { texto: 'Ver ciclo', ruta: (e) => (e.programacionId ? rutaCiclo(e.programacionId) : RUTAS_PLANIFICACION.ciclos) },
   configurar: { texto: 'Configurar', ruta: () => RUTAS_PLANIFICACION.configuracion },
 }
 

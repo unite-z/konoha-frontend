@@ -17,3 +17,26 @@
   font-size: var(--type-leyenda-size);
   line-height: var(--type-leyenda-line);
 }
+
+/* Detalle de ciclo: volver, estado con el proveedor e indicadores, en columna. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.volver {
+  align-self: flex-start;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--color-text-muted);
+}
