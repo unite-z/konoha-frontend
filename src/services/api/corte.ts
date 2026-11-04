@@ -3,7 +3,8 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CicloCorte } from '@/types/corte'
+import type { FechaIso } from '@/types/comun'
+import type { CicloCorte, LimpiezaCorte } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
@@ -14,4 +15,13 @@ export async function obtenerCicloCorte(ciclo: Programacion, signal?: AbortSigna
     return simularObtenerCicloCorte(ciclo, signal)
   }
   return solicitarPlanificacion<CicloCorte>(`ciclos/${ciclo.id}/`, { signal })
+}
+
+/** `POST ciclos/{programacion}/limpiezas/` (AV-262): registra una jornada de limpieza; 409 si la ruta no está completa. */
+export async function registrarLimpieza(programacionId: number, fecha: FechaIso) {
+  if (DATOS_SIMULADOS) {
+    const { simularRegistrarLimpieza } = await import('../simulados/corte')
+    return simularRegistrarLimpieza(fecha)
+  }
+  return solicitarPlanificacion<LimpiezaCorte>(`ciclos/${programacionId}/limpiezas/`, { metodo: 'POST', cuerpo: { fecha } })
 }

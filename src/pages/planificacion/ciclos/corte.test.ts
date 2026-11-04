@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { cicloCorteSimulado } from '@/services/simulados/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, esCorte, indicadoresCorte, momento, porCortar, textoMarcado, ultimaMarca } from './corte'
+import { avanceRuta, cortadosPorDia, esCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
 
 const ciclo: Programacion = {
   id: 1,
@@ -23,7 +23,7 @@ const corte: ServicioPeriodico = {
   frecuencias: [],
   duracion: { duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: null, hora_fin: null, fecha_modificacion: '2026-10-01T10:00:00-05:00', modificado_por: 'jefe' },
 }
-const datos = cicloCorteSimulado(ciclo)
+const datos = cicloCorteSimulado(ciclo, '2026-11-17')
 
 describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
   it('reconoce el corte y cuenta el avance de la ruta', () => {
@@ -56,5 +56,15 @@ describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
       ['Día 2 de 4', '3 de corte + 1 de limpieza', '0,5 días de interrupción descontados'],
       ['1', 'Sociales → Ciencias', '35 min descontados'],
     ])
+  })
+
+  it('con la ruta completa suma corte y limpieza frente a 3 + 1 y avisa si se pasa del máximo', () => {
+    const cuarto = cicloCorteSimulado(ciclo, '2026-11-19')
+    expect([rutaCompleta(datos), rutaCompleta(cuarto)]).toEqual([false, true])
+    expect(totalLimpieza(cuarto, corte)).toEqual({ texto: 'Total: 3 días de corte + 1 de limpieza = 4', cumple: true })
+    const quinto = cicloCorteSimulado(ciclo, '2026-11-20')
+    expect(totalLimpieza(quinto, corte)).toEqual({ texto: 'Total: 3 días de corte + 2 de limpieza = 5', cumple: false })
+    const [avance, duracion] = indicadoresCorte(ciclo, corte, quinto, '2026-11-20', '2026-11-20T10:00')
+    expect([avance.nota, duracion.valor, duracion.nota, duracion.notaError]).toEqual(['Ruta completa', 'Día 5 de 4', 'Supera el máximo en 1 día', true])
   })
 })

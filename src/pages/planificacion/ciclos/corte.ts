@@ -82,6 +82,8 @@ export interface IndicadorCorte {
   nota?: string
   /** Nota en tono de aviso (avance sin actualizar en más de 24 h). */
   notaAviso?: boolean
+  /** Nota en tono de error (duración por encima del máximo, Figma 371-5092). */
+  notaError?: boolean
 }
 
 /** «Avance de la ruta», «Duración» («Día 2 de 4») e «Interrupciones» del corte en curso o completado. */
@@ -95,13 +97,27 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
   const dia = fin < inicio ? 0 : diasDelPeriodo(inicio, fin)
   const minutos = corte.interrupciones.reduce((suma, i) => suma + i.minutos_descontados, 0)
   const ultima = corte.interrupciones.at(-1)
+  const completa = avance.total > 0 && avance.cortados === avance.total
+  const exceso = dia - total
   return [
-    { etiqueta: 'Avance de la ruta', valor: `${avance.porcentaje} %`, contexto: `${avance.cortados} de ${avance.total} jardines`, nota: marca.texto, notaAviso: marca.desfasada },
+    {
+      etiqueta: 'Avance de la ruta',
+      valor: `${avance.porcentaje} %`,
+      contexto: `${avance.cortados} de ${avance.total} jardines`,
+      nota: completa ? 'Ruta completa' : marca.texto,
+      notaAviso: !completa && marca.desfasada,
+    },
     {
       etiqueta: 'Duración',
       valor: `Día ${dia} de ${total}`,
       contexto: duracion?.dias_limpieza ? `${duracion.duracion_maxima_dias} de corte + ${duracion.dias_limpieza} de limpieza` : undefined,
-      nota: corte.dias_interrupcion_descontados > 0 ? `${diasDecimales(corte.dias_interrupcion_descontados)} de interrupción descontados` : 'Sin interrupciones',
+      nota:
+        exceso > 0
+          ? `Supera el máximo en ${exceso} ${exceso === 1 ? 'día' : 'días'}`
+          : corte.dias_interrupcion_descontados > 0
+            ? `${diasDecimales(corte.dias_interrupcion_descontados)} de interrupción descontados`
+            : 'Sin interrupciones',
+      notaError: exceso > 0,
     },
     {
       etiqueta: 'Interrupciones',
@@ -116,4 +132,26 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
 export function indicadorAvanceProgramado(corte: CicloCorte): IndicadorCorte {
   const avance = avanceRuta(corte.jardines)
   return { etiqueta: 'Avance de la ruta', valor: `${avance.porcentaje} %`, contexto: `${avance.cortados} de ${avance.total} jardines`, nota: 'Sin marcas todavía' }
+}
+
+/** La ruta está completa: ya se puede registrar la limpieza y cerrar el ciclo (RF-COR-006). */
+export function rutaCompleta(corte: CicloCorte): boolean {
+  return corte.jardines.length > 0 && corte.jardines.every((j) => j.estado === 'Cortado')
+}
+
+/**
+ * «Total: 3 días de corte + 1 de limpieza = 4» frente al máximo (RN-002: 3 + 1), con «Cumple» o «No cumple»
+ * (Figma 371-4838 y 371-5092). Los días de corte son los días con alguna marca.
+ */
+export function totalLimpieza(corte: CicloCorte, servicio: ServicioPeriodico | undefined): { texto: string; cumple: boolean } {
+  const diasCorte = new Set(corte.jardines.map((j) => (j.marcado_en ? (instanteALocalLima(j.marcado_en) ?? j.marcado_en).slice(0, 10) : null)).filter(Boolean)).size
+  const limpieza = corte.limpiezas.length
+  const total = diasCorte + limpieza
+  const maximo = servicio?.duracion ? servicio.duracion.duracion_maxima_dias + (servicio.duracion.dias_limpieza ?? 0) : 4
+  return { texto: `Total: ${diasCorte} ${diasCorte === 1 ? 'día' : 'días'} de corte + ${limpieza} de limpieza = ${total}`, cumple: total <= maximo }
+}
+
+/** «19/11/2026». */
+export function fechaCompleta(fecha: FechaIso): string {
+  return `${fecha.slice(8, 10)}/${fecha.slice(5, 7)}/${fecha.slice(0, 4)}`
 }

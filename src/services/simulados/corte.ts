@@ -1,10 +1,11 @@
 /**
  * Ciclo de corte simulado de MOD-03 (AV-258 a AV-262), solo con `VITE_DATOS_SIMULADOS=true`: el backend del corte
  * espera a las rutas de MOD-02. Ruta de 45 jardines en cuatro zonas, con las marcas según el estado del ciclo:
- * programado, todo pendiente; en curso, 28 cortados en dos días y una interrupción Sociales a Ciencias;
+ * programado, todo pendiente; en curso, 28 cortados en dos días y una interrupción Sociales a Ciencias (desde el
+ * tercer día, la ruta completa; desde el cuarto, una jornada de limpieza, y desde el quinto, dos: «No cumple»);
  * completado, todo cortado y una jornada de limpieza.
  */
-import type { CicloCorte, InterrupcionCorte, JardinRuta } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { responderSimulado } from './simulacion'
 
@@ -45,11 +46,18 @@ function marcaEnCurso(codigo: string, zona: string): { dia: 0 | 1; hora: string 
   return null
 }
 
-export function cicloCorteSimulado(ciclo: Programacion): CicloCorte {
+function diasDesde(inicio: string, hoy: string): number {
+  return Math.round((Date.parse(`${hoy}T00:00:00Z`) - Date.parse(`${inicio}T00:00:00Z`)) / 86_400_000)
+}
+
+export function cicloCorteSimulado(ciclo: Programacion, hoy: string = new Date().toISOString().slice(0, 10)): CicloCorte {
   const inicio = ciclo.fecha_inicio_real ?? ciclo.fecha_inicio_prevista
+  const transcurridos = ciclo.estado === 'EnCurso' ? diasDesde(inicio, hoy) : 0
+  const rutaCompleta = ciclo.estado === 'Completada' || transcurridos >= 2
+  const autor = ciclo.proveedor ?? 'Personal propio'
   const jardines: JardinRuta[] = RUTA.map(({ codigo, zona }, indice) => {
     const base = { id: indice + 1, codigo, nombre: NOMBRES[codigo] ?? `Jardín ${codigo.slice(2)}`, zona, detenido_por_interrupcion: false }
-    if (ciclo.estado === 'Completada') {
+    if (rutaCompleta) {
       return { ...base, estado: 'Cortado', marcado_en: `${sumarDias(inicio, indice % 3)}T10:00:00-05:00`, marcado_por: 'J. Ramos' }
     }
     const marca = ciclo.estado === 'EnCurso' ? marcaEnCurso(codigo, zona) : null
@@ -71,13 +79,19 @@ export function cicloCorteSimulado(ciclo: Programacion): CicloCorte {
           },
         ]
       : []
+  const jornadas = ciclo.estado === 'Completada' ? 1 : Math.max(0, Math.min(2, transcurridos - 2))
+  const limpiezas: LimpiezaCorte[] = Array.from({ length: jornadas }, (_, i) => ({ id: i + 1, fecha: sumarDias(inicio, 3 + i), autor }))
   return {
     programacion_id: ciclo.id,
     jardines,
     interrupciones,
-    limpiezas: ciclo.estado === 'Completada' ? [{ id: 1, fecha: sumarDias(inicio, 3), autor: 'J. Ramos' }] : [],
+    limpiezas,
     dias_interrupcion_descontados: interrupciones.length > 0 ? 0.5 : 0,
   }
+}
+
+export function simularRegistrarLimpieza(fecha: string): Promise<LimpiezaCorte> {
+  return responderSimulado(() => ({ id: Date.now(), fecha, autor: 'Usuario de prueba' }))
 }
 
 export function simularObtenerCicloCorte(ciclo: Programacion, signal?: AbortSignal): Promise<CicloCorte> {

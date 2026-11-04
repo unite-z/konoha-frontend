@@ -2,9 +2,13 @@
  * Pestañas del detalle del corte (AV-270, Figma 346-1334 y 371-4306): Ruta, Interrupciones y Limpieza, en caja.
  * - Ruta: cortados por día y por cortar, y la tabla de jardines con su estado y quién y cuándo lo marcó.
  * - Interrupciones: cada traslado con su hora, zonas, motivo y minutos descontados.
- * - Limpieza: se registra al completar la ruta (RF-COR-006); mientras tanto, la Ruta lo recuerda a la derecha.
+ * - Limpieza (371-4576, 371-4838 y 371-5092): con la ruta incompleta, «Faltan 17 jardines por cortar» y
+ *   «Registrar jornada» deshabilitado; con la ruta completa, las jornadas, el total frente a 3 + 1 («Cumple» o
+ *   «No cumple», RN-002) y «Registrar jornada» (`POST ciclos/{id}/limpiezas/`, AV-262).
  */
 import { useState } from 'react'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
 import BarraAvance from '@/components/ui/BarraAvance'
 import { CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
@@ -12,9 +16,10 @@ import Icono from '@/components/ui/Icono'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte, InterrupcionCorte, JardinRuta } from '@/types/corte'
-import type { Programacion } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, momento, porCortar, textoMarcado } from './corte'
+import { registrarLimpieza } from '@/services/api/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
+import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
+import { avanceRuta, cortadosPorDia, fechaCompleta, momento, porCortar, textoMarcado, totalLimpieza } from './corte'
 import estilos from './Ciclos.module.css'
 
 const VISIBLES_POR_CORTAR = 3
@@ -22,13 +27,31 @@ const VISIBLES_POR_CORTAR = 3
 export interface PestanasCorteProps {
   ciclo: Programacion
   corte: CicloCorte
+  servicio: ServicioPeriodico | undefined
   hoy: FechaIso
   /** `AAAA-MM-DDTHH:mm` de Lima. */
   ahora: string
 }
 
-export default function PestanasCorte({ ciclo, corte, hoy, ahora }: PestanasCorteProps) {
+export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: PestanasCorteProps) {
   const [pestana, setPestana] = useState('ruta')
+  const [limpiezas, setLimpiezas] = useState<LimpiezaCorte[]>(corte.limpiezas)
+  const [registrando, setRegistrando] = useState(false)
+  const [errorLimpieza, setErrorLimpieza] = useState<string | null>(null)
+  const total = totalLimpieza({ ...corte, limpiezas }, servicio)
+
+  async function registrarJornada() {
+    setRegistrando(true)
+    setErrorLimpieza(null)
+    try {
+      const nueva = await registrarLimpieza(ciclo.id, hoy)
+      setLimpiezas((previas) => [...previas, nueva])
+    } catch (causa) {
+      setErrorLimpieza(causa instanceof Error ? causa.message : 'Inténtalo de nuevo.')
+    } finally {
+      setRegistrando(false)
+    }
+  }
   const avance = avanceRuta(corte.jardines)
   const completa = avance.total > 0 && avance.cortados === avance.total
   const pendientes = porCortar(corte.jardines)
@@ -125,14 +148,49 @@ export default function PestanasCorte({ ciclo, corte, hoy, ahora }: PestanasCort
         />
       )}
       {pestana === 'limpieza' && (
-        <ul className={`${estilos.historial} ${estilos.panelCorte}`}>
-          {corte.limpiezas.map((limpieza) => (
-            <li key={limpieza.id} className={estilos.evento}>
-              <span>Jornada del {limpieza.fecha.slice(8, 10)}/{limpieza.fecha.slice(5, 7)}</span>
-              <span className={estilos.detalleEvento}>{limpieza.autor}</span>
-            </li>
-          ))}
-        </ul>
+        <div className={estilos.panelLimpieza}>
+          {!completa ? (
+            <>
+              <AvisoEnLinea tono="advertencia" titulo={`Faltan ${pendientes.length} ${pendientes.length === 1 ? 'jardín' : 'jardines'} por cortar`}>
+                La limpieza se registra con la ruta completa.
+              </AvisoEnLinea>
+              <ul className={estilos.listaSimple}>
+                {pendientes.slice(0, VISIBLES_POR_CORTAR).map((jardin) => (
+                  <li key={jardin.id}>
+                    {jardin.codigo} · {jardin.nombre}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <ul className={estilos.historial}>
+                {limpiezas.map((limpieza) => (
+                  <li key={limpieza.id} className={estilos.evento}>
+                    <span>Jornada de limpieza · {fechaCompleta(limpieza.fecha)}</span>
+                    <span className={estilos.detalleEvento}>{limpieza.autor}</span>
+                  </li>
+                ))}
+              </ul>
+              {limpiezas.length > 0 && (
+                <div className={`${estilos.totalLimpieza} ${total.cumple ? estilos.cumple : estilos.noCumple}`}>
+                  <span>{total.texto}</span>
+                  <Estado tono={total.cumple ? 'exito' : 'error'} texto={total.cumple ? 'Cumple' : 'No cumple'} />
+                </div>
+              )}
+            </>
+          )}
+          {errorLimpieza && (
+            <AvisoEnLinea tono="error" titulo="No se pudo registrar la jornada">
+              {errorLimpieza}
+            </AvisoEnLinea>
+          )}
+          <div>
+            <Boton variante="secundario" deshabilitado={!completa} cargando={registrando} onClick={() => void registrarJornada()}>
+              Registrar jornada
+            </Boton>
+          </div>
+        </div>
       )}
     </Pestanas>
   )

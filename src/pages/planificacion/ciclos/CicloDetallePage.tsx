@@ -36,7 +36,7 @@ import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
-import { esCorte, indicadorAvanceProgramado, indicadoresCorte } from './corte'
+import { esCorte, indicadorAvanceProgramado, indicadoresCorte, rutaCompleta } from './corte'
 import PestanasCorte from './PestanasCorte'
 import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
 
@@ -61,14 +61,18 @@ function FichaCiclo({
   const ahora = ahoraLimaLocal()
   // Corte (Figma 370-3811 y 346-1334): sin empezar, avance, fechas y restricciones; empezado, avance, duración
   // «Día N de 4» e interrupciones.
-  const indicadores: (IndicadorCiclo & { notaAviso?: boolean })[] = !corte
+  const indicadores: (IndicadorCiclo & { notaAviso?: boolean; notaError?: boolean })[] = !corte
     ? base
     : ciclo.estado === 'Programada' || ciclo.estado === 'Cancelada'
       ? [{ ...indicadorAvanceProgramado(corte), exceso: 0 }, base[0], base[2]]
-      : indicadoresCorte(ciclo, servicio, corte, hoy, ahora).map((indicador, indice) => ({ ...indicador, exceso: indice === 1 ? base[1].exceso : 0 }))
+      : // En el corte, el exceso se dice en la nota de la duración («Supera el máximo en 1 día»), sin insignia.
+        indicadoresCorte(ciclo, servicio, corte, hoy, ahora).map((indicador) => ({ ...indicador, exceso: 0 }))
   const historial = historialCiclo(ciclo)
   const estado = ESTADO_PROGRAMACION[ciclo.estado]
-  const acciones = onAccion ? accionesCiclo(ciclo.estado) : []
+  // Con la ruta del corte completa, «Finalizar ciclo» pasa a «Cerrar ciclo» (Figma 371-4838).
+  const acciones = (onAccion ? accionesCiclo(ciclo.estado) : []).map((accion) =>
+    corte && rutaCompleta(corte) && accion.cambio === 'fin' ? { ...accion, texto: 'Cerrar ciclo' } : accion,
+  )
 
   return (
     <>
@@ -94,14 +98,14 @@ function FichaCiclo({
             etiqueta={indicador.etiqueta}
             valor={indicador.valor}
             contexto={indicador.contexto}
-            nota={indicador.notaAviso ? <span className={estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
+            nota={indicador.notaAviso || indicador.notaError ? <span className={indicador.notaError ? estilos.notaError : estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
             estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
             insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
           />
         ))}
       </FilaTarjetas>
 
-      {corte && <PestanasCorte ciclo={ciclo} corte={corte} hoy={hoy} ahora={ahora} />}
+      {corte && <PestanasCorte ciclo={ciclo} corte={corte} servicio={servicio} hoy={hoy} ahora={ahora} />}
 
       {!corte && historial.length > 0 && (
         <Tarjeta titulo="Historial">
