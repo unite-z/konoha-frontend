@@ -6,6 +6,7 @@ import CampoFormulario from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import Selector from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
@@ -47,22 +48,23 @@ export default function NuevaAreaVerdePage() {
 
   return (
     <div className={estilos.pagina}>
-      <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes}>Volver al inventario</BotonEnlace>
-      <form className={estilos.formulario} onSubmit={guardar}>
-        <h2>Registrar área verde</h2>
-        <CampoFormulario id="nombre-area" etiqueta="Nombre" obligatorio value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} required maxLength={150} />
-        <CampoFormulario id="lugar-area" etiqueta="Lugar o referente" obligatorio value={valores.lugar} onChange={(e) => setValores({ ...valores, lugar: e.target.value })} required maxLength={150} />
-        <CampoFormulario id="ubicacion-area" etiqueta="Ubicación" obligatorio value={valores.ubicacion} onChange={(e) => setValores({ ...valores, ubicacion: e.target.value })} required maxLength={250} />
-        <CampoFormulario id="superficie-area" etiqueta="Superficie (m²)" obligatorio type="number" min="0.01" step="0.01" value={valores.superficie} onChange={(e) => setValores({ ...valores, superficie: e.target.value })} required />
-        {coberturas.datos && <Selector id="cobertura-area" etiqueta="Cobertura" valor={valores.cobertura} onCambiar={(cobertura) => setValores({ ...valores, cobertura })} opcionTodos="Sin cobertura" opciones={coberturas.datos.map((c) => ({ valor: String(c.id), texto: c.nombre }))} />}
-        {coberturas.estado === 'error' && <EstadoError titulo="No pudimos cargar las coberturas" descripcion={coberturas.error?.detalle ?? ''} onReintentar={coberturas.reintentar} nivel={3} />}
-        {!coberturas.datos && coberturas.estado !== 'error' && <EstadoCarga forma="tabla" filas={1} texto="Cargando coberturas…" />}
-        {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
-        <div className={estilos.acciones}>
-          <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes}>Cancelar</BotonEnlace>
-          <Boton type="submit" variante="primario" cargando={guardando}>Guardar área</Boton>
-        </div>
-      </form>
+      <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>
+      <Tarjeta titulo="Registrar área verde" relleno="amplio" className={estilos.formulario}>
+        <form className={estilos.campos} onSubmit={guardar}>
+          <CampoFormulario id="nombre-area" etiqueta="Nombre" obligatorio value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} required maxLength={150} />
+          <CampoFormulario id="lugar-area" etiqueta="Lugar o referente" obligatorio value={valores.lugar} onChange={(e) => setValores({ ...valores, lugar: e.target.value })} required maxLength={150} />
+          <CampoFormulario id="ubicacion-area" etiqueta="Ubicación" obligatorio value={valores.ubicacion} onChange={(e) => setValores({ ...valores, ubicacion: e.target.value })} required maxLength={250} />
+          <CampoFormulario id="superficie-area" etiqueta="Superficie (m²)" obligatorio type="number" min="0.01" step="0.01" value={valores.superficie} onChange={(e) => setValores({ ...valores, superficie: e.target.value })} required />
+          {coberturas.datos && <Selector id="cobertura-area" etiqueta="Cobertura" valor={valores.cobertura} onCambiar={(cobertura) => setValores({ ...valores, cobertura })} opcionTodos="Sin cobertura" opciones={coberturas.datos.map((c) => ({ valor: String(c.id), texto: c.nombre }))} />}
+          {coberturas.estado === 'error' && <EstadoError titulo="No pudimos cargar las coberturas" descripcion={coberturas.error?.detalle ?? ''} onReintentar={coberturas.reintentar} nivel={3} />}
+          {!coberturas.datos && coberturas.estado !== 'error' && <EstadoCarga forma="tabla" filas={1} texto="Cargando coberturas…" />}
+          {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
+          <div className={estilos.acciones}>
+            <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes}>Cancelar</BotonEnlace>
+            <Boton type="submit" variante="primario" cargando={guardando}>Guardar área</Boton>
+          </div>
+        </form>
+      </Tarjeta>
     </div>
   )
 }
