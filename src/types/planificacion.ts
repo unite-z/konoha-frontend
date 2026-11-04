@@ -77,6 +77,8 @@ export interface Restriccion {
   hora_inicio: string | null
   hora_fin: string | null
   area_verde_id: number | null
+  /** AV-365: nombre del área verde, o `null` si es de todo el campus. */
+  area_verde?: string | null
   descripcion: string | null
   serie: string | null
 }

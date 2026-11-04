@@ -51,6 +51,7 @@ export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja, onProgr
                 <EventoCalendario tipo={evento.tipo} texto={texto} ajustar />
                 <span className={estilos.detalle}>
                   {horario}
+                  {restriccion.area_verde ? ` · ${restriccion.area_verde}` : ''}
                   {restriccion.aplica_servicios_ruidosos ? ' · solo servicios ruidosos' : ''}
                 </span>
                 {onDarDeBaja && (
