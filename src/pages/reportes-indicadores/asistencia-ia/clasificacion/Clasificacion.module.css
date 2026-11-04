@@ -1,0 +1,79 @@
+/*
+ * Clasificación de incidencias con IA (RF-IA-005). Solo tokens semánticos del sistema de diseño (DESIGN.md). Las
+ * piezas (tarjetas, opciones, estados, botones, tablas) son componentes de `components/ui`.
+ */
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.secundario {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.descripcion {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  overflow-wrap: anywhere;
+}
+
+/* Tira de miniaturas: se desplaza en horizontal dentro de su contenedor. */
+.miniaturas {
+  /* Lado de una miniatura: 64 (no hay token de tamaño de imagen). */
+  --lado-miniatura: calc(var(--space-12) + var(--space-4));
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0 0 var(--space-1);
+  list-style: none;
+  overflow-x: auto;
+}
+
+.miniatura {
+  flex: none;
+  width: var(--lado-miniatura);
+  height: var(--lado-miniatura);
+  object-fit: cover;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.controlSeveridad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.controlSeveridad > :first-child {
+  align-self: stretch;
+}
+
+.sugerencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.motivo {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-cuerpo-weight);
+  color: var(--color-text-muted);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 767px) {
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
