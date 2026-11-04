@@ -126,14 +126,24 @@
   }
 }
 
-/* En móvil, la acción o el estado bajan bajo los textos. */
-@media (max-width: 40rem) {
-  .fila {
-    grid-template-columns: auto minmax(0, 1fr);
+/* En móvil la acción sigue a la derecha de los textos, como en Figma 352-2038. */
+
+/* Resumen móvil (Figma 352-2038): sin acciones, indicadores ni restricciones próximas, y textos más cortos. */
+.soloMovil {
+  display: none;
+}
+
+.accionesEscritorio {
+  display: contents;
+}
+
+@media (max-width: 767px) {
+  .soloEscritorio,
+  .accionesEscritorio {
+    display: none;
   }
 
-  .fila > :nth-child(3) {
-    grid-column: 2;
-    justify-self: start;
+  .soloMovil {
+    display: inline;
   }
 }

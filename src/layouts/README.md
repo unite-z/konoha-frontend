@@ -12,6 +12,7 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 | `BarraContexto.tsx` | migas de pan |
 | `ContextoPagina.ts` | título y migas que declara cada página con `usePaginaActual`, y el hueco de acciones del título |
 | `AccionesPagina.tsx` | lleva la acción principal de la página (Botón primario) a la derecha del h1, con un portal |
+| (móvil) | el h1 queda solo para lectores de pantalla: el título va en la barra superior; la barra inferior usa `textoMovil` si la entrada lo tiene («Ajustes») |
 | `JuntoTitulo.tsx` | lleva lo que va pegado al h1 (el estado del registro, como en «Detalle de ciclo») justo detrás del título, con un portal |
 
 **Reglas:**

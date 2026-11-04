@@ -40,7 +40,7 @@ export function BarraInferior() {
             aria-current={actual ? 'page' : undefined}
           >
             {seccion.icono && <Icono nombre={seccion.icono} tamano="md" />}
-            <span>{seccion.texto}</span>
+            <span>{seccion.textoMovil ?? seccion.texto}</span>
           </Link>
         )
       })}
