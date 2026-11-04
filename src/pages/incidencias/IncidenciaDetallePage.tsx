@@ -5,7 +5,7 @@
  * siguientes PR de AV-284. Datos simulados hasta el backend (AV-274 a AV-278), con `AvisoDatosSimulados` (D9).
  */
 import { useCallback, useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import { BotonEnlace } from '@/components/ui/Boton'
@@ -25,10 +25,12 @@ import { hoyLima } from '@/utils/instanteLima'
 import { ESTADO_INCIDENCIA } from './bandeja'
 import { textoEjemplar, textoReporto, textoUbicacion } from './detalleIncidencia'
 import TarjetaClasificar from './TarjetaClasificar'
+import TarjetaEncargo from './TarjetaEncargo'
 import estilos from './Incidencias.module.css'
 
 export default function IncidenciaDetallePage() {
   const { id: idRuta } = useParams()
+  const navegar = useNavigate()
   const id = Number(idRuta)
   const consulta = useConsulta(`incidencia:${id}`, (signal) => obtenerIncidencia(id, signal))
   const [local, setLocal] = useState<IncidenciaDetalle | null>(null)
@@ -77,6 +79,18 @@ export default function IncidenciaDetallePage() {
             ]}
           />
         </div>
+        {/* Clasificada por la vía de personal propio: el encargo a un capataz (Figma 389-7502 y 394-8975). */}
+        {incidencia.estado === 'Clasificada' && incidencia.via === 'PersonalPropio' && (
+          <TarjetaEncargo
+            key={incidencia.id}
+            incidencia={incidencia}
+            onVolver={() => navegar(RUTAS_INCIDENCIAS.bandeja)}
+            onCreado={(derivada, mensaje) => {
+              setLocal(derivada)
+              setAviso(mensaje)
+            }}
+          />
+        )}
         {incidencia.estado === 'Registrada' && (
           <TarjetaClasificar
             key={incidencia.id}

@@ -4,7 +4,7 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -41,17 +41,42 @@ export function simularListarIncidencias(signal?: AbortSignal): Promise<Incidenc
 }
 
 const CAPATACES: CapatazDisponible[] = [
-  { id: 1, nombre: 'Luis P.', cuadrilla: 'Cuadrilla A' },
-  { id: 2, nombre: 'Marta R.', cuadrilla: 'Cuadrilla B' },
-  { id: 3, nombre: 'J. Ramos', cuadrilla: 'Cuadrilla C' },
+  { id: 1, nombre: 'Marta R.', cuadrilla: 'Cuadrilla A' },
+  { id: 2, nombre: 'Luis P.', cuadrilla: 'Cuadrilla B' },
+  { id: 3, nombre: 'Jorge T.', cuadrilla: 'Cuadrilla C' },
 ]
 
 export function simularRespuestaVacia(): Promise<void> {
   return responderSimulado(() => undefined)
 }
 
-export function simularCapataces(signal?: AbortSignal): Promise<CapatazDisponible[]> {
-  return responderSimulado(() => CAPATACES, { signal })
+/**
+ * Carga de cada cuadrilla un día: pasado mañana, todas llenas (para ver «Sin capataz libre», Figma 394-8975); otro
+ * día, la B (Luis P.) con hueco.
+ */
+function cargaDelDia(capataz: CapatazDisponible, fecha: string): { asignados: number; capacidad: number } {
+  const pasado = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10)
+  const capacidad = capataz.id === 1 ? 6 : 5
+  if (fecha === pasado || capataz.id !== 2) return { asignados: capacidad, capacidad }
+  return { asignados: capacidad - 2, capacidad }
+}
+
+export function simularCapataces(signal?: AbortSignal, fecha?: string): Promise<CapatazDisponible[]> {
+  return responderSimulado(() => CAPATACES.map((c) => (fecha ? { ...c, carga: cargaDelDia(c, fecha) } : c)), { signal })
+}
+
+export function simularActividades(signal?: AbortSignal): Promise<string[]> {
+  return responderSimulado(() => ['Retiro de rama caída', 'Poda menor', 'Limpieza de hojarasca', 'Revisión de riego'], { signal })
+}
+
+export function simularEncargo(id: number, cuerpo: NuevoEncargo): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const capataz = CAPATACES.find((c) => c.id === cuerpo.capataz_id)
+    cambios.set(id, { ...cambios.get(id), estado: 'DerivadaInterna', via: 'PersonalPropio', responsable: capataz?.nombre ?? null })
+    const incidencia = incidenciaSimulada(id)
+    if (!incidencia) throw errorNoEncontrado()
+    return incidencia
+  })
 }
 
 export function simularReasignar(incidenciaId: number, capatazId: number): Promise<IncidenciaResumen> {

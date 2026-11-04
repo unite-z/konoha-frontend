@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, SolicitudInspeccion } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -24,13 +24,34 @@ export async function anotarCausaRetraso(incidenciaId: number, causa: string) {
   return solicitarPlanificacion<void>(`incidencias/${incidenciaId}/causa-retraso/`, { metodo: 'POST', cuerpo: { causa } })
 }
 
-/** `GET incidencias/{id}/capataces/` (AV-280): capataces a los que se puede reasignar la incidencia. */
-export async function listarCapatacesDisponibles(incidenciaId: number, signal?: AbortSignal) {
+/**
+ * `GET incidencias/{id}/capataces/?fecha=` (AV-280 y AV-277): capataces a los que se puede reasignar o encargar la
+ * incidencia; con `fecha`, con la carga de su cuadrilla ese día.
+ */
+export async function listarCapatacesDisponibles(incidenciaId: number, signal?: AbortSignal, fecha?: string) {
   if (DATOS_SIMULADOS) {
     const { simularCapataces } = await import('../simulados/incidencias')
-    return simularCapataces(signal)
+    return simularCapataces(signal, fecha)
   }
-  return solicitarPlanificacion<CapatazDisponible[]>(`incidencias/${incidenciaId}/capataces/`, { signal })
+  return solicitarPlanificacion<CapatazDisponible[]>(`incidencias/${incidenciaId}/capataces/`, { parametros: { fecha }, signal })
+}
+
+/** `GET incidencias/actividades/` (AV-277): actividades de campo que puede llevar un encargo. */
+export async function listarActividadesEncargo(signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularActividades } = await import('../simulados/incidencias')
+    return simularActividades(signal)
+  }
+  return solicitarPlanificacion<string[]>('incidencias/actividades/', { signal })
+}
+
+/** `POST incidencias/{id}/encargo/` (AV-277): crea el encargo al capataz; devuelve la incidencia Derivada · interna. */
+export async function crearEncargo(incidenciaId: number, cuerpo: NuevoEncargo) {
+  if (DATOS_SIMULADOS) {
+    const { simularEncargo } = await import('../simulados/incidencias')
+    return simularEncargo(incidenciaId, cuerpo)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/encargo/`, { metodo: 'POST', cuerpo })
 }
 
 /** `POST incidencias/{id}/reasignar/` (AV-280): cambia el capataz a cargo; devuelve la incidencia actualizada. */

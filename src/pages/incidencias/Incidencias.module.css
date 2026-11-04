@@ -150,3 +150,39 @@
     min-height: 0;
   }
 }
+
+/* «Carga del 01/11» (Figma 394-8975): una fila por cuadrilla con sus encargos frente a su capacidad. */
+.carga {
+  display: flex;
+  flex-direction: column;
+}
+
+.rotuloCarga {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.listaCarga {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.listaCarga li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cifraCarga {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+}

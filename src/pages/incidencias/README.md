@@ -8,7 +8,8 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
   - **Registrada:** «Clasificar» (`TarjetaClasificar.tsx`) con severidad e impacto, «Quién lo atiende» con la vía sugerida (un árbol de 5 m o más va al proveedor tercerizado) y «Sugerencia de IA» como Próximamente.
   - **Otra vía:** si se elige otra que la sugerida, la severidad y el impacto quedan como insignias y se pide el motivo del cambio (389-7300).
   - **Descartar** pide el motivo (394-8700) y **«Solicitar inspección en campo»** abre su tarjeta, con el responsable y qué verificar (394-8782).
-  - La derivación (encargo interno o requerimiento a un proveedor) llega en los siguientes PR.
+  - **Clasificada por personal propio:** «Encargo a un capataz» (`TarjetaEncargo.tsx`, 389-7502, AV-277). Lleva el capataz libre ese día, el espacio, la actividad, el plazo (por defecto mañana, RN-019), lo que se incluye y «Avisar al capataz». Si ninguna cuadrilla tiene hueco, el capataz queda en error con la carga de cada cuadrilla y «Reprogramar plazo» (394-8975).
+  - El requerimiento a un proveedor llega en el siguiente PR.
 
   Lógica en `detalleIncidencia.ts`, con prueba.
 
@@ -16,7 +17,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 
 | Qué | Dónde |
 |---|---|
-| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276) |
+| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277) |
 | Tipos | `types/incidencias.ts` (contrato de AV-274 y AV-280) |
 | Permisos | hasta AV-281, el de Planificación (`PLA.PLANIFICACION.CONSULTAR`) |
 | Rutas | `RUTAS_INCIDENCIAS` (prefijo `/incidencias`) y `rutaIncidencia(id)` |
