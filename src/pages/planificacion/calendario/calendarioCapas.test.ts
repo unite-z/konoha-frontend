@@ -141,3 +141,25 @@ describe('vista Lista', () => {
     expect(actividadesDelPeriodo('2026-11-01', '2026-11-30', eventos).map((e) => e.clave)).toEqual(['p-2', 'p-1'])
   })
 })
+
+describe('filtros del calendario', () => {
+  it('filtra actividades por tipo y proveedor, deja las restricciones y ofrece «Personal propio»', async () => {
+    const { chipsFiltros, filtrarEventos, opcionesProveedor, PERSONAL_PROPIO } = await import('./calendarioCapas')
+    const eventos = eventosDeCapas(
+      [restriccion({})],
+      [
+        programacion({ id: 1, tipo_servicio_id: 1, proveedor_id: 5, proveedor: 'Podas Altura Demo' }),
+        programacion({ id: 2, tipo_servicio_id: 2, proveedor_id: null }),
+      ],
+    )
+    expect(filtrarEventos(eventos, { tipo: '2', proveedor: '' }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
+    expect(filtrarEventos(eventos, { tipo: '', proveedor: PERSONAL_PROPIO }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
+    expect(filtrarEventos(eventos, { tipo: '', proveedor: '5' }).map((e) => e.clave)).toEqual(['r-1', 'p-1'])
+    const proveedores = opcionesProveedor(eventos)
+    expect(proveedores.map((p) => p.texto)).toEqual(['Personal propio', 'Podas Altura Demo'])
+    expect(chipsFiltros({ tipo: '1', proveedor: '5' }, [{ valor: '1', texto: 'Corte de césped' }], proveedores).map((c) => c.texto)).toEqual([
+      'Tipo: Corte de césped',
+      'Proveedor: Podas Altura Demo',
+    ])
+  })
+})

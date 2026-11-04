@@ -2,8 +2,10 @@
 import { useState } from 'react'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
+import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
 import EventoCalendario from '@/components/ui/EventoCalendario'
 import Pestanas from '@/components/ui/Pestanas'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
@@ -11,7 +13,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
-import { listarProgramaciones, listarRestricciones } from '@/services/api/planificacion'
+import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
@@ -19,8 +21,20 @@ import { hoyLima } from '@/utils/instanteLima'
 import DialogoRestriccion from '../DialogoRestriccion'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
-import { diasDeSemana, eventosDeCapas, semanasDelMes, tituloSemana } from './calendarioCapas'
+import {
+  SIN_FILTROS,
+  actividadesDelPeriodo,
+  chipsFiltros,
+  diasDeSemana,
+  eventosDeCapas,
+  filtrarEventos,
+  opcionesProveedor,
+  semanasDelMes,
+  tituloSemana,
+  type FiltrosCalendario,
+} from './calendarioCapas'
 import DetalleActividad from './DetalleActividad'
+import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
 import VistaMes from './VistaMes'
 import VistaSemana from './VistaSemana'
@@ -43,6 +57,8 @@ export default function CalendarioPage() {
   const [fecha, setFecha] = useState<FechaIso>(hoy)
   const [agendaAbierta, setAgendaAbierta] = useState(true)
   const [actividad, setActividad] = useState<string | null>(null)
+  const [filtros, setFiltros] = useState<FiltrosCalendario>(SIN_FILTROS)
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
 
@@ -56,6 +72,11 @@ export default function CalendarioPage() {
     : rangoMes
   const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
   const programaciones = useConsulta(`calendario-programaciones:${desde}:${hasta}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const servicios = useConsulta('calendario-servicios', listarServiciosPeriodicos)
+  const tipos = (servicios.datos ?? []).map((servicio) => ({ valor: String(servicio.id), texto: servicio.nombre }))
+  const todos = restricciones.datos && programaciones.datos ? eventosDeCapas(restricciones.datos, programaciones.datos) : []
+  const proveedores = opcionesProveedor(todos)
+  const chips = chipsFiltros(filtros, tipos, proveedores)
   const conError = [restricciones, programaciones].find((consulta) => consulta.estado === 'error' && !consulta.datos)
 
   /** Mes o semana anterior o siguiente; en el mes, el día pasa al primero del mes nuevo (o a hoy). */
@@ -76,13 +97,26 @@ export default function CalendarioPage() {
   } else if (!restricciones.datos || !programaciones.datos) {
     contenido = restricciones.cargaVisible || programaciones.cargaVisible ? <EstadoCarga forma="tabla" texto="Cargando el calendario…" /> : null
   } else {
-    const eventos = eventosDeCapas(restricciones.datos, programaciones.datos)
+    const eventos = filtrarEventos(todos, filtros)
+    const visibles = vista === 'semana' ? { desde: dias[0], hasta: dias[6] } : rangoMes
     const elegida = actividad ? eventos.find((evento) => evento.clave === actividad) : undefined
     const lateral =
       vista === 'mes'
         ? agendaAbierta && <AgendaDia dia={fecha} eventos={eventos} onCerrar={() => setAgendaAbierta(false)} />
         : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
-    contenido = (
+    contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
+      <div className={estilos.sinResultados}>
+        <EstadoVacio
+          icono="filter"
+          titulo="No hay actividades con estos filtros"
+          accion={
+            <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>
+              Limpiar filtros
+            </Boton>
+          }
+        />
+      </div>
+    ) : (
       <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
         {vista === 'lista' ? (
           <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} />
@@ -138,7 +172,27 @@ export default function CalendarioPage() {
             >
               Hoy
             </Boton>
+            <span className={estilos.espacio} />
+            <Boton
+              variante="secundario"
+              compacto
+              icono="filter"
+              aria-expanded={filtrosAbiertos}
+              aria-controls="panel-filtros-calendario"
+              onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
+            >
+              {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
+            </Boton>
           </div>
+
+          {filtrosAbiertos && (
+            <PanelFiltros id="panel-filtros-calendario" filtros={filtros} tipos={tipos} proveedores={proveedores} onCambiar={setFiltros} />
+          )}
+          <ChipsFiltrosActivos
+            filtros={chips}
+            onQuitar={(clave) => setFiltros({ ...filtros, [clave]: '' })}
+            onLimpiar={() => setFiltros(SIN_FILTROS)}
+          />
 
           {contenido}
         </div>
