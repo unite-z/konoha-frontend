@@ -15,9 +15,14 @@
   --dialogo-ancho: 56rem;
 }
 
-/* Un solo campo («Registrar motivo», Figma 373-5658: 440 de ancho). */
+/* Un solo campo («Registrar motivo», Figma 373-5658: 440 de ancho), sin línea sobre los botones, como en Figma. */
 .estrecho {
   --dialogo-ancho: 27.5rem;
+}
+
+.estrecho .formulario > .acciones {
+  padding-top: 0;
+  border-top: 0;
 }
 
 /* Panel lateral (Figma, 520 de ancho): a la derecha y a toda la altura, con las acciones siempre abajo. */

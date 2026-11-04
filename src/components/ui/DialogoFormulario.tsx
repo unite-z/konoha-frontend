@@ -26,6 +26,8 @@ export interface DialogoFormularioProps {
   descripcion?: ReactNode
   /** Nombre de la acción (botón primario). */
   textoConfirmar: string
+  /** Texto del botón secundario: «Cancelar» por defecto o «Volver» cuando el diálogo es una acción sobre el registro. */
+  textoCancelar?: string
   enviando?: boolean
   /** Hay datos escritos que se perderían al cerrar. */
   hayCambios?: boolean
@@ -51,6 +53,7 @@ export default function DialogoFormulario({
   enviando = false,
   hayCambios = false,
   error,
+  textoCancelar = 'Cancelar',
   ancho = 'normal',
   conObligatorios = true,
   envioDeshabilitado = false,
@@ -189,7 +192,7 @@ export default function DialogoFormulario({
               </Boton>
             ) : (
               <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando}>
-                Cancelar
+                {textoCancelar}
               </Boton>
             )}
             <Boton type="submit" cargando={enviando} deshabilitado={envioDeshabilitado}>

@@ -19,7 +19,9 @@ const programada: Programacion = {
   fecha_inicio_real: null,
   fecha_fin_real: null,
 }
-const cambiarEstadoCiclo = vi.fn(async (_id: number, _cambio: string, fecha?: string) => ({ ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null }))
+const cambiarEstadoCiclo = vi.fn(async (_id: number, cambio: string, fecha?: string, _motivo?: string) =>
+  cambio === 'cancelacion' ? { ...programada, estado: 'Cancelada' } : { ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null },
+)
 const historial: { estado: 'Programada' | 'EnCurso'; fecha_hora: string; autor: string }[] = []
 vi.mock('@/services/api/planificacion', () => ({
   listarProgramaciones: async () => [programada, { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial }],
@@ -27,7 +29,7 @@ vi.mock('@/services/api/planificacion', () => ({
   listarRestricciones: async () => [
     { id: 3, tipo_restriccion_id: 1, tipo: 'Ceremonia', efecto: 'Advertencia', aplica_servicios_ruidosos: false, fecha_inicio: '2026-11-03', fecha_fin: '2026-11-03', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: 'Graduación', serie: null },
   ],
-  cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string) => cambiarEstadoCiclo(id, cambio, fecha),
+  cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string, motivo?: string) => cambiarEstadoCiclo(id, cambio, fecha, motivo),
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
@@ -69,8 +71,25 @@ describe('CicloDetallePage', () => {
     expect((screen.getByLabelText(/Fecha de inicio real/) as HTMLInputElement).value).toBe('2026-11-02')
     await usuario.click(screen.getAllByRole('button', { name: 'Iniciar ciclo' }).at(-1) as HTMLElement)
 
-    expect(cambiarEstadoCiclo).toHaveBeenCalledWith(7, 'inicio', '2026-11-02')
+    expect(cambiarEstadoCiclo).toHaveBeenCalledWith(7, 'inicio', '2026-11-02', undefined)
     expect(await screen.findByRole('button', { name: 'Finalizar ciclo' })).toBeTruthy()
+  })
+
+  it('cancela solo con motivo (AV-253, Figma 370-4167)', async () => {
+    pintar('7')
+    const usuario = userEvent.setup()
+    await usuario.click(await screen.findByRole('button', { name: 'Cancelar ciclo' }))
+    expect(screen.getByRole('dialog', { name: 'Cancelar Control fitosanitario' })).toBeTruthy()
+    expect(screen.getByText('El ciclo queda cancelado y se mantiene en el historial.')).toBeTruthy()
+
+    const confirmar = () => screen.getAllByRole('button', { name: 'Cancelar ciclo' }).at(-1) as HTMLElement
+    await usuario.click(confirmar())
+    expect(screen.getByText('Escribe el motivo de la cancelación.')).toBeTruthy()
+    expect(cambiarEstadoCiclo).not.toHaveBeenCalledWith(7, 'cancelacion', undefined, expect.anything())
+
+    await usuario.type(screen.getByLabelText(/^Motivo/), 'El proveedor no tiene cuadrilla esa semana.')
+    await usuario.click(confirmar())
+    expect(cambiarEstadoCiclo).toHaveBeenCalledWith(7, 'cancelacion', undefined, 'El proveedor no tiene cuadrilla esa semana.')
   })
 
   it('con historial lo lista del más reciente al más antiguo (AV-253)', async () => {
