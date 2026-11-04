@@ -143,6 +143,21 @@ export const RUTAS_PLANIFICACION_ANTIGUAS = {
   restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`,
 } as const
 
+// --- MOD-03 · el capataz en el móvil (AV-271): su ruta del día y el calendario de su cuadrilla ------------
+
+const BASE_CORTE = '/corte'
+
+export const PREFIJO_CORTE = BASE_CORTE
+
+export const RUTAS_CORTE = {
+  rutaDeHoy: `${BASE_CORTE}/ruta-de-hoy`, // RF-COR-002, HU-011 y CU-011
+  calendario: `${BASE_CORTE}/calendario`, // RF-PLA-007 (solo lectura)
+} as const
+
+export const MIGAS_CORTE = {
+  corte: { texto: 'Corte de césped', ruta: RUTAS_CORTE.rutaDeHoy },
+} satisfies Record<string, Miga>
+
 const BASE_INCIDENCIAS = '/incidencias'
 
 /** MOD-03 · incidencias (AV-283 y siguientes). */

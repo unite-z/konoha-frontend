@@ -81,3 +81,28 @@ export interface RutaCorte {
   zonas: ZonaRuta[]
   fuera_de_frecuencia: { dias_desde_ultimo: number; maximo_dias: number } | null
 }
+
+/**
+ * `GET ruta-de-hoy/` (AV-260): el ciclo de corte en curso de la cuadrilla del capataz con su ruta; `ruta` es `null`
+ * si hoy no hay corte.
+ */
+export interface RespuestaRutaDeHoy {
+  ruta: RutaDeHoy | null
+}
+
+export interface RutaDeHoy {
+  programacion_id: number
+  /** «CC-2026-11» (AV-364). */
+  codigo: string
+  servicio: string
+  jardines: JardinRuta[]
+}
+
+/**
+ * Cuerpo de `POST ciclos/{programacion}/jardines/{jardin}/marca/` (AV-260), con `Idempotency-Key`. Un reenvío con la
+ * misma clave responde 200 con la marca existente; si otro usuario ya lo marcó, 409 `ya-marcado`.
+ */
+export interface NuevaMarca {
+  /** Hora real del toque (ISO), aunque se envíe después. */
+  marcado_en: string
+}

@@ -25,6 +25,8 @@ export interface OpcionesTercerizados {
   signal?: AbortSignal
   /** Base de la API si no es la de MOD-05 (MOD-03 usa el mismo transporte). */
   base?: string
+  /** Cabeceras extra, como `Idempotency-Key` en las marcas del capataz (AV-260). */
+  cabeceras?: Record<string, string>
 }
 
 /** Espera antes de liberar el blob de una descarga. */
@@ -53,6 +55,7 @@ function cabeceras(opciones: OpcionesTercerizados, acepta: string): Headers {
     if (token) resultado.set('X-XSRF-TOKEN', token)
   }
   if (opciones.cuerpo !== undefined) resultado.set('Content-Type', 'application/json')
+  for (const [nombre, valor] of Object.entries(opciones.cabeceras ?? {})) resultado.set(nombre, valor)
   return resultado
 }
 

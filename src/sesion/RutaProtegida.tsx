@@ -13,9 +13,9 @@ import Boton, { BotonEnlace } from '../components/ui/Boton'
 import EstadoCarga from '../components/ui/EstadoCarga'
 import EstadoError from '../components/ui/EstadoError'
 import EstadoVacio from '../components/ui/EstadoVacio'
-import { entradasMenu, puede } from '../config/permisosCore'
+import { entradasMenu, puede, type EntradaMenu } from '../config/permisosCore'
 import { usePaginaActual } from '../hooks/usePaginaActual'
-import { RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'
+import { RUTAS, RUTAS_CORE, RUTAS_CORTE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'
 import { useSesion, useSesionActiva } from './ContextoSesion'
 import estilos from './RutaProtegida.module.css'
 import { RUTAS_CAMPO } from '../router/rutasCampo'
@@ -89,10 +89,17 @@ export function RutaConPermiso({ permiso, ...sinPermiso }: { permiso: string } &
   return puede(sesion, permiso) ? <Outlet /> : <SinPermiso {...sinPermiso} />
 }
 
+/** Como `RutaConPermiso`, pero con la regla de una entrada del menú (por ejemplo, la ruta de corte del capataz). */
+export function RutaConEntrada({ entrada, ...sinPermiso }: { entrada: EntradaMenu } & SinPermisoProps) {
+  const sesion = useSesionActiva()
+  return entradasMenu(sesion).has(entrada) ? <Outlet /> : <SinPermiso {...sinPermiso} />
+}
+
 export function InicioRol() {
   const sesion = useSesionActiva()
   const { cerrarSesion } = useSesion()
   const entradas = entradasMenu(sesion)
+  if (sesion?.rol.codigo === 'capataz' && entradas.has('corte')) return <Navigate to={RUTAS_CORTE.rutaDeHoy} replace />
   if (sesion?.rol.codigo === 'capataz' && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
   if (entradas.has('reportes')) return <Navigate to={RUTAS.reportes} replace />
   if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.resumen} replace />

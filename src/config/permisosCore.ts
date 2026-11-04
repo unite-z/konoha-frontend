@@ -4,6 +4,7 @@
  * servidor vuelve a comprobarlo y la pantalla siempre maneja el 403.
  */
 import type { SesionCore } from '../types/core'
+import { DATOS_SIMULADOS } from './datosSimulados'
 
 export const PERMISOS = {
   gestionarUsuarios: 'CORE.USUARIO.GESTIONAR',
@@ -11,6 +12,8 @@ export const PERMISOS = {
   consultarRepositorio: 'CORE.REPOSITORIO.CONSULTAR',
   consultarHistorial: 'CORE.HISTORIAL.CONSULTAR',
   consultarPlanificacion: 'PLA.PLANIFICACION.CONSULTAR',
+  /** Marcar jardines de la ruta de corte (contrato de AV-260 y AV-252). */
+  marcarCorte: 'PLA.CORTE.MARCAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
@@ -28,13 +31,15 @@ export function puede(sesion: SesionCore | null, permiso: string): boolean {
 }
 
 /** Entradas de primer nivel del menú con enlace, según los permisos (HU-MOD01-007, «Menú por rol»). */
-export type EntradaMenu = 'planificacion' | 'incidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
+export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
 
 export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   const entradas = new Set<EntradaMenu>()
   if (puede(sesion, PERMISOS.consultarCuadrillas)) entradas.add('campo')
   if (puede(sesion, PERMISOS.consultarInventario)) entradas.add('inventario')
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('planificacion')
+  // Ruta de hoy del capataz (AV-271): el permiso llega con AV-260; con datos simulados (D9), por el rol.
+  if (puede(sesion, PERMISOS.marcarCorte) || (DATOS_SIMULADOS && sesion?.rol.codigo === 'capataz')) entradas.add('corte')
   // Incidencias: el permiso propio llega con AV-281; hasta entonces, el de Planificación (el jefe).
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('incidencias')
   // Servicios tercerizados incluye contratos y conformidades: el capataz no lo ve.

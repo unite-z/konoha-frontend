@@ -5,9 +5,10 @@
  * tercer día, la ruta completa; desde el cuarto, una jornada de limpieza, y desde el quinto, dos: «No cumple»);
  * completado, todo cortado y una jornada de limpieza.
  */
-import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import { ErrorApi } from '../api/cliente'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
-import { responderSimulado } from './simulacion'
+import { escenarioSimulado, responderSimulado } from './simulacion'
 
 const NOMBRES: Record<string, string> = {
   'J-014': 'Jardín de la Biblioteca',
@@ -136,4 +137,49 @@ export function simularRutaCorte(signal?: AbortSignal): Promise<RutaCorte> {
     }),
     { signal },
   )
+}
+
+/** Marcas hechas en esta sesión del navegador sobre la ruta de hoy simulada (se pierden al recargar). */
+const marcasDeHoy = new Map<number, string>()
+
+/** Ruta de hoy del capataz: CC-2026-11 en curso desde ayer, con las marcas de la sesión encima (28 de 45 al entrar). */
+export function rutaDeHoySimulada(hoy: string = new Date().toISOString().slice(0, 10)): RespuestaRutaDeHoy {
+  const ciclo: Programacion = {
+    id: 11,
+    tipo_servicio_id: 1,
+    servicio: 'Corte de césped',
+    proveedor_id: null,
+    proveedor: null,
+    estacion: 'Primavera',
+    fecha_inicio_prevista: sumarDias(hoy, -1),
+    fecha_fin_prevista: sumarDias(hoy, 2),
+    estado: 'EnCurso',
+    fecha_inicio_real: sumarDias(hoy, -1),
+    fecha_fin_real: null,
+  }
+  const jardines = cicloCorteSimulado(ciclo, hoy).jardines.map((jardin) => {
+    const marca = marcasDeHoy.get(jardin.id)
+    return marca ? { ...jardin, estado: 'Cortado' as const, marcado_en: marca, marcado_por: 'Tú', detenido_por_interrupcion: false } : jardin
+  })
+  return { ruta: { programacion_id: ciclo.id, codigo: 'CC-2026-11', servicio: ciclo.servicio, jardines } }
+}
+
+export function simularRutaDeHoy(signal?: AbortSignal): Promise<RespuestaRutaDeHoy> {
+  // `?simular=vacio`: hoy no hay corte en la cuadrilla.
+  return responderSimulado(() => (escenarioSimulado() === 'vacio' ? { ruta: null } : rutaDeHoySimulada()), { signal })
+}
+
+/** Marca un jardín; si ya estaba cortado, 409 `ya-marcado` como el backend (AV-260). */
+export function simularMarcarJardin(jardinId: number, marcadoEn: string): Promise<JardinRuta> {
+  return responderSimulado(() => {
+    const jardin = rutaDeHoySimulada().ruta?.jardines.find((j) => j.id === jardinId)
+    if (!jardin) throw new ErrorApi(404, 'no-encontrado', 'El jardín no está en la ruta de hoy')
+    if (jardin.estado === 'Cortado') throw new ErrorApi(409, 'ya-marcado', `${jardin.codigo} ya estaba marcado`)
+    marcasDeHoy.set(jardinId, marcadoEn)
+    return { ...jardin, estado: 'Cortado', marcado_en: marcadoEn, marcado_por: 'Tú' }
+  })
+}
+
+export function simularObservacionJardin(texto: string): Promise<{ id: number; texto: string }> {
+  return responderSimulado(() => ({ id: Date.now(), texto }))
 }
