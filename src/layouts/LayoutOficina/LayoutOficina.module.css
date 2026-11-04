@@ -30,6 +30,22 @@
   min-width: 0;
 }
 
+/*
+ * Escritorio: el contenido va en un panel redondeado separado del menú y del borde de la ventana, sin la línea
+ * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
+ */
+@media (min-width: 768px) {
+  .columna {
+    min-height: calc(100vh - 2 * var(--space-2));
+    margin: var(--space-2) var(--space-2) var(--space-2) 0;
+    overflow: clip;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-surface);
+    box-shadow: var(--web-elev-1);
+  }
+}
+
 .contenido {
   width: 100%;
   max-width: var(--web-content-max);

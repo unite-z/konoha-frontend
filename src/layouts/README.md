@@ -17,6 +17,7 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 - Cada página declara su título y sus migas con `usePaginaActual`, y no pinta su propio h1: el layout lo pone al principio del contenido. La acción principal («Registrar…») va en `<AccionesPagina>`, no en una barra propia de la página. La cabecera no conoce las páginas.
 - En el menú solo puede haber **un elemento activo**. Un módulo nuevo añade su entrada en `MODULOS_MENU` (`entradasMenuLateral.ts`), con sus prefijos de URL; nunca se calcula el activo a mano en `MenuLateral.tsx`.
 - Sin barra de acento vertical en el elemento activo: el diseño de Figma marca el activo con fondo (`menu/activo`) y texto (`menu/texto-activo`).
+- Sin línea recta entre el menú y el contenido: en escritorio, el contenido va en un panel redondeado (`.columna` de `LayoutOficina.module.css`) y el menú, sin borde, sobre el fondo de la aplicación.
 
 **No va aquí:**
 - Estilos de pantallas concretas: la navegación móvil es la misma para todos los módulos.
