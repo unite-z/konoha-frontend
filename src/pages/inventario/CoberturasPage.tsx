@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
-import Boton from '@/components/ui/Boton'
-import { BotonEnlace } from '@/components/ui/Boton'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import CampoFormulario from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
+import Estado from '@/components/ui/Estado'
 import EstadoVacio from '@/components/ui/EstadoVacio'
+import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
@@ -97,21 +99,21 @@ export default function CoberturasPage() {
 
   return (
     <div className={estilos.pagina}>
-      <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes}>Volver al inventario</BotonEnlace>
-      <section className={estilos.superficie} aria-labelledby="titulo-coberturas">
-        <h2 id="titulo-coberturas">Catálogo de coberturas vegetales</h2>
-        <p>Las coberturas activas aparecen al registrar un área. Si una cobertura deja de usarse, desactívala para conservar las referencias existentes.</p>
-        <form className={estilos.acciones} onSubmit={crear}>
-          <label className={estilos.busqueda} htmlFor="nombre-cobertura">
-            <span>Nueva cobertura</span>
-            <input
-              id="nombre-cobertura"
-              value={nombreNueva}
-              onChange={(evento) => setNombreNueva(evento.target.value)}
-              maxLength={120}
-              required
-            />
-          </label>
+      <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>
+      <Tarjeta
+        titulo="Catálogo de coberturas vegetales"
+        descripcion="Las coberturas activas aparecen al registrar un área. Si una cobertura deja de usarse, desactívala para conservar las referencias existentes."
+        relleno="amplio"
+      >
+        <form className={estilos.alta} onSubmit={crear}>
+          <CampoFormulario
+            id="nombre-cobertura"
+            etiqueta="Nueva cobertura"
+            value={nombreNueva}
+            onChange={(evento) => setNombreNueva(evento.target.value)}
+            maxLength={120}
+            required
+          />
           <Boton type="submit" variante="primario" cargando={enCurso === 'nueva'}>
             Añadir cobertura
           </Boton>
@@ -121,13 +123,14 @@ export default function CoberturasPage() {
         {consulta.datos.length === 0 ? (
           <EstadoVacio titulo="No hay coberturas" descripcion="Añade una cobertura para que esté disponible en las áreas verdes." nivel={3} />
         ) : (
-          <ul className={estilos.listaCoberturas}>
+          <ul className={estilos.lista}>
             {consulta.datos.map((cobertura) => (
-              <li className={estilos.filaCobertura} key={cobertura.id}>
-                <label className={estilos.busqueda} htmlFor={`cobertura-${cobertura.id}`}>
-                  <span>{cobertura.activo ? 'Activa' : 'Inactiva'}</span>
-                  <input
+              <li className={estilos.fila} key={cobertura.id}>
+                <div className={estilos.nombre}>
+                  <CampoFormulario
                     id={`cobertura-${cobertura.id}`}
+                    etiqueta={`Nombre de ${cobertura.nombre}`}
+                    etiquetaOculta
                     value={nombres[cobertura.id] ?? cobertura.nombre}
                     onChange={(evento) =>
                       setNombres((anteriores) => ({ ...anteriores, [cobertura.id]: evento.target.value }))
@@ -135,8 +138,9 @@ export default function CoberturasPage() {
                     maxLength={120}
                     disabled={enCurso === cobertura.id}
                   />
-                </label>
-                <div className={estilos.accionesBotones}>
+                  <Estado tono={cobertura.activo ? 'exito' : 'neutro'} texto={cobertura.activo ? 'Activa' : 'Inactiva'} />
+                </div>
+                <div className={estilos.accionesFila}>
                   <Boton
                     variante="secundario"
                     onClick={() => void guardarNombre(cobertura)}
@@ -145,7 +149,7 @@ export default function CoberturasPage() {
                     Guardar nombre
                   </Boton>
                   <Boton
-                    variante="terciario"
+                    variante="fantasma"
                     onClick={() => void cambiarEstado(cobertura)}
                     deshabilitado={enCurso !== null}
                   >
@@ -156,7 +160,7 @@ export default function CoberturasPage() {
             ))}
           </ul>
         )}
-      </section>
+      </Tarjeta>
     </div>
   )
 }
