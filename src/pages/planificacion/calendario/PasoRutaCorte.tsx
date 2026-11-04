@@ -9,6 +9,7 @@ import Casilla from '@/components/ui/Casilla'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import { RUTAS_INVENTARIO } from '@/router/rutasApp'
 import type { RutaCorte } from '@/types/corte'
+import { jardines } from '../ciclos/corte'
 import estilos from './Calendario.module.css'
 
 export interface PasoRutaCorteProps {
@@ -55,7 +56,7 @@ export default function PasoRutaCorte({ ruta, error, zonas, onCambiar }: PasoRut
                 marcada={zonas.includes(zona.zona)}
                 onCambiar={(incluida) => onCambiar(zona.zona, incluida)}
               />
-              <span className={estilos.detalle}>{zona.en_ruta ? `${zona.jardines} jardines` : 'Fuera de esta ruta'}</span>
+              <span className={estilos.detalle}>{zona.en_ruta ? jardines(zona.jardines) : 'Fuera de esta ruta'}</span>
             </li>
           ))}
         </ul>

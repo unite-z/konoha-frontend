@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { cicloCorteSimulado } from '@/services/simulados/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, esCorte, ultimoDiaCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
+import { avanceRuta, cortadosPorDia, esCorte, jardines, ultimoDiaCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
 
 const ciclo: Programacion = {
   id: 1,
@@ -26,6 +26,10 @@ const corte: ServicioPeriodico = {
 const datos = cicloCorteSimulado(ciclo, '2026-11-17')
 
 describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
+  it('«1 jardín» en singular y «3 jardines» en plural', () => {
+    expect([jardines(1), jardines(3), jardines(0)]).toEqual(['1 jardín', '3 jardines', '0 jardines'])
+  })
+
   it('reconoce el corte y cuenta el avance de la ruta', () => {
     expect([esCorte('Corte de césped'), esCorte('Poda')]).toEqual([true, false])
     expect(avanceRuta(datos.jardines)).toEqual({ cortados: 28, total: 45, porcentaje: 62 })
