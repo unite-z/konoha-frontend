@@ -143,6 +143,19 @@ export const RUTAS_PLANIFICACION_ANTIGUAS = {
   restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`,
 } as const
 
+const BASE_INCIDENCIAS = '/incidencias'
+
+/** MOD-03 · incidencias (AV-283 y siguientes). */
+export const PREFIJO_INCIDENCIAS = BASE_INCIDENCIAS
+
+export const RUTAS_INCIDENCIAS = {
+  bandeja: BASE_INCIDENCIAS, // HU-024 y HU-027 (AV-283)
+}
+
+export const MIGAS_INCIDENCIAS = {
+  incidencias: { texto: 'Incidencias', ruta: RUTAS_INCIDENCIAS.bandeja },
+} satisfies Record<string, Miga>
+
 /** Detalle de un ciclo (AV-269). */
 export function rutaCiclo(id: number): string {
   return `${RUTAS_PLANIFICACION.ciclos}/${id}`

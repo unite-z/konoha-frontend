@@ -36,7 +36,7 @@ describe('entradasMenu', () => {
     const menu = entradasMenu(CAPATAZ)
     expect(menu.has('usuarios')).toBe(false)
     expect(menu.has('tercerizados')).toBe(false)
-    expect([...menu].sort()).toEqual(['campo', 'inventario', 'planificacion', 'repositorio'])
+    expect([...menu].sort()).toEqual(['campo', 'incidencias', 'inventario', 'planificacion', 'repositorio'])
   })
 
   it('solo el jefe ve «Usuarios y roles»', () => {

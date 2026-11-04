@@ -7,6 +7,7 @@ Pantallas: un componente por ruta, agrupadas por módulo.
 | `acceso/`, `usuarios-roles/`, `repositorio/` | MOD-01 | `/ingreso`, `/usuarios-roles`, `/repositorio` | `RUTAS_CORE` |
 | `inventario/` | MOD-02 | `/areas-verdes` | `RUTAS_INVENTARIO` |
 | `planificacion/` | MOD-03 | `/planificacion` | `RUTAS_PLANIFICACION` |
+| `incidencias/` | MOD-03 | `/incidencias` | `RUTAS_INCIDENCIAS` |
 | `operacion-campo/` | MOD-04 | `/operacion-campo` | `RUTAS_CAMPO` |
 | `servicios-tercerizados/` | MOD-05 | `/servicios-tercerizados` | `RUTAS_TERCERIZADOS` |
 | `reportes-indicadores/` | MOD-06 | `/reportes-indicadores` | `RUTAS` |
