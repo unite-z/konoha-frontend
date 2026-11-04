@@ -6,15 +6,18 @@
  * primero entre módulos y después entre las entradas del módulo activo. Así nunca hay dos marcados a la vez.
  */
 import type { NombreIconoFigma } from '@/components/ui/Icono'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { EntradaMenu } from '@/config/permisosCore'
 import { RUTAS_CAMPO, BASE_CAMPO } from '@/router/rutasCampo'
 import {
+  PREFIJO_INCIDENCIAS,
   PREFIJO_MODULO,
   PREFIJO_PLANIFICACION,
   PREFIJO_TERCERIZADOS,
   PREFIJO_USUARIOS,
   RUTAS,
   RUTAS_CORE,
+  RUTAS_INCIDENCIAS,
   RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
@@ -94,7 +97,17 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Control fitosanitario', icono: 'leaf', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
     ],
   },
-  { texto: 'Incidencias', icono: 'triangle-alert' },
+  // Sin backend de incidencias (AV-274), solo hay pantallas con datos simulados (D9): sin ellos, «Próximamente».
+  DATOS_SIMULADOS
+    ? {
+        clave: 'incidencias',
+        texto: 'Incidencias',
+        icono: 'triangle-alert',
+        ruta: RUTAS_INCIDENCIAS.bandeja,
+        prefijos: [PREFIJO_INCIDENCIAS],
+        hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
+      }
+    : { texto: 'Incidencias', icono: 'triangle-alert' },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',

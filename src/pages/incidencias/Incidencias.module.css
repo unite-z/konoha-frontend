@@ -1,0 +1,6 @@
+/* Incidencias (MOD-03, AV-283): solo layout; la tabla es TablaDatos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}

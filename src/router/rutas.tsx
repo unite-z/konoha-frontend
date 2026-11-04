@@ -34,6 +34,7 @@ import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndic
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
+import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
 import CicloDetallePage from '../pages/planificacion/ciclos/CicloDetallePage'
 import CiclosPage from '../pages/planificacion/ciclos/CiclosPage'
@@ -58,7 +59,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
@@ -178,6 +179,12 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
             ],
+          },
+          // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
+          {
+            path: PREFIJO_INCIDENCIAS,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
+            children: [{ index: true, element: <BandejaIncidenciasPage /> }], // HU-024 y HU-027 (AV-283)
           },
           { path: '*', element: <PaginaNoEncontrada /> },
         ],
