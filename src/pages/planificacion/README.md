@@ -1,6 +1,12 @@
 # `pages/planificacion/` (MOD-03)
 
-Planificación de servicios: `ServiciosPeriodicosPage.tsx` (HU-MOD03-001 y 002), `CalendarioRestriccionesPage.tsx` (HU-MOD03-003) y sus diálogos (`DialogoFrecuencia`, `DialogoDuracion`, `DialogoRestriccion`).
+Planificación de servicios, en cuatro secciones desde el rediseño (AV-265): Resumen, Calendario, Ciclos y Configuración.
+
+- **Resumen** (`resumen/ResumenPlanificacionPage.tsx`, RF-PLA-008 y 009): indicadores del mes, bandeja «Necesita atención» (`NecesitaAtencion`, sustituye a la pantalla de alertas), próximos 14 días y restricciones próximas. Su lógica está en `resumen/resumenPlanificacion.ts`, con prueba.
+- **Calendario** (`/planificacion/calendario`): de momento, `CalendarioRestriccionesPage.tsx` (HU-MOD03-003). La vista con capas llega con AV-266.
+- **Ciclos**: llega con AV-269; hasta entonces, el menú la muestra como «Próximamente».
+- **Configuración** (`/planificacion/configuracion`): de momento, `ServiciosPeriodicosPage.tsx` (HU-MOD03-001 y 002) y sus diálogos (`DialogoFrecuencia`, `DialogoDuracion`, `DialogoRestriccion`). La vista unificada llega con AV-268.
+- Las rutas anteriores (`servicios-periodicos` y `calendario-restricciones`) redirigen a su sección (`RUTAS_PLANIFICACION_ANTIGUAS`).
 
 | Qué | Dónde |
 |---|---|
@@ -8,7 +14,7 @@ Planificación de servicios: `ServiciosPeriodicosPage.tsx` (HU-MOD03-001 y 002),
 | Tipos | `types/planificacion.ts` |
 | Lógica pura | `utils/planificacion.ts`, `validacionPlanificacion.ts`, `calendarioRestricciones.ts` |
 | Permisos | `config/permisosPlanificacion.ts` |
-| Rutas | `RUTAS_PLANIFICACION` (prefijo `/planificacion`) |
+| Rutas | `RUTAS_PLANIFICACION` (prefijo `/planificacion`) y `RUTAS_PLANIFICACION_ANTIGUAS` (redirecciones) |
 
 **Pantallas nuevas (AV-265 a 271 y AV-282 a 285):**
 - Se construyen sobre la página de Figma «MOD-03 · Propuesta SaaS» y solo con componentes de `components/ui`.

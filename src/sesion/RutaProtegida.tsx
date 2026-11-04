@@ -67,7 +67,7 @@ export function InicioRol() {
   const entradas = entradasMenu(sesion)
   if (sesion?.rol.codigo === 'capataz' && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
   if (entradas.has('reportes')) return <Navigate to={RUTAS.reportes} replace />
-  if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.servicios} replace />
+  if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.resumen} replace />
   if (entradas.has('tercerizados')) return <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace />
   if (entradas.has('repositorio')) return <Navigate to={RUTAS_CORE.repositorio} replace />
   return (

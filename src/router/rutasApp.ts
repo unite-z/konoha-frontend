@@ -122,9 +122,17 @@ const BASE_PLANIFICACION = '/planificacion'
 /** Prefijo de las rutas de MOD-03 (menú, cabecera y sesión). */
 export const PREFIJO_PLANIFICACION = BASE_PLANIFICACION
 
+/** Secciones del rediseño de MOD-03 (AV-265): Resumen, Calendario, Ciclos (AV-269) y Configuración. */
 export const RUTAS_PLANIFICACION = {
-  servicios: `${BASE_PLANIFICACION}/servicios-periodicos`, // HU-MOD03-001 y 002
-  restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`, // HU-MOD03-003
+  resumen: `${BASE_PLANIFICACION}/resumen`, // RF-PLA-008 y 009
+  calendario: `${BASE_PLANIFICACION}/calendario`, // HU-MOD03-003; vista nueva en AV-266
+  configuracion: `${BASE_PLANIFICACION}/configuracion`, // HU-MOD03-001 y 002; vista nueva en AV-268
+} as const
+
+/** Rutas anteriores al rediseño: redirigen a su sección nueva para no romper enlaces guardados. */
+export const RUTAS_PLANIFICACION_ANTIGUAS = {
+  servicios: `${BASE_PLANIFICACION}/servicios-periodicos`,
+  restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`,
 } as const
 
 /** `true` si la ruta pertenece a MOD-03. */
@@ -133,7 +141,7 @@ export function esRutaPlanificacion(ruta: string): boolean {
 }
 
 export const MIGAS_PLANIFICACION = {
-  planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.servicios },
+  planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.resumen },
 } satisfies Record<string, Miga>
 
 export const MIGAS_TERCERIZADOS = {

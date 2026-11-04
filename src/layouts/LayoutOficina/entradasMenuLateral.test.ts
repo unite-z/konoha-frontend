@@ -59,9 +59,10 @@ describe('activoEnMenu', () => {
 
 describe('seccionesMoviles', () => {
   it('devuelve las subentradas con enlace del módulo activo, como mucho 5', () => {
-    expect(seccionesMoviles(RUTAS_PLANIFICACION.restricciones).map((s) => s.texto)).toEqual([
-      'Servicios periódicos',
-      'Calendario de restricciones',
+    expect(seccionesMoviles(RUTAS_PLANIFICACION.calendario).map((s) => s.texto)).toEqual([
+      'Resumen',
+      'Calendario',
+      'Configuración',
     ])
     expect(seccionesMoviles(RUTAS.panel)).toHaveLength(5)
     expect(seccionesMoviles(RUTAS_CORE.repositorio)).toEqual([])

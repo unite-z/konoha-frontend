@@ -81,3 +81,37 @@ export interface RestriccionEntrada {
   area_verde_id?: number
   descripcion?: string
 }
+
+export type EstadoProgramacion = 'Programada' | 'EnCurso' | 'Completada' | 'Cancelada'
+
+/** Ciclo de un servicio periódico (`GET programaciones/?desde&hasta`). */
+export interface Programacion {
+  id: number
+  tipo_servicio_id: number
+  servicio: string
+  proveedor_id: number | null
+  /** `null`: lo hace el personal propio. */
+  proveedor: string | null
+  estacion: Estacion
+  fecha_inicio_prevista: FechaIso
+  fecha_fin_prevista: FechaIso
+  estado: EstadoProgramacion
+  fecha_inicio_real: FechaIso | null
+  fecha_fin_real: FechaIso | null
+}
+
+/**
+ * Tipos de `GET alertas/`. «DuracionProxima» llegará con AV-255; mientras no llegue, no se pinta. Un tipo
+ * desconocido tampoco se pinta.
+ */
+export type TipoAlerta = 'FrecuenciaProxima' | 'DuracionExcedida' | 'DuracionProxima'
+
+export interface AlertaPlanificacion {
+  tipo: string
+  servicio_id: number
+  servicio: string
+  programacion_id: number | null
+  /** Frecuencia: días que faltan para el máximo (negativo si ya pasó). Duración: días de exceso o que faltan. */
+  dias: number
+  mensaje: string
+}
