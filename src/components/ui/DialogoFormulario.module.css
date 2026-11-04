@@ -20,7 +20,13 @@
   --dialogo-ancho: 27.5rem;
 }
 
-.estrecho .formulario > .acciones {
+/* Formulario corto con X de cierre («Registrar interrupción», Figma 347-1342: 520 de ancho). */
+.medio {
+  --dialogo-ancho: 32.5rem;
+}
+
+.estrecho .formulario > .acciones,
+.medio .formulario > .acciones {
   padding-top: 0;
   border-top: 0;
 }

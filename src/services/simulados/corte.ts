@@ -5,7 +5,7 @@
  * tercer día, la ruta completa; desde el cuarto, una jornada de limpieza, y desde el quinto, dos: «No cumple»);
  * completado, todo cortado y una jornada de limpieza.
  */
-import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { responderSimulado } from './simulacion'
 
@@ -96,4 +96,27 @@ export function simularRegistrarLimpieza(fecha: string): Promise<LimpiezaCorte> 
 
 export function simularObtenerCicloCorte(ciclo: Programacion, signal?: AbortSignal): Promise<CicloCorte> {
   return responderSimulado(() => cicloCorteSimulado(ciclo), { signal })
+}
+
+export function simularZonasAlternativas(signal?: AbortSignal): Promise<ZonaAlternativa[]> {
+  return responderSimulado(
+    () => [
+      { zona: 'Ciencias', pendientes: 14, aviso_hoy: null },
+      { zona: 'Letras', pendientes: 9, aviso_hoy: 'Reserva de jardín' },
+    ],
+    { signal },
+  )
+}
+
+export function simularRegistrarInterrupcion(cuerpo: NuevaInterrupcion): Promise<InterrupcionCorte> {
+  return responderSimulado(() => ({
+    id: Date.now(),
+    zona_afectada: cuerpo.zona_afectada,
+    zona_alternativa: cuerpo.zona_alternativa,
+    hora: cuerpo.hora,
+    motivo: cuerpo.motivo,
+    minutos_descontados: 0,
+    aviso_proveedor: cuerpo.aviso_proveedor,
+    registrada_como_restriccion: cuerpo.registrar_restriccion,
+  }))
 }

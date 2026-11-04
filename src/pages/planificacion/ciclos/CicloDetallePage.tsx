@@ -28,7 +28,7 @@ import { obtenerCicloCorte } from '@/services/api/corte'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos, type CambioEstadoCiclo } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { ahoraLimaLocal, hoyLima } from '@/utils/instanteLima'
 import { conflictosDelPeriodo } from '../calendario/programarCiclo'
@@ -37,6 +37,7 @@ import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
 import { esCorte, indicadorAvanceProgramado, indicadoresCorte, rutaCompleta } from './corte'
+import DialogoInterrupcion from './DialogoInterrupcion'
 import PestanasCorte from './PestanasCorte'
 import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
 
@@ -44,7 +45,7 @@ function FichaCiclo({
   ciclo,
   hoy,
   servicio,
-  corte,
+  corte: corteServidor,
   onAccion,
 }: {
   ciclo: Programacion
@@ -54,6 +55,11 @@ function FichaCiclo({
   corte: CicloCorte | null
   onAccion: ((cambio: CambioEstadoCiclo) => void) | null
 }) {
+  const [interrumpiendo, setInterrumpiendo] = useState(false)
+  const [nuevas, setNuevas] = useState<InterrupcionCorte[]>([])
+  const [avisoCorte, setAvisoCorte] = useState<string | null>(null)
+  // Las interrupciones registradas aquí se suman a las del servidor hasta la siguiente consulta.
+  const corte = corteServidor && { ...corteServidor, interrupciones: [...corteServidor.interrupciones, ...nuevas] }
   const { desde, hasta } = periodoCiclo(ciclo, hoy)
   const restricciones = useConsulta(`ciclo-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
   const conflictos = conflictosDelPeriodo(restricciones.datos ?? [], desde, hasta, servicio?.es_ruidoso ?? true)
@@ -82,13 +88,38 @@ function FichaCiclo({
       </JuntoTitulo>
       {acciones.length > 0 && onAccion && (
         <AccionesPagina>
+          {/* Corte en curso (Figma 346-1334): «Registrar interrupción» y la acción principal con icono. */}
+          {corte && ciclo.estado === 'EnCurso' && (
+            <Boton variante="secundario" icono="arrow-right-left" onClick={() => setInterrumpiendo(true)}>
+              Registrar interrupción
+            </Boton>
+          )}
           {acciones.map((accion) => (
-            <Boton key={accion.cambio} variante={accion.variante} onClick={() => onAccion(accion.cambio)}>
+            <Boton
+              key={accion.cambio}
+              variante={accion.variante}
+              icono={corte && accion.cambio === 'fin' && !rutaCompleta(corte) ? 'circle-check' : undefined}
+              onClick={() => onAccion(accion.cambio)}
+            >
               {accion.texto}
             </Boton>
           ))}
         </AccionesPagina>
       )}
+      {corte && interrumpiendo && (
+        <DialogoInterrupcion
+          ciclo={ciclo}
+          corte={corte}
+          ahora={ahora}
+          onCerrar={() => setInterrumpiendo(false)}
+          onRegistrada={(interrupcion) => {
+            setNuevas((previas) => [...previas, interrupcion])
+            setInterrumpiendo(false)
+            setAvisoCorte(`Corte detenido en ${interrupcion.zona_afectada} y trasladado a ${interrupcion.zona_alternativa ?? 'otra zona'}.`)
+          }}
+        />
+      )}
+      <AvisoTemporal mensaje={avisoCorte} onCerrar={() => setAvisoCorte(null)} />
       <AvisoDatosSimulados />
 
       <FilaTarjetas etiqueta="Indicadores del ciclo">
