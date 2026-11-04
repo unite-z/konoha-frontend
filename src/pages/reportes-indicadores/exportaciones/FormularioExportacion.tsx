@@ -13,6 +13,7 @@ import { useGenerarExportacion } from '../../../components/reportes-indicadores/
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
 import CampoFormulario from '../../../components/ui/CampoFormulario'
+import GrupoOpciones from '../../../components/ui/GrupoOpciones'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { obtenerCatalogoServicios } from '../../../services/api/reportesGestion'
@@ -107,36 +108,22 @@ export default function FormularioExportacion({ tipos, tipoInicial, filtrosInici
       </h2>
       <div className={estilos.columnas}>
         <div className={estilos.columna}>
-          <fieldset className={estilos.grupo}>
-            <legend className={estilos.leyenda}>Tipo de reporte</legend>
-            <ul className={estilos.tipos}>
-              {tipos.map((t) => {
-                const activo = t.tipo === claveTipo
-                return (
-                  <li key={t.tipo} className={`${estilos.tipo} ${activo ? estilos.tipoActivo : ''} ${t.disponible ? '' : estilos.tipoInactivo}`}>
-                    <label className={estilos.etiquetaTipo}>
-                      <input
-                        type="radio"
-                        name="exportacion-tipo"
-                        value={t.tipo}
-                        checked={activo}
-                        disabled={!t.disponible}
-                        onChange={() => {
-                          setClaveTipo(t.tipo)
-                          setErrores({})
-                          limpiarError()
-                        }}
-                      />
-                      <span className={estilos.textoTipo}>
-                        <span className={estilos.nombreTipo}>{t.nombre}</span>
-                        <span className={estilos.descripcionTipo}>{t.disponible ? t.descripcion : t.motivo_no_disponible}</span>
-                      </span>
-                    </label>
-                  </li>
-                )
-              })}
-            </ul>
-          </fieldset>
+          <GrupoOpciones
+            etiqueta="Tipo de reporte"
+            nombre="exportacion-tipo"
+            opciones={tipos.map((t) => ({
+              valor: t.tipo,
+              texto: t.nombre,
+              descripcion: (t.disponible ? t.descripcion : t.motivo_no_disponible) ?? undefined,
+              deshabilitada: !t.disponible,
+            }))}
+            valor={claveTipo}
+            onCambiar={(tipo) => {
+              setClaveTipo(tipo)
+              setErrores({})
+              limpiarError()
+            }}
+          />
           <SelectorFormato
             nombre="exportacion"
             formatos={formatos}
@@ -196,7 +183,7 @@ export default function FormularioExportacion({ tipos, tipoInicial, filtrosInici
           >
             {error?.detalle}
           </AvisoEnLinea>
-          <Boton variante="terciario" onClick={enfocarPrimerFiltro}>
+          <Boton variante="fantasma" onClick={enfocarPrimerFiltro}>
             Acotar filtros
           </Boton>
         </div>

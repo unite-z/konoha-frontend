@@ -4,13 +4,14 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { rutaDetalleAtencion } from '../../../router/rutasApp'
 import { formatearFecha, formatearNumero } from '../../../utils/formato'
 import type { FilaMapa } from '../../../utils/mapaAtenciones'
 import { insigniaEstadoAtencion } from '../../../utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 const POR_TANDA = 25
 
@@ -39,7 +40,7 @@ export default function ListaAtencionesMovil({ filas, seleccion, onSeleccionar }
                 <Link to={rutaDetalleAtencion(f.atencion_id)} className={estilos.codigoFicha}>
                   {f.codigo}
                 </Link>
-                <Badge {...insigniaEstadoAtencion(f.estado)} />
+                <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />
               </div>
               <p className={estilos.metaFicha}>
                 {f.tipo_atencion} · {f.tipo_servicio}
@@ -49,8 +50,8 @@ export default function ListaAtencionesMovil({ filas, seleccion, onSeleccionar }
                 {f.ejemplar_codigo ? ` · Ejemplar ${f.ejemplar_codigo}` : ''} · {formatearFecha(f.fecha)}
               </p>
               <div className={estilos.pieFicha}>
-                {f.con_ubicacion ? <Badge tono="info" texto="En el mapa" /> : <Badge tono="neutral" texto="Sin ubicación" />}
-                <Boton variante="terciario" onClick={() => verResumen(f.clave)}>
+                {f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />}
+                <Boton variante="fantasma" onClick={() => verResumen(f.clave)}>
                   Ver resumen
                 </Boton>
               </div>

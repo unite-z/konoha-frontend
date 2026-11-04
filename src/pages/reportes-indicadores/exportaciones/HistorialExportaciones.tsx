@@ -6,7 +6,6 @@
 import { useState } from 'react'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
@@ -18,6 +17,7 @@ import type { ReporteGenerado, TipoExportable } from '../../../types/exportacion
 import { TEXTO_FORMATO } from '../../../utils/exportaciones'
 import { formatearFechaHora, formatearNumero, formatearTamanoArchivo } from '../../../utils/formato'
 import estilos from './Exportaciones.module.css'
+import Estado from '../../../components/ui/Estado'
 
 const POR_PAGINA = 25
 
@@ -49,7 +49,7 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
 
   const botonDescargar = (r: ReporteGenerado) => (
     <Boton
-      variante="terciario"
+      variante="fantasma"
       cargando={descargando === r.id}
       deshabilitado={r.archivo === null}
       aria-label={`Descargar ${r.etiqueta_tipo} del ${formatearFechaHora(r.fecha_hora)}`}
@@ -63,7 +63,7 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
     { clave: 'fecha_hora', titulo: 'Fecha y hora', render: (r) => formatearFechaHora(r.fecha_hora) },
     { clave: 'etiqueta_tipo', titulo: 'Tipo', multilinea: true },
     { clave: 'resumen_parametros', titulo: 'Periodo y filtros', multilinea: true },
-    { clave: 'formato', titulo: 'Formato', render: (r) => <Badge tono="neutral" texto={TEXTO_FORMATO[r.formato]} /> },
+    { clave: 'formato', titulo: 'Formato', render: (r) => <Estado tono="neutro" texto={TEXTO_FORMATO[r.formato]} /> },
     { clave: 'filas', titulo: 'Filas', alineacion: 'derecha', render: (r) => formatearNumero(r.filas) },
     { clave: 'usuario', titulo: 'Generado por' },
     { clave: 'tamano', titulo: 'Tamaño', alineacion: 'derecha', render: (r) => formatearTamanoArchivo(r.archivo?.tamano_bytes) },
@@ -107,7 +107,7 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
                 <li key={r.id} className={estilos.ficha}>
                   <div className={estilos.cabeceraFicha}>
                     <span className={estilos.nombreTipo}>{r.etiqueta_tipo}</span>
-                    <Badge tono="neutral" texto={TEXTO_FORMATO[r.formato]} />
+                    <Estado tono="neutro" texto={TEXTO_FORMATO[r.formato]} />
                   </div>
                   <p className={estilos.metaFicha}>{formatearFechaHora(r.fecha_hora)} · {r.usuario}</p>
                   <p className={estilos.metaFicha}>{r.resumen_parametros}</p>
