@@ -195,3 +195,56 @@ export function actividadesDelPeriodo(desde: FechaIso, hasta: FechaIso, eventos:
     .filter((evento) => evento.capa === 'actividad' && evento.inicio <= hasta && evento.fin >= desde)
     .sort((a, b) => a.inicio.localeCompare(b.inicio) || a.texto.localeCompare(b.texto, 'es'))
 }
+
+// --- Filtros (se conservan al cambiar de vista) ----------------------------------------------------------
+
+/** Filtros del calendario; cadena vacía es «todos». Cuadrilla, sector y lugar llegan con AV-254. */
+export interface FiltrosCalendario {
+  tipo: string
+  proveedor: string
+}
+
+export const SIN_FILTROS: FiltrosCalendario = { tipo: '', proveedor: '' }
+
+/** Valor del filtro de proveedor para las actividades del personal propio. */
+export const PERSONAL_PROPIO = 'propio'
+
+export interface OpcionFiltro {
+  valor: string
+  texto: string
+}
+
+/** Aplica los filtros a las actividades; las restricciones se pintan siempre. */
+export function filtrarEventos(eventos: EventoCapa[], filtros: FiltrosCalendario): EventoCapa[] {
+  return eventos.filter((evento) => {
+    if (evento.capa !== 'actividad') return true
+    const { tipo_servicio_id, proveedor_id } = evento.programacion
+    if (filtros.tipo && String(tipo_servicio_id) !== filtros.tipo) return false
+    if (filtros.proveedor === PERSONAL_PROPIO) return proveedor_id === null
+    return !filtros.proveedor || String(proveedor_id) === filtros.proveedor
+  })
+}
+
+/** Proveedores de las actividades cargadas, más «Personal propio» si alguna lo es. */
+export function opcionesProveedor(eventos: EventoCapa[]): OpcionFiltro[] {
+  const proveedores = new Map<string, string>()
+  let hayPropio = false
+  for (const evento of eventos) {
+    if (evento.capa !== 'actividad') continue
+    const { proveedor_id, proveedor } = evento.programacion
+    if (proveedor_id === null) hayPropio = true
+    else proveedores.set(String(proveedor_id), proveedor ?? `Proveedor ${proveedor_id}`)
+  }
+  const opciones = [...proveedores].map(([valor, texto]) => ({ valor, texto })).sort((a, b) => a.texto.localeCompare(b.texto, 'es'))
+  return hayPropio ? [{ valor: PERSONAL_PROPIO, texto: 'Personal propio' }, ...opciones] : opciones
+}
+
+/** Chips de los filtros aplicados: «Tipo: Corte de césped», «Proveedor: Podas Altura Demo». */
+export function chipsFiltros(filtros: FiltrosCalendario, tipos: OpcionFiltro[], proveedores: OpcionFiltro[]): { clave: keyof FiltrosCalendario; texto: string }[] {
+  const chips: { clave: keyof FiltrosCalendario; texto: string }[] = []
+  if (filtros.tipo) chips.push({ clave: 'tipo', texto: `Tipo: ${tipos.find((t) => t.valor === filtros.tipo)?.texto ?? filtros.tipo}` })
+  if (filtros.proveedor) {
+    chips.push({ clave: 'proveedor', texto: `Proveedor: ${proveedores.find((p) => p.valor === filtros.proveedor)?.texto ?? filtros.proveedor}` })
+  }
+  return chips
+}

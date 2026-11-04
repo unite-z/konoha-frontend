@@ -336,6 +336,27 @@
   line-height: var(--type-pequeno-line);
 }
 
+/* Hueco flexible de la barra: «Filtros» va a la derecha. */
+.espacio {
+  flex: 1;
+}
+
+.panelFiltros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+}
+
+/* «Sin resultados» ocupa el sitio del calendario, con borde discontinuo (Figma 374-6421). */
+.sinResultados {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--space-12) * 7);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+}
+
 /* Restricciones de una fila de la vista Lista. */
 .restriccionesFila {
   display: flex;
