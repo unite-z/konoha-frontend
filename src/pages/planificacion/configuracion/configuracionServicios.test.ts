@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ServicioPeriodico } from '@/types/planificacion'
-import { borradorInicial, detalleServicio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia, validarServicio } from './configuracionServicios'
+import { borradorInicial, detalleServicio, textoCambio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia, validarServicio } from './configuracionServicios'
 
 const modificacion = { fecha_modificacion: '2026-10-28T09:12:00-05:00', modificado_por: 'Robert G.' }
 const servicio: ServicioPeriodico = {
@@ -54,5 +54,16 @@ describe('configuracionServicios', () => {
     const inicial = borradorInicial(servicio)
     const vaciada = { ...inicial, frecuencias: { ...inicial.frecuencias, Primavera: { teorica: '', practica: '', maxima: '' } } }
     expect(validarServicio(vaciada, inicial).erroresFrecuencia.Primavera?.teorica).toBeTruthy()
+  })
+})
+
+describe('textoCambio (Figma 367-3527)', () => {
+  it('escribe cada cambio con su valor anterior y nuevo', () => {
+    const base = { estacion: null, anterior: null, nuevo: null, fecha_hora: '2026-10-28T09:12:00-05:00', autor: 'Robert G.' }
+    expect([
+      textoCambio({ ...base, campo: 'duracion_maxima_dias', anterior: '4', nuevo: '3' }),
+      textoCambio({ ...base, campo: 'frecuencia_maxima_dias', estacion: 'Otoño', anterior: '50', nuevo: '45' }),
+      textoCambio({ ...base, campo: 'inicial' }),
+    ]).toEqual(['Duración: 4 → 3 días de servicio', 'Máxima en otoño: 50 → 45 días', 'Configuración inicial'])
   })
 })

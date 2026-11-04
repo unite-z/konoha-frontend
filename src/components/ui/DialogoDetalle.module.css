@@ -22,6 +22,10 @@
 }
 
 .cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
   padding: var(--space-6) var(--space-6) 0;
 }
 
@@ -90,5 +94,38 @@
 
   .acciones > * {
     flex: 1 1 100%;
+  }
+}
+
+/* `lateral` (Figma 367-3527, 520 de ancho): a la derecha y a toda la altura, X de cierre y línea bajo la cabecera. */
+.dialogo.lateral {
+  --dialogo-ancho: 32.5rem;
+  height: calc(100vh - 2 * var(--space-2));
+  max-height: none;
+  margin: var(--space-2) var(--space-2) var(--space-2) auto;
+}
+
+.lateral .marco {
+  height: 100%;
+  max-height: none;
+}
+
+.lateral .cabecera {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.lateral .cuerpo {
+  flex: 1;
+  padding-top: var(--space-4);
+}
+
+@media (max-width: 767px) {
+  .dialogo.lateral {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    margin: 0;
+    border-radius: 0;
   }
 }

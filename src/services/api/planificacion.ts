@@ -15,6 +15,7 @@ import type {
   ServicioPeriodico,
   TipoRestriccion,
   ValoresIniciales,
+  CambioServicio,
 } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
@@ -118,4 +119,13 @@ export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?
     metodo: 'POST',
     cuerpo: { ...(fecha ? { fecha } : {}), ...(motivo ? { motivo } : {}) },
   })
+}
+
+/** `GET servicios/{id}/historial/` (AV-256), del más reciente al más antiguo. Hasta que exista, simulado (D9). */
+export async function listarHistorialServicio(servicioId: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularHistorialServicio } = await import('../simulados/serviciosPlanificacion')
+    return simularHistorialServicio(signal)
+  }
+  return solicitarPlanificacion<CambioServicio[]>(`servicios/${servicioId}/historial/`, { signal })
 }

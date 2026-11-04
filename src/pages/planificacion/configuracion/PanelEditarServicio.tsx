@@ -7,7 +7,7 @@
  * Solo envía lo que cambia: un `PUT servicios/{id}/frecuencias/{estacion}/` por estación y `PUT servicios/{id}/duracion/`.
  * Avisa de que la frecuencia nueva solo afecta a los ciclos que se programen y de si un ciclo en curso ya supera la
  * duración nueva (Figma 367-3617). El subtítulo lleva la vía y el proveedor, y «Usar valores iniciales» rellena el
- * borrador con los de la sección (los dos del contrato de AV-363, simulados hasta entonces); «Ver historial», AV-256.
+ * borrador con los de la sección (los dos del contrato de AV-363, simulados hasta entonces); «Ver historial» abre el historial (`DialogoHistorialServicio`, 367-3527, AV-256).
  */
 import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -25,6 +25,7 @@ import type { BorradorDuracion, BorradorFrecuencia } from '@/utils/validacionPla
 import { diasDelPeriodo } from '../calendario/programarCiclo'
 import { rangoCiclos } from '../ciclos/ciclos'
 import { fechaNumerica } from '../resumen/resumenPlanificacion'
+import DialogoHistorialServicio from './DialogoHistorialServicio'
 import estilos from './Configuracion.module.css'
 import { borradorInicial, conValoresIniciales, estadoServicio, subtituloServicio, ultimaModificacion, validarServicio } from './configuracionServicios'
 
@@ -63,6 +64,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       )
     : []
   const [cargandoIniciales, setCargandoIniciales] = useState(false)
+  const [historial, setHistorial] = useState(false)
 
   async function usarValoresIniciales() {
     setCargandoIniciales(true)
@@ -206,10 +208,16 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       )}
 
       {modificado && !sinConfigurar && (
-        <p className={estilos.modificado}>
-          Última modificación: {fechaNumerica(fechaLimaDeInstante(modificado.fecha) ?? modificado.fecha.slice(0, 10))} · {modificado.autor}
-        </p>
+        <div className={estilos.pie}>
+          <p className={estilos.modificado}>
+            Última modificación: {fechaNumerica(fechaLimaDeInstante(modificado.fecha) ?? modificado.fecha.slice(0, 10))} · {modificado.autor}
+          </p>
+          <Boton variante="fantasma" compacto className={estilos.enlace} onClick={() => setHistorial(true)}>
+            Ver historial
+          </Boton>
+        </div>
       )}
+      {historial && <DialogoHistorialServicio servicio={servicio} onCerrar={() => setHistorial(false)} />}
     </DialogoFormulario>
   )
 }

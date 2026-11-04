@@ -179,3 +179,25 @@ export interface NuevaProgramacion {
   /** Zonas de la ruta que entran en el corte (AV-259); solo para el corte de césped. */
   zonas?: string[]
 }
+
+/** Campo que cambió en la configuración del servicio (AV-256); `inicial` es la primera configuración. */
+export type CampoHistorialServicio =
+  | 'inicial'
+  | 'frecuencia_teorica_dias'
+  | 'frecuencia_practica_dias'
+  | 'frecuencia_maxima_dias'
+  | 'duracion_maxima_dias'
+  | 'dias_limpieza'
+  | 'hora_inicio'
+  | 'hora_fin'
+
+/** `GET servicios/{id}/historial/` (AV-256): cada cambio con su valor anterior y nuevo, autor y hora. */
+export interface CambioServicio {
+  campo: CampoHistorialServicio
+  /** Estación del cambio de frecuencia. */
+  estacion: Estacion | null
+  anterior: string | null
+  nuevo: string | null
+  fecha_hora: InstanteIso
+  autor: string
+}

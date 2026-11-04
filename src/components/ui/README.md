@@ -10,6 +10,8 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Pestañas en caja y tabla sin marco:** `Pestanas` con `enCaja`, `derecha` y `ancho="completo"` (pasos), y `TablaDatos` con `sinMarco` dentro de ella (detalle del corte). Una columna con `tituloOculto` deja su título solo para lectores de pantalla (acciones).
 
+**Detalle lateral:** `DialogoDetalle` con `lateral` para un panel de solo lectura a la derecha (historial de cambios).
+
 **Movimiento de los diálogos:** `AnimacionDialogo.module.css` (entrada y salida, centrada o lateral) y `useCierreAnimado.ts` (espera a que termine la salida antes de avisar con `onCerrar`) los comparten `DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`. Un diálogo nuevo los usa igual.
 
 **Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`. Para pasar a `Estado` una insignia de `utils/` con tono antiguo: `<Estado {...insigniaAEstado(insigniaEstado(x))} />` (`tonos.ts`).
