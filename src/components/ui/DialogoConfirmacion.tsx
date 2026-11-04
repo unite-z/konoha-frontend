@@ -11,13 +11,15 @@
  */
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import Boton from './Boton'
+import animacion from './AnimacionDialogo.module.css'
 import estilos from './DialogoConfirmacion.module.css'
+import { useCierreAnimado } from './useCierreAnimado'
 
 export interface DialogoConfirmacionProps {
   abierto: boolean
   titulo: string
-  /** Consecuencia de la acción, en una frase. */
-  consecuencia: string
+  /** Consecuencia de la acción, en una frase (sin ella, solo el título y el campo, como «Descartar», 394-8700). */
+  consecuencia?: string
   /** Nombre de la acción (etiqueta del botón de confirmar). */
   textoConfirmar: string
   /** Etiqueta del botón que cierra sin hacer nada. */
@@ -45,6 +47,7 @@ export default function DialogoConfirmacion({
   const origenFoco = useRef<HTMLElement | null>(null)
   const idTitulo = useId()
   const idConsecuencia = useId()
+  const { saliendo, cerrar } = useCierreAnimado(referencia, abierto, onCancelar)
 
   useEffect(() => {
     const dialogo = referencia.current
@@ -72,24 +75,26 @@ export default function DialogoConfirmacion({
   return (
     <dialog
       ref={referencia}
-      className={estilos.dialogo}
+      className={[estilos.dialogo, animacion.centrado, saliendo ? animacion.saliendo : ''].filter(Boolean).join(' ')}
       aria-labelledby={idTitulo}
-      aria-describedby={idConsecuencia}
+      aria-describedby={consecuencia ? idConsecuencia : undefined}
       onCancel={(evento) => {
         // Esc: se cierra salvo que la acción esté en curso.
         evento.preventDefault()
-        if (!cargando) onCancelar()
+        if (!cargando) cerrar()
       }}
     >
       <h2 id={idTitulo} className={estilos.titulo}>
         {titulo}
       </h2>
-      <p id={idConsecuencia} className={estilos.consecuencia}>
-        {consecuencia}
-      </p>
+      {consecuencia && (
+        <p id={idConsecuencia} className={estilos.consecuencia}>
+          {consecuencia}
+        </p>
+      )}
       {children && <div className={estilos.contenido}>{children}</div>}
       <div className={estilos.acciones}>
-        <Boton variante="secundario" onClick={onCancelar} deshabilitado={cargando}>
+        <Boton variante="secundario" onClick={cerrar} deshabilitado={cargando}>
           {textoVolver}
         </Boton>
         <Boton variante={variante} onClick={onConfirmar} cargando={cargando}>

@@ -191,7 +191,8 @@ export default function ContratoNuevoPage() {
             id={IDS.monto}
             etiqueta="Monto fijo (S/)"
             obligatorio
-            inputMode="decimal"
+            formato="decimal"
+            decimales={2}
             ayuda="Por ejemplo, 12 000,00"
             value={borrador.monto}
             onChange={(e) => cambiar({ monto: e.target.value })}

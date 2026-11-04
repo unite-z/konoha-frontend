@@ -91,8 +91,8 @@ describe('MenuLateral', () => {
   it('las entradas no disponibles no son enlaces y se anuncian deshabilitadas', () => {
     const menu = pintar(RUTAS_PLANIFICACION.resumen)
 
-    expect(within(menu).queryByRole('link', { name: /Ciclos/ })).toBeNull()
-    expect(within(menu).getByText('Ciclos').closest('[aria-disabled="true"]')).not.toBeNull()
+    expect(within(menu).queryByRole('link', { name: /Inicio/ })).toBeNull()
+    expect(within(menu).getByText('Inicio').closest('[aria-disabled="true"]')).not.toBeNull()
   })
 
   it('sin el permiso de un módulo, el módulo no aparece', () => {

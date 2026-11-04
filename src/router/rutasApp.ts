@@ -17,6 +17,7 @@ export const RUTAS = {
   inconsistenciasIa: `${BASE}/asistencia-ia/inconsistencias`, // RF-IA-002
   cronogramaIa: `${BASE}/asistencia-ia/cronograma`, // RF-IA-003
   estimacionRecursos: `${BASE}/asistencia-ia/estimacion-recursos`, // RF-IA-004
+  clasificacionIncidencias: `${BASE}/asistencia-ia/clasificacion-incidencias`, // RF-IA-005
   panel: `${BASE}/panel`, // RF-REP-001
   mapaAtenciones: `${BASE}/mapa-atenciones`, // RF-REP-007
   materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
@@ -58,6 +59,11 @@ export function rutaRevisionEstimacion(id: number | string): string {
   return `${RUTAS.estimacionRecursos}/${id}`
 }
 
+/** Ruta de la revisión de una clasificación de incidencia (RF-IA-005). */
+export function rutaRevisionClasificacion(id: number | string): string {
+  return `${RUTAS.clasificacionIncidencias}/${id}`
+}
+
 /** Niveles de migas reutilizados por las páginas (Guía Web 4.2). */
 export const MIGAS = {
   reportesIndicadores: { texto: 'Reportes e indicadores', ruta: RUTAS.reportes },
@@ -68,6 +74,7 @@ export const MIGAS = {
   inconsistenciasIa: { texto: 'Revisión de inconsistencias', ruta: RUTAS.inconsistenciasIa },
   cronogramaIa: { texto: 'Planificación asistida', ruta: RUTAS.cronogramaIa },
   estimacionRecursos: { texto: 'Estimación de recursos', ruta: RUTAS.estimacionRecursos },
+  clasificacionIncidencias: { texto: 'Clasificación de incidencias', ruta: RUTAS.clasificacionIncidencias },
   panel: { texto: 'Panel', ruta: RUTAS.panel },
   mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
@@ -132,8 +139,9 @@ export const PREFIJO_PLANIFICACION = BASE_PLANIFICACION
 /** Secciones del rediseño de MOD-03 (AV-265): Resumen, Calendario, Ciclos (AV-269) y Configuración. */
 export const RUTAS_PLANIFICACION = {
   resumen: `${BASE_PLANIFICACION}/resumen`, // RF-PLA-008 y 009
-  calendario: `${BASE_PLANIFICACION}/calendario`, // HU-MOD03-003; vista nueva en AV-266
-  configuracion: `${BASE_PLANIFICACION}/configuracion`, // HU-MOD03-001 y 002; vista nueva en AV-268
+  calendario: `${BASE_PLANIFICACION}/calendario`, // HU-MOD03-003 y 005, RF-PLA-003 y 007
+  ciclos: `${BASE_PLANIFICACION}/ciclos`, // RF-PLA-004 y CU-007 (AV-269)
+  configuracion: `${BASE_PLANIFICACION}/configuracion`, // HU-MOD03-001 y 002 (AV-268)
 } as const
 
 /** Rutas anteriores al rediseño: redirigen a su sección nueva para no romper enlaces guardados. */
@@ -142,6 +150,55 @@ export const RUTAS_PLANIFICACION_ANTIGUAS = {
   restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`,
 } as const
 
+// --- MOD-03 · el capataz en el móvil (AV-271): su ruta del día y el calendario de su cuadrilla ------------
+
+const BASE_CORTE = '/corte'
+
+export const PREFIJO_CORTE = BASE_CORTE
+
+export const RUTAS_CORTE = {
+  rutaDeHoy: `${BASE_CORTE}/ruta-de-hoy`, // RF-COR-002, HU-011 y CU-011
+  calendario: `${BASE_CORTE}/calendario`, // RF-PLA-007 (solo lectura)
+} as const
+
+export const MIGAS_CORTE = {
+  corte: { texto: 'Corte de césped', ruta: RUTAS_CORTE.rutaDeHoy },
+} satisfies Record<string, Miga>
+
+const BASE_INCIDENCIAS = '/incidencias'
+
+/** MOD-03 · incidencias (AV-283 y siguientes). */
+export const PREFIJO_INCIDENCIAS = BASE_INCIDENCIAS
+
+export const RUTAS_INCIDENCIAS = {
+  bandeja: BASE_INCIDENCIAS, // HU-024 y HU-027 (AV-283)
+}
+
+/** MOD-03 · incidencias de quien las reporta, en el móvil (AV-282): cualquier usuario con sesión. */
+export const RUTAS_MIS_INCIDENCIAS = {
+  lista: '/mis-incidencias', // HU-024 (seguimiento propio)
+  reportar: '/mis-incidencias?reportar=', // HU-020 y CU-020: el formulario se abre sobre la lista
+} as const
+
+/** Seguimiento de una incidencia propia (AV-282). */
+export function rutaMiIncidencia(id: number | string): string {
+  return `${RUTAS_MIS_INCIDENCIAS.lista}/${id}`
+}
+
+/** Detalle de una incidencia (AV-284). */
+export function rutaIncidencia(id: number): string {
+  return `${RUTAS_INCIDENCIAS.bandeja}/${id}`
+}
+
+export const MIGAS_INCIDENCIAS = {
+  incidencias: { texto: 'Incidencias', ruta: RUTAS_INCIDENCIAS.bandeja },
+} satisfies Record<string, Miga>
+
+/** Detalle de un ciclo (AV-269). */
+export function rutaCiclo(id: number): string {
+  return `${RUTAS_PLANIFICACION.ciclos}/${id}`
+}
+
 /** `true` si la ruta pertenece a MOD-03. */
 export function esRutaPlanificacion(ruta: string): boolean {
   return ruta === BASE_PLANIFICACION || ruta.startsWith(`${BASE_PLANIFICACION}/`)
@@ -149,6 +206,7 @@ export function esRutaPlanificacion(ruta: string): boolean {
 
 export const MIGAS_PLANIFICACION = {
   planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.resumen },
+  ciclos: { texto: 'Ciclos', ruta: RUTAS_PLANIFICACION.ciclos },
 } satisfies Record<string, Miga>
 
 export const MIGAS_TERCERIZADOS = {

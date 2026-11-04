@@ -7,6 +7,12 @@
   min-width: 0;
 }
 
+/* `sinMarco`: dentro de otro marco, sin borde ni radio propios. */
+.sinMarco {
+  border: 0;
+  border-radius: 0;
+}
+
 .desplazable {
   /* Contexto de posición: el texto solo para lectores de pantalla no desborda la página. */
   position: relative;
@@ -173,4 +179,18 @@
   font-size: var(--type-titulo-tarjeta-size);
   line-height: var(--type-titulo-tarjeta-line);
   font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+/* Fila resaltada (`filaResaltada`): borde de acción alrededor de la fila, como la actividad en conflicto de Figma. */
+.resaltada td {
+  border-top: 1px solid var(--color-border-strong);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.resaltada td:first-child {
+  border-left: 1px solid var(--color-border-strong);
+}
+
+.resaltada td:last-child {
+  border-right: 1px solid var(--color-border-strong);
 }

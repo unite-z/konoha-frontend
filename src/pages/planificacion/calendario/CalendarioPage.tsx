@@ -1,51 +1,117 @@
-// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vista Mes (AV-266, Figma «Calendario con capas» 344-436)
+// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes, Semana y Lista (AV-266, Figma 344-436, 361-2252 y 361-2782)
 import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
+import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
 import EventoCalendario from '@/components/ui/EventoCalendario'
+import Pestanas from '@/components/ui/Pestanas'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
-import { listarProgramaciones, listarRestricciones } from '@/services/api/planificacion'
+import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
+import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import { desplazarMes, mesDeFecha, type Mes } from '@/utils/calendarioRestricciones'
+import type { Programacion, Restriccion } from '@/types/planificacion'
+import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
-import DialogoRestriccion from '../DialogoRestriccion'
-import { nombreMes } from '../resumen/resumenPlanificacion'
+import type { AvisoCiclos } from '../ciclos/ciclos'
+import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
-import { eventosDeCapas, semanasDelMes } from './calendarioCapas'
+import {
+  SIN_FILTROS,
+  actividadesDelPeriodo,
+  chipsFiltros,
+  diasDeSemana,
+  eventosDeCapas,
+  filtrarEventos,
+  opcionesProveedor,
+  semanasDelMes,
+  tituloSemana,
+  type FiltrosCalendario,
+} from './calendarioCapas'
+import DetalleActividad from './DetalleActividad'
+import DialogoBajaRestriccion from './DialogoBajaRestriccion'
+import PanelNuevaRestriccion from './PanelNuevaRestriccion'
+import PanelProgramarCiclo from './PanelProgramarCiclo'
+import PanelFiltros from './PanelFiltros'
+import VistaLista from './VistaLista'
+import VistaMovil from './VistaMovil'
 import VistaMes from './VistaMes'
+import VistaSemana from './VistaSemana'
 import estilos from './Calendario.module.css'
 
-function aTexto({ anio, mes }: Mes): string {
-  return `${anio}-${String(mes).padStart(2, '0')}`
-}
+type Vista = 'mes' | 'semana' | 'lista'
+
+const VISTAS = [
+  { valor: 'mes', texto: 'Mes' },
+  { valor: 'semana', texto: 'Semana' },
+  { valor: 'lista', texto: 'Lista' },
+]
 
 export default function CalendarioPage() {
   usePaginaActual('Calendario', [MIGAS_PLANIFICACION.planificacion, { texto: 'Calendario' }])
   const hoy = hoyLima()
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
-  const [mes, setMes] = useState(() => mesDeFecha(hoy))
-  const [seleccionado, setSeleccionado] = useState<FechaIso | null>(hoy)
+  const [vista, setVista] = useState<Vista>('mes')
+  /** Día de referencia: el seleccionado en el mes y el que fija la semana. */
+  const [fecha, setFecha] = useState<FechaIso>(hoy)
+  const [agendaAbierta, setAgendaAbierta] = useState(true)
+  const [actividad, setActividad] = useState<string | null>(null)
+  const [reprogramando, setReprogramando] = useState<Programacion | null>(null)
+  const [filtros, setFiltros] = useState<FiltrosCalendario>(SIN_FILTROS)
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
+  const [baja, setBaja] = useState<Restriccion | null>(null)
+  // `?programar=<servicio>` (desde el Resumen) abre el panel con ese servicio; `?programar=` lo abre vacío. Con
+  // `&atiende=1` (la alerta de frecuencia del Resumen), al programar se va a Ciclos con «Alerta atendida» (373-5779).
+  const [parametros, setParametros] = useSearchParams()
+  const navegar = useNavigate()
+  const programar = parametros.get('programar')
+  const servicioAProgramar = programar && /^\d+$/.test(programar) ? Number(programar) : null
+
+  function cerrarPanel() {
+    const siguientes = new URLSearchParams(parametros)
+    siguientes.delete('programar')
+    siguientes.delete('dia')
+    siguientes.delete('atiende')
+    setParametros(siguientes, { replace: true })
+  }
   const [aviso, setAviso] = useState<string | null>(null)
 
+  const mes = mesDeFecha(fecha)
   const semanas = semanasDelMes(mes)
-  const desde = semanas[0][0]
-  const hasta = semanas[semanas.length - 1][6]
-  const restricciones = useConsulta(`calendario-restricciones:${desde}`, (signal) => listarRestricciones(desde, hasta, signal))
-  const programaciones = useConsulta(`calendario-programaciones:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const dias = diasDeSemana(fecha)
+  const rangoMes = rangoDelMes(mes)
+  const { desde, hasta } =
+    vista === 'mes' ? { desde: semanas[0][0], hasta: semanas[semanas.length - 1][6] }
+    : vista === 'semana' ? { desde: dias[0], hasta: dias[6] }
+    : rangoMes
+  const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
+  const programaciones = useConsulta(`calendario-programaciones:${desde}:${hasta}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const servicios = useConsulta('calendario-servicios', listarServiciosPeriodicos)
+  const tipos = (servicios.datos ?? []).map((servicio) => ({ valor: String(servicio.id), texto: servicio.nombre }))
+  const todos = restricciones.datos && programaciones.datos ? eventosDeCapas(restricciones.datos, programaciones.datos) : []
+  const proveedores = opcionesProveedor(todos)
+  const chips = chipsFiltros(filtros, tipos, proveedores)
   const conError = [restricciones, programaciones].find((consulta) => consulta.estado === 'error' && !consulta.datos)
 
-  function irAMes(nuevo: Mes) {
-    setMes(nuevo)
-    const delMes = aTexto(nuevo) === hoy.slice(0, 7) ? hoy : `${aTexto(nuevo)}-01`
-    setSeleccionado(delMes)
+  /** Mes o semana anterior o siguiente; en el mes, el día pasa al primero del mes nuevo (o a hoy). */
+  function desplazar(sentido: -1 | 1) {
+    setActividad(null)
+    if (vista === 'semana') {
+      setFecha(sumarDias(fecha, 7 * sentido))
+      return
+    }
+    const nuevo = desplazarMes(mes, sentido)
+    const texto = `${nuevo.anio}-${String(nuevo.mes).padStart(2, '0')}`
+    setFecha(texto === hoy.slice(0, 7) ? hoy : `${texto}-01`)
   }
 
   let contenido
@@ -54,18 +120,56 @@ export default function CalendarioPage() {
   } else if (!restricciones.datos || !programaciones.datos) {
     contenido = restricciones.cargaVisible || programaciones.cargaVisible ? <EstadoCarga forma="tabla" texto="Cargando el calendario…" /> : null
   } else {
-    const eventos = eventosDeCapas(restricciones.datos, programaciones.datos)
-    contenido = (
-      <div className={`${estilos.calendarioYAgenda} ${seleccionado ? '' : estilos.sinAgenda}`}>
-        <VistaMes
-          semanas={semanas}
-          eventos={eventos}
-          mes={aTexto(mes)}
-          hoy={hoy}
-          seleccionado={seleccionado}
-          onSeleccionar={setSeleccionado}
+    const eventos = filtrarEventos(todos, filtros)
+    const visibles = vista === 'semana' ? { desde: dias[0], hasta: dias[6] } : rangoMes
+    const elegida = actividad ? eventos.find((evento) => evento.clave === actividad) : undefined
+    const lateral =
+      vista === 'mes'
+        ? agendaAbierta && (
+            <AgendaDia
+              dia={fecha}
+              eventos={eventos}
+              onCerrar={() => setAgendaAbierta(false)}
+              onDarDeBaja={puedeEditar ? setBaja : undefined}
+              onProgramarDia={puedeEditar ? (dia) => setParametros({ programar: '', dia }) : undefined}
+            />
+          )
+        : elegida && (
+            <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} onReprogramar={puedeEditar ? setReprogramando : undefined} />
+          )
+    contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
+      <div className={estilos.sinResultados}>
+        <EstadoVacio
+          icono="filter"
+          centrado
+          titulo="No hay actividades con estos filtros"
+          accion={
+            <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>
+              Limpiar filtros
+            </Boton>
+          }
         />
-        {seleccionado && <AgendaDia dia={seleccionado} eventos={eventos} onCerrar={() => setSeleccionado(null)} />}
+      </div>
+    ) : (
+      <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
+        {vista === 'lista' ? (
+          <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} onReprogramar={puedeEditar ? setReprogramando : undefined} />
+        ) : vista === 'mes' ? (
+          <VistaMes
+            semanas={semanas}
+            eventos={eventos}
+            mes={fecha.slice(0, 7)}
+            hoy={hoy}
+            seleccionado={agendaAbierta ? fecha : null}
+            onSeleccionar={(dia) => {
+              setFecha(dia)
+              setAgendaAbierta(true)
+            }}
+          />
+        ) : (
+          <VistaSemana dias={dias} eventos={eventos} hoy={hoy} seleccionada={actividad} onSeleccionar={setActividad} />
+        )}
+        {lateral}
       </div>
     )
   }
@@ -74,28 +178,107 @@ export default function CalendarioPage() {
     <div className={estilos.pagina}>
       {puedeEditar && (
         <AccionesPagina>
-          <Boton variante="secundario" icono="plus" onClick={() => setRegistrando(true)}>
-            Nueva restricción
-          </Boton>
+          <span className={estilos.accionesEscritorio}>
+            <Boton variante="secundario" icono="plus" onClick={() => setRegistrando(true)}>
+              Nueva restricción
+            </Boton>
+            <Boton icono="plus-circle" onClick={() => setParametros({ programar: '' })}>
+              Programar ciclo
+            </Boton>
+          </span>
         </AccionesPagina>
       )}
-
-      <div className={estilos.barra}>
-        <Boton variante="secundario" compacto icono="chevron-left" onClick={() => irAMes(desplazarMes(mes, -1))}>
-          <span className="sr-only">Mes anterior</span>
-        </Boton>
-        <Boton variante="secundario" compacto icono="chevron-right" onClick={() => irAMes(desplazarMes(mes, 1))}>
-          <span className="sr-only">Mes siguiente</span>
-        </Boton>
-        <h2 className={estilos.tituloMes} aria-live="polite">
-          {nombreMes(`${aTexto(mes)}-01`)}
-        </h2>
-        <Boton variante="fantasma" compacto onClick={() => irAMes(mesDeFecha(hoy))}>
-          Hoy
-        </Boton>
+      {/* Móvil (Figma 352-2192): «+» en la barra superior para programar, y la tira semanal con su agenda. */}
+      {puedeEditar && (
+        <AccionMovil>
+          <Boton variante="fantasma" compacto icono="plus" onClick={() => setParametros({ programar: '' })}>
+            <span className="sr-only">Programar ciclo</span>
+          </Boton>
+        </AccionMovil>
+      )}
+      <div className={estilos.soloMovil}>
+        {conError || !restricciones.datos || !programaciones.datos ? (
+          contenido
+        ) : (
+          <VistaMovil
+            fecha={fecha}
+            hoy={hoy}
+            eventos={filtrarEventos(todos, filtros)}
+            onCambiarFecha={(nueva) => {
+              setFecha(nueva)
+              setActividad(null)
+            }}
+          />
+        )}
       </div>
 
-      {contenido}
+      <div className={`${estilos.soloEscritorio} ${estilos.pagina}`}>
+
+      <Pestanas
+        etiqueta="Vista del calendario"
+        pestanas={VISTAS}
+        valor={vista}
+        onCambiar={(valor) => setVista(valor as Vista)}
+        barra={
+          <>
+            <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
+              <span className="sr-only">{vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}</span>
+            </Boton>
+            <Boton variante="secundario" compacto icono="chevron-right" onClick={() => desplazar(1)}>
+              <span className="sr-only">{vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}</span>
+            </Boton>
+            <h2 className={estilos.tituloMes} aria-live="polite">
+              {vista === 'semana' ? tituloSemana(dias) : nombreMes(fecha)}
+            </h2>
+            <Boton
+              variante="fantasma"
+              compacto
+              onClick={() => {
+                setFecha(hoy)
+                setActividad(null)
+              }}
+            >
+              Hoy
+            </Boton>
+            <span className={estilos.espacio} />
+            <span className={estilos.anclaFiltros}>
+              <Boton
+                variante="secundario"
+                compacto
+                icono="filter"
+                aria-expanded={filtrosAbiertos}
+                aria-controls="panel-filtros-calendario"
+                onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
+              >
+                {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
+              </Boton>
+              {filtrosAbiertos && (
+                <PanelFiltros
+                  id="panel-filtros-calendario"
+                  filtros={filtros}
+                  tipos={tipos}
+                  proveedores={proveedores}
+                  onAplicar={(nuevos) => {
+                    setFiltros(nuevos)
+                    setFiltrosAbiertos(false)
+                  }}
+                  onCerrar={() => setFiltrosAbiertos(false)}
+                />
+              )}
+            </span>
+          </>
+        }
+      >
+        <div className={estilos.pagina}>
+          <ChipsFiltrosActivos
+            filtros={chips}
+            onQuitar={(clave) => setFiltros(chips.find((chip) => chip.clave === clave)?.sin ?? filtros)}
+            onLimpiar={() => setFiltros(SIN_FILTROS)}
+          />
+
+          {contenido}
+        </div>
+      </Pestanas>
 
       <div className={estilos.leyenda} aria-label="Leyenda del calendario" role="group">
         <span className={estilos.rotuloLeyenda}>Actividades</span>
@@ -108,14 +291,59 @@ export default function CalendarioPage() {
         <EventoCalendario tipo="aviso" texto="Aviso" />
         <EventoCalendario tipo="favorable" texto="Favorable" />
       </div>
+      </div>
 
       {registrando && (
-        <DialogoRestriccion
-          fechaInicial={seleccionado ?? hoy}
+        <PanelNuevaRestriccion
+          fechaInicial={fecha}
+          servicios={servicios.datos ?? []}
           onCerrar={() => setRegistrando(false)}
           onCreadas={(creadas) => {
             setRegistrando(false)
             setAviso(creadas.length === 1 ? 'Restricción registrada.' : `${creadas.length} restricciones registradas.`)
+            restricciones.reintentar()
+          }}
+        />
+      )}
+      {puedeEditar && programar !== null && servicios.datos && (
+        <PanelProgramarCiclo
+          servicios={servicios.datos}
+          servicioInicial={servicioAProgramar}
+          fechaInicial={parametros.get('dia')}
+          onCerrar={cerrarPanel}
+          onProgramada={(programada) => {
+            if (parametros.get('atiende') === '1') {
+              const avisoCiclos: AvisoCiclos = { mensaje: 'Ciclo programado', detalle: `${programada.servicio}: alerta atendida.` }
+              void navegar(RUTAS_PLANIFICACION.ciclos, { state: { aviso: avisoCiclos } })
+              return
+            }
+            cerrarPanel()
+            setAviso(`${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}.`)
+            programaciones.reintentar()
+          }}
+        />
+      )}
+      {puedeEditar && reprogramando && servicios.datos && (
+        <PanelProgramarCiclo
+          servicios={servicios.datos}
+          servicioInicial={null}
+          reprogramar={reprogramando}
+          onCerrar={() => setReprogramando(null)}
+          onProgramada={(nueva) => {
+            setReprogramando(null)
+            setActividad(null)
+            setAviso(`${nueva.servicio} reprogramado del ${nueva.fecha_inicio_prevista.slice(8, 10)} al ${nueva.fecha_fin_prevista.slice(8, 10)}.`)
+            programaciones.reintentar()
+          }}
+        />
+      )}
+      {baja && (
+        <DialogoBajaRestriccion
+          restriccion={baja}
+          onCerrar={() => setBaja(null)}
+          onBaja={(serie) => {
+            setBaja(null)
+            setAviso(serie ? 'Serie de restricciones dada de baja.' : 'Restricción dada de baja.')
             restricciones.reintentar()
           }}
         />

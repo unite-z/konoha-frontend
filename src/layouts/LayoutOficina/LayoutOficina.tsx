@@ -41,7 +41,12 @@ export default function LayoutOficina() {
   const { pathname } = useLocation()
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const [nodoAcciones, setNodoAcciones] = useState<HTMLElement | null>(null)
-  const valor = useMemo(() => ({ pagina, establecerPagina, nodoAcciones }), [pagina, nodoAcciones])
+  const [nodoJunto, setNodoJunto] = useState<HTMLElement | null>(null)
+  const [nodoAccionMovil, setNodoAccionMovil] = useState<HTMLElement | null>(null)
+  const valor = useMemo(
+    () => ({ pagina, establecerPagina, nodoAcciones, nodoJunto, nodoAccionMovil }),
+    [pagina, nodoAcciones, nodoJunto, nodoAccionMovil],
+  )
   const [comprimido, setComprimido] = useState(leerComprimido)
   const alternarComprimido = useCallback(() => {
     setComprimido((actual) => {
@@ -83,12 +88,43 @@ export default function LayoutOficina() {
         />
         {menuAbierto && <div className={estilos.velo} aria-hidden="true" onClick={() => setMenuAbierto(false)} />}
         <div className={estilos.columna} inert={menuAbierto}>
-          <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} />
+          <BarraSuperiorMovil
+            titulo={pagina.movil?.titulo ?? pagina.titulo}
+            volver={pagina.movil?.volver}
+            onAbrirMenu={() => setMenuAbierto(true)}
+            refAccion={setNodoAccionMovil}
+          />
           <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
-            {pagina.titulo && (
+            {pagina.titulo && pagina.tituloOculto && <h1 className="sr-only">{pagina.titulo}</h1>}
+            {pagina.titulo && !pagina.tituloOculto && (
               <div className={estilos.filaTitulo}>
-                <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                {pagina.subtitulo ? (
+                  <div>
+                    <div className={estilos.lineaTitulo}>
+                      <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                      {pagina.movil?.encabezado && (
+                        <span className={estilos.encabezadoMovil} aria-hidden="true">
+                          {pagina.movil.encabezado}
+                        </span>
+                      )}
+                      <span ref={setNodoJunto} className={estilos.juntoTitulo} />
+                    </div>
+                    {pagina.movil?.subtitulo ? (
+                      <p className={estilos.subtitulo}>
+                        <span className={estilos.soloEscritorio}>{pagina.subtitulo}</span>
+                        <span className={estilos.soloMovil}>{pagina.movil.subtitulo}</span>
+                      </p>
+                    ) : (
+                      <p className={estilos.subtitulo}>{pagina.subtitulo}</p>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                    <span ref={setNodoJunto} className={`${estilos.juntoTitulo} ${estilos.juntoSinSubtitulo}`} />
+                  </>
+                )}
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>
             )}

@@ -247,7 +247,8 @@ export default function PasoAlcances({ alcances, onCambiar, errores, unidadesMed
                     <CampoFormulario
                       id={`${base}-metrado`}
                       etiqueta="Metrado (opcional)"
-                      inputMode="decimal"
+                      formato="decimal"
+                      decimales={2}
                       placeholder="Ej.: 120,50"
                       value={a.metrado}
                       onChange={(e) => actualizar(a.clave, { metrado: e.target.value })}

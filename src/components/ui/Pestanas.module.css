@@ -62,3 +62,62 @@
 .panel {
   min-width: 0;
 }
+
+/* Con `barra`: la barra a la izquierda y las pestañas a la derecha, en una fila (Figma: Calendario). */
+.conBarra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.barra {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Con `derecha`: las pestañas a la izquierda y el contenido a la derecha (Figma 346-1334). */
+.conDerecha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* `enCaja`: marco con borde, cabecera con línea inferior y panel sin relleno (el contenido pone el suyo). */
+.caja {
+  gap: 0;
+  overflow: clip;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.cabeceraCaja {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* `ancho="completo"`: la lista a todo el ancho y las pestañas repartidas (Figma 372-5523). */
+.completo {
+  width: 100%;
+}
+
+.completo .pestana {
+  flex: 1;
+  justify-content: center;
+}

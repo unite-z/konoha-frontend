@@ -15,6 +15,56 @@
   --dialogo-ancho: 56rem;
 }
 
+/* Un solo campo («Registrar motivo», Figma 373-5658: 440 de ancho), sin línea sobre los botones, como en Figma. */
+.estrecho {
+  --dialogo-ancho: 27.5rem;
+}
+
+/* Formulario corto con X de cierre («Registrar interrupción», Figma 347-1342: 520 de ancho). */
+.medio {
+  --dialogo-ancho: 32.5rem;
+}
+
+/* Hoja inferior del móvil (Figma 375-6772): en escritorio, como el estrecho. */
+.hoja {
+  --dialogo-ancho: 27.5rem;
+}
+
+.asa {
+  display: none;
+}
+
+.estrecho .formulario > .acciones,
+.medio .formulario > .acciones,
+.hoja .formulario > .acciones {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Panel lateral (Figma, 520 de ancho): a la derecha y a toda la altura, con las acciones siempre abajo. */
+.lateral {
+  --dialogo-ancho: 32.5rem;
+  height: calc(100vh - 2 * var(--space-2));
+  max-height: none;
+  margin: var(--space-2) var(--space-2) var(--space-2) auto;
+}
+
+.lateral .formulario {
+  height: 100%;
+  max-height: none;
+}
+
+.lateral .cuerpo {
+  flex: 1;
+  padding-top: var(--space-6);
+}
+
+/* En el panel, la cabecera lleva cierre a la derecha y una línea debajo. */
+.lateral .cabecera {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
 .dialogo::backdrop {
   background: var(--web-scrim);
 }
@@ -25,8 +75,23 @@
   max-height: calc(100vh - 2 * var(--space-6) - 2px);
 }
 
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
   padding: var(--space-6) var(--space-6) 0;
+}
+
+.textosCabecera {
+  min-width: 0;
 }
 
 .titulo {
@@ -86,4 +151,112 @@
   .acciones > * {
     flex: 1 1 100%;
   }
+}
+
+/*
+ * En móvil, el panel lateral ocupa la pantalla como en Figma («Programar ciclo» 352-2324, «Reportar incidencia»
+ * 391-8394): la X a la izquierda del título, el cuerpo sobre el fondo de la aplicación y un solo botón primario a todo
+ * el ancho (la X hace de «Cancelar»). Va al final para ganar a la regla móvil de `.dialogo`.
+ */
+@media (max-width: 767px) {
+  .dialogo.lateral {
+    --dialogo-ancho: 100vw;
+    width: 100vw;
+    max-width: none; /* el navegador limita el ancho de <dialog> por defecto */
+    height: 100vh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--color-bg-page);
+  }
+
+  .lateral .cabecera {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-surface);
+  }
+
+  .lateral .titulo {
+    font-size: var(--type-heading-sm-size);
+    line-height: var(--type-heading-sm-line);
+    font-weight: var(--type-heading-sm-weight);
+  }
+
+  .lateral .cuerpo {
+    padding-top: var(--space-4);
+  }
+
+  .lateral .formulario > .acciones,
+  .lateral .descarte {
+    padding: var(--space-4);
+  }
+
+  .lateral .formulario > .acciones {
+    background: var(--color-bg-surface);
+  }
+
+  .lateral .cancelar {
+    display: none;
+  }
+}
+
+/* Hoja inferior en móvil: pegada abajo a todo el ancho, radio solo arriba, asa centrada y los botones en una fila. */
+@media (max-width: 767px) {
+  .dialogo.hoja {
+    width: 100vw;
+    max-width: none;
+    margin: auto 0 0;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .hoja .asa {
+    display: block;
+    flex-shrink: 0;
+    width: calc(var(--space-8) + var(--space-1));
+    height: var(--space-1);
+    margin: var(--space-3) auto 0;
+    border-radius: var(--radius-full);
+    background: var(--color-border-strong);
+  }
+
+  .hoja .cabecera {
+    padding-top: var(--space-4);
+  }
+
+  .hoja .titulo {
+    font-size: var(--type-heading-sm-size);
+    line-height: var(--type-heading-sm-line);
+    font-weight: var(--type-heading-sm-weight);
+  }
+
+  .hoja .descripcion {
+    margin-top: var(--space-1);
+    font-size: var(--type-pequeno-size);
+    line-height: var(--type-pequeno-line);
+  }
+
+  .hoja .formulario > .acciones {
+    flex-wrap: nowrap;
+    padding-bottom: var(--space-8);
+  }
+
+  .hoja .acciones > * {
+    flex: 1 1 0;
+  }
+}
+
+/* Acciones apiladas (Figma 391-8469): una debajo de otra a todo el ancho y la principal arriba. */
+.formulario > .acciones.apiladas {
+  flex-direction: column-reverse;
+  flex-wrap: nowrap;
+}
+
+.formulario > .acciones.apiladas > * {
+  flex: none;
+  width: 100%;
 }

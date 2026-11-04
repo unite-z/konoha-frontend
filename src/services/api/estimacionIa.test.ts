@@ -9,7 +9,7 @@ import {
   solicitarEstimacion,
 } from './estimacionIa'
 
-vi.mock('../../config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
+vi.mock('@/config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
 
 afterEach(() => {
   vi.unstubAllGlobals()

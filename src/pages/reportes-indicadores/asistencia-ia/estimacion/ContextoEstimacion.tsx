@@ -2,12 +2,12 @@
  * «Variables consideradas» y «Antecedentes comparables» de una estimación (RF-IA-004, criterios 1 y 5): con qué datos
  * de origen trabajó la IA. En móvil, los antecedentes se pliegan.
  */
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import ListaDescripcion from '../../../../components/ui/ListaDescripcion'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import Tarjeta from '../../../../components/ui/Tarjeta'
-import type { AntecedenteComparable, VariableConsiderada } from '../../../../types/estimacionIa'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import Tarjeta from '@/components/ui/Tarjeta'
+import type { AntecedenteComparable, VariableConsiderada } from '@/types/estimacionIa'
+import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from './Estimacion.module.css'
 
 const COLUMNAS: ColumnaTabla<AntecedenteComparable>[] = [

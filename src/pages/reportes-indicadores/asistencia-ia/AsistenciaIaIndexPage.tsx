@@ -1,8 +1,8 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003 y RF-IA-004).
+ * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003, RF-IA-004 y RF-IA-005).
  */
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS } from '../../../router/rutasApp'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, RUTAS } from '@/router/rutasApp'
 import ListaEnlaces from '../ListaEnlaces'
 
 export default function AsistenciaIaIndexPage() {
@@ -46,6 +46,13 @@ export default function AsistenciaIaIndexPage() {
             'Referencia de operarios, duración e insumos para una actividad según antecedentes comparables, para confirmarla antes de organizar el trabajo.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado de la estimación' },
           ruta: RUTAS.estimacionRecursos,
+        },
+        {
+          titulo: 'Clasificación de incidencias',
+          descripcion:
+            'Sugerencia de categoría, prioridad y tipo de atención de una incidencia registrada, para validarla antes de derivar.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado del análisis' },
+          ruta: RUTAS.clasificacionIncidencias,
         },
       ]}
     />

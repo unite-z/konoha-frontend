@@ -11,6 +11,10 @@ export const PERMISOS = {
   consultarRepositorio: 'CORE.REPOSITORIO.CONSULTAR',
   consultarHistorial: 'CORE.HISTORIAL.CONSULTAR',
   consultarPlanificacion: 'PLA.PLANIFICACION.CONSULTAR',
+  /** Marcar jardines de la ruta de corte (contrato de AV-260 y AV-252). */
+  registrarCorte: 'PLA.CORTE.REGISTRAR',
+  /** Reportar incidencias y consultar la bandeja y la ficha (AV-281: los cuatro roles). */
+  registrarIncidencia: 'PLA.INCIDENCIA.REGISTRAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
@@ -28,13 +32,20 @@ export function puede(sesion: SesionCore | null, permiso: string): boolean {
 }
 
 /** Entradas de primer nivel del menú con enlace, según los permisos (HU-MOD01-007, «Menú por rol»). */
-export type EntradaMenu = 'planificacion' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
+export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'misIncidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
 
 export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   const entradas = new Set<EntradaMenu>()
   if (puede(sesion, PERMISOS.consultarCuadrillas)) entradas.add('campo')
   if (puede(sesion, PERMISOS.consultarInventario)) entradas.add('inventario')
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('planificacion')
+  // Ruta de hoy del capataz (AV-271): quien registra el avance del corte (AV-260).
+  if (puede(sesion, PERMISOS.registrarCorte)) entradas.add('corte')
+  // Incidencias (AV-281): la bandeja y la ficha, y «Mis incidencias» para reportar y seguir las propias (AV-282).
+  if (puede(sesion, PERMISOS.registrarIncidencia)) {
+    entradas.add('incidencias')
+    entradas.add('misIncidencias')
+  }
   // Servicios tercerizados incluye contratos y conformidades: el capataz no lo ve.
   if (puede(sesion, PERMISOS.registrarAtencion) || puede(sesion, PERMISOS.consultarContratos)) {
     entradas.add('tercerizados')

@@ -7,7 +7,7 @@ La sesión de MOD-01, común a toda la aplicación.
 | `ProveedorSesion.tsx` | carga `GET auth/sesion/` y expone el estado de la sesión, `ingresar`, `cerrarSesion` y `recargar` |
 | `ContextoSesion.ts` | contexto y hooks: `useSesion`, `useSesionActiva`, `useRolActual`, `useRolTercerizados` |
 | `ContextoSesionCampo.ts` | vista de la sesión para MOD-04 (`useSesionCampo`) |
-| `RutaProtegida.tsx` | `RutaProtegida` (sin sesión, al ingreso) y `RutaConPermiso` (sin permiso, aviso) |
+| `RutaProtegida.tsx` | `RutaProtegida` (sin sesión, al ingreso) y `RutaConPermiso` (sin permiso, aviso; con `seccion`, «Acceso denegado» centrado con «Volver al inicio», Figma 374-7925) |
 
 **Reglas:**
 - La sesión vive en una cookie `HttpOnly`. Aquí solo hay datos en memoria, nunca credenciales ni tokens (AV-234). Nada de `localStorage` para la sesión.

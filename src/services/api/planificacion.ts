@@ -1,20 +1,31 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
 import type { FechaIso } from '@/types/comun'
 import type {
+  AlertaAtendida,
   AlertaPlanificacion,
   DuracionEntrada,
   Estacion,
   FrecuenciaEntrada,
+  NuevaProgramacion,
   Programacion,
+  PropuestaProgramacion,
   Restriccion,
   RestriccionEntrada,
   ServicioPeriodico,
   TipoRestriccion,
+  ValoresIniciales,
+  CambioServicio,
 } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
+/** `GET servicios/`: servicios periódicos con frecuencias, duración, vía y proveedor habitual (AV-363). */
 export function listarServiciosPeriodicos(signal?: AbortSignal) {
   return solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
+}
+
+/** `GET servicios/{id}/valores-iniciales/` (AV-363); 404 `sin-valores-iniciales` si la sección no los tiene. */
+export function obtenerValoresIniciales(servicio: ServicioPeriodico, signal?: AbortSignal) {
+  return solicitarPlanificacion<ValoresIniciales>(`servicios/${servicio.id}/valores-iniciales/`, { signal })
 }
 
 /** `PUT servicios/{id}/frecuencias/{estacion}/` (solo jefe). Devuelve el servicio actualizado. */
@@ -49,7 +60,66 @@ export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: 
   return solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
 }
 
-/** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */
+/** `GET programaciones/{id}/` (AV-364): el ciclo con su código, su historial y las restricciones que le afectan. */
+export function obtenerProgramacion(id: number, signal?: AbortSignal) {
+  return solicitarPlanificacion<Programacion & { restricciones: Restriccion[] }>(`programaciones/${id}/`, { signal })
+}
+
+/** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, guardadas con su id (AV-255). */
 export function listarAlertas(signal?: AbortSignal) {
   return solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
+}
+
+/** `POST alertas/{id}/motivo/` (AV-255): registra el motivo o la acción de una alerta y la deja atendida. */
+export function registrarMotivoAlerta(id: number, motivo: string) {
+  return solicitarPlanificacion<AlertaAtendida>(`alertas/${id}/motivo/`, { metodo: 'POST', cuerpo: { motivo } })
+}
+
+/** `DELETE restricciones/{id}/?serie=` (solo jefe): da de baja la restricción o, con `serie`, toda su serie. */
+export function darDeBajaRestriccion(id: number, serie: boolean) {
+  return solicitarPlanificacion<void>(`restricciones/${id}/`, { metodo: 'DELETE', parametros: { serie } })
+}
+
+/** `GET servicios/{id}/propuesta/`: fechas propuestas para el siguiente ciclo (409 si falta configuración). */
+export function obtenerPropuesta(servicioId: number, signal?: AbortSignal) {
+  return solicitarPlanificacion<PropuestaProgramacion>(`servicios/${servicioId}/propuesta/`, { signal })
+}
+
+/** `POST programaciones/` (solo jefe): programa un ciclo. Devuelve la programación creada. */
+export function crearProgramacion(cuerpo: NuevaProgramacion) {
+  return solicitarPlanificacion<Programacion>('programaciones/', { metodo: 'POST', cuerpo })
+}
+
+/** Cuerpo de `PATCH programaciones/{id}/` (AV-362): nuevas fechas y, si coincide con un aviso, la justificación. */
+export interface Reprogramacion {
+  fecha_inicio_prevista: FechaIso
+  fecha_fin_prevista: FechaIso
+  justificacion?: string
+}
+
+/**
+ * `PATCH programaciones/{id}/` (AV-362, solo jefe): cambia las fechas de un ciclo Programado con las reglas del alta
+ * (prohibición, duración, ventana y justificación). Queda en el historial y avisa al proveedor del traslado.
+ */
+export function reprogramarProgramacion(id: number, cuerpo: Reprogramacion) {
+  return solicitarPlanificacion<Programacion>(`programaciones/${id}/`, { metodo: 'PATCH', cuerpo })
+}
+
+export type CambioEstadoCiclo = 'inicio' | 'fin' | 'cancelacion'
+
+/**
+ * `POST programaciones/{id}/{inicio|fin|cancelacion}/` (solo jefe): Programada a En curso, En curso a Completada o
+ * Programada a Cancelada, con la fecha real (hoy si no se indica). 409 si el estado actual no lo permite.
+ */
+/** `motivo`: obligatorio al cancelar con el contrato de AV-253; hasta entonces el backend lo ignora. */
+export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?: FechaIso, motivo?: string) {
+  return solicitarPlanificacion<Programacion>(`programaciones/${id}/${cambio}/`, {
+    metodo: 'POST',
+    cuerpo: { ...(fecha ? { fecha } : {}), ...(motivo ? { motivo } : {}) },
+  })
+}
+
+/** `GET servicios/{id}/historial/` (AV-256), del más reciente al más antiguo. */
+export function listarHistorialServicio(servicioId: number, signal?: AbortSignal) {
+  return solicitarPlanificacion<CambioServicio[]>(`servicios/${servicioId}/historial/`, { signal })
 }

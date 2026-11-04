@@ -1,0 +1,62 @@
+/*
+ * Ficha de decisión de una sugerencia de IA (MOD-06): sugerencia a la izquierda (fondo informativo) y decisión a la
+ * derecha; una columna en tablet y móvil. Solo tokens semánticos del sistema de diseño.
+ */
+
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.unaColumna {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sugerencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--web-info-border);
+  border-radius: var(--radius-md);
+  background: var(--color-info-bg);
+  color: var(--color-text-primary);
+}
+
+.etiquetaIa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
+  color: var(--color-info);
+}
+
+.valor {
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  overflow-wrap: anywhere;
+}
+
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.final {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+@media (max-width: 1023px) {
+  .ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

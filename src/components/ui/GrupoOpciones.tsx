@@ -7,6 +7,8 @@
  *
  * - `compacta` (Radio compacto): solo el texto.
  * - `tarjeta` (Opción): texto y descripción. Se usa sola si alguna opción lleva `descripcion`.
+ * - `segmentado`: las opciones repartidas en una fila sobre fondo sutil y la elegida en blanco, como el control
+ *   segmentado de `Pestanas` («Severidad» y «Impacto» de «Clasificar», Figma 388-7305). Sigue siendo un grupo de radios.
  *
  * Para más de 5 opciones, usa `Selector`.
  */
@@ -43,6 +45,12 @@ export interface GrupoOpcionesProps<V extends string> {
   horizontal?: boolean
   /** Ids de textos externos que describen el grupo (ayuda o error que la pantalla pinta fuera). */
   descritoPor?: string
+  /** Control segmentado: 2 o 3 opciones cortas repartidas en una fila (Figma 388-7305). */
+  segmentado?: boolean
+  /** Con `horizontal`, las opciones se reparten el ancho («Reportado por» de «Registrar incidencia», 394-8504). */
+  repartido?: boolean
+  /** Opciones como píldoras que bajan de línea («Tipo» de «Reportar incidencia» en el móvil, Figma 391-8394). */
+  chips?: boolean
 }
 
 export default function GrupoOpciones<V extends string>({
@@ -58,6 +66,9 @@ export default function GrupoOpciones<V extends string>({
   deshabilitado = false,
   horizontal = false,
   descritoPor,
+  segmentado = false,
+  repartido = false,
+  chips = false,
 }: GrupoOpcionesProps<V>) {
   const idPropio = useId()
   const base = idBase ?? idPropio
@@ -82,7 +93,7 @@ export default function GrupoOpciones<V extends string>({
           </span>
         )}
       </legend>
-      <div className={[estilos.opciones, tarjeta && estilos.tarjetas, horizontal && estilos.horizontal].filter(Boolean).join(' ')}>
+      <div className={[estilos.opciones, tarjeta && estilos.tarjetas, horizontal && estilos.horizontal, repartido && estilos.repartido, segmentado && estilos.segmentado, chips && estilos.chips].filter(Boolean).join(' ')}>
         {opciones.map((opcion) => {
           const id = `${base}-${opcion.valor}`
           const elegida = opcion.valor === valor

@@ -30,10 +30,24 @@
   color: var(--color-text-primary);
 }
 
-.unidad,
-.contexto {
+.unidad {
   font-size: var(--type-pequeno-size);
   line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+/* Contexto destacado y nota atenuada debajo, como el Indicador de Figma. */
+.contexto {
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-primary);
+}
+
+.nota {
+  margin-top: var(--space-1);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 

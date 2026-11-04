@@ -1,11 +1,23 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import type { AlertaPlanificacion, ServicioPeriodico } from '@/types/planificacion'
-import NecesitaAtencion from './NecesitaAtencion'
+import NecesitaAtencion, { partesMovil } from './NecesitaAtencion'
 
+const motivo = vi.hoisted(() => vi.fn(async (id: number, texto: string) => ({ id, estado: 'Atendida', motivo: texto })))
+vi.mock('@/services/api/planificacion', () => ({ registrarMotivoAlerta: motivo }))
+
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.open = false
+  }
+})
 afterEach(cleanup)
 
 const alertas: AlertaPlanificacion[] = [
@@ -14,10 +26,10 @@ const alertas: AlertaPlanificacion[] = [
 ]
 const sinDuracion: ServicioPeriodico[] = [{ id: 9, nombre: 'Control fitosanitario', es_ruidoso: false, frecuencias: [], duracion: null }]
 
-function pintar(a: AlertaPlanificacion[], s: ServicioPeriodico[]) {
+function pintar(a: AlertaPlanificacion[], s: ServicioPeriodico[], soloLectura = false) {
   render(
     <MemoryRouter>
-      <NecesitaAtencion alertas={a} servicios={s} />
+      <NecesitaAtencion alertas={a} servicios={s} soloLectura={soloLectura} />
     </MemoryRouter>,
   )
   return screen.getByRole('region', { name: 'Necesita atención' })
@@ -28,8 +40,8 @@ describe('NecesitaAtencion', () => {
     const bandeja = pintar(alertas, sinDuracion)
 
     expect(within(bandeja).getByText('3')).toBeTruthy()
-    expect(within(bandeja).getByRole('link', { name: 'Programar' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.calendario}?programar=1`)
-    expect(within(bandeja).getByRole('link', { name: 'Ver ciclo' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.calendario}?ciclo=40`)
+    expect(within(bandeja).getByRole('link', { name: 'Programar' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.calendario}?programar=1&atiende=1`)
+    expect(within(bandeja).getByRole('link', { name: 'Ver ciclo' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.ciclos}/40`)
     expect(within(bandeja).getByRole('link', { name: 'Configurar' }).getAttribute('href')).toBe(RUTAS_PLANIFICACION.configuracion)
   })
 
@@ -41,10 +53,43 @@ describe('NecesitaAtencion', () => {
     expect(titulos[2]).toContain('Control fitosanitario · sin duración configurada')
   })
 
+  it('con el contrato de AV-255 registra el motivo de la duración excedida y la saca de la bandeja', async () => {
+    const usuario = userEvent.setup()
+    const bandeja = pintar([{ ...alertas[1], id: 40, proveedor: 'Podas Altura Demo E.I.R.L.', maximo_dias: 10 }], [])
+
+    await usuario.click(within(bandeja).getByRole('button', { name: 'Registrar motivo' }))
+    const dialogo = screen.getByRole('dialog', { name: 'Registrar motivo' })
+    expect(within(dialogo).getByText('Poda mayor · 1 día de exceso')).toBeTruthy()
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar' }))
+    expect(motivo).not.toHaveBeenCalled()
+    expect(within(dialogo).getByText('Escribe el motivo o la acción.')).toBeTruthy()
+
+    await usuario.type(within(dialogo).getByLabelText(/^Motivo o acción/), 'Lluvia el 27/10; el proveedor termina mañana.')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar' }))
+    expect(motivo).toHaveBeenCalledWith(40, 'Lluvia el 27/10; el proveedor termina mañana.')
+    expect(await screen.findByText('Motivo registrado')).toBeTruthy()
+    expect(within(bandeja).queryByText('Poda mayor · 1 día de exceso')).toBeNull()
+  })
+
+  it('en solo lectura cada alerta lleva «Ver ciclo» (Figma 374-7476)', () => {
+    const bandeja = pintar([alertas[0], { ...alertas[1], id: 40 }], [], true)
+
+    expect(within(bandeja).getAllByRole('link', { name: 'Ver ciclo' }).map((enlace) => enlace.getAttribute('href'))).toEqual([
+      `${RUTAS_PLANIFICACION.ciclos}/40`,
+      RUTAS_PLANIFICACION.ciclos,
+    ])
+    expect(within(bandeja).queryByRole('link', { name: 'Programar' })).toBeNull()
+    expect(within(bandeja).queryByRole('button', { name: 'Registrar motivo' })).toBeNull()
+  })
+
   it('sin nada pendiente muestra el estado vacío', () => {
     const bandeja = pintar([], [])
 
     expect(within(bandeja).getByRole('heading', { name: 'Todo al día' })).toBeTruthy()
     expect(within(bandeja).queryByRole('list')).toBeNull()
+  })
+
+  it('en móvil separa el servicio del motivo (Figma 352-2038)', () => {
+    expect(partesMovil('Corte de césped · faltan 7 días para la frecuencia máxima')).toEqual({ servicio: 'Corte de césped', motivo: 'Faltan 7 días para la frecuencia máxima' })
   })
 })

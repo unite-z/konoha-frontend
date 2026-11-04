@@ -40,6 +40,15 @@
   cursor: pointer;
 }
 
+.accion {
+  display: flex;
+  margin-left: auto;
+}
+
+.accion:empty {
+  display: none;
+}
+
 .titulo {
   overflow: hidden;
   font-size: var(--type-cuerpo-size);
@@ -65,7 +74,31 @@
   text-decoration: none;
 }
 
-.pestana span {
+/* Fondo del icono (Figma «Pestaña inferior», 56 × 28): en la actual, con el color de menú activo. */
+.fondo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-12) + var(--space-2));
+  height: calc(var(--space-6) + var(--space-1));
+  border-radius: var(--radius-full);
+}
+
+.actual .fondo {
+  background: var(--color-sidebar-active-bg);
+}
+
+/* Con dos pestañas («Barra inferior · Capataz», Figma 380-8204), centradas y separadas 48. */
+.inferior:has(> .pestana:nth-child(2):last-child) {
+  justify-content: center;
+  gap: var(--space-12);
+}
+
+.inferior:has(> .pestana:nth-child(2):last-child) > .pestana {
+  flex: 0 0 6rem;
+}
+
+.texto {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

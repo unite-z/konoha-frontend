@@ -8,6 +8,7 @@
   --focus-ring-width: 2px; /* Guía Web 5.2: contorno de foco de 2px con 2px de separación */
   --focus-ring-offset: 2px; /* Guía Web 5.2 */
   --duracion-transicion: 150ms; /* Guía Web 4.1: transiciones de 120 a 200 ms */
+  --duracion-panel: 200ms; /* Guía Web 4.1: entrada y salida del panel lateral */
 }
 
 *,

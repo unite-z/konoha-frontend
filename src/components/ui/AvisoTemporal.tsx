@@ -17,7 +17,8 @@ export interface AvisoTemporalProps {
   mensaje: string | null
   /** Segunda línea, en texto secundario. */
   detalle?: string
-  tono?: 'exito' | 'error'
+  /** `info`: un aviso que no es de una acción propia («J-015 ya estaba marcado», Figma 353-2396). */
+  tono?: 'exito' | 'error' | 'info'
   onCerrar: () => void
 }
 
@@ -33,7 +34,7 @@ export default function AvisoTemporal({ mensaje, detalle, tono = 'exito', onCerr
       {mensaje && (
         <div className={estilos.aviso}>
           <span className={`${estilos.icono} ${estilos[tono]}`}>
-            <Icono nombre={tono === 'exito' ? 'verificacion' : 'aspa'} tamano="base" />
+            <Icono nombre={tono === 'exito' ? 'verificacion' : tono === 'info' ? 'info' : 'aspa'} tamano="base" />
           </span>
           <div className={estilos.cuerpo}>
             <span className={estilos.mensaje}>{mensaje}</span>

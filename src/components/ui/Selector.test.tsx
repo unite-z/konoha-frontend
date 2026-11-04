@@ -70,4 +70,17 @@ describe('Campo compacto y campos de fecha y hora', () => {
     expect(screen.getByLabelText(/Desde/).getAttribute('aria-required')).toBe('true')
     expect(screen.getByLabelText('Hora de inicio').getAttribute('type')).toBe('time')
   })
+
+  it('con idErrorExterno, el desplegable queda en error y enlaza el texto de fuera sin repetir el mensaje', () => {
+    render(
+      <>
+        <Selector id="capataz" etiqueta="Capataz" valor="" opcionTodos="Sin capataz libre el 01/11" opciones={[]} onCambiar={vi.fn()} error="Sin capataz libre el 01/11" idErrorExterno="carga" />
+        <p id="carga">Carga del 01/11</p>
+      </>,
+    )
+    const selector = screen.getByLabelText('Capataz')
+    expect(selector.getAttribute('aria-invalid')).toBe('true')
+    expect(selector.getAttribute('aria-describedby')).toBe('carga')
+    expect(screen.queryByText('Sin capataz libre el 01/11', { selector: 'span' })).toBeNull()
+  })
 })

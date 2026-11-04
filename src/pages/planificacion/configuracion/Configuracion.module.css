@@ -1,0 +1,72 @@
+/* Configuración (MOD-03, AV-268): solo layout; los campos son CampoFormulario. */
+
+/* Panel «Editar servicio» (Figma 348-1997): cada apartado con su rótulo encima. */
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.apartado {
+  margin: 0;
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+/* Errores de la tabla de frecuencias, debajo de ella. */
+.erroresTabla {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-error);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* Duración: dos campos por fila. */
+.pareja {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.modificado {
+  margin: auto 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* «Usar valores iniciales» como enlace, alineado con el contenido (Figma 367-3334). */
+.enlace.enlace {
+  padding-inline: 0;
+  color: var(--color-action-text);
+}
+
+/* «Historial de cambios» (Figma 367-3527): cada cambio con la fecha y el autor debajo, separados por una línea. */
+.historial {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.cambio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* Pie del panel: la última modificación a la izquierda y «Ver historial» a la derecha (Figma 367-3617). */
+.pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+}

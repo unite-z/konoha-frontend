@@ -11,11 +11,12 @@
  * Reglas: etiqueta siempre visible encima (el placeholder nunca la sustituye), ayuda debajo del control,
  * obligatorios con asterisco, error debajo del campo que dice qué hacer y enlazado con `aria-describedby`, bloqueado con explicación.
  * La validación de formato se hace al salir del campo (blur) y la de obligatoriedad al enviar: la decide la
- * página o el componente que usa el campo.
+ * página o el componente que usa el campo. Con `formato` («entero» o «decimal»), además, el campo no deja escribir
+ * ni pegar lo que no sea un número (`filtrarNumero`) y abre el teclado numérico en el móvil.
  */
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import Icono from './Icono'
-import { clasesDeControl, idsDescripcion, type PropsMarcoCampo } from './campoFormularioUtil'
+import { clasesDeControl, filtrarNumero, idsDescripcion, type FormatoCampo, type PropsMarcoCampo } from './campoFormularioUtil'
 import estilos from './CampoFormulario.module.css'
 
 export type { PropsMarcoCampo } from './campoFormularioUtil'
@@ -29,6 +30,7 @@ export function MarcoCampo({
   error,
   bloqueadoMotivo,
   etiquetaOculta,
+  idErrorExterno,
   children,
 }: PropsMarcoCampo & { children: ReactNode }) {
   return (
@@ -53,7 +55,7 @@ export function MarcoCampo({
           {bloqueadoMotivo}
         </p>
       )}
-      {error && (
+      {error && !idErrorExterno && (
         <p id={`${id}-error`} className={estilos.error}>
           <Icono nombre="aspa" tamano="sm" />
           <span>{error}</span>
@@ -63,16 +65,45 @@ export function MarcoCampo({
   )
 }
 
-export type CampoFormularioProps = PropsMarcoCampo & Omit<InputHTMLAttributes<HTMLInputElement>, 'id'>
+export type CampoFormularioProps = PropsMarcoCampo &
+  Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
+    /** Solo números: `entero` (días, cantidades, RUC) o `decimal` (importes, superficies). */
+    formato?: FormatoCampo
+    /** Decimales como máximo con `formato="decimal"`. */
+    decimales?: number
+    /** Admite un signo menos al principio. */
+    negativo?: boolean
+  }
+
+const TECLADO: Record<FormatoCampo, 'numeric' | 'decimal'> = { entero: 'numeric', decimal: 'decimal' }
 
 /** Campo de una línea. */
 export default function CampoFormulario(props: CampoFormularioProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, ...resto } = props
-  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno, compacto, className, formato, decimales, negativo, onChange, ...resto } = props
+  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno }
+
+  // Quita lo que no admite el formato antes de avisar a la página y deja el cursor donde estaba.
+  const alCambiar: typeof onChange = formato
+    ? (evento) => {
+        const control = evento.target
+        const limpio = filtrarNumero(control.value, formato, { decimales, negativo })
+        if (limpio !== control.value) {
+          const cursor = Math.max(0, (control.selectionStart ?? limpio.length) - (control.value.length - limpio.length))
+          control.value = limpio
+          control.setSelectionRange?.(cursor, cursor)
+        }
+        onChange?.(evento)
+      }
+    : onChange
+
   return (
     <MarcoCampo {...marco}>
       <input
+        inputMode={formato ? TECLADO[formato] : undefined}
         {...resto}
+        onChange={alCambiar}
+        // Hora vacía: sin el marcador gris del navegador, que en Safari parece una hora elegida.
+        data-vacio={resto.type === 'time' && !resto.value ? true : undefined}
         id={id}
         className={clasesDeControl(error, Boolean(bloqueadoMotivo), className, compacto)}
         aria-invalid={error ? true : undefined}
@@ -88,8 +119,8 @@ export type AreaTextoProps = PropsMarcoCampo & Omit<TextareaHTMLAttributes<HTMLT
 
 /** Campo de varias líneas. */
 export function AreaTexto(props: AreaTextoProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, ...resto } = props
-  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno, compacto, className, ...resto } = props
+  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno }
   return (
     <MarcoCampo {...marco}>
       <textarea

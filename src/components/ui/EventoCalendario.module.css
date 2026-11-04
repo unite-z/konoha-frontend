@@ -77,3 +77,17 @@
 .mas {
   color: var(--color-text-muted);
 }
+
+/* Texto en varias líneas: el punto se queda arriba, alineado con la primera. */
+.ajustar {
+  align-items: flex-start;
+}
+
+.ajustar .texto {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ajustar .punto {
+  margin-top: calc((var(--type-leyenda-line) - var(--space-2) + 1px) / 2);
+}

@@ -8,6 +8,7 @@ import {
   nombreMes,
   periodoRestriccion,
   proximosCiclos,
+  restriccionesAgrupadas,
   restriccionesProximas,
 } from './resumenPlanificacion'
 
@@ -89,8 +90,14 @@ describe('indicadoresMes', () => {
       ['Alertas', 2, '1 frecuencia por vencer'],
       ['Días con restricción', 3, '1 prohibición'],
     ])
-    expect(indicadores[1].detalle).toBe('Desde el 28 oct.')
+    expect(indicadores[1].detalle).toBe('Desde el 28/10')
     expect(indicadores[2].detalle).toBe('1 duración excedida')
+  })
+
+  it('las alertas dicen las frecuencias vencidas y las duraciones por exceder (Figma 373-5370)', () => {
+    const alertas = [alerta({ dias: -2 }), alerta({ tipo: 'DuracionExcedida', programacion_id: 4 }), alerta({ tipo: 'DuracionProxima', programacion_id: 5 })]
+    const [, , indicador] = indicadoresMes(HOY, [], alertas, [])
+    expect([indicador.valor, indicador.nota, indicador.detalle]).toEqual([3, '1 frecuencia vencida', '1 excedida · 1 por exceder'])
   })
 })
 
@@ -123,9 +130,25 @@ describe('elementosAtencion', () => {
       [alerta({ dias: -2 }), alerta({ tipo: 'DuracionProxima', servicio: 'Poda', programacion_id: 5, dias: 1 })],
       [],
     )
-    expect(elementos.map((e) => [e.titulo, e.tono])).toEqual([
-      ['Corte de césped · frecuencia máxima superada hace 2 días', 'error'],
-      ['Poda · queda 1 día de su duración máxima', 'aviso'],
+    expect(elementos.map((e) => [e.titulo, e.detalle, e.tono])).toEqual([
+      ['Corte de césped · frecuencia vencida', 'Superó su máximo hace 2 días · sin ciclo programado', 'error'],
+      ['Poda · mañana supera su máximo', 'Ciclo en curso', 'aviso'],
+    ])
+  })
+
+  it('con el contrato de AV-255 la duración excedida pide el motivo y dice proveedor y máximo (Figma 373-5370)', () => {
+    const elementos = elementosAtencion(
+      [
+        alerta({ tipo: 'DuracionExcedida', servicio: 'Poda mayor del cierre', programacion_id: 4, dias: 1, id: 4, proveedor: 'Podas Altura Demo E.I.R.L.', maximo_dias: 10 }),
+        alerta({ tipo: 'DuracionProxima', servicio: 'Corte de césped', programacion_id: 5, dias: 1, id: 5 }),
+      ],
+      servicios,
+      [programacion({ id: 5, estado: 'EnCurso', proveedor: 'Fumigaciones Demo S.A.', codigo: 'FIT-2026-T5' })],
+    )
+    expect(elementos.map((e) => [e.titulo, e.detalle, e.accion, e.alertaId])).toEqual([
+      ['Poda mayor del cierre · 1 día de exceso', 'Podas Altura Demo E.I.R.L. · máximo 10 días', 'registrarMotivo', 4],
+      ['Corte de césped · mañana supera su máximo', 'FIT-2026-T5 · Fumigaciones Demo S.A. · máximo 3 días', 'verCiclo', 5],
+      ['Control fitosanitario · sin duración configurada', 'Necesaria para programar', 'configurar', null],
     ])
   })
 })
@@ -148,5 +171,22 @@ describe('listas del Resumen', () => {
       restriccion({ id: 3, fecha_inicio: '2026-12-20', fecha_fin: '2026-12-20' }),
     ])
     expect(lista.map((r) => r.id)).toEqual([2])
+  })
+})
+
+describe('restriccionesAgrupadas', () => {
+  it('une las fechas de una serie en una fila, como en Figma', () => {
+    const base = { tipo_restriccion_id: 1, aplica_servicios_ruidosos: true, hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null }
+    const filas = restriccionesAgrupadas('2026-11-04', [
+      { ...base, id: 1, tipo: 'Jueves culturales', efecto: 'Advertencia', fecha_inicio: '2026-11-05', fecha_fin: '2026-11-05', serie: 'a' },
+      { ...base, id: 2, tipo: 'Jueves culturales', efecto: 'Advertencia', fecha_inicio: '2026-11-12', fecha_fin: '2026-11-12', serie: 'a' },
+      { ...base, id: 3, tipo: 'Reserva de jardín', efecto: 'Advertencia', fecha_inicio: '2026-11-07', fecha_fin: '2026-11-07', serie: null },
+      { ...base, id: 4, tipo: 'Evaluaciones', efecto: 'Prohibicion', fecha_inicio: '2026-11-23', fecha_fin: '2026-11-28', serie: null },
+    ])
+    expect(filas.map((f) => [f.fechas, f.tipo])).toEqual([
+      ['Jue 05 y 12', 'Jueves culturales'],
+      ['Sáb 07', 'Reserva de jardín'],
+      ['23 al 28', 'Evaluaciones'],
+    ])
   })
 })

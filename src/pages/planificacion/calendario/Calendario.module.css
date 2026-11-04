@@ -14,6 +14,7 @@
 
 .tituloMes {
   margin: 0;
+  white-space: nowrap;
   color: var(--color-text-primary);
   font-size: var(--type-titulo-seccion-size);
   font-weight: var(--type-titulo-seccion-weight);
@@ -24,7 +25,7 @@
 .calendarioYAgenda {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16rem;
-  align-items: start;
+  align-items: stretch;
   gap: var(--space-4);
 }
 
@@ -128,6 +129,7 @@
 .agenda {
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   gap: var(--space-4);
   padding: var(--space-4);
   border: 1px solid var(--color-border-default);
@@ -157,6 +159,15 @@
   line-height: var(--type-leyenda-line);
 }
 
+/* «5 días seleccionados» bajo la franja cuando el periodo pasa del máximo. */
+.diasExcedidos {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--type-leyenda-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-leyenda-line);
+}
+
 .listaAgenda {
   display: flex;
   flex-direction: column;
@@ -175,6 +186,12 @@
 }
 
 /* En la agenda el texto del evento no se recorta. */
+/* «Dar de baja» de la agenda: texto rojo alineado con la restricción, como en Figma 344-436 y 347-1492. */
+.restriccionAgenda .darDeBaja {
+  padding-inline: 0;
+  color: var(--color-error);
+}
+
 .restriccionAgenda > :first-child,
 .actividadAgenda > :first-child {
   max-width: 100%;
@@ -212,6 +229,269 @@
   background: var(--color-border-default);
 }
 
+/* --- Vista Semana (Figma 361-2252) ----------------------------------------------------------------------- */
+.semanaVista {
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.columnasSemana,
+.todoElDia {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cabeceraDia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-left: 1px solid var(--color-border-default);
+}
+
+.cabeceraDia:first-child,
+.columnaDia:first-child {
+  border-left: 0;
+}
+
+.numeroSemana {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: var(--type-titulo-seccion-size);
+  font-weight: var(--type-titulo-seccion-weight);
+  line-height: var(--type-titulo-seccion-line);
+}
+
+/* Fila «todo el día»: fondo atenuado y eventos en carriles. */
+.todoElDia {
+  gap: var(--space-1) 0;
+  min-height: calc(var(--space-12) + var(--space-4));
+  padding: var(--space-2) 0;
+  border-block: 1px solid var(--color-border-default);
+  background: var(--color-bg-subtle);
+}
+
+.segmentoSemana {
+  min-width: 0;
+  padding: 0 var(--space-1);
+}
+
+.columnaDia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: calc(var(--space-12) * 6);
+  min-width: 0;
+  padding: var(--space-2) var(--space-1);
+  margin: 0;
+  list-style: none;
+  border-left: 1px solid var(--color-border-default);
+}
+
+/* Actividad pulsable: tarjeta en su día o barra en la fila «todo el día». */
+.actividadSemana {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2) var(--space-1);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.actividadSemana > :first-child {
+  max-width: 100%;
+}
+
+.actividadBarra {
+  padding: 1px 0;
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.actividadSemana:hover {
+  background: var(--color-bg-hover);
+}
+
+.actividadSemana:focus-visible,
+.actividadSeleccionada {
+  outline: 2px solid var(--color-action-primary);
+  outline-offset: -1px;
+}
+
+.responsable {
+  padding: 0 calc(var(--space-1) + var(--space-1) / 2);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.datosActividad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.datosActividad dd {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* Hueco flexible de la barra: «Filtros» va a la derecha. */
+.espacio {
+  flex: 1;
+}
+
+.panelFiltros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* «Sin resultados» ocupa el sitio del calendario, con borde discontinuo (Figma 374-6421). */
+.sinResultados {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--space-12) * 13);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+}
+
+/* --- Panel «Programar ciclo» (Figma 345-489) ------------------------------------------------------------- */
+.fechasPanel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* «Proveedor» y «Ventana» en la misma fila, el proveedor más ancho, como en Figma. */
+.proveedorVentana {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-3);
+}
+
+/* Franja de diez días: el periodo en acento y cada día con su peor restricción. */
+.franja {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: var(--space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.diaFranja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.diaFranja > :last-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--space-8);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+}
+
+.letraFranja {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.aviso > :last-child {
+  border-color: var(--web-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.prohibicion > :last-child {
+  border-color: var(--web-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.diaElegido > :last-child {
+  border-color: var(--color-action-primary);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+/* Un día del periodo con restricción conserva su color y gana el borde de acento. */
+.diaElegido.aviso > :last-child,
+.diaElegido.prohibicion > :last-child {
+  border: 2px solid var(--color-action-primary);
+}
+
+.diaElegido.aviso > :last-child {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.diaElegido.prohibicion > :last-child {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.rotuloConflictos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+.ventanaLibre {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+}
+
+.ventanaLibre > span {
+  flex: 1;
+}
+
+/* Restricciones de una fila de la vista Lista. */
+.restriccionesFila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
 @media (max-width: 1023px) {
   .calendarioYAgenda {
     grid-template-columns: minmax(0, 1fr);
@@ -228,6 +508,15 @@
     display: none;
   }
 
+  /* La semana se desplaza en horizontal: siete columnas no caben en 390. */
+  .semanaVista {
+    overflow-x: auto;
+  }
+
+  .semanaVista > * {
+    min-width: 42rem;
+  }
+
   /* Sin sitio para los eventos, un punto bajo el número avisa de que el día tiene algo; el detalle, en la agenda. */
   .dia {
     flex-direction: column;
@@ -242,4 +531,346 @@
     border-radius: var(--radius-full);
     background: var(--color-action-primary);
   }
+}
+
+/* Panel «Nueva restricción» (AV-268): el tipo y su nivel en una fila. */
+.tipoConNivel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.nivel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+}
+
+.accionesOpcionales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Repetición (Figma 364-2570): los días en círculos L a D y «Hasta» en la misma fila. */
+.repeticion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.diasRepeticion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* «Hasta» cede ancho antes de bajar de línea. */
+.repeticion > :last-child {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.repeticion .diaRepeticion {
+  width: calc(var(--space-8) + var(--space-1));
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* «Añadir franja horaria» y «Añadir nota» como enlaces con su + en azul. */
+.accionesOpcionales .enlaceAccion {
+  padding-inline: 0;
+  color: var(--color-action-text);
+}
+
+.proximamente {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.errorRepeticion {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.listaAfectados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* «Programar este día», al pie de la agenda y a todo el ancho (Figma 344-436). */
+.programarDia {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* Lista: las restricciones de la fila y, a la derecha, «Reprogramar» (Figma 361-2782). */
+.celdaConflicto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Filtros: desplegable bajo su botón, sobre el calendario (Figma 374-5899). */
+.anclaFiltros {
+  position: relative;
+}
+
+.desplegableFiltros {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  width: 20rem;
+}
+
+.grupoFiltro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rotuloFiltro {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+.accionesFiltros {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* Paso «Ruta» del corte (Figma 372-5523): título con «Ajustar» y las zonas en una lista con borde. */
+.cabeceraRuta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.enlaceRuta {
+  color: var(--color-action-text);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  text-decoration: none;
+}
+
+.enlaceRuta:hover {
+  text-decoration: underline;
+}
+
+.zonasRuta {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.zonaRuta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.zonaRuta + .zonaRuta {
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* Cada paso de «Programar ciclo» del corte: los campos en columna, como el panel sin pasos. */
+.pasoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Calendario móvil (Figma 352-2192): solo en móvil; en escritorio, las pestañas Mes, Semana y Lista. */
+.soloMovil {
+  display: none;
+}
+
+.accionesEscritorio {
+  display: contents;
+}
+
+@media (max-width: 767px) {
+  .soloEscritorio,
+  .accionesEscritorio {
+    display: none;
+  }
+
+  .soloMovil {
+    display: block;
+  }
+}
+
+/* «Programar ciclo» en móvil (Figma 352-2324): proveedor y ventana en una fila, siete días sin letra en la franja. */
+@media (max-width: 767px) {
+  .proveedorVentana {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+  }
+
+  .franja {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .diaFranja:nth-child(n + 8),
+  .letraFranja {
+    display: none;
+  }
+
+  .diaFranja > :last-child {
+    height: var(--space-8);
+    font-size: var(--type-cuerpo-size);
+  }
+}
+
+.movil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cabeceraMovil {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.navegacionMovil {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tiraSemana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tiraSemana .diaTira {
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: 0;
+  padding: var(--space-1) 0;
+}
+
+.tiraSemana .diaTira > span {
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.letraTira {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.numeroTira {
+  display: grid;
+  place-items: center;
+  width: calc(var(--space-8) + var(--space-1));
+  height: calc(var(--space-8) + var(--space-1));
+  border-radius: 50%;
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.numeroElegido {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.puntoTira {
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: 50%;
+}
+
+.punto_actividad {
+  background: var(--color-action-primary);
+}
+
+.punto_aviso {
+  background: var(--color-warning);
+}
+
+.punto_prohibicion {
+  background: var(--color-error);
+}
+
+.punto_favorable {
+  background: var(--color-success);
+}
+
+.agendaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.diaAgendaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rotuloDiaMovil {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.rotuloElegido {
+  color: var(--color-action-text);
+}
+
+/* Las restricciones de la agenda móvil, como cajas a todo el ancho. */
+.restriccionMovil > * {
+  display: flex;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.diaAgendaMovil > span:not(.restriccionMovil) > * {
+  display: flex;
+  width: 100%;
 }

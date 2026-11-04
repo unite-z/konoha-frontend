@@ -10,7 +10,7 @@
  *   (`paginacionServidor`). Texto «Mostrando 1 a 25 de 38».
  * - Con más de 25 filas visibles, la cabecera queda fija al desplazar.
  * - Fila clicable opcional (`onFilaClick`): toda la fila es el área de clic y también responde a Enter.
- * - Estados integrados: vacío, carga y error.
+ * - Estados integrados: vacío, carga y error. Sin filas y con `vacio` definido, pinta el vacío aunque no se pase `estado`.
  * - Desplazamiento horizontal propio si no cabe, con la primera columna fija.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
@@ -27,6 +27,8 @@ export interface ColumnaTabla<F> {
   titulo: string
   /** Segunda línea del encabezado (texto pequeño). */
   subtitulo?: string
+  /** El título solo para lectores de pantalla (Figma: la columna de acciones sin título). */
+  tituloOculto?: boolean
   alineacion?: 'izquierda' | 'derecha'
   /** Permite texto en varias líneas (por defecto las celdas no se parten y la tabla se desplaza). */
   multilinea?: boolean
@@ -61,8 +63,12 @@ export interface TablaDatosProps<F> {
   vacio?: EstadoVacioProps
   error?: EstadoErrorProps
   onFilaClick?: (fila: F) => void
+  /** Filas que se resaltan con borde (Figma, Calendario · Lista: la actividad en conflicto). */
+  filaResaltada?: (fila: F) => boolean
   /** Filas de 40px. */
   compacta?: boolean
+  /** Sin borde ni radio, dentro de otro marco (Figma 346-1334: la ruta en la caja de pestañas del corte). */
+  sinMarco?: boolean
   ordenInicial?: { clave: string; direccion: DireccionOrden }
   /** Paginación del servidor. Sin ella, la tabla pagina en el cliente. */
   paginacionServidor?: PaginacionServidor
@@ -99,7 +105,9 @@ export default function TablaDatos<F>({
   vacio,
   error,
   onFilaClick,
+  filaResaltada,
   compacta = false,
+  sinMarco = false,
   ordenInicial,
   paginacionServidor,
 }: TablaDatosProps<F>) {
@@ -154,19 +162,22 @@ export default function TablaDatos<F>({
     )
   }
 
-  if (estado !== 'exito') {
+  // Sin filas y con estado vacío definido, se pinta el vacío aunque la página no pase `estado` (AV-361).
+  const estadoEfectivo: EstadoTabla = estado === 'exito' && filas.length === 0 && vacio ? 'vacio' : estado
+
+  if (estadoEfectivo !== 'exito') {
     return (
       <div className={estilos.estado}>
         {tituloVisible && <p className={estilos.tituloVisible}>{titulo}</p>}
-        {estado === 'cargando' && <EstadoCarga forma="tabla" />}
-        {estado === 'vacio' && vacio && <EstadoVacio nivel={3} {...vacio} />}
-        {estado === 'error' && error && <EstadoError nivel={3} {...error} />}
+        {estadoEfectivo === 'cargando' && <EstadoCarga forma="tabla" />}
+        {estadoEfectivo === 'vacio' && vacio && <EstadoVacio nivel={3} {...vacio} />}
+        {estadoEfectivo === 'error' && error && <EstadoError nivel={3} {...error} />}
       </div>
     )
   }
 
   return (
-    <div className={estilos.contenedor}>
+    <div className={`${estilos.contenedor} ${sinMarco ? estilos.sinMarco : ''}`}>
       <div
         className={`${estilos.desplazable} ${cabeceraFija ? estilos.cabeceraFija : ''}`}
         // Desplazamiento horizontal propio accesible con teclado.
@@ -204,7 +215,7 @@ export default function TablaDatos<F>({
                       </button>
                     ) : (
                       <>
-                        {columna.titulo}
+                        {columna.tituloOculto ? <span className="sr-only">{columna.titulo}</span> : columna.titulo}
                         {columna.subtitulo && <span className={estilos.subtitulo}>{columna.subtitulo}</span>}
                       </>
                     )}
@@ -219,7 +230,7 @@ export default function TablaDatos<F>({
               return (
                 <tr
                   key={claveFila(fila, indice)}
-                  className={clicable ? estilos.clicable : undefined}
+                  className={[clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada].filter(Boolean).join(' ') || undefined}
                   tabIndex={clicable ? 0 : undefined}
                   onClick={clicable ? () => onFilaClick?.(fila) : undefined}
                   onKeyDown={

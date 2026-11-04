@@ -1,0 +1,251 @@
+/* Ciclos (MOD-03, AV-269): solo layout; la tabla es TablaDatos. */
+
+/* Avance: barra y porcentaje en la misma celda (Figma «Tabla · celda», Avance). */
+.avance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 8rem;
+}
+
+.avance > :first-child {
+  flex: 1;
+}
+
+.porcentaje {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* Detalle de ciclo: indicadores e historial, en columna. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Historial (Figma 380-7171): cada transición con la hora y el autor a la derecha. */
+.historial {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.evento {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.detalleEvento {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* Corte (AV-270, Figma 371-4306): cortados por día y por cortar en dos columnas sobre la tabla de la ruta. */
+.avanceCorte {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.columnaCorte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.rotuloCorte {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.dias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.dia {
+  display: grid;
+  grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr) var(--space-6);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cifraDia {
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.jardinPendiente {
+  padding: var(--space-2) 0;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.masPorCortar {
+  margin: 0;
+  color: var(--color-action-text);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.panelLimpieza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.listaSimple {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* «Total: 3 días de corte + 1 de limpieza = 4» con «Cumple» o «No cumple» (Figma 371-4838 y 371-5092). */
+.totalLimpieza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cumple {
+  background: var(--color-success-bg);
+  border-color: var(--web-success-border);
+}
+
+.noCumple {
+  background: var(--color-error-bg);
+  border-color: var(--web-error-border);
+}
+
+/* Duración por encima del máximo (Figma 371-5092). */
+.notaError {
+  color: var(--color-error);
+}
+
+/* Nota del avance sin actualizar en más de 24 h, en aviso (Figma 371-4306). */
+.notaAviso {
+  color: var(--color-warning);
+}
+
+@media (max-width: 47.99rem) {
+  .avanceCorte {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* «Registrar interrupción» (Figma 347-1342): zona afectada y hora en una fila, y el enlace a reprogramar. */
+.filaInterrupcion {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.enlace {
+  align-self: flex-start;
+  color: var(--color-action-text);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  text-decoration: none;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+}
+
+/* Corte en curso en móvil (Figma 353-2242): avance con su barra y, debajo, duración e interrupciones en dos tarjetas. */
+.resumenMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cifraAvance {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.porcentajeAvance {
+  color: var(--color-text-primary);
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+}
+
+.notaAvance,
+.resumenMovil .notaAviso {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.notaAvance {
+  color: var(--color-text-secondary);
+}
+
+.datosMovil {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.etiquetaDato {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.valorDato {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+/* Acciones del ciclo en móvil: a todo el ancho, una debajo de otra y la principal al final. */
+.accionesMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

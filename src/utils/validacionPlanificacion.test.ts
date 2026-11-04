@@ -29,6 +29,11 @@ describe('validarDuracion', () => {
     expect(validarDuracion(vacio).entrada).toEqual({ duracion_maxima_dias: 3 })
   })
 
+  it('pide días de servicio mayores que 0 y acepta 0 días de limpieza (Figma 367-3334)', () => {
+    expect(validarDuracion({ duracion: '0', limpieza: '0', inicio: '', fin: '' }).errores).toEqual({ duracion: 'Debe ser mayor que 0' })
+    expect(validarDuracion({ duracion: '1', limpieza: '0', inicio: '', fin: '' }).entrada).toEqual({ duracion_maxima_dias: 1, dias_limpieza: 0 })
+  })
+
   it('incluye limpieza y horario', () => {
     const { entrada } = validarDuracion({ duracion: '3', limpieza: '1', inicio: '06:00', fin: '12:30' })
     expect(entrada).toEqual({ duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: '06:00', hora_fin: '12:30' })

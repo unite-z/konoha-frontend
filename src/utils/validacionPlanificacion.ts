@@ -11,6 +11,16 @@ export type ErroresFrecuencia = Partial<Record<keyof BorradorFrecuencia, string>
 
 const MENSAJE_ENTERO = 'Escribe un número entero de días mayor que 0'
 
+/** «Debe ser mayor que 0» si se escribió un cero (Figma 367-3334); si no, el mensaje general. */
+function mensajeEntero(texto: string): string {
+  return /^0+$/.test(texto.trim()) ? 'Debe ser mayor que 0' : MENSAJE_ENTERO
+}
+
+/** Entero mayor o igual que 0 (los días de limpieza pueden ser 0), o `null` si el texto no lo es. */
+function enteroNoNegativo(texto: string): number | null {
+  return /^\d+$/.test(texto.trim()) ? Number(texto) : null
+}
+
 /** Entero positivo, o `null` si el texto no lo es. */
 function enteroPositivo(texto: string): number | null {
   return /^\d+$/.test(texto.trim()) && Number(texto) > 0 ? Number(texto) : null
@@ -25,9 +35,9 @@ export function validarFrecuencia(borrador: BorradorFrecuencia): {
   const teorica = enteroPositivo(borrador.teorica)
   const practica = borrador.practica.trim() ? enteroPositivo(borrador.practica) : undefined
   const maxima = borrador.maxima.trim() ? enteroPositivo(borrador.maxima) : undefined
-  if (teorica === null) errores.teorica = MENSAJE_ENTERO
-  if (practica === null) errores.practica = MENSAJE_ENTERO
-  if (maxima === null) errores.maxima = MENSAJE_ENTERO
+  if (teorica === null) errores.teorica = mensajeEntero(borrador.teorica)
+  if (practica === null) errores.practica = mensajeEntero(borrador.practica)
+  if (maxima === null) errores.maxima = mensajeEntero(borrador.maxima)
   const habitual = practica ?? teorica
   if (maxima && habitual && maxima < habitual) {
     errores.maxima = `La frecuencia máxima no puede ser menor que la habitual (${habitual} días)`
@@ -58,9 +68,9 @@ const PATRON_HORA = /^([01]\d|2[0-3]):[0-5]\d$/
 export function validarDuracion(borrador: BorradorDuracion): { errores: ErroresDuracion; entrada: DuracionEntrada | null } {
   const errores: ErroresDuracion = {}
   const duracion = enteroPositivo(borrador.duracion)
-  const limpieza = borrador.limpieza.trim() ? enteroPositivo(borrador.limpieza) : undefined
-  if (duracion === null) errores.duracion = MENSAJE_ENTERO
-  if (limpieza === null) errores.limpieza = MENSAJE_ENTERO
+  const limpieza = borrador.limpieza.trim() ? enteroNoNegativo(borrador.limpieza) : undefined
+  if (duracion === null) errores.duracion = mensajeEntero(borrador.duracion)
+  if (limpieza === null) errores.limpieza = 'Escribe un número entero de días'
   if (borrador.inicio && !PATRON_HORA.test(borrador.inicio)) errores.inicio = 'Usa el formato HH:MM'
   if (borrador.fin && !PATRON_HORA.test(borrador.fin)) errores.fin = 'Usa el formato HH:MM'
   if (!errores.inicio && !errores.fin && borrador.inicio && borrador.fin && borrador.fin <= borrador.inicio) {
@@ -71,7 +81,7 @@ export function validarDuracion(borrador: BorradorDuracion): { errores: ErroresD
     errores,
     entrada: {
       duracion_maxima_dias: duracion,
-      ...(limpieza ? { dias_limpieza: limpieza } : {}),
+      ...(limpieza !== undefined && limpieza !== null ? { dias_limpieza: limpieza } : {}),
       ...(borrador.inicio ? { hora_inicio: borrador.inicio } : {}),
       ...(borrador.fin ? { hora_fin: borrador.fin } : {}),
     },

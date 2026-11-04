@@ -17,6 +17,7 @@ const CAPATAZ = sesion('capataz', [
   'CORE.CATALOGO.CONSULTAR',
   'CORE.REPOSITORIO.CONSULTAR',
   'PLA.PLANIFICACION.CONSULTAR',
+  'PLA.INCIDENCIA.REGISTRAR',
   'CAM.PARTE.REGISTRAR',
   'CAM.CUADRILLA.CONSULTAR',
   'INV.INVENTARIO.CONSULTAR',
@@ -36,7 +37,13 @@ describe('entradasMenu', () => {
     const menu = entradasMenu(CAPATAZ)
     expect(menu.has('usuarios')).toBe(false)
     expect(menu.has('tercerizados')).toBe(false)
-    expect([...menu].sort()).toEqual(['campo', 'inventario', 'planificacion', 'repositorio'])
+    expect([...menu].sort()).toEqual(['campo', 'incidencias', 'inventario', 'misIncidencias', 'planificacion', 'repositorio'])
+  })
+
+  it('incidencias y «Mis incidencias» exigen registrar incidencias (AV-281), no planificación', () => {
+    expect(entradasMenu(sesion('practicante', ['PLA.INCIDENCIA.REGISTRAR'])).has('misIncidencias')).toBe(true)
+    expect(entradasMenu(sesion('practicante', ['PLA.PLANIFICACION.CONSULTAR'])).has('incidencias')).toBe(false)
+    expect(entradasMenu(sesion('practicante', ['PLA.PLANIFICACION.CONSULTAR'])).has('misIncidencias')).toBe(false)
   })
 
   it('solo el jefe ve «Usuarios y roles»', () => {
@@ -57,5 +64,11 @@ describe('entradasMenu', () => {
   it('operación de campo exige el permiso común de consultar cuadrillas', () => {
     expect(entradasMenu(sesion('capataz', [])).has('campo')).toBe(false)
     expect(entradasMenu(sesion('ingeniero-campo', ['CAM.CUADRILLA.CONSULTAR'])).has('campo')).toBe(true)
+  })
+
+  it('la ruta de corte del capataz exige registrar el avance del corte (AV-260); no basta el rol', () => {
+    expect(entradasMenu(sesion('capataz', ['PLA.CORTE.REGISTRAR'])).has('corte')).toBe(true)
+    expect(entradasMenu(sesion('jefe-seccion', ['PLA.PLANIFICACION.CONSULTAR'])).has('corte')).toBe(false)
+    expect(entradasMenu(sesion('capataz', [])).has('corte')).toBe(false)
   })
 })

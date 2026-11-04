@@ -1,0 +1,49 @@
+/* «Ruta de hoy» del capataz (Figma 353-2335): una columna para el móvil, centrada si se abre en escritorio. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.avance {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+}
+
+.ciclo {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cifra {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.numero {
+  color: var(--color-text-primary);
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+  letter-spacing: var(--type-cifra-tracking);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}

@@ -3,10 +3,10 @@
  * estimación, pero sin recomendación: el flujo nunca se bloquea aunque la IA falle o no haya antecedentes.
  */
 import { useState } from 'react'
-import DialogoFormulario from '../../../../components/ui/DialogoFormulario'
-import { aErrorApi } from '../../../../services/api/cliente'
-import { registrarRecursosManual } from '../../../../services/api/estimacionIa'
-import type { SolicitudEstimacion, SugerenciaEstimacion } from '../../../../types/estimacionIa'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { aErrorApi } from '@/services/api/cliente'
+import { registrarRecursosManual } from '@/services/api/estimacionIa'
+import type { SolicitudEstimacion, SugerenciaEstimacion } from '@/types/estimacionIa'
 import {
   deRecursosEnEdicion,
   hayErrores,
@@ -15,7 +15,7 @@ import {
   validarConfirmados,
   type ErroresConfirmados,
   type RecursosEnEdicion,
-} from '../../../../utils/estimacionIa'
+} from '@/utils/estimacionIa'
 import FormularioRecursos from './FormularioRecursos'
 
 export interface DialogoRecursosManualProps {

@@ -1,0 +1,491 @@
+/* Incidencias (MOD-03, AV-283): solo layout; la tabla es TablaDatos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* «Plazo de incidencias sencillas» (Figma 388-7027): tarjeta en aviso con una fila por alerta, separadas por una línea. */
+.alertas {
+  padding: calc(var(--space-2) + var(--space-1) / 2) var(--space-4) var(--space-1);
+  border: 1px solid var(--web-warning-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-bg);
+}
+
+.tituloAlertas {
+  margin: 0;
+  color: var(--color-warning);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.listaAlertas {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.filaAlerta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--web-warning-border);
+}
+
+.textoAlerta {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+@media (max-width: 767px) {
+  .filaAlerta {
+    flex-wrap: wrap;
+  }
+
+  .textoAlerta {
+    flex-basis: 100%;
+  }
+}
+
+/* Detalle (Figma 388-7305): ficha a la izquierda (452) y tarjeta de acción a la derecha (304). */
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 11rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* La tarjeta de acción alta, con los botones al pie, como en Figma. */
+.accion {
+  display: flex;
+  flex-direction: column;
+  min-height: 30rem;
+}
+
+.camposAccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pieAccion {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.pieAccion > :only-child {
+  margin-left: auto;
+}
+
+/* «Cancelar» o «Volver» junto a la acción principal, a la derecha (Figma 389-7300 y 394-8782). */
+.pieDerecha {
+  justify-content: flex-end;
+}
+
+.sugerenciaIa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.errorAccion {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+@media (max-width: 767px) {
+  .detalle {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accion {
+    min-height: 0;
+  }
+}
+
+/* «Carga del 01/11» (Figma 394-8975): una fila por cuadrilla con sus encargos frente a su capacidad. */
+.carga {
+  display: flex;
+  flex-direction: column;
+}
+
+.rotuloCarga {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.listaCarga {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.listaCarga li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cifraCarga {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+}
+
+/* Avance del requerimiento (Figma 394-9194): pasos con un punto unido por una línea, el nombre y la fecha. */
+.subtituloAccion {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.pasos {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--space-6) + var(--space-1) / 2);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* La línea entre puntos, salvo en el último paso. */
+.paso:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  bottom: -50%;
+  left: calc(var(--space-1) - 1px);
+  width: 2px;
+  background: var(--color-border-default);
+  content: '';
+}
+
+.puntoPaso {
+  z-index: 1;
+  flex-shrink: 0;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+}
+
+.nombrePaso {
+  flex: 1;
+  color: var(--color-text-primary);
+}
+
+.fechaPaso {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.pasoHecho .puntoPaso {
+  background: var(--color-success);
+}
+
+.pasoEnCurso .puntoPaso {
+  background: var(--color-action-primary);
+}
+
+.pasoEnCurso .nombrePaso {
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.pasoPendiente .nombrePaso {
+  color: var(--color-text-muted);
+}
+
+/* Evidencia (Figma 390-8008): miniaturas de 76 × 58 sobre fondo sutil, o el hueco punteado «Sin evidencia». */
+.evidencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.miniatura {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.75rem;
+  height: 3.625rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.miniatura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sinEvidencia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* Cerrada (Figma 390-7811): «Tiempo de cierre» y la cifra. */
+.etiquetaCifra {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.cifraCierre {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+  letter-spacing: var(--type-cifra-tracking);
+}
+
+/* Con el historial debajo, la foto es más baja (Figma 390-7811). */
+.fotoBaja {
+  height: 7rem;
+}
+
+/* Dos campos por fila en «Registrar incidencia» (Figma 394-8504); en móvil, uno. */
+.dosColumnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .dosColumnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Mis incidencias en el móvil (Figma 391-8522): una columna de tarjetas con el tipo, el espacio y el estado. */
+.paginaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.misIncidencias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.miIncidencia {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.textosMiIncidencia {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.enlaceMiIncidencia {
+  color: inherit;
+  text-decoration: none;
+}
+
+.enlaceMiIncidencia:hover {
+  border-color: var(--color-border-strong);
+}
+
+.enlaceMiIncidencia:focus-visible {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.tituloMiIncidencia {
+  color: var(--color-text-primary);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.detalleMiIncidencia {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* «Reportar incidencia» (Figma 391-8394): la foto elegida y el hueco «Otra», en fila. */
+.rotuloCampo {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+.fotos {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.fotoElegida {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6.875rem;
+  height: 5.125rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.fotoElegida img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Seguimiento de una incidencia propia en el móvil (Figma 391-8560). */
+.seguimiento {
+  gap: calc(var(--space-4) + var(--space-1) / 2);
+}
+
+.cabeceraSeguimiento {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tituloSeguimiento {
+  flex: 1;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  letter-spacing: var(--type-titulo-seccion-tracking);
+}
+
+.tiempoSeguimiento {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.tiempoSeguimiento .tituloSeguimiento {
+  flex: none;
+}
+
+/* Pasos más separados y con el punto algo mayor; el actual, en negrita media. */
+.pasosHolgados .paso {
+  min-height: calc(var(--space-8) + var(--space-1) / 2);
+}
+
+.pasosHolgados .puntoPaso {
+  width: calc(var(--space-2) + var(--space-1) / 2);
+  height: calc(var(--space-2) + var(--space-1) / 2);
+}
+
+.pasosHolgados .paso:not(:last-child)::after {
+  left: var(--space-1);
+}
+
+.pasosHolgados .paso:first-child .nombrePaso {
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.evidenciaSeguimiento .foto {
+  height: 8.75rem;
+}

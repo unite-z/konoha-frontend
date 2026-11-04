@@ -28,15 +28,25 @@ import CronogramaIaPage from '../pages/reportes-indicadores/asistencia-ia/Cronog
 import RevisionCronogramaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionCronogramaPage'
 import EstimacionRecursosPage from '../pages/reportes-indicadores/asistencia-ia/EstimacionRecursosPage'
 import RevisionEstimacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionEstimacionPage'
+import ClasificacionIncidenciasIaPage from '../pages/reportes-indicadores/asistencia-ia/ClasificacionIncidenciasIaPage'
+import RevisionClasificacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionClasificacionPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
 import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetallePage'
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
+import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
+import IncidenciaDetallePage from '../pages/incidencias/IncidenciaDetallePage'
+import MiIncidenciaPage from '../pages/incidencias/MiIncidenciaPage'
+import MisIncidenciasPage from '../pages/incidencias/MisIncidenciasPage'
+import CalendarioCuadrillaPage from '../pages/corte/CalendarioCuadrillaPage'
+import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
+import CicloDetallePage from '../pages/planificacion/ciclos/CicloDetallePage'
+import CiclosPage from '../pages/planificacion/ciclos/CiclosPage'
+import ConfiguracionPage from '../pages/planificacion/configuracion/ConfiguracionPage'
 import ResumenPlanificacionPage from '../pages/planificacion/resumen/ResumenPlanificacionPage'
-import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
 import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
@@ -47,7 +57,7 @@ import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/Contrato
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
-import RutaProtegida, { InicioRol, RutaConPermiso } from '../sesion/RutaProtegida'
+import RutaProtegida, { InicioRol, RutaConEntrada, RutaConPermiso } from '../sesion/RutaProtegida'
 import CambioContrasenaPage from '../pages/acceso/CambioContrasenaPage'
 import IngresoPage from '../pages/acceso/IngresoPage'
 import RepositorioPage from '../pages/repositorio/RepositorioPage'
@@ -56,11 +66,14 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, RUTAS_MIS_INCIDENCIAS, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
 import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
+
+/** «Acceso denegado» de Planificación (Figma 374-7925): el capataz tiene su ruta y su calendario en la app móvil. */
+const DESCRIPCION_SIN_PLANIFICACION = 'Tu ruta del día y el calendario están en la app móvil.'
 
 export const router = createBrowserRouter([
   { path: RUTAS_CORE.ingreso, element: <IngresoPage /> }, // RF-T-001
@@ -108,6 +121,8 @@ export const router = createBrowserRouter([
               { path: `${RUTAS.cronogramaIa}/:id`, element: <RevisionCronogramaPage /> }, // RF-IA-003
               { path: RUTAS.estimacionRecursos, element: <EstimacionRecursosPage /> }, // RF-IA-004
               { path: `${RUTAS.estimacionRecursos}/:id`, element: <RevisionEstimacionPage /> }, // RF-IA-004
+              { path: RUTAS.clasificacionIncidencias, element: <ClasificacionIncidenciasIaPage /> }, // RF-IA-005
+              { path: `${RUTAS.clasificacionIncidencias}/:id`, element: <RevisionClasificacionPage /> }, // RF-IA-005
               { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
               { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
@@ -165,14 +180,44 @@ export const router = createBrowserRouter([
           // MOD-03 «Planificación».
           {
             path: PREFIJO_PLANIFICACION,
-            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} seccion="Planificación" descripcion={DESCRIPCION_SIN_PLANIFICACION} />,
             children: [
               { index: true, element: <Navigate to={RUTAS_PLANIFICACION.resumen} replace /> },
               { path: RUTAS_PLANIFICACION.resumen, element: <ResumenPlanificacionPage /> }, // RF-PLA-008 y 009
               { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioPage /> }, // HU-MOD03-003 y 005, RF-PLA-003 y 007
-              { path: RUTAS_PLANIFICACION.configuracion, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
+              { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
+              { path: `${RUTAS_PLANIFICACION.ciclos}/:id`, element: <CicloDetallePage /> }, // CU-004 y CU-007
+              { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
               { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
+            ],
+          },
+          // MOD-03 · el capataz en el móvil (AV-271): su ruta del día y el calendario de su cuadrilla.
+          {
+            path: PREFIJO_CORTE,
+            element: <RutaConEntrada entrada="corte" seccion="Corte de césped" />,
+            children: [
+              { index: true, element: <Navigate to={RUTAS_CORTE.rutaDeHoy} replace /> },
+              { path: RUTAS_CORTE.rutaDeHoy, element: <RutaDeHoyPage /> }, // RF-COR-002, HU-011 y CU-011
+              { path: RUTAS_CORTE.calendario, element: <CalendarioCuadrillaPage /> }, // RF-PLA-007 (solo lectura)
+            ],
+          },
+          // MOD-03 · mis incidencias (AV-282): cualquier usuario con sesión, con la regla de su entrada del menú.
+          {
+            path: RUTAS_MIS_INCIDENCIAS.lista,
+            element: <RutaConEntrada entrada="misIncidencias" seccion="Mis incidencias" />,
+            children: [
+              { index: true, element: <MisIncidenciasPage /> }, // HU-024
+              { path: ':id', element: <MiIncidenciaPage /> }, // HU-024 (seguimiento, Figma 391-8560)
+            ],
+          },
+          // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
+          {
+            path: PREFIJO_INCIDENCIAS,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
+            children: [
+              { index: true, element: <BandejaIncidenciasPage /> }, // HU-024 y HU-027 (AV-283)
+              { path: ':id', element: <IncidenciaDetallePage /> }, // HU-021 a HU-023 (AV-284)
             ],
           },
           { path: '*', element: <PaginaNoEncontrada /> },

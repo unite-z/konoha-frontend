@@ -30,6 +30,22 @@
   min-width: 0;
 }
 
+/*
+ * Escritorio: el contenido va en un panel redondeado separado del menú y del borde de la ventana, sin la línea
+ * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
+ */
+@media (min-width: 768px) {
+  .columna {
+    min-height: calc(100vh - 2 * var(--space-2));
+    margin: var(--space-2) var(--space-2) var(--space-2) 0;
+    overflow: clip;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-surface);
+    box-shadow: var(--web-elev-1);
+  }
+}
+
 .contenido {
   width: 100%;
   max-width: var(--web-content-max);
@@ -62,12 +78,42 @@
 }
 
 /* Título de la página: estilo Título página de Figma, encima del contenido. */
+/* Título y lo que va pegado a él (`JuntoTitulo`), como el estado en «Detalle de ciclo» de Figma (380-7171). */
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.juntoTitulo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.juntoTitulo:empty {
+  display: none;
+}
+
+/* Sin subtítulo, el hueco va justo detrás del h1 y empuja la acción principal a la derecha. */
+.juntoSinSubtitulo {
+  margin-right: auto;
+}
+
 .titulo {
   font-size: var(--type-titulo-pagina-size);
   line-height: var(--type-titulo-pagina-line);
   font-weight: var(--type-titulo-pagina-weight);
   letter-spacing: var(--type-titulo-pagina-tracking);
   color: var(--color-text-primary);
+}
+
+/* Subtítulo bajo el título (Figma: «Noviembre 2026» en el Resumen). */
+.subtitulo {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
 }
 
 /* «Saltar al contenido»: visible solo al recibir el foco. */
@@ -119,5 +165,45 @@
 
   .contenido {
     padding: var(--space-4) var(--space-4) calc(var(--space-12) + var(--space-6));
+  }
+}
+
+/* Ficha de un registro en móvil (Figma 353-2242): el servicio como encabezado y el subtítulo corto. */
+.encabezadoMovil,
+.soloMovil {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .encabezadoMovil {
+    display: inline;
+    font-size: var(--type-heading-md-size);
+    line-height: var(--type-heading-md-line);
+    font-weight: var(--type-heading-md-weight);
+    color: var(--color-text-primary);
+  }
+
+  .soloMovil {
+    display: inline;
+  }
+
+  .soloEscritorio {
+    display: none;
+  }
+
+  /* Sin nada visible en la fila (solo el h1 oculto), no deja hueco: el contenido empieza a 16 de la barra. */
+  .filaTitulo:not(:has(.subtitulo, .encabezadoMovil, .juntoTitulo:not(:empty), .accionesTitulo:not(:empty))) {
+    margin-bottom: 0;
+  }
+
+  /* En móvil el título va en la barra superior (Figma 352-2038): el h1 queda solo para lectores de pantalla y la
+     fila del título conserva el subtítulo y las acciones. */
+  .titulo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

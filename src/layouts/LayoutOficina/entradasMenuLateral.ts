@@ -9,12 +9,17 @@ import type { NombreIconoFigma } from '@/components/ui/Icono'
 import type { EntradaMenu } from '@/config/permisosCore'
 import { RUTAS_CAMPO, BASE_CAMPO } from '@/router/rutasCampo'
 import {
+  PREFIJO_CORTE,
+  PREFIJO_INCIDENCIAS,
   PREFIJO_MODULO,
   PREFIJO_PLANIFICACION,
   PREFIJO_TERCERIZADOS,
   PREFIJO_USUARIOS,
   RUTAS,
   RUTAS_CORE,
+  RUTAS_CORTE,
+  RUTAS_INCIDENCIAS,
+  RUTAS_MIS_INCIDENCIAS,
   RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
@@ -24,6 +29,8 @@ export interface EntradaSegundoNivel {
   texto: string
   /** Icono de la Pestaña inferior en móvil (nombre de Figma). */
   icono?: NombreIconoFigma
+  /** Texto más corto en la Pestaña inferior («Ajustes» para «Configuración», Figma 352-2038). */
+  textoMovil?: string
   /** Sin ruta: pertenece a otro requisito y se muestra sin enlace, con «Próximamente». */
   ruta?: string
 }
@@ -52,8 +59,20 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [
       { texto: 'Resumen', icono: 'dashboard', ruta: RUTAS_PLANIFICACION.resumen },
       { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
-      { texto: 'Ciclos', icono: 'list' }, // AV-269
-      { texto: 'Configuración', icono: 'settings', ruta: RUTAS_PLANIFICACION.configuracion },
+      { texto: 'Ciclos', icono: 'arrow-right-left', ruta: RUTAS_PLANIFICACION.ciclos },
+      { texto: 'Configuración', textoMovil: 'Ajustes', icono: 'sliders', ruta: RUTAS_PLANIFICACION.configuracion },
+    ],
+  },
+  // El capataz en el móvil (AV-271, «Barra inferior · Capataz» de Figma 380-8204): su ruta y su calendario.
+  {
+    clave: 'corte',
+    texto: 'Corte de césped',
+    icono: 'scissors',
+    ruta: RUTAS_CORTE.rutaDeHoy,
+    prefijos: [PREFIJO_CORTE],
+    hijos: [
+      { texto: 'Ruta de hoy', icono: 'map-pin', ruta: RUTAS_CORTE.rutaDeHoy },
+      { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_CORTE.calendario },
     ],
   },
   {
@@ -94,7 +113,16 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Control fitosanitario', icono: 'leaf', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
     ],
   },
-  { texto: 'Incidencias', icono: 'triangle-alert' },
+  {
+    clave: 'incidencias',
+    texto: 'Incidencias',
+    icono: 'triangle-alert',
+    ruta: RUTAS_INCIDENCIAS.bandeja,
+    prefijos: [PREFIJO_INCIDENCIAS],
+    hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
+  },
+  // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil.
+  { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',

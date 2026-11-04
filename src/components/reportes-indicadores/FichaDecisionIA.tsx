@@ -1,15 +1,16 @@
 /**
- * Ficha de decisión de un bloque de la estimación (operarios, duración o insumos) con el sistema de diseño: una
- * `Tarjeta` con la «Sugerencia de la IA» (fondo informativo) a la izquierda y «Tu decisión» (`GrupoOpciones`) a la
- * derecha. Al corregir, la ficha muestra los campos que recibe en `correccion`. Ya confirmada, muestra la decisión.
+ * Ficha de decisión de una sugerencia de IA del MOD-06 (estimación de recursos, clasificación de incidencias…) con el
+ * sistema de diseño: una `Tarjeta` con la «Sugerencia de la IA» (fondo informativo) a la izquierda y «Tu decisión»
+ * (`GrupoOpciones`: aceptar, corregir o descartar) a la derecha. Al corregir, muestra los campos de `correccion`. Ya
+ * decidida, muestra el valor final.
  */
 import type { ReactNode } from 'react'
-import Estado from '../../../../components/ui/Estado'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import Icono from '../../../../components/ui/Icono'
-import Tarjeta from '../../../../components/ui/Tarjeta'
-import type { AccionDecision } from '../../../../types/ia'
-import estilos from './Estimacion.module.css'
+import Estado from '@/components/ui/Estado'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Icono from '@/components/ui/Icono'
+import Tarjeta from '@/components/ui/Tarjeta'
+import type { AccionDecision } from '@/types/ia'
+import estilos from './FichaDecisionIA.module.css'
 
 const OPCIONES: { valor: AccionDecision; texto: string }[] = [
   { valor: 'aceptar', texto: 'Aceptar' },
@@ -23,9 +24,9 @@ const ESTADO_ACCION: Record<AccionDecision, { tono: 'exito' | 'info' | 'neutro';
   descartar: { tono: 'neutro', texto: 'Descartado' },
 }
 
-export interface FichaRecursoProps {
+export interface FichaDecisionIAProps {
   titulo: string
-  /** Lo que propone la IA, con unidades. */
+  /** Lo que propone la IA (con unidades o con su motivo). */
   sugerencia: ReactNode
   /** editar: decide la persona; final: ya confirmada; consulta: sin permiso para decidir. */
   modo: 'editar' | 'final' | 'consulta'
@@ -33,12 +34,24 @@ export interface FichaRecursoProps {
   onAccion: (accion: AccionDecision) => void
   /** Campos para corregir (se muestran al elegir «Corregir»). */
   correccion?: ReactNode
-  /** Valor confirmado (modo final). */
+  /** Valor final (modo final). */
   final?: ReactNode
+  /** Etiqueta del valor final; por defecto, «Confirmado». */
+  textoFinal?: string
   error?: string
 }
 
-export default function FichaRecurso({ titulo, sugerencia, modo, accion, onAccion, correccion, final, error }: FichaRecursoProps) {
+export default function FichaDecisionIA({
+  titulo,
+  sugerencia,
+  modo,
+  accion,
+  onAccion,
+  correccion,
+  final,
+  textoFinal = 'Confirmado',
+  error,
+}: FichaDecisionIAProps) {
   const estado = accion ? ESTADO_ACCION[accion] : modo === 'editar' ? { tono: 'neutro' as const, texto: 'Pendiente' } : null
   return (
     <Tarjeta titulo={titulo} nivel={3} acciones={estado && <Estado tono={error ? 'error' : estado.tono} texto={error ? 'Falta decidir' : estado.texto} />}>
@@ -58,7 +71,7 @@ export default function FichaRecurso({ titulo, sugerencia, modo, accion, onAccio
         )}
         {modo === 'final' && (
           <div className={estilos.decision}>
-            <span className={estilos.etiquetaIa}>Confirmado</span>
+            <span className={estilos.etiquetaIa}>{textoFinal}</span>
             <div className={estilos.final}>{final}</div>
           </div>
         )}
