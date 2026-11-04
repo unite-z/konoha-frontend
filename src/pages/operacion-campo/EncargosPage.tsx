@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import Boton from '../../components/ui/Boton'
-import Badge from '../../components/ui/Badge'
+import Tarjeta from '../../components/ui/Tarjeta'
 import CampoFormulario, { AreaTexto } from '../../components/ui/CampoFormulario'
 import Selector from '../../components/ui/Selector'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useSesionCampo } from '../../sesion/ContextoSesionCampo'
 import { campoApi, todosCampo } from '../../services/api/operacionCampo'
@@ -15,6 +16,7 @@ import { formatearFecha } from '../../utils/formato'
 import { BuscarCampo, EstadoCatalogos, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
+import Estado from '../../components/ui/Estado'
 
 export default function EncargosPage() {
   usePaginaActual('Encargos',[{texto:'Operación de campo'},{texto:'Encargos'}])
@@ -22,22 +24,25 @@ export default function EncargosPage() {
   const listado=useListadoCampo<EncargoCampo>('encargos',['periodicidad','desde','hasta'])
   const [dialogo,setDialogo]=useState<EncargoCampo|'nuevo'|null>(null),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
-    <div className={estilos.introduccion}><p className={estilos.descripcion}>Organiza los encargos de la reunión de planificación por capataz y periodo.</p>{jefe&&<Boton onClick={()=>setDialogo('nuevo')}>Registrar encargo</Boton>}</div>
+    <AccionesPagina>{jefe&&<Boton onClick={()=>setDialogo('nuevo')}>Registrar encargo</Boton>}</AccionesPagina>
+    <p className={estilos.descripcion}>Organiza los encargos de la reunión de planificación por capataz y periodo.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
-    <div className={estilos.filtros}>
-      <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
-      <Selector id="encargo-periodicidad" etiqueta="Periodo" valor={String(listado.params.periodicidad??'')} opciones={[{valor:'Semanal',texto:'Semanal'},{valor:'Quincenal',texto:'Quincenal'}]} opcionTodos="Todos" onCambiar={periodicidad=>listado.filtrar({periodicidad})}/>
-      <CampoFormulario id="encargo-desde" etiqueta="Desde" type="date" value={String(listado.params.desde??'')} onChange={e=>listado.filtrar({desde:e.target.value})}/>
-      <CampoFormulario id="encargo-hasta" etiqueta="Hasta" type="date" value={String(listado.params.hasta??'')} onChange={e=>listado.filtrar({hasta:e.target.value})}/>
-      <Boton variante="terciario" onClick={()=>listado.filtrar({q:'',periodicidad:'',desde:'',hasta:''})}>Limpiar filtros</Boton>
-    </div>
+    <Tarjeta>
+      <div className={estilos.filtros}>
+        <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
+        <Selector id="encargo-periodicidad" etiqueta="Periodo" valor={String(listado.params.periodicidad??'')} opciones={[{valor:'Semanal',texto:'Semanal'},{valor:'Quincenal',texto:'Quincenal'}]} opcionTodos="Todos" onCambiar={periodicidad=>listado.filtrar({periodicidad})}/>
+        <CampoFormulario id="encargo-desde" etiqueta="Desde" type="date" value={String(listado.params.desde??'')} onChange={e=>listado.filtrar({desde:e.target.value})}/>
+        <CampoFormulario id="encargo-hasta" etiqueta="Hasta" type="date" value={String(listado.params.hasta??'')} onChange={e=>listado.filtrar({hasta:e.target.value})}/>
+        <Boton variante="fantasma" onClick={()=>listado.filtrar({q:'',periodicidad:'',desde:'',hasta:''})}>Limpiar filtros</Boton>
+      </div>
+    </Tarjeta>
     <TablaCampo titulo="Encargos por capataz" listado={listado} vacio="No hay encargos con estos filtros" columnas={[
       {clave:'descripcion',titulo:'Encargo',multilinea:true,render:e=><><span className={estilos.celdaPrincipal}>{e.descripcion}</span><span className={estilos.secundario}>{e.tipo_actividad_nombre} · {e.area_verde_nombre}</span></>},
       {clave:'capataz_nombre',titulo:'Capataz',render:e=><>{e.capataz_nombre}<span className={estilos.secundario}>{e.cuadrilla_nombre}</span></>},
-      {clave:'periodo',titulo:'Periodo',render:e=><><Badge tono="info" texto={e.periodicidad}/><span className={estilos.secundario}>{formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}</span></>},
+      {clave:'periodo',titulo:'Periodo',render:e=><><Estado tono="info" texto={e.periodicidad}/><span className={estilos.secundario}>{formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}</span></>},
       {clave:'plazo_previsto',titulo:'Plazo previsto',render:e=>formatearFecha(e.plazo_previsto)},
-      {clave:'estado',titulo:'Estado',render:e=><Badge tono="neutral" texto={e.estado??'Pendiente de integrar'}/>},
-      {clave:'acciones',titulo:'Acciones',render:e=><Boton variante="terciario" compacto aria-label={`${jefe?'Editar':'Ver'} encargo ${e.id}`} onClick={()=>setDialogo(e)}>{jefe?'Editar encargo':'Ver encargo'}</Boton>},
+      {clave:'estado',titulo:'Estado',render:e=><Estado tono="neutro" texto={e.estado??'Pendiente de integrar'}/>},
+      {clave:'acciones',titulo:'Acciones',render:e=><Boton variante="fantasma" compacto aria-label={`${jefe?'Editar':'Ver'} encargo ${e.id}`} onClick={()=>setDialogo(e)}>{jefe?'Editar encargo':'Ver encargo'}</Boton>},
     ]}/>
     {dialogo&&<DialogoEncargo actual={dialogo==='nuevo'?null:dialogo} soloLectura={!jefe} onCerrar={()=>setDialogo(null)} onGuardado={()=>{setDialogo(null);setAviso('El encargo se guardó correctamente');listado.consulta.reintentar()}}/>}
   </div>

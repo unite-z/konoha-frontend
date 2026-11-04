@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import Boton from '../../components/ui/Boton'
-import Badge from '../../components/ui/Badge'
+import Tarjeta from '../../components/ui/Tarjeta'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import Selector from '../../components/ui/Selector'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useSesionCampo } from '../../sesion/ContextoSesionCampo'
 import { campoApi, todosCampo } from '../../services/api/operacionCampo'
@@ -16,6 +17,8 @@ import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import DialogoNuevaActividad from './DialogoNuevaActividad'
 import estilos from './OperacionCampo.module.css'
+import Estado from '../../components/ui/Estado'
+import { TONO_ESTADO } from '../../components/ui/tonos'
 
 export default function ParticipantesPage() {
   usePaginaActual('Participantes por actividad',[{texto:'Operación de campo'},{texto:'Participantes por actividad'}])
@@ -24,25 +27,25 @@ export default function ParticipantesPage() {
   const cuadrillas=useConsulta('filtro-cuadrillas',signal=>todosCampo<CuadrillaCampo>('cuadrillas/',{},signal))
   const [actual,setActual]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
-    <div className={estilos.introduccion}>
-      <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
-      {puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}
-    </div>
+    <AccionesPagina>{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
+    <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
-    <div className={estilos.filtros}>
-      <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
-      <Selector id="actividad-cuadrilla" etiqueta="Cuadrilla" valor={String(listado.params.cuadrilla_id??'')} opcionTodos="Todas" opciones={(cuadrillas.datos??[]).map(c=>({valor:String(c.id),texto:c.nombre}))} onCambiar={cuadrilla_id=>listado.filtrar({cuadrilla_id})} bloqueadoMotivo={cuadrillas.estado==='error'?'No se pudieron cargar las cuadrillas':undefined}/>
-      <CampoFormulario id="actividad-fecha" etiqueta="Fecha" type="date" value={String(listado.params.fecha??'')} onChange={e=>listado.filtrar({fecha:e.target.value})}/>
-      <Boton variante="terciario" onClick={()=>listado.filtrar({q:'',fecha:'',cuadrilla_id:''})}>Limpiar filtros</Boton>
-    </div>
+    <Tarjeta>
+      <div className={estilos.filtros}>
+        <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
+        <Selector id="actividad-cuadrilla" etiqueta="Cuadrilla" valor={String(listado.params.cuadrilla_id??'')} opcionTodos="Todas" opciones={(cuadrillas.datos??[]).map(c=>({valor:String(c.id),texto:c.nombre}))} onCambiar={cuadrilla_id=>listado.filtrar({cuadrilla_id})} bloqueadoMotivo={cuadrillas.estado==='error'?'No se pudieron cargar las cuadrillas':undefined}/>
+        <CampoFormulario id="actividad-fecha" etiqueta="Fecha" type="date" value={String(listado.params.fecha??'')} onChange={e=>listado.filtrar({fecha:e.target.value})}/>
+        <Boton variante="fantasma" onClick={()=>listado.filtrar({q:'',fecha:'',cuadrilla_id:''})}>Limpiar filtros</Boton>
+      </div>
+    </Tarjeta>
     <TablaCampo titulo="Actividades y operarios participantes" listado={listado} vacio="No hay actividades con estos filtros" columnas={[
       {clave:'tipo_actividad_nombre',titulo:'Actividad',multilinea:true,render:a=><><span className={estilos.celdaPrincipal}>{a.tipo_actividad_nombre}</span><span className={estilos.secundario}>{a.area_verde_nombre}</span></>},
       {clave:'cuadrilla_nombre',titulo:'Cuadrilla'},
       {clave:'fecha',titulo:'Fecha',render:a=>formatearFecha(a.fecha)},
       {clave:'cantidad',titulo:'Participantes',alineacion:'derecha',render:a=>a.participantes.cantidad_operarios},
       {clave:'operarios',titulo:'Operarios',multilinea:true,render:a=>a.participantes.operarios.length?a.participantes.operarios.map(p=>`${p.nombres} ${p.apellidos}`).join(', '):'Sin selección registrada'},
-      {clave:'estado',titulo:'Parte',render:a=><Badge tono={a.estado==='Abierto'?'info':'neutral'} texto={a.estado}/>},
-      {clave:'acciones',titulo:'Acciones',render:a=><Boton variante="terciario" compacto aria-label={`${puedeRegistrar&&a.estado==='Abierto'?'Seleccionar':'Ver'} operarios de actividad ${a.id}`} onClick={()=>setActual(a)}>{puedeRegistrar&&a.estado==='Abierto'?'Seleccionar operarios':'Ver participantes'}</Boton>},
+      {clave:'estado',titulo:'Parte',render:a=><Estado tono={TONO_ESTADO[a.estado==='Abierto'?'info':'neutral']} texto={a.estado}/>},
+      {clave:'acciones',titulo:'Acciones',render:a=><Boton variante="fantasma" compacto aria-label={`${puedeRegistrar&&a.estado==='Abierto'?'Seleccionar':'Ver'} operarios de actividad ${a.id}`} onClick={()=>setActual(a)}>{puedeRegistrar&&a.estado==='Abierto'?'Seleccionar operarios':'Ver participantes'}</Boton>},
     ]}/>
     {nueva&&<DialogoNuevaActividad onCerrar={()=>setNueva(false)} onGuardado={actividad=>{setNueva(false);setActual(actividad);setAviso('Actividad registrada. Selecciona los operarios que participaron');listado.consulta.reintentar()}}/>}
     {actual&&<DialogoParticipantes actividad={actual} soloLectura={!puedeRegistrar||actual.estado==='Cerrado'} onCerrar={()=>setActual(null)} onGuardado={()=>{setActual(null);setAviso('Los participantes se guardaron correctamente');listado.consulta.reintentar()}}/>}
@@ -71,7 +74,7 @@ function DialogoParticipantes({actividad,soloLectura,onCerrar,onGuardado}:{activ
       const disponibles=new Set(datos.disponibles.map(p=>p.id))
       const opciones=[...datos.disponibles,...datos.actuales.operarios.filter(p=>!disponibles.has(p.id))]
       return <div className={estilos.formulario}>
-        <p className={estilos.aviso}>{actividad.cuadrilla_nombre} · <strong>{ids.length} operarios participantes</strong></p>
+        <AvisoEnLinea tono="info">{actividad.cuadrilla_nombre} · <strong>{ids.length} operarios participantes</strong></AvisoEnLinea>
         {soloLectura&&<AvisoEnLinea tono="info">{actividad.estado==='Cerrado'?'El parte está cerrado y sus participantes no pueden modificarse.':'Tu rol permite consultar los participantes.'}</AvisoEnLinea>}
         {!soloLectura&&datos.actuales.operarios.some(p=>!disponibles.has(p.id))&&<AvisoEnLinea tono="advertencia">Hay participantes que ya no están disponibles. Retíralos de la selección para guardar cambios.</AvisoEnLinea>}
         <SeleccionOperarios opciones={opciones} seleccion={ids} soloLectura={soloLectura||mutacion.enviando} onCambiar={setSeleccion}/>

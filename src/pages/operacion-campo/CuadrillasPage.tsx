@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import Badge from '../../components/ui/Badge'
 import Boton from '../../components/ui/Boton'
+import Tarjeta from '../../components/ui/Tarjeta'
+import Casilla from '../../components/ui/Casilla'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import Selector from '../../components/ui/Selector'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useSesionCampo } from '../../sesion/ContextoSesionCampo'
 import { campoApi, todosCampo } from '../../services/api/operacionCampo'
@@ -14,6 +16,8 @@ import { esJefeCampo } from '../../utils/operacionCampo'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
+import Estado from '../../components/ui/Estado'
+import { TONO_ESTADO } from '../../components/ui/tonos'
 
 export default function CuadrillasPage() {
   usePaginaActual('Cuadrillas',[{texto:'Operación de campo'},{texto:'Cuadrillas'}])
@@ -23,23 +27,25 @@ export default function CuadrillasPage() {
   const [personal,setPersonal]=useState(false),[aviso,setAviso]=useState('')
   function guardado() {setDialogo(null);setPersonal(false);setAviso('Los cambios se guardaron correctamente');listado.consulta.reintentar()}
   return <div className={estilos.pagina}>
-    <div className={estilos.introduccion}>
-      <p className={estilos.descripcion}>Consulta los equipos de trabajo, sus capataces y los operarios asignados.</p>
-      {jefe&&<div className={estilos.acciones}><Boton variante="secundario" onClick={()=>setPersonal(true)}>Registrar personal</Boton><Boton onClick={()=>setDialogo('nueva')}>Registrar cuadrilla</Boton></div>}
-    </div>
+    <AccionesPagina>
+      {jefe&&<><Boton variante="secundario" onClick={()=>setPersonal(true)}>Registrar personal</Boton><Boton onClick={()=>setDialogo('nueva')}>Registrar cuadrilla</Boton></>}
+    </AccionesPagina>
+    <p className={estilos.descripcion}>Consulta los equipos de trabajo, sus capataces y los operarios asignados.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
-    <div className={estilos.filtros}>
-      <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
-      <Selector id="cuadrilla-estado" etiqueta="Estado" valor={String(listado.params.activa??'')} opciones={[{valor:'true',texto:'Activas'},{valor:'false',texto:'Inactivas'}]} opcionTodos="Todos" onCambiar={activa=>listado.filtrar({activa})}/>
-      <Boton variante="terciario" onClick={()=>listado.filtrar({q:'',activa:''})}>Limpiar filtros</Boton>
-    </div>
+    <Tarjeta>
+      <div className={estilos.filtros}>
+        <BuscarCampo valor={String(listado.params.q??'')} onBuscar={q=>listado.filtrar({q})}/>
+        <Selector id="cuadrilla-estado" etiqueta="Estado" valor={String(listado.params.activa??'')} opciones={[{valor:'true',texto:'Activas'},{valor:'false',texto:'Inactivas'}]} opcionTodos="Todos" onCambiar={activa=>listado.filtrar({activa})}/>
+        <Boton variante="fantasma" onClick={()=>listado.filtrar({q:'',activa:''})}>Limpiar filtros</Boton>
+      </div>
+    </Tarjeta>
     <TablaCampo titulo="Cuadrillas de trabajo" listado={listado} vacio="No hay cuadrillas con estos filtros" columnas={[
       {clave:'nombre',titulo:'Cuadrilla',render:c=><span className={estilos.celdaPrincipal}>{c.nombre}</span>},
       {clave:'capataz_nombre',titulo:'Capataz responsable'},
       {clave:'cantidad_operarios',titulo:'Operarios',alineacion:'derecha'},
       {clave:'operarios',titulo:'Personal asignado',multilinea:true,render:c=>c.operarios.length?c.operarios.map(p=>`${p.nombres} ${p.apellidos}`).join(', '):'Sin operarios asignados'},
-      {clave:'activa',titulo:'Estado',render:c=><Badge tono={c.activa?'exito':'neutral'} texto={c.activa?'Activa':'Inactiva'}/>},
-      {clave:'acciones',titulo:'Acciones',render:c=><Boton variante="terciario" compacto aria-label={`${jefe?'Editar':'Ver'} ${c.nombre}`} onClick={()=>setDialogo(c)}>{jefe?'Editar cuadrilla':'Ver integrantes'}</Boton>},
+      {clave:'activa',titulo:'Estado',render:c=><Estado tono={TONO_ESTADO[c.activa?'exito':'neutral']} texto={c.activa?'Activa':'Inactiva'}/>},
+      {clave:'acciones',titulo:'Acciones',render:c=><Boton variante="fantasma" compacto aria-label={`${jefe?'Editar':'Ver'} ${c.nombre}`} onClick={()=>setDialogo(c)}>{jefe?'Editar cuadrilla':'Ver integrantes'}</Boton>},
     ]}/>
     {dialogo&&<DialogoCuadrilla actual={dialogo==='nueva'?null:dialogo} soloLectura={!jefe} onCerrar={()=>setDialogo(null)} onGuardado={guardado}/>}
     {personal&&<DialogoPersonal onCerrar={()=>setPersonal(false)} onGuardado={guardado}/>}
@@ -75,7 +81,7 @@ function DialogoCuadrilla({actual,soloLectura,onCerrar,onGuardado}:{actual:Cuadr
           <CampoFormulario id="cuadrilla-nombre" etiqueta="Nombre de la cuadrilla" obligatorio maxLength={150} value={nombre} onChange={e=>cambiar(()=>setNombre(e.target.value))}/>
           <Selector id="cuadrilla-capataz" etiqueta="Capataz responsable" obligatorio valor={capataz} opcionTodos="Selecciona un capataz" opciones={capataces.map(p=>({valor:String(p.id),texto:`${p.nombres} ${p.apellidos}`}))} onCambiar={v=>cambiar(()=>setCapataz(v))} ayuda="Solo se muestran capataces disponibles o el responsable actual."/>
         </div>
-        <label className={estilos.check}><input type="checkbox" checked={activa} onChange={e=>cambiar(()=>setActiva(e.target.checked))}/>Cuadrilla activa</label>
+        <Casilla etiqueta="Cuadrilla activa" marcada={activa} onCambiar={(marcada)=>cambiar(()=>setActiva(marcada))}/>
         {!activa&&<AvisoEnLinea tono="advertencia">Al guardar, la cuadrilla quedará sin operarios asignados. Los registros de actividades anteriores se conservan.</AvisoEnLinea>}
         <SeleccionOperarios opciones={options} seleccion={activa?operarios:[]} bloqueados={bloqueados} soloLectura={!activa||soloLectura} onCambiar={ids=>cambiar(()=>setOperarios(ids))}/>
         <p className={estilos.ayuda}>Para trasladar un operario, retíralo de su cuadrilla actual antes de asignarlo a otra.</p>
