@@ -63,6 +63,9 @@ export default function ResumenPlanificacionPage() {
         <BotonEnlace to={RUTAS_PLANIFICACION.calendario} variante="secundario" icono="calendar">
           Ver calendario
         </BotonEnlace>
+        <BotonEnlace to={`${RUTAS_PLANIFICACION.calendario}?programar=`} variante="primario" icono="plus-circle">
+          Programar ciclo
+        </BotonEnlace>
       </AccionesPagina>
       <p className={estilos.mes}>{nombreMes(hoy)}</p>
 

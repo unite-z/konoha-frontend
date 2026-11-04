@@ -357,6 +357,110 @@
   border-radius: var(--radius-lg);
 }
 
+/* --- Panel «Programar ciclo» (Figma 345-489) ------------------------------------------------------------- */
+.fechasPanel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* Franja de diez días: el periodo en acento y cada día con su peor restricción. */
+.franja {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: var(--space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.diaFranja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.diaFranja > :last-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--space-8);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+}
+
+.letraFranja {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.aviso > :last-child {
+  border-color: var(--web-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.prohibicion > :last-child {
+  border-color: var(--web-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.diaElegido > :last-child {
+  border-color: var(--color-action-primary);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+/* Un día del periodo con restricción conserva su color y gana el borde de acento. */
+.diaElegido.aviso > :last-child,
+.diaElegido.prohibicion > :last-child {
+  border: 2px solid var(--color-action-primary);
+}
+
+.diaElegido.aviso > :last-child {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.diaElegido.prohibicion > :last-child {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.rotuloConflictos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+.ventanaLibre {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+}
+
+.ventanaLibre > span {
+  flex: 1;
+}
+
 /* Restricciones de una fila de la vista Lista. */
 .restriccionesFila {
   display: flex;

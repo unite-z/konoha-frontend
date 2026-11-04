@@ -1,5 +1,6 @@
 // RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes, Semana y Lista (AV-266, Figma 344-436, 361-2252 y 361-2782)
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
 import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
@@ -36,6 +37,7 @@ import {
 } from './calendarioCapas'
 import DetalleActividad from './DetalleActividad'
 import DialogoBajaRestriccion from './DialogoBajaRestriccion'
+import PanelProgramarCiclo from './PanelProgramarCiclo'
 import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
 import VistaMes from './VistaMes'
@@ -63,6 +65,16 @@ export default function CalendarioPage() {
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
   const [baja, setBaja] = useState<Restriccion | null>(null)
+  // `?programar=<servicio>` (desde el Resumen) abre el panel con ese servicio; `?programar=` lo abre vacío.
+  const [parametros, setParametros] = useSearchParams()
+  const programar = parametros.get('programar')
+  const servicioAProgramar = programar && /^\d+$/.test(programar) ? Number(programar) : null
+
+  function cerrarPanel() {
+    const siguientes = new URLSearchParams(parametros)
+    siguientes.delete('programar')
+    setParametros(siguientes, { replace: true })
+  }
   const [aviso, setAviso] = useState<string | null>(null)
 
   const mes = mesDeFecha(fecha)
@@ -152,6 +164,9 @@ export default function CalendarioPage() {
           <Boton variante="secundario" icono="plus" onClick={() => setRegistrando(true)}>
             Nueva restricción
           </Boton>
+          <Boton icono="plus-circle" onClick={() => setParametros({ programar: '' })}>
+            Programar ciclo
+          </Boton>
         </AccionesPagina>
       )}
 
@@ -223,6 +238,18 @@ export default function CalendarioPage() {
             setRegistrando(false)
             setAviso(creadas.length === 1 ? 'Restricción registrada.' : `${creadas.length} restricciones registradas.`)
             restricciones.reintentar()
+          }}
+        />
+      )}
+      {puedeEditar && programar !== null && servicios.datos && (
+        <PanelProgramarCiclo
+          servicios={servicios.datos}
+          servicioInicial={servicioAProgramar}
+          onCerrar={cerrarPanel}
+          onProgramada={(programada) => {
+            cerrarPanel()
+            setAviso(`${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}.`)
+            programaciones.reintentar()
           }}
         />
       )}

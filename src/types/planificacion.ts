@@ -115,3 +115,21 @@ export interface AlertaPlanificacion {
   dias: number
   mensaje: string
 }
+
+/** `GET servicios/{id}/propuesta/`: fechas del siguiente ciclo, conflictos y primera ventana libre si los hay. */
+export interface PropuestaProgramacion {
+  estacion: Estacion
+  fecha_inicio: FechaIso
+  fecha_fin: FechaIso
+  conflictos: Restriccion[]
+  ventana_libre_inicio: FechaIso | null
+}
+
+/** Cuerpo de `POST programaciones/`. Con avisos, la justificación es obligatoria (máximo 300). */
+export interface NuevaProgramacion {
+  tipo_servicio_id: number
+  proveedor_id: number | null
+  fecha_inicio_prevista: FechaIso
+  fecha_fin_prevista: FechaIso
+  justificacion?: string
+}

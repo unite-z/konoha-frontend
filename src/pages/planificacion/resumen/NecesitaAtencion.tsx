@@ -2,8 +2,9 @@
  * Bandeja «Necesita atención» del Resumen (AV-265): sustituye a la pantalla de alertas. Cada elemento lleva la
  * acción de su tipo: Programar (frecuencia), Ver ciclo (duración) o Configurar (servicio sin duración).
  *
- * Mientras no existan el panel «Programar ciclo» (AV-267) ni la pantalla de Ciclos (AV-269), Programar y Ver ciclo
- * abren el Calendario con el servicio o el ciclo en la URL (`?programar=` y `?ciclo=`), que esas pantallas leerán.
+ * Programar abre el panel «Programar ciclo» del Calendario con el servicio elegido (`?programar=`, AV-267). Mientras
+ * no exista la pantalla de Ciclos (AV-269), Ver ciclo abre el Calendario con `?ciclo=`. Los botones son secundarios:
+ * el primario de la pantalla es «Programar ciclo», en la fila del título.
  */
 import { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
@@ -28,8 +29,6 @@ export interface NecesitaAtencionProps {
 
 export default function NecesitaAtencion({ alertas, servicios }: NecesitaAtencionProps) {
   const elementos = elementosAtencion(alertas, servicios)
-  // Un solo botón primario: el de la primera frecuencia por programar (DESIGN.md, «Un Botón primario por pantalla»).
-  const primeraProgramar = elementos.findIndex((elemento) => elemento.accion === 'programar')
   return (
     <Tarjeta
       titulo="Necesita atención"
@@ -40,7 +39,7 @@ export default function NecesitaAtencion({ alertas, servicios }: NecesitaAtencio
         <EstadoVacio titulo="Todo al día" descripcion="Ninguna frecuencia por vencer, duración excedida ni servicio sin configurar." nivel={3} />
       ) : (
         <ul className={estilos.lista}>
-          {elementos.map((elemento, indice) => {
+          {elementos.map((elemento) => {
             const accion = ACCIONES[elemento.accion]
             return (
               <li key={elemento.clave} className={estilos.fila}>
@@ -51,7 +50,7 @@ export default function NecesitaAtencion({ alertas, servicios }: NecesitaAtencio
                   <span className={estilos.titulo}>{elemento.titulo}</span>
                   <span className={estilos.detalle}>{elemento.detalle}</span>
                 </span>
-                <BotonEnlace to={accion.ruta(elemento)} variante={indice === primeraProgramar ? 'primario' : 'secundario'}>
+                <BotonEnlace to={accion.ruta(elemento)} variante="secundario">
                   {accion.texto}
                 </BotonEnlace>
               </li>
