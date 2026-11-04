@@ -6,6 +6,7 @@
  * y «Anotar causa» (`AlertasPlazo`, Figma 394-9392). «Reportar incidencia» llega con AV-285.
  */
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
@@ -15,7 +16,7 @@ import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_INCIDENCIAS } from '@/router/rutasApp'
+import { MIGAS_INCIDENCIAS, rutaIncidencia } from '@/router/rutasApp'
 import { listarIncidencias } from '@/services/api/incidencias'
 import type { IncidenciaResumen } from '@/types/incidencias'
 import AlertasPlazo from './AlertasPlazo'
@@ -43,6 +44,7 @@ export default function BandejaIncidenciasPage() {
   const [locales, setLocales] = useState<Record<number, IncidenciaResumen>>({})
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
+  const navegar = useNavigate()
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
     { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
@@ -101,6 +103,7 @@ export default function BandejaIncidenciasPage() {
           columnas={columnas}
           filas={incidenciasDePestana(incidencias, pestana)}
           claveFila={(i) => String(i.id)}
+          onFilaClick={(i) => navegar(rutaIncidencia(i.id))}
           estado={consulta.datos ? 'exito' : 'cargando'}
           vacio={{ titulo: 'Sin incidencias en esta pestaña', descripcion: 'Las incidencias reportadas aparecerán aquí.' }}
         />

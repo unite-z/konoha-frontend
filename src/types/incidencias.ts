@@ -46,3 +46,40 @@ export interface CapatazDisponible {
   nombre: string
   cuadrilla: string
 }
+
+export type ImpactoIncidencia = 'Alto' | 'Medio' | 'Bajo'
+
+/** Ficha de una incidencia (`GET incidencias/{id}/`, AV-274 y AV-276). */
+export interface IncidenciaDetalle extends IncidenciaResumen {
+  zona: string | null
+  descripcion: string
+  /** Ejemplar del inventario de MOD-02, si lo hay («T-0412 · Ficus · 7 m»). */
+  ejemplar: { codigo: string; especie: string; altura_m: number | null } | null
+  reportado_por: string
+  impacto: ImpactoIncidencia | null
+  /** Foto de la evidencia; `null` sin foto. */
+  foto_url: string | null
+}
+
+/**
+ * Cuerpo de `POST incidencias/{id}/clasificar/` (AV-276). `motivo_cambio_via` es obligatorio si la vía no es la
+ * sugerida (un árbol de 5 m o más sugiere el proveedor tercerizado).
+ */
+export interface Clasificacion {
+  severidad: SeveridadIncidencia
+  impacto: ImpactoIncidencia
+  via: ViaIncidencia
+  motivo_cambio_via?: string
+}
+
+/** Cuerpo de `POST incidencias/{id}/inspeccion/` (AV-276): inspección en campo antes de clasificar. */
+export interface SolicitudInspeccion {
+  responsable_id: number
+  que_verificar?: string
+}
+
+/** Ingeniero o practicante que puede inspeccionar (`GET incidencias/inspectores/`, AV-276). */
+export interface Inspector {
+  id: number
+  nombre: string
+}

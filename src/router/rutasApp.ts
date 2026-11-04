@@ -167,6 +167,11 @@ export const RUTAS_INCIDENCIAS = {
   bandeja: BASE_INCIDENCIAS, // HU-024 y HU-027 (AV-283)
 }
 
+/** Detalle de una incidencia (AV-284). */
+export function rutaIncidencia(id: number): string {
+  return `${RUTAS_INCIDENCIAS.bandeja}/${id}`
+}
+
 export const MIGAS_INCIDENCIAS = {
   incidencias: { texto: 'Incidencias', ruta: RUTAS_INCIDENCIAS.bandeja },
 } satisfies Record<string, Miga>

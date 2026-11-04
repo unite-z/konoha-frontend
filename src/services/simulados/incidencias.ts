@@ -4,7 +4,7 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
-import type { CapatazDisponible, IncidenciaResumen } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -61,4 +61,57 @@ export function simularReasignar(incidenciaId: number, capatazId: number): Promi
     if (!incidencia || !capataz) throw errorNoEncontrado()
     return { ...incidencia, responsable: capataz.nombre }
   })
+}
+
+/** Detalle de cada incidencia simulada: zona, ejemplar, descripción y quién la reportó (INC-2026-041 como en Figma). */
+const DETALLES: Record<number, Pick<IncidenciaDetalle, 'zona' | 'descripcion' | 'ejemplar' | 'reportado_por' | 'impacto'>> = {
+  41: { zona: 'Ciencias', descripcion: 'Rama grande caída sobre el paso peatonal.', ejemplar: { codigo: 'T-0412', especie: 'Ficus', altura_m: 7 }, reportado_por: 'Ana Q.', impacto: null },
+  40: { zona: 'Ciencias', descripcion: 'El aspersor del sector norte no se apaga.', ejemplar: null, reportado_por: 'Mesa de partes', impacto: null },
+  39: { zona: 'Sociales', descripcion: 'Rama colgando sobre la entrada del pabellón.', ejemplar: { codigo: 'T-0218', especie: 'Molle', altura_m: 4 }, reportado_por: 'Luis P.', impacto: 'Medio' },
+}
+
+const INSPECTORES: Inspector[] = [
+  { id: 1, nombre: 'Ing. Carla M.' },
+  { id: 2, nombre: 'Ing. Pedro S.' },
+  { id: 3, nombre: 'Practicante Rosa T.' },
+]
+
+/** Cambios hechos en la sesión del navegador (clasificar, descartar), encima de los datos de siempre. */
+const cambios = new Map<number, Partial<IncidenciaDetalle>>()
+
+export function incidenciaSimulada(id: number, ahora: number = Date.now()): IncidenciaDetalle | null {
+  const resumen = incidenciasSimuladas(ahora).find((i) => i.id === id)
+  if (!resumen) return null
+  const detalle = DETALLES[id] ?? { zona: null, descripcion: `${resumen.tipo} en ${resumen.espacio}.`, ejemplar: null, reportado_por: 'Personal de campo', impacto: null }
+  return { ...resumen, ...detalle, foto_url: null, ...cambios.get(id) }
+}
+
+export function simularObtenerIncidencia(id: number, signal?: AbortSignal): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const incidencia = incidenciaSimulada(id)
+    if (!incidencia) throw errorNoEncontrado()
+    return incidencia
+  }, { signal })
+}
+
+export function simularClasificar(id: number, cuerpo: Clasificacion): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    cambios.set(id, { ...cambios.get(id), severidad: cuerpo.severidad, impacto: cuerpo.impacto, via: cuerpo.via, estado: 'Clasificada' })
+    const incidencia = incidenciaSimulada(id)
+    if (!incidencia) throw errorNoEncontrado()
+    return incidencia
+  })
+}
+
+export function simularDescartar(id: number): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    cambios.set(id, { ...cambios.get(id), estado: 'Descartada', fecha_cierre: new Date().toISOString() })
+    const incidencia = incidenciaSimulada(id)
+    if (!incidencia) throw errorNoEncontrado()
+    return incidencia
+  })
+}
+
+export function simularInspectores(signal?: AbortSignal): Promise<Inspector[]> {
+  return responderSimulado(() => INSPECTORES, { signal })
 }
