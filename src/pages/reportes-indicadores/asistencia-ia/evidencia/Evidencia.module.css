@@ -1,0 +1,170 @@
+/*
+ * Evidencia fitosanitaria con IA (RF-IA-006). Solo tokens semánticos del sistema de diseño (DESIGN.md). Las piezas
+ * (tarjetas, opciones, estados, barras y botones) son componentes de `components/ui`.
+ */
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.secundario {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Miniaturas: una tira que se desplaza en horizontal dentro de su contenedor. */
+.tira {
+  /* Lado de una miniatura: 96 (no hay token de tamaño de imagen). */
+  --lado-miniatura: calc(var(--space-12) * 2);
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  list-style: none;
+  overflow-x: auto;
+}
+
+.foto {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+  width: var(--lado-miniatura);
+}
+
+.botonFoto {
+  display: block;
+  width: var(--lado-miniatura);
+  height: var(--lado-miniatura);
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.botonFoto:focus-visible {
+  outline: var(--focus-ring-width) solid var(--web-focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.imagen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fotografía sin imagen (ejemplo precargado o no disponible). */
+.marcador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-1);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.ampliada {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.nombreFoto {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hipótesis: dos columnas en escritorio, una en móvil. Ninguna se destaca. */
+.hipotesis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjetaHipotesis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
+  background: var(--color-info-bg);
+  border: 1px solid var(--web-info-border);
+  border-radius: var(--radius-lg);
+}
+
+.nombreHipotesis {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.confianza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.evidencias {
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* Fotografías elegidas en el nuevo análisis. */
+.elegidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.errores {
+  margin: 0;
+  padding-left: var(--space-6);
+  color: var(--color-error);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+@media (max-width: 767px) {
+  .hipotesis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
