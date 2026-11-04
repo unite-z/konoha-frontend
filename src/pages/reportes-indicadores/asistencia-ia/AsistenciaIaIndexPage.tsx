@@ -1,5 +1,5 @@
 /**
- * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002 y RF-IA-003).
+ * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003 y RF-IA-004).
  */
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '../../../router/rutasApp'
@@ -39,6 +39,13 @@ export default function AsistenciaIaIndexPage() {
             'Propuesta de cronograma con fechas, ubicaciones y recursos según frecuencias, restricciones y disponibilidad, para revisarla antes de programar.',
           detalle: { etiqueta: 'Filtros', valor: 'Estado y periodo' },
           ruta: RUTAS.cronogramaIa,
+        },
+        {
+          titulo: 'Estimación de recursos',
+          descripcion:
+            'Referencia de operarios, duración e insumos para una actividad según antecedentes comparables, para confirmarla antes de organizar el trabajo.',
+          detalle: { etiqueta: 'Filtros', valor: 'Estado de la estimación' },
+          ruta: RUTAS.estimacionRecursos,
         },
       ]}
     />
