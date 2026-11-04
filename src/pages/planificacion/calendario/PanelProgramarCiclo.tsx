@@ -16,7 +16,7 @@ import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import Estado from '@/components/ui/Estado'
 import Selector from '@/components/ui/Selector'
 import { useConsulta } from '@/hooks/useConsulta'
-import { crearProgramacion, listarRestricciones, obtenerPropuesta } from '@/services/api/planificacion'
+import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta } from '@/services/api/planificacion'
 import { listarProveedores, listarTodo } from '@/services/api/tercerizados'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { fechaCorta, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
@@ -39,15 +39,21 @@ export interface PanelProgramarCicloProps {
   servicioInicial: number | null
   /** Día de inicio elegido en el calendario («Programar este día»): sustituye al inicio propuesto. */
   fechaInicial?: string | null
+  /**
+   * Ciclo programado que se reprograma («Reprogramar» del Calendario): el panel entra con su servicio, proveedor y
+   * fechas y, al guardar, crea el ciclo nuevo y cancela este. Cuando llegue AV-362 será un solo `PATCH`.
+   */
+  reprogramar?: Programacion | null
   onCerrar: () => void
   onProgramada: (programacion: Programacion) => void
 }
 
-export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaInicial = null, onCerrar, onProgramada }: PanelProgramarCicloProps) {
-  const [servicioId, setServicioId] = useState(servicioInicial ? String(servicioInicial) : '')
-  const [proveedor, setProveedor] = useState('')
-  const [inicio, setInicio] = useState('')
-  const [fin, setFin] = useState('')
+export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaInicial = null, reprogramar = null, onCerrar, onProgramada }: PanelProgramarCicloProps) {
+  const inicialServicio = reprogramar ? reprogramar.tipo_servicio_id : servicioInicial
+  const [servicioId, setServicioId] = useState(inicialServicio ? String(inicialServicio) : '')
+  const [proveedor, setProveedor] = useState(reprogramar ? (reprogramar.proveedor_id === null ? PERSONAL_PROPIO : String(reprogramar.proveedor_id)) : '')
+  const [inicio, setInicio] = useState(reprogramar?.fecha_inicio_prevista ?? '')
+  const [fin, setFin] = useState(reprogramar?.fecha_fin_prevista ?? '')
   const [justificacion, setJustificacion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
@@ -64,7 +70,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
   // Al elegir servicio, el panel entra con las fechas que propone el sistema; con un día elegido en el calendario,
   // empieza ese día y conserva la duración propuesta.
   useEffect(() => {
-    if (!propuesta.datos) return
+    if (!propuesta.datos || reprogramar) return
     if (fechaInicial) {
       setInicio(fechaInicial)
       setFin(sumarDias(fechaInicial, diasDelPeriodo(propuesta.datos.fecha_inicio, propuesta.datos.fecha_fin) - 1))
@@ -72,7 +78,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
     }
     setInicio(propuesta.datos.fecha_inicio)
     setFin(propuesta.datos.fecha_fin)
-  }, [propuesta.datos, fechaInicial])
+  }, [propuesta.datos, fechaInicial, reprogramar])
 
   const delPeriodo = restricciones.datos ?? []
   const conflictos = fechasValidas ? conflictosDelPeriodo(delPeriodo, inicio, fin, servicio?.es_ruidoso ?? true) : []
@@ -95,9 +101,21 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
         fecha_fin_prevista: fin,
         justificacion: justificacion.trim() || undefined,
       })
+      if (reprogramar) {
+        try {
+          await cambiarEstadoCiclo(reprogramar.id, 'cancelacion')
+        } catch (causa) {
+          setErrorEnvio({
+            titulo: 'El ciclo nuevo quedó programado, pero no se pudo cancelar el anterior',
+            detalle: causa instanceof Error ? causa.message : 'Cancélalo desde su detalle.',
+          })
+          setEnviando(false)
+          return
+        }
+      }
       onProgramada(creada)
     } catch (causa) {
-      setErrorEnvio({ titulo: 'No se pudo programar el ciclo', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setErrorEnvio({ titulo: reprogramar ? 'No se pudo reprogramar el ciclo' : 'No se pudo programar el ciclo', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
       setEnviando(false)
     }
   }
@@ -106,8 +124,9 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
     <DialogoFormulario
       abierto
       ancho="lateral"
-      titulo="Programar ciclo"
-      textoConfirmar={validacion.requiereJustificacion ? 'Programar con constancia' : 'Programar ciclo'}
+      titulo={reprogramar ? 'Reprogramar ciclo' : 'Programar ciclo'}
+      descripcion={reprogramar ? `${reprogramar.servicio} · previsto del ${periodoRestriccion(reprogramar.fecha_inicio_prevista, reprogramar.fecha_fin_prevista)}` : undefined}
+      textoConfirmar={validacion.requiereJustificacion ? 'Programar con constancia' : reprogramar ? 'Reprogramar' : 'Programar ciclo'}
       enviando={enviando}
       hayCambios={Boolean(servicioId || justificacion)}
       error={errorEnvio}

@@ -7,7 +7,7 @@ import type { TipoEventoCalendario } from '@/components/ui/EventoCalendario'
 import type { FechaIso } from '@/types/comun'
 import type { EfectoRestriccion, EstadoProgramacion, Programacion, Restriccion } from '@/types/planificacion'
 import { rangoDelMes, type Mes } from '@/utils/calendarioRestricciones'
-import { periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
+import { sumarDias } from '../resumen/resumenPlanificacion'
 
 /** Carriles de eventos que caben en una celda del mes; el resto va al «+N más». */
 export const CARRILES_VISIBLES = 3
@@ -182,11 +182,6 @@ export function coincidencias(actividad: EventoCapa, eventos: EventoCapa[]): Eve
   return eventos
     .filter((evento) => evento.capa === 'restriccion' && evento.inicio <= actividad.fin && evento.fin >= actividad.inicio)
     .sort((a, b) => a.inicio.localeCompare(b.inicio))
-}
-
-/** Fechas de un evento: «jue. 19 nov.» o «16 al 19 nov.». */
-export function periodoEvento(evento: EventoCapa): string {
-  return periodoRestriccion(evento.inicio, evento.fin)
 }
 
 /** Actividades que se solapan con el periodo, por fecha de inicio (vista Lista). */

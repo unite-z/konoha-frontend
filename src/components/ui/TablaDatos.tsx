@@ -61,6 +61,8 @@ export interface TablaDatosProps<F> {
   vacio?: EstadoVacioProps
   error?: EstadoErrorProps
   onFilaClick?: (fila: F) => void
+  /** Filas que se resaltan con borde (Figma, Calendario · Lista: la actividad en conflicto). */
+  filaResaltada?: (fila: F) => boolean
   /** Filas de 40px. */
   compacta?: boolean
   ordenInicial?: { clave: string; direccion: DireccionOrden }
@@ -99,6 +101,7 @@ export default function TablaDatos<F>({
   vacio,
   error,
   onFilaClick,
+  filaResaltada,
   compacta = false,
   ordenInicial,
   paginacionServidor,
@@ -222,7 +225,7 @@ export default function TablaDatos<F>({
               return (
                 <tr
                   key={claveFila(fila, indice)}
-                  className={clicable ? estilos.clicable : undefined}
+                  className={[clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada].filter(Boolean).join(' ') || undefined}
                   tabIndex={clicable ? 0 : undefined}
                   onClick={clicable ? () => onFilaClick?.(fila) : undefined}
                   onKeyDown={

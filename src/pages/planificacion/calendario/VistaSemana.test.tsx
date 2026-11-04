@@ -64,8 +64,8 @@ describe('DetalleActividad', () => {
     if (!actividad) throw new Error('falta la actividad')
     render(<DetalleActividad actividad={actividad} eventos={eventos} onCerrar={vi.fn()} />)
 
-    expect(screen.getByText('16 al 19 nov.')).toBeTruthy()
+    expect(screen.getByText('16 al 19/11/2026')).toBeTruthy()
     expect(screen.getByText('Servicios Verdes Demo S.A.C.')).toBeTruthy()
-    expect(screen.getByText('19 nov. · Jueves culturales')).toBeTruthy()
+    expect(screen.getByText('Jue 19 · Jueves culturales')).toBeTruthy()
   })
 })

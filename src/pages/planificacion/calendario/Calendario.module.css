@@ -568,3 +568,11 @@
   width: 100%;
   margin-top: auto;
 }
+
+/* Lista: las restricciones de la fila y, a la derecha, «Reprogramar» (Figma 361-2782). */
+.celdaConflicto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
