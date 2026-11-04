@@ -19,6 +19,8 @@ export interface TarjetaProps {
   descripcion?: ReactNode
   /** Botones o enlaces a la derecha del título. */
   acciones?: ReactNode
+  /** Elemento pegado al título, como un contador (Figma: «Necesita atención 3»). */
+  junto?: ReactNode
   relleno?: 'normal' | 'amplio'
   /** Nombre accesible sin título visible: la tarjeta pasa a ser una región (`section` con `aria-label`). */
   etiqueta?: string
@@ -33,6 +35,7 @@ export default function Tarjeta({
   nivel = 2,
   descripcion,
   acciones,
+  junto,
   relleno = 'normal',
   etiqueta,
   etiquetadaPor,
@@ -55,9 +58,12 @@ export default function Tarjeta({
     <section className={clases} aria-labelledby={idTitulo}>
       <div className={estilos.cabecera}>
         <div className={estilos.textos}>
-          <Encabezado id={idTitulo} className={estilos.titulo}>
-            {titulo}
-          </Encabezado>
+          <div className={estilos.lineaTitulo}>
+            <Encabezado id={idTitulo} className={estilos.titulo}>
+              {titulo}
+            </Encabezado>
+            {junto}
+          </div>
           {descripcion && <p className={estilos.descripcion}>{descripcion}</p>}
         </div>
         {acciones && <div className={estilos.acciones}>{acciones}</div>}

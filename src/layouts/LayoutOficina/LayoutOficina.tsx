@@ -88,7 +88,14 @@ export default function LayoutOficina() {
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
             {pagina.titulo && (
               <div className={estilos.filaTitulo}>
-                <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                {pagina.subtitulo ? (
+                  <div>
+                    <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                    <p className={estilos.subtitulo}>{pagina.subtitulo}</p>
+                  </div>
+                ) : (
+                  <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                )}
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>
             )}

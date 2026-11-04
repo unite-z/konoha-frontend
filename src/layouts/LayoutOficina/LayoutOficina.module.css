@@ -86,6 +86,14 @@
   color: var(--color-text-primary);
 }
 
+/* Subtítulo bajo el título (Figma: «Noviembre 2026» en el Resumen). */
+.subtitulo {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
 /* «Saltar al contenido»: visible solo al recibir el foco. */
 .saltar {
   position: absolute;

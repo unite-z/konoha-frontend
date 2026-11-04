@@ -1,7 +1,7 @@
 /**
  * TarjetaIndicador: componente «Indicador» del sistema de diseño de Figma (DESIGN.md, 4.1).
  *
- * Anatomía: etiqueta, valor principal, unidad y contexto, insignia de estado opcional, barra de avance
+ * Anatomía: etiqueta, valor principal, unidad, contexto y nota, insignia de estado opcional, barra de avance
  * opcional y enlace opcional al detalle.
  *
  * Estados:
@@ -28,6 +28,8 @@ export interface TarjetaIndicadorProps {
   unidad?: string
   /** Texto de contexto bajo el valor. */
   contexto?: ReactNode
+  /** Segunda línea, atenuada, bajo el contexto (Figma: «Noviembre 2026» bajo «2 esta semana»). */
+  nota?: ReactNode
   /** Estado del indicador (se pinta como `Estado`). Obligatorio en estado `alerta`. */
   insignia?: BadgeProps
   avance?: BarraAvanceProps
@@ -45,6 +47,7 @@ export default function TarjetaIndicador({
   valor,
   unidad,
   contexto,
+  nota,
   insignia,
   avance,
   enlace,
@@ -77,6 +80,7 @@ export default function TarjetaIndicador({
             {unidad && <span className={estilos.unidad}> {unidad}</span>}
           </p>
           {contexto && <p className={estilos.contexto}>{contexto}</p>}
+          {nota && <p className={estilos.nota}>{nota}</p>}
         </>
       )}
       {insignia && (

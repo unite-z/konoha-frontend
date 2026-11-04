@@ -5,13 +5,6 @@
   gap: var(--space-6);
 }
 
-.mes {
-  margin: calc(-1 * var(--space-4)) 0 0;
-  color: var(--color-text-secondary);
-  font-size: var(--type-pequeno-size);
-  line-height: var(--type-pequeno-line);
-}
-
 /* Bandejas a la izquierda y restricciones en una columna fija a la derecha, como en Figma (344-3). */
 .columnas {
   display: grid;

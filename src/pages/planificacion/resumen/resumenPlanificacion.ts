@@ -110,7 +110,9 @@ export function indicadoresMes(
       diasRestringidos.add(dia)
     }
   }
-  const prohibiciones = restriccionesMes.filter((r) => r.efecto === 'Prohibicion').length
+  const deProhibicion = restriccionesMes.filter((r) => r.efecto === 'Prohibicion')
+  const prohibiciones = deProhibicion.length
+  const nombresProhibicion = [...new Set(deProhibicion.map((r) => r.tipo))]
   const primero = enCurso[0]
 
   return [
@@ -119,7 +121,7 @@ export function indicadoresMes(
       etiqueta: 'En curso',
       valor: enCurso.length,
       nota: primero ? primero.servicio : 'Ningún ciclo en curso',
-      detalle: primero?.fecha_inicio_real ? `Desde el ${fechaCorta(primero.fecha_inicio_real)}` : 'Sin inicio registrado',
+      detalle: primero?.fecha_inicio_real ? `Desde el ${fechaNumerica(primero.fecha_inicio_real)}` : 'Sin inicio registrado',
     },
     {
       etiqueta: 'Alertas',
@@ -131,13 +133,23 @@ export function indicadoresMes(
       etiqueta: 'Días con restricción',
       valor: diasRestringidos.size,
       nota: `${prohibiciones} ${prohibiciones === 1 ? 'prohibición' : 'prohibiciones'}`,
-      detalle: nombreMes(hoy),
+      detalle: nombresProhibicion.length > 0 ? listaConY(nombresProhibicion) : nombreMes(hoy),
     },
   ]
 }
 
+/** «A», «A y B» o «A, B y C». */
+export function listaConY(elementos: string[]): string {
+  return elementos.length <= 1 ? (elementos[0] ?? '') : `${elementos.slice(0, -1).join(', ')} y ${elementos.at(-1)}`
+}
+
 function esTipoConocido(tipo: string): boolean {
   return tipo === 'FrecuenciaProxima' || tipo === 'DuracionExcedida' || tipo === 'DuracionProxima'
+}
+
+/** «08/10», como en Figma. */
+export function fechaNumerica(fecha: FechaIso): string {
+  return `${fecha.slice(8, 10)}/${fecha.slice(5, 7)}`
 }
 
 /** «05 nov.». */
@@ -174,8 +186,23 @@ export interface ElementoAtencion {
  * Bandeja «Necesita atención»: alertas de `GET alertas/` más los servicios periódicos sin duración, que no se
  * pueden programar. Primero lo vencido o excedido; los tipos desconocidos no se pintan.
  */
-export function elementosAtencion(alertas: AlertaPlanificacion[], servicios: ServicioPeriodico[]): ElementoAtencion[] {
+export function elementosAtencion(
+  alertas: AlertaPlanificacion[],
+  servicios: ServicioPeriodico[],
+  programaciones: Programacion[] = [],
+): ElementoAtencion[] {
   const elementos: ElementoAtencion[] = []
+  // «Último ciclo: 08/10» (fin real del último completado) y «En curso desde el 21/10», como en Figma.
+  const ultimoCiclo = (servicioId: number) =>
+    programaciones
+      .filter((p) => p.tipo_servicio_id === servicioId && p.estado === 'Completada')
+      .map((p) => p.fecha_fin_real ?? p.fecha_fin_prevista)
+      .sort()
+      .at(-1)
+  const enCursoDesde = (programacionId: number | null) => {
+    const ciclo = programaciones.find((p) => p.id === programacionId)
+    return ciclo ? `En curso desde el ${fechaNumerica(ciclo.fecha_inicio_real ?? ciclo.fecha_inicio_prevista)}` : 'Ciclo en curso'
+  }
   for (const alerta of alertas) {
     const base = { servicioId: alerta.servicio_id, programacionId: alerta.programacion_id }
     if (alerta.tipo === 'FrecuenciaProxima') {
@@ -188,7 +215,7 @@ export function elementosAtencion(alertas: AlertaPlanificacion[], servicios: Ser
         titulo: vencida
           ? `${alerta.servicio} · frecuencia máxima superada hace ${dias(-alerta.dias)}`
           : `${alerta.servicio} · ${alerta.dias === 1 ? 'falta' : 'faltan'} ${dias(alerta.dias)} para la frecuencia máxima`,
-        detalle: 'Sin ciclo programado',
+        detalle: ultimoCiclo(alerta.servicio_id) ? `Último ciclo: ${fechaNumerica(ultimoCiclo(alerta.servicio_id) ?? '')}` : 'Sin ciclos anteriores',
         accion: 'programar',
       })
     } else if (alerta.tipo === 'DuracionExcedida') {
@@ -198,7 +225,7 @@ export function elementosAtencion(alertas: AlertaPlanificacion[], servicios: Ser
         tono: 'error',
         icono: 'circle-x',
         titulo: `${alerta.servicio} · duración excedida en ${dias(alerta.dias)}`,
-        detalle: 'Ciclo en curso',
+        detalle: enCursoDesde(alerta.programacion_id),
         accion: 'verCiclo',
       })
     } else if (alerta.tipo === 'DuracionProxima') {
@@ -208,7 +235,7 @@ export function elementosAtencion(alertas: AlertaPlanificacion[], servicios: Ser
         tono: 'aviso',
         icono: 'triangle-alert',
         titulo: `${alerta.servicio} · ${alerta.dias === 1 ? 'queda' : 'quedan'} ${dias(alerta.dias)} de su duración máxima`,
-        detalle: 'Ciclo en curso',
+        detalle: enCursoDesde(alerta.programacion_id),
         accion: 'verCiclo',
       })
     }
@@ -236,6 +263,35 @@ export function proximosCiclos(hoy: FechaIso, programaciones: Programacion[]): P
   return programaciones
     .filter((p) => (p.estado === 'Programada' || p.estado === 'EnCurso') && seSolapa(p.fecha_inicio_prevista, p.fecha_fin_prevista, hoy, hasta))
     .sort((a, b) => a.fecha_inicio_prevista.localeCompare(b.fecha_inicio_prevista) || a.id - b.id)
+}
+
+const DIAS_SEMANA_FIGMA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+export interface RestriccionProxima {
+  clave: string
+  /** «Jue 05 y 12», «Sáb 07» o «23 al 28», como en Figma (sin mes). */
+  fechas: string
+  tipo: string
+  efecto: EfectoRestriccion
+}
+
+/** Texto de las fechas de una restricción o de una serie: con un solo día de la semana, se nombra una vez. */
+function textoFechasRestriccion(grupo: Restriccion[]): string {
+  const [primera] = grupo
+  if (grupo.length === 1 && primera.fecha_inicio !== primera.fecha_fin) return `${primera.fecha_inicio.slice(8, 10)} al ${primera.fecha_fin.slice(8, 10)}`
+  const diasSemana = new Set(grupo.map((r) => aFecha(r.fecha_inicio).getUTCDay()))
+  const numeros = listaConY(grupo.map((r) => r.fecha_inicio.slice(8, 10)))
+  return diasSemana.size === 1 ? `${DIAS_SEMANA_FIGMA[aFecha(primera.fecha_inicio).getUTCDay()]} ${numeros}` : numeros
+}
+
+/** Las restricciones próximas, con las fechas de una misma serie en una sola fila. */
+export function restriccionesAgrupadas(hoy: FechaIso, restricciones: Restriccion[]): RestriccionProxima[] {
+  const grupos = new Map<string, Restriccion[]>()
+  for (const r of restriccionesProximas(hoy, restricciones)) {
+    const clave = r.serie ?? `suelta-${r.id}`
+    grupos.set(clave, [...(grupos.get(clave) ?? []), r])
+  }
+  return [...grupos.entries()].map(([clave, grupo]) => ({ clave, fechas: textoFechasRestriccion(grupo), tipo: grupo[0].tipo, efecto: grupo[0].efecto }))
 }
 
 /** Restricciones que siguen vigentes hoy o empiezan en los próximos 30 días, por fecha de inicio. */

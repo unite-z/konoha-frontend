@@ -22,24 +22,32 @@ import {
   indicadoresMes,
   limitesMes,
   nombreMes,
-  periodoRestriccion,
   proximosCiclos,
-  restriccionesProximas,
+  restriccionesAgrupadas,
   sumarDias,
 } from './resumenPlanificacion'
+import { rangoCiclos } from '../ciclos/ciclos'
+import { textoHorario } from '@/utils/planificacion'
+import type { ServicioPeriodico } from '@/types/planificacion'
 import estilos from './ResumenPlanificacion.module.css'
 
+/** «Fumigaciones Demo S.A. · 06:00 a 18:00»: quién lo hace y, si el servicio la tiene, su franja horaria. */
+function detalleCiclo(proveedor: string | null, servicio: ServicioPeriodico | undefined): string {
+  const quien = proveedor ?? 'Personal propio'
+  const franja = servicio?.duracion?.hora_inicio || servicio?.duracion?.hora_fin ? textoHorario(servicio.duracion.hora_inicio, servicio.duracion.hora_fin) : null
+  return franja ? `${quien} · ${franja}` : quien
+}
+
 export default function ResumenPlanificacionPage() {
-  usePaginaActual('Planificación', [MIGAS_PLANIFICACION.planificacion, { texto: 'Resumen' }])
   const hoy = hoyLima()
+  usePaginaActual('Planificación', [MIGAS_PLANIFICACION.planificacion, { texto: 'Resumen' }], nombreMes(hoy))
   const mes = limitesMes(hoy)
-  const hastaCiclos = [mes.hasta, sumarDias(hoy, DIAS_PROXIMOS)].sort().at(-1) ?? mes.hasta
+  // Seis meses atrás y adelante (la misma consulta que Ciclos): da el mes, los próximos 14 días y el último ciclo.
+  const rango = rangoCiclos(hoy)
   const hastaRestricciones = [mes.hasta, sumarDias(hoy, DIAS_RESTRICCIONES)].sort().at(-1) ?? mes.hasta
   const alertas = useConsulta('planificacion-alertas', listarAlertas)
   const servicios = useConsulta('planificacion-servicios', listarServiciosPeriodicos)
-  const programaciones = useConsulta(`planificacion-ciclos:${mes.desde}:${hastaCiclos}`, (signal) =>
-    listarProgramaciones(mes.desde, hastaCiclos, signal),
-  )
+  const programaciones = useConsulta(`ciclos:${rango.desde}`, (signal) => listarProgramaciones(rango.desde, rango.hasta, signal))
   const restricciones = useConsulta(`planificacion-restricciones:${mes.desde}:${hastaRestricciones}`, (signal) =>
     listarRestricciones(mes.desde, hastaRestricciones, signal),
   )
@@ -55,7 +63,8 @@ export default function ResumenPlanificacionPage() {
 
   const indicadores = indicadoresMes(hoy, programaciones.datos, alertas.datos, restricciones.datos)
   const ciclos = proximosCiclos(hoy, programaciones.datos)
-  const proximas = restriccionesProximas(hoy, restricciones.datos)
+  const proximas = restriccionesAgrupadas(hoy, restricciones.datos)
+  const servicioDe = (id: number) => servicios.datos?.find((s) => s.id === id)
 
   return (
     <div className={estilos.pagina}>
@@ -67,7 +76,6 @@ export default function ResumenPlanificacionPage() {
           Programar ciclo
         </BotonEnlace>
       </AccionesPagina>
-      <p className={estilos.mes}>{nombreMes(hoy)}</p>
 
       <FilaTarjetas etiqueta="Indicadores del mes">
         {indicadores.map((indicador) => (
@@ -75,19 +83,15 @@ export default function ResumenPlanificacionPage() {
             key={indicador.etiqueta}
             etiqueta={indicador.etiqueta}
             valor={indicador.valor}
-            contexto={
-              <>
-                {indicador.nota}
-                <span className={estilos.detalle}>{indicador.detalle}</span>
-              </>
-            }
+            contexto={indicador.nota}
+            nota={indicador.detalle}
           />
         ))}
       </FilaTarjetas>
 
       <div className={estilos.columnas}>
         <div className={estilos.principal}>
-          <NecesitaAtencion alertas={alertas.datos} servicios={servicios.datos} />
+          <NecesitaAtencion alertas={alertas.datos} servicios={servicios.datos} programaciones={programaciones.datos} />
 
           <Tarjeta titulo={`Próximos ${DIAS_PROXIMOS} días`} relleno="amplio">
             {ciclos.length === 0 ? (
@@ -105,7 +109,7 @@ export default function ResumenPlanificacionPage() {
                       </span>
                       <span className={estilos.textos}>
                         <span className={estilos.titulo}>{ciclo.servicio}</span>
-                        <span className={estilos.detalle}>{ciclo.proveedor ?? 'Personal propio'}</span>
+                        <span className={estilos.detalle}>{detalleCiclo(ciclo.proveedor, servicioDe(ciclo.tipo_servicio_id))}</span>
                       </span>
                       <Estado tono={estado.tono} texto={estado.texto} punto />
                     </li>
@@ -124,10 +128,10 @@ export default function ResumenPlanificacionPage() {
               {proximas.map((restriccion) => {
                 const efecto = EFECTO_RESTRICCION[restriccion.efecto]
                 return (
-                  <li key={restriccion.id} className={estilos.fila}>
-                    <span className={estilos.periodo}>{periodoRestriccion(restriccion.fecha_inicio, restriccion.fecha_fin)}</span>
+                  <li key={restriccion.clave} className={estilos.fila}>
+                    <span className={estilos.periodo}>{restriccion.fechas}</span>
                     <span className={estilos.textos}>
-                      <span className={estilos.titulo}>{restriccion.descripcion || restriccion.tipo}</span>
+                      <span className={estilos.titulo}>{restriccion.tipo}</span>
                     </span>
                     <Estado tono={efecto.tono} texto={efecto.texto} punto />
                   </li>

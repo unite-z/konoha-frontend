@@ -3,8 +3,7 @@
  * acción de su tipo: Programar (frecuencia), Ver ciclo (duración) o Configurar (servicio sin duración).
  *
  * Programar abre el panel «Programar ciclo» del Calendario con el servicio elegido (`?programar=`, AV-267) y Ver
- * ciclo, el detalle del ciclo (AV-269). Los botones son secundarios: el primario de la pantalla es «Programar
- * ciclo», en la fila del título.
+ * ciclo, el detalle del ciclo (AV-269). Como en Figma, «Programar» es primario y las demás acciones, secundarias.
  */
 import { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
@@ -12,7 +11,7 @@ import EstadoVacio from '@/components/ui/EstadoVacio'
 import Icono from '@/components/ui/Icono'
 import Tarjeta from '@/components/ui/Tarjeta'
 import { RUTAS_PLANIFICACION, rutaCiclo } from '@/router/rutasApp'
-import type { AlertaPlanificacion, ServicioPeriodico } from '@/types/planificacion'
+import type { AlertaPlanificacion, Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { elementosAtencion, type ElementoAtencion } from './resumenPlanificacion'
 import estilos from './ResumenPlanificacion.module.css'
 
@@ -25,15 +24,16 @@ const ACCIONES: Record<ElementoAtencion['accion'], { texto: string; ruta: (e: El
 export interface NecesitaAtencionProps {
   alertas: AlertaPlanificacion[]
   servicios: ServicioPeriodico[]
+  programaciones?: Programacion[]
 }
 
-export default function NecesitaAtencion({ alertas, servicios }: NecesitaAtencionProps) {
-  const elementos = elementosAtencion(alertas, servicios)
+export default function NecesitaAtencion({ alertas, servicios, programaciones = [] }: NecesitaAtencionProps) {
+  const elementos = elementosAtencion(alertas, servicios, programaciones)
   return (
     <Tarjeta
       titulo="Necesita atención"
       relleno="amplio"
-      acciones={elementos.length > 0 ? <Estado tono="error" texto={String(elementos.length)} /> : undefined}
+      junto={elementos.length > 0 ? <Estado tono="error" texto={String(elementos.length)} punto={false} /> : undefined}
     >
       {elementos.length === 0 ? (
         <EstadoVacio titulo="Todo al día" descripcion="Ninguna frecuencia por vencer, duración excedida ni servicio sin configurar." nivel={3} />
@@ -50,7 +50,7 @@ export default function NecesitaAtencion({ alertas, servicios }: NecesitaAtencio
                   <span className={estilos.titulo}>{elemento.titulo}</span>
                   <span className={estilos.detalle}>{elemento.detalle}</span>
                 </span>
-                <BotonEnlace to={accion.ruta(elemento)} variante="secundario">
+                <BotonEnlace to={accion.ruta(elemento)} variante={elemento.accion === 'programar' ? 'primario' : 'secundario'}>
                   {accion.texto}
                 </BotonEnlace>
               </li>
