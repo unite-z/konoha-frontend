@@ -15,14 +15,17 @@ export interface ElementoDescripcion {
 
 export interface ListaDescripcionProps {
   elementos: (ElementoDescripcion | false | null | undefined)[]
-  /** Columnas mínimas de 12rem (por defecto) o una sola columna. */
-  columnas?: 'auto' | 'una'
+  /**
+   * Columnas mínimas de 12rem (por defecto), una sola columna o `filas`: una fila por par, con la etiqueta a la
+   * izquierda y una línea entre filas, dentro de un marco (ficha de incidencia, Figma 388-7305).
+   */
+  columnas?: 'auto' | 'una' | 'filas'
 }
 
 export default function ListaDescripcion({ elementos, columnas = 'auto' }: ListaDescripcionProps) {
   const visibles = elementos.filter((e): e is ElementoDescripcion => Boolean(e))
   return (
-    <dl className={`${estilos.lista} ${columnas === 'una' ? estilos.una : ''}`}>
+    <dl className={`${estilos.lista} ${columnas === 'auto' ? '' : estilos[columnas]}`}>
       {visibles.map((e) => (
         <div key={e.etiqueta} className={e.ancho ? estilos.ancho : undefined}>
           <dt className={estilos.etiqueta}>{e.etiqueta}</dt>

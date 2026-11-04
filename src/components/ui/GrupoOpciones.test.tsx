@@ -92,4 +92,25 @@ describe('GrupoOpciones', () => {
 
     expect(screen.getByRole('group', { name: 'Tu decisión' }).getAttribute('aria-describedby')).toBe('ayuda-externa')
   })
+
+  it('segmentado sigue siendo un grupo de radios y la opción entera recibe el clic (Figma 388-7305)', async () => {
+    const onCambiar = vi.fn()
+    render(
+      <GrupoOpciones
+        etiqueta="Severidad"
+        segmentado
+        opciones={[
+          { valor: 'Alta', texto: 'Alta' },
+          { valor: 'Media', texto: 'Media' },
+        ]}
+        valor="Alta"
+        onCambiar={onCambiar}
+      />,
+    )
+
+    const grupo = screen.getByRole('group', { name: 'Severidad' })
+    expect(grupo.querySelector('[class*="segmentado"]')).toBeTruthy()
+    await userEvent.setup().click(within(grupo).getByRole('radio', { name: 'Media' }))
+    expect(onCambiar).toHaveBeenCalledWith('Media')
+  })
 })

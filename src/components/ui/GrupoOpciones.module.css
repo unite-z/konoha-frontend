@@ -123,3 +123,55 @@
   line-height: var(--type-leyenda-line);
   color: var(--color-error);
 }
+
+/* Segmentado (Figma 388-7305): fila sobre fondo sutil, opciones repartidas y la elegida en blanco con Sombra sm,
+   como las pestañas; el radio queda oculto pero sigue recibiendo el foco y las flechas. */
+.segmentado {
+  flex-direction: row;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.segmentado .opcion {
+  flex: 1;
+  justify-content: center;
+  min-height: var(--web-control-compact);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+}
+
+.segmentado .opcion:hover {
+  background: none;
+  color: var(--color-text-primary);
+}
+
+.segmentado .elegida,
+.segmentado .elegida:hover {
+  background: var(--color-bg-surface);
+  box-shadow: var(--web-elev-1);
+  color: var(--color-text-primary);
+}
+
+.segmentado .opcion {
+  position: relative;
+}
+
+/* El radio cubre la opción entera, transparente: recibe el clic, el foco y las flechas. */
+.segmentado .control {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.segmentado .texto {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
