@@ -40,7 +40,7 @@ describe('NecesitaAtencion', () => {
     const bandeja = pintar(alertas, sinDuracion)
 
     expect(within(bandeja).getByText('3')).toBeTruthy()
-    expect(within(bandeja).getByRole('link', { name: 'Programar' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.calendario}?programar=1`)
+    expect(within(bandeja).getByRole('link', { name: 'Programar' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.calendario}?programar=1&atiende=1`)
     expect(within(bandeja).getByRole('link', { name: 'Ver ciclo' }).getAttribute('href')).toBe(`${RUTAS_PLANIFICACION.ciclos}/40`)
     expect(within(bandeja).getByRole('link', { name: 'Configurar' }).getAttribute('href')).toBe(RUTAS_PLANIFICACION.configuracion)
   })

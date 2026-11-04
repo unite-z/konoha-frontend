@@ -50,4 +50,15 @@ describe('CiclosPage', () => {
     expect(screen.queryByText('Control fitosanitario')).toBeNull()
     expect(screen.getByText('Corte de césped')).toBeTruthy()
   })
+
+  it('muestra el aviso que deja «Programar ciclo» al atender una alerta (Figma 373-5779)', async () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/planificacion/ciclos', state: { aviso: { mensaje: 'Ciclo programado', detalle: 'Corte de césped: alerta atendida.' } } }]}>
+        <CiclosPage />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Ciclo programado')).toBeTruthy()
+    expect(screen.getByText('Corte de césped: alerta atendida.')).toBeTruthy()
+  })
 })
