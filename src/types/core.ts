@@ -33,6 +33,34 @@ export interface CambioContrasena {
 }
 
 /** Página de la API: 25 elementos con enlaces a la anterior y la siguiente. */
+/** Tipos de `POST importaciones/` con tabla disponible (RF-T-009). */
+export type TipoImportacion = 'catastro' | 'inventario' | 'partes'
+
+export type ResultadoFilaImportacion = 'Alta' | 'Actualización' | 'Sin cambios' | 'Revisar' | 'Error'
+
+export interface Importacion {
+  id: number
+  tipo: TipoImportacion
+  archivo: string
+  estado: 'Validada' | 'Confirmada'
+  total: number
+  altas: number
+  actualizaciones: number
+  sin_cambios: number
+  revisar: number
+  errores: number
+  usuario: string
+  fecha_creacion: InstanteIso
+  fecha_confirmacion: InstanteIso | null
+}
+
+export interface FilaImportacion {
+  fila: number
+  codigo: string | null
+  resultado: ResultadoFilaImportacion
+  detalle: string
+}
+
 export interface PaginaCore<T> {
   count: number
   next: string | null
