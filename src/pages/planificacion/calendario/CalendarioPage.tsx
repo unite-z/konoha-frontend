@@ -73,6 +73,7 @@ export default function CalendarioPage() {
   function cerrarPanel() {
     const siguientes = new URLSearchParams(parametros)
     siguientes.delete('programar')
+    siguientes.delete('dia')
     setParametros(siguientes, { replace: true })
   }
   const [aviso, setAviso] = useState<string | null>(null)
@@ -118,7 +119,13 @@ export default function CalendarioPage() {
     const lateral =
       vista === 'mes'
         ? agendaAbierta && (
-            <AgendaDia dia={fecha} eventos={eventos} onCerrar={() => setAgendaAbierta(false)} onDarDeBaja={puedeEditar ? setBaja : undefined} />
+            <AgendaDia
+              dia={fecha}
+              eventos={eventos}
+              onCerrar={() => setAgendaAbierta(false)}
+              onDarDeBaja={puedeEditar ? setBaja : undefined}
+              onProgramarDia={puedeEditar ? (dia) => setParametros({ programar: '', dia }) : undefined}
+            />
           )
         : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
     contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
@@ -170,9 +177,13 @@ export default function CalendarioPage() {
         </AccionesPagina>
       )}
 
-      <Pestanas etiqueta="Vista del calendario" pestanas={VISTAS} valor={vista} onCambiar={(valor) => setVista(valor as Vista)}>
-        <div className={estilos.pagina}>
-          <div className={estilos.barra}>
+      <Pestanas
+        etiqueta="Vista del calendario"
+        pestanas={VISTAS}
+        valor={vista}
+        onCambiar={(valor) => setVista(valor as Vista)}
+        barra={
+          <>
             <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
               <span className="sr-only">{vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}</span>
             </Boton>
@@ -203,8 +214,10 @@ export default function CalendarioPage() {
             >
               {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
             </Boton>
-          </div>
-
+          </>
+        }
+      >
+        <div className={estilos.pagina}>
           {filtrosAbiertos && (
             <PanelFiltros id="panel-filtros-calendario" filtros={filtros} tipos={tipos} proveedores={proveedores} onCambiar={setFiltros} />
           )}
@@ -246,6 +259,7 @@ export default function CalendarioPage() {
         <PanelProgramarCiclo
           servicios={servicios.datos}
           servicioInicial={servicioAProgramar}
+          fechaInicial={parametros.get('dia')}
           onCerrar={cerrarPanel}
           onProgramada={(programada) => {
             cerrarPanel()
