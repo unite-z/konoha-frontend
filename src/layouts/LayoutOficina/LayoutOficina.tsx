@@ -41,7 +41,8 @@ export default function LayoutOficina() {
   const { pathname } = useLocation()
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const [nodoAcciones, setNodoAcciones] = useState<HTMLElement | null>(null)
-  const valor = useMemo(() => ({ pagina, establecerPagina, nodoAcciones }), [pagina, nodoAcciones])
+  const [nodoJunto, setNodoJunto] = useState<HTMLElement | null>(null)
+  const valor = useMemo(() => ({ pagina, establecerPagina, nodoAcciones, nodoJunto }), [pagina, nodoAcciones, nodoJunto])
   const [comprimido, setComprimido] = useState(leerComprimido)
   const alternarComprimido = useCallback(() => {
     setComprimido((actual) => {
@@ -91,11 +92,17 @@ export default function LayoutOficina() {
               <div className={estilos.filaTitulo}>
                 {pagina.subtitulo ? (
                   <div>
-                    <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                    <div className={estilos.lineaTitulo}>
+                      <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                      <span ref={setNodoJunto} className={estilos.juntoTitulo} />
+                    </div>
                     <p className={estilos.subtitulo}>{pagina.subtitulo}</p>
                   </div>
                 ) : (
-                  <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                  <>
+                    <h1 className={estilos.titulo}>{pagina.titulo}</h1>
+                    <span ref={setNodoJunto} className={`${estilos.juntoTitulo} ${estilos.juntoSinSubtitulo}`} />
+                  </>
                 )}
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>

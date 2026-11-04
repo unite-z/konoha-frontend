@@ -25,6 +25,8 @@ export interface ValorContextoPagina {
   establecerPagina: (pagina: DatosPagina) => void
   /** Hueco a la derecha del título donde `AccionesPagina` pinta la acción principal (null hasta montarse). */
   nodoAcciones?: HTMLElement | null
+  /** Hueco pegado al título donde `JuntoTitulo` pinta, por ejemplo, el estado del registro («Programada»). */
+  nodoJunto?: HTMLElement | null
 }
 
 export const ContextoPagina = createContext<ValorContextoPagina | null>(null)

@@ -107,6 +107,15 @@ export interface Programacion {
   fecha_fin_real: FechaIso | null
   /** Contrato de AV-364: código del ciclo («CC-2026-11»). */
   codigo?: string | null
+  /** Contrato de AV-253: transiciones con autor y hora, en el detalle. */
+  historial?: EventoCiclo[]
+}
+
+/** Una transición del ciclo (AV-253): a qué estado pasó, cuándo y quién. */
+export interface EventoCiclo {
+  estado: EstadoProgramacion
+  fecha_hora: string
+  autor: string
 }
 
 /**

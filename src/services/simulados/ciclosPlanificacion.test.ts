@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Programacion } from '@/types/planificacion'
-import { prefijoServicio, simularCodigosCiclos } from './ciclosPlanificacion'
+import { prefijoServicio, simularCiclos } from './ciclosPlanificacion'
 
 const ciclo: Programacion = {
   id: 1,
@@ -22,6 +22,14 @@ describe('códigos de ciclo simulados (AV-364)', () => {
   })
 
   it('compone el código con el año y el mes del inicio y respeta el que ya trae', () => {
-    expect(simularCodigosCiclos([ciclo, { ...ciclo, codigo: 'CC-2026-07' }]).map((c) => c.codigo)).toEqual(['CC-2026-11', 'CC-2026-07'])
+    expect(simularCiclos([ciclo, { ...ciclo, codigo: 'CC-2026-07' }]).map((c) => c.codigo)).toEqual(['CC-2026-11', 'CC-2026-07'])
+  })
+
+  it('simula el historial con las fechas reales (AV-253)', () => {
+    const [enCurso] = simularCiclos([{ ...ciclo, estado: 'EnCurso', fecha_inicio_real: '2026-11-16' }])
+    expect(enCurso.historial?.map((e) => [e.estado, e.fecha_hora])).toEqual([
+      ['Programada', '2026-11-02T09:30:00-05:00'],
+      ['EnCurso', '2026-11-16T06:10:00-05:00'],
+    ])
   })
 })
