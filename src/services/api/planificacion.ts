@@ -5,7 +5,9 @@ import type {
   DuracionEntrada,
   Estacion,
   FrecuenciaEntrada,
+  NuevaProgramacion,
   Programacion,
+  PropuestaProgramacion,
   Restriccion,
   RestriccionEntrada,
   ServicioPeriodico,
@@ -57,4 +59,14 @@ export function listarAlertas(signal?: AbortSignal) {
 /** `DELETE restricciones/{id}/?serie=` (solo jefe): da de baja la restricción o, con `serie`, toda su serie. */
 export function darDeBajaRestriccion(id: number, serie: boolean) {
   return solicitarPlanificacion<void>(`restricciones/${id}/`, { metodo: 'DELETE', parametros: { serie } })
+}
+
+/** `GET servicios/{id}/propuesta/`: fechas propuestas para el siguiente ciclo (409 si falta configuración). */
+export function obtenerPropuesta(servicioId: number, signal?: AbortSignal) {
+  return solicitarPlanificacion<PropuestaProgramacion>(`servicios/${servicioId}/propuesta/`, { signal })
+}
+
+/** `POST programaciones/` (solo jefe): programa un ciclo. Devuelve la programación creada. */
+export function crearProgramacion(cuerpo: NuevaProgramacion) {
+  return solicitarPlanificacion<Programacion>('programaciones/', { metodo: 'POST', cuerpo })
 }
