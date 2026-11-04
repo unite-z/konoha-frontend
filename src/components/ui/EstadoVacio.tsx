@@ -17,12 +17,14 @@ export interface EstadoVacioProps {
   icono?: NombreIcono
   /** Nivel del encabezado del título, según la jerarquía de la página. */
   nivel?: 2 | 3
+  /** Sin tarjeta, centrado y con el icono en un círculo, dentro de un hueco propio (Figma: Calendario · sin resultados). */
+  centrado?: boolean
 }
 
-export default function EstadoVacio({ titulo, descripcion, accion, icono, nivel = 2 }: EstadoVacioProps) {
+export default function EstadoVacio({ titulo, descripcion, accion, icono, nivel = 2, centrado = false }: EstadoVacioProps) {
   const Encabezado = nivel === 2 ? 'h2' : 'h3'
   return (
-    <div className={estilos.estado} role="status">
+    <div className={centrado ? `${estilos.estado} ${estilos.centrado}` : estilos.estado} role="status">
       {icono && (
         <span className={estilos.icono}>
           <Icono nombre={icono} tamano="base" />

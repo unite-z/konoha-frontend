@@ -135,6 +135,7 @@ export default function CalendarioPage() {
       <div className={estilos.sinResultados}>
         <EstadoVacio
           icono="filter"
+          centrado
           titulo="No hay actividades con estos filtros"
           accion={
             <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>
@@ -207,26 +208,38 @@ export default function CalendarioPage() {
               Hoy
             </Boton>
             <span className={estilos.espacio} />
-            <Boton
-              variante="secundario"
-              compacto
-              icono="filter"
-              aria-expanded={filtrosAbiertos}
-              aria-controls="panel-filtros-calendario"
-              onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
-            >
-              {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
-            </Boton>
+            <span className={estilos.anclaFiltros}>
+              <Boton
+                variante="secundario"
+                compacto
+                icono="filter"
+                aria-expanded={filtrosAbiertos}
+                aria-controls="panel-filtros-calendario"
+                onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
+              >
+                {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
+              </Boton>
+              {filtrosAbiertos && (
+                <PanelFiltros
+                  id="panel-filtros-calendario"
+                  filtros={filtros}
+                  tipos={tipos}
+                  proveedores={proveedores}
+                  onAplicar={(nuevos) => {
+                    setFiltros(nuevos)
+                    setFiltrosAbiertos(false)
+                  }}
+                  onCerrar={() => setFiltrosAbiertos(false)}
+                />
+              )}
+            </span>
           </>
         }
       >
         <div className={estilos.pagina}>
-          {filtrosAbiertos && (
-            <PanelFiltros id="panel-filtros-calendario" filtros={filtros} tipos={tipos} proveedores={proveedores} onCambiar={setFiltros} />
-          )}
           <ChipsFiltrosActivos
             filtros={chips}
-            onQuitar={(clave) => setFiltros({ ...filtros, [clave]: '' })}
+            onQuitar={(clave) => setFiltros(chips.find((chip) => chip.clave === clave)?.sin ?? filtros)}
             onLimpiar={() => setFiltros(SIN_FILTROS)}
           />
 

@@ -195,11 +195,12 @@ export function actividadesDelPeriodo(desde: FechaIso, hasta: FechaIso, eventos:
 
 /** Filtros del calendario; cadena vacía es «todos». Cuadrilla, sector y lugar llegan con AV-254. */
 export interface FiltrosCalendario {
-  tipo: string
+  /** Tipos de servicio elegidos (varios, como en Figma); vacío, todos. */
+  tipos: string[]
   proveedor: string
 }
 
-export const SIN_FILTROS: FiltrosCalendario = { tipo: '', proveedor: '' }
+export const SIN_FILTROS: FiltrosCalendario = { tipos: [], proveedor: '' }
 
 /** Valor del filtro de proveedor para las actividades del personal propio. */
 export const PERSONAL_PROPIO = 'propio'
@@ -214,7 +215,7 @@ export function filtrarEventos(eventos: EventoCapa[], filtros: FiltrosCalendario
   return eventos.filter((evento) => {
     if (evento.capa !== 'actividad') return true
     const { tipo_servicio_id, proveedor_id } = evento.programacion
-    if (filtros.tipo && String(tipo_servicio_id) !== filtros.tipo) return false
+    if (filtros.tipos.length > 0 && !filtros.tipos.includes(String(tipo_servicio_id))) return false
     if (filtros.proveedor === PERSONAL_PROPIO) return proveedor_id === null
     return !filtros.proveedor || String(proveedor_id) === filtros.proveedor
   })
@@ -234,12 +235,23 @@ export function opcionesProveedor(eventos: EventoCapa[]): OpcionFiltro[] {
   return hayPropio ? [{ valor: PERSONAL_PROPIO, texto: 'Personal propio' }, ...opciones] : opciones
 }
 
-/** Chips de los filtros aplicados: «Tipo: Corte de césped», «Proveedor: Podas Altura Demo». */
-export function chipsFiltros(filtros: FiltrosCalendario, tipos: OpcionFiltro[], proveedores: OpcionFiltro[]): { clave: keyof FiltrosCalendario; texto: string }[] {
-  const chips: { clave: keyof FiltrosCalendario; texto: string }[] = []
-  if (filtros.tipo) chips.push({ clave: 'tipo', texto: `Tipo: ${tipos.find((t) => t.valor === filtros.tipo)?.texto ?? filtros.tipo}` })
+/** Un chip por filtro aplicado («Tipo: Corte de césped», «Proveedor: Podas Altura Demo»), con los filtros sin él. */
+export function chipsFiltros(
+  filtros: FiltrosCalendario,
+  tipos: OpcionFiltro[],
+  proveedores: OpcionFiltro[],
+): { clave: string; texto: string; sin: FiltrosCalendario }[] {
+  const chips = filtros.tipos.map((tipo) => ({
+    clave: `tipo-${tipo}`,
+    texto: `Tipo: ${tipos.find((t) => t.valor === tipo)?.texto ?? tipo}`,
+    sin: { ...filtros, tipos: filtros.tipos.filter((t) => t !== tipo) },
+  }))
   if (filtros.proveedor) {
-    chips.push({ clave: 'proveedor', texto: `Proveedor: ${proveedores.find((p) => p.valor === filtros.proveedor)?.texto ?? filtros.proveedor}` })
+    chips.push({
+      clave: 'proveedor',
+      texto: `Proveedor: ${proveedores.find((p) => p.valor === filtros.proveedor)?.texto ?? filtros.proveedor}`,
+      sin: { ...filtros, proveedor: '' },
+    })
   }
   return chips
 }
