@@ -49,3 +49,22 @@ export interface CicloCorte {
   /** Días de interrupción que no cuentan en la duración (0,5 = media jornada). */
   dias_interrupcion_descontados: number
 }
+
+/** Zona alternativa pendiente de la ruta para trasladar el corte (AV-258), con su aviso del día si lo hay. */
+export interface ZonaAlternativa {
+  zona: string
+  pendientes: number
+  /** «Reserva de jardín»: restricción de aviso de hoy en la zona; `null` si no hay. */
+  aviso_hoy: string | null
+}
+
+/** Cuerpo de `POST programaciones/{id}/interrupciones/` (AV-258, solo jefe). */
+export interface NuevaInterrupcion {
+  zona_afectada: string
+  zona_alternativa: string
+  /** Hora de la interrupción (ISO). */
+  hora: string
+  motivo: string
+  aviso_proveedor: boolean
+  registrar_restriccion: boolean
+}

@@ -167,3 +167,22 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* «Registrar interrupción» (Figma 347-1342): zona afectada y hora en una fila, y el enlace a reprogramar. */
+.filaInterrupcion {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.enlace {
+  align-self: flex-start;
+  color: var(--color-action-text);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  text-decoration: none;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+}

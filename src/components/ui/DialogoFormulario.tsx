@@ -8,6 +8,8 @@
  * - Mientras envía no se puede cerrar ni volver a enviar (el botón primario queda en «cargando»).
  * - `error`: aviso sobre el formulario (errores del servidor que no son de un campo).
  * - `ancho="estrecho"` (440 de Figma): formularios de un solo campo, como «Registrar motivo» (373-5658).
+ * - `ancho="medio"` (520 de Figma) y `conCierre`: formularios cortos con X de cierre, como «Registrar interrupción»
+ *   (347-1342).
  * - `ancho="lateral"`: panel a la derecha a toda la altura («Formulario en panel lateral», DESIGN.md 5), con el cuerpo
  *   desplazable y las acciones abajo.
  */
@@ -33,7 +35,9 @@ export interface DialogoFormularioProps {
   hayCambios?: boolean
   /** Error general del envío (por ejemplo, el `detalle` del back-end). */
   error?: { titulo: string; detalle: string } | null
-  ancho?: 'estrecho' | 'normal' | 'amplio' | 'lateral'
+  ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'lateral'
+  /** X de cierre en la cabecera también en un diálogo centrado (el lateral la lleva siempre). */
+  conCierre?: boolean
   /** Muestra la leyenda «* Campo obligatorio». */
   conObligatorios?: boolean
   /** Botón principal deshabilitado (por ejemplo, sin cambios o con errores a la vista, como en Figma). */
@@ -55,6 +59,7 @@ export default function DialogoFormulario({
   error,
   textoCancelar = 'Cancelar',
   ancho = 'normal',
+  conCierre = false,
   conObligatorios = true,
   envioDeshabilitado = false,
   onEnviar,
@@ -155,7 +160,7 @@ export default function DialogoFormulario({
               </div>
             )}
           </div>
-          {ancho === 'lateral' && (
+          {(ancho === 'lateral' || conCierre) && (
             <Boton variante="fantasma" compacto icono="x" onClick={pedirCierre} deshabilitado={enviando}>
               <span className="sr-only">Cerrar</span>
             </Boton>

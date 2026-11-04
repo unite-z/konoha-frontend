@@ -4,7 +4,7 @@
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte, LimpiezaCorte } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, LimpiezaCorte, NuevaInterrupcion, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
@@ -24,4 +24,22 @@ export async function registrarLimpieza(programacionId: number, fecha: FechaIso)
     return simularRegistrarLimpieza(fecha)
   }
   return solicitarPlanificacion<LimpiezaCorte>(`ciclos/${programacionId}/limpiezas/`, { metodo: 'POST', cuerpo: { fecha } })
+}
+
+/** `GET programaciones/{id}/zonas-alternativas/` (AV-258): zonas de la ruta con jardines pendientes y su aviso de hoy. */
+export async function listarZonasAlternativas(programacionId: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularZonasAlternativas } = await import('../simulados/corte')
+    return simularZonasAlternativas(signal)
+  }
+  return solicitarPlanificacion<ZonaAlternativa[]>(`programaciones/${programacionId}/zonas-alternativas/`, { signal })
+}
+
+/** `POST programaciones/{id}/interrupciones/` (AV-258, solo jefe): detiene el corte y lo traslada a otra zona. */
+export async function registrarInterrupcion(programacionId: number, cuerpo: NuevaInterrupcion) {
+  if (DATOS_SIMULADOS) {
+    const { simularRegistrarInterrupcion } = await import('../simulados/corte')
+    return simularRegistrarInterrupcion(cuerpo)
+  }
+  return solicitarPlanificacion<InterrupcionCorte>(`programaciones/${programacionId}/interrupciones/`, { metodo: 'POST', cuerpo })
 }
