@@ -186,6 +186,12 @@
 }
 
 /* En la agenda el texto del evento no se recorta. */
+/* «Dar de baja» de la agenda: texto rojo alineado con la restricción, como en Figma 344-436 y 347-1492. */
+.restriccionAgenda .darDeBaja {
+  padding-inline: 0;
+  color: var(--color-error);
+}
+
 .restriccionAgenda > :first-child,
 .actividadAgenda > :first-child {
   max-width: 100%;
