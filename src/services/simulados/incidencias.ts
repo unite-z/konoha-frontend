@@ -5,7 +5,7 @@
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -31,6 +31,9 @@ const SEMILLAS: Semilla[] = [
   { id: 33, codigo: 'INC-2026-033', tipo: 'Basura en jardín', tipo_sencilla: true, espacio: 'Jardín de Sociales', severidad: null, via: null, estado: 'Descartada', canal: 'Presencial', responsable: null, horas: 170, cerradaTras: 3 },
 ]
 
+/** Incidencias registradas en esta sesión del navegador (se pierden al recargar). */
+const registradas: IncidenciaResumen[] = []
+
 export function incidenciasSimuladas(ahora: number = Date.now()): IncidenciaResumen[] {
   return SEMILLAS.map(({ horas, cerradaTras, ...resto }) => ({
     ...resto,
@@ -40,7 +43,7 @@ export function incidenciasSimuladas(ahora: number = Date.now()): IncidenciaResu
 }
 
 export function simularListarIncidencias(signal?: AbortSignal): Promise<IncidenciaResumen[]> {
-  return responderSimulado(() => (escenarioSimulado() === 'vacio' ? [] : incidenciasSimuladas()), { signal })
+  return responderSimulado(() => (escenarioSimulado() === 'vacio' ? [] : [...registradas, ...incidenciasSimuladas()]), { signal })
 }
 
 const CAPATACES: CapatazDisponible[] = [
@@ -268,5 +271,51 @@ export function simularDevolver(id: number): Promise<IncidenciaDetalle> {
       historial: [{ texto: 'Devuelta a En atención · Robert G.', fecha_hora: new Date().toISOString() }, ...(actual.historial ?? [])],
     })
     return incidenciaSimulada(id) ?? actual
+  })
+}
+
+const CATALOGOS_REGISTRO: CatalogosRegistro = {
+  tipos: ['Rama caída', 'Poda de ramas', 'Hojarasca', 'Árbol en riesgo', 'Obstrucción', 'Riego averiado', 'Otro'],
+  espacios: [
+    { nombre: 'Estacionamiento 3', ejemplares: ['T-0907 · Eucalipto'] },
+    { nombre: 'Jardín de la Biblioteca', ejemplares: ['T-0412 · Ficus', 'T-0415 · Ficus'] },
+    { nombre: 'Pabellón Z', ejemplares: ['T-0218 · Molle'] },
+    { nombre: 'Patio de Letras', ejemplares: [] },
+  ],
+  usuarios: [
+    { id: 1, nombre: 'Ana Q.' },
+    { id: 2, nombre: 'Luis P.' },
+  ],
+}
+
+export function simularCatalogosRegistro(signal?: AbortSignal): Promise<CatalogosRegistro> {
+  return responderSimulado(() => CATALOGOS_REGISTRO, { signal })
+}
+
+/** Registra la incidencia en la sesión del navegador: aparece arriba de la bandeja como INC-2026-042, Registrada. */
+export function simularRegistrarIncidencia(cuerpo: NuevaIncidencia): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const nueva: IncidenciaDetalle = {
+      id: 42,
+      codigo: 'INC-2026-042',
+      tipo: cuerpo.tipo,
+      tipo_sencilla: true,
+      espacio: cuerpo.espacio,
+      severidad: null,
+      via: null,
+      estado: 'Registrada',
+      canal: cuerpo.canal,
+      fecha_registro: new Date().toISOString(),
+      fecha_cierre: null,
+      responsable: null,
+      zona: null,
+      descripcion: cuerpo.descripcion,
+      ejemplar: null,
+      reportado_por: 'nombre' in cuerpo.reportado_por ? cuerpo.reportado_por.nombre : (CATALOGOS_REGISTRO.usuarios.find((u) => 'usuario_id' in cuerpo.reportado_por && u.id === cuerpo.reportado_por.usuario_id)?.nombre ?? ''),
+      impacto: null,
+      foto_url: null,
+    }
+    registradas.unshift(nueva)
+    return nueva
   })
 }

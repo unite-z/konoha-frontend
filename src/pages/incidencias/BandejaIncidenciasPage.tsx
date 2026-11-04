@@ -3,12 +3,14 @@
  * Pestañas por grupo de estado con contador y tabla con incidencia, ubicación, severidad, vía, estado y tiempo
  * abierta (en tono de aviso si una sencilla pasa el plazo objetivo de 24 h, RN-019). Los datos son simulados
  * hasta que exista el backend (AV-274 y AV-280). Encima, la tarjeta de alertas de plazo de las sencillas con «Reasignar»
- * y «Anotar causa» (`AlertasPlazo`, Figma 394-9392). «Reportar incidencia» llega con AV-285.
+ * y «Anotar causa» (`AlertasPlazo`, Figma 394-9392). «Reportar incidencia» abre el registro en nombre de otro
+ * (`DialogoRegistrarIncidencia`, Figma 394-8504, AV-285).
  */
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import Boton from '@/components/ui/Boton'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
 import EstadoError from '@/components/ui/EstadoError'
@@ -16,10 +18,12 @@ import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
+import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INCIDENCIAS, rutaIncidencia } from '@/router/rutasApp'
 import { listarIncidencias } from '@/services/api/incidencias'
 import type { IncidenciaResumen } from '@/types/incidencias'
 import AlertasPlazo from './AlertasPlazo'
+import DialogoRegistrarIncidencia from './DialogoRegistrarIncidencia'
 import estilos from './Incidencias.module.css'
 import {
   ESTADO_INCIDENCIA,
@@ -45,6 +49,7 @@ export default function BandejaIncidenciasPage() {
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
   const navegar = useNavigate()
+  const [registrando, setRegistrando] = useState(false)
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
     { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
@@ -86,6 +91,11 @@ export default function BandejaIncidenciasPage() {
   const contadores = contadoresBandeja(incidencias)
   return (
     <div className={estilos.pagina}>
+      <AccionesPagina>
+        <Boton icono="plus-circle" onClick={() => setRegistrando(true)}>
+          Reportar incidencia
+        </Boton>
+      </AccionesPagina>
       <AvisoDatosSimulados />
       <AlertasPlazo
         alertas={alertasPlazo(incidencias, ahora)}
@@ -108,6 +118,16 @@ export default function BandejaIncidenciasPage() {
           vacio={{ titulo: 'Sin incidencias en esta pestaña', descripcion: 'Las incidencias reportadas aparecerán aquí.' }}
         />
       </Pestanas>
+      {registrando && (
+        <DialogoRegistrarIncidencia
+          onCerrar={() => setRegistrando(false)}
+          onRegistrada={(registrada) => {
+            setRegistrando(false)
+            setAviso(`${registrada.codigo} registrada`)
+            consulta.reintentar()
+          }}
+        />
+      )}
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
   )

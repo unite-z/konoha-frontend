@@ -175,3 +175,8 @@
   line-height: var(--type-pequeno-line);
   font-weight: var(--type-pequeno-medio-weight);
 }
+
+/* Repartido (Figma 394-8504): en fila, cada opción con el mismo ancho. */
+.repartido > .opcion {
+  flex: 1;
+}

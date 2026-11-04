@@ -161,3 +161,23 @@ export interface NuevoRequerimiento {
 export interface Devolucion {
   observaciones: string
 }
+
+/** Catálogos del registro de incidencias desde la oficina (`GET incidencias/catalogos-registro/`, AV-274). */
+export interface CatalogosRegistro {
+  tipos: string[]
+  espacios: { nombre: string; ejemplares: string[] }[]
+  usuarios: { id: number; nombre: string }[]
+}
+
+/**
+ * Cuerpo de `POST incidencias/` (AV-274, HU-020): registro en nombre de otro desde la oficina. Lo reporta un usuario
+ * del sistema (`usuario_id`) o una persona externa (`nombre` y `contacto`). La foto va aparte, en multipart.
+ */
+export interface NuevaIncidencia {
+  canal: CanalIncidencia
+  tipo: string
+  reportado_por: { usuario_id: number } | { nombre: string; contacto: string | null }
+  espacio: string
+  ejemplar: string | null
+  descripcion: string
+}
