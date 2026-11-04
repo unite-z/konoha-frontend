@@ -17,7 +17,6 @@ const corte: ServicioPeriodico = {
 }
 const fito: ServicioPeriodico = { id: 2, nombre: 'Control fitosanitario', es_ruidoso: false, via: 'Tercerizado', proveedor: 'Fumigaciones Demo S.A.', frecuencias: [], duracion: null }
 
-vi.mock('@/config/datosSimulados', () => ({ DATOS_SIMULADOS: true }))
 vi.mock('@/utils/instanteLima', async (original) => ({ ...(await original<typeof import('@/utils/instanteLima')>()), hoyLima: () => '2026-11-04' }))
 vi.mock('@/services/api/planificacion', () => ({
   listarProgramaciones: async () => [

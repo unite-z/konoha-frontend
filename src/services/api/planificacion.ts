@@ -19,20 +19,13 @@ import type {
 } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
-export async function listarServiciosPeriodicos(signal?: AbortSignal) {
-  const servicios = await solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
-  if (!DATOS_SIMULADOS) return servicios
-  // Hasta AV-363, la vía y el proveedor del servicio se simulan (D9).
-  const { simularViaServicios } = await import('../simulados/serviciosPlanificacion')
-  return simularViaServicios(servicios)
+/** `GET servicios/`: servicios periódicos con frecuencias, duración, vía y proveedor habitual (AV-363). */
+export function listarServiciosPeriodicos(signal?: AbortSignal) {
+  return solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
 }
 
-/** `GET servicios/{id}/valores-iniciales/` (AV-363). Hasta que exista, con `VITE_DATOS_SIMULADOS=true` se simula (D9). */
-export async function obtenerValoresIniciales(servicio: ServicioPeriodico, signal?: AbortSignal) {
-  if (DATOS_SIMULADOS) {
-    const { simularValoresIniciales } = await import('../simulados/serviciosPlanificacion')
-    return simularValoresIniciales(servicio, signal)
-  }
+/** `GET servicios/{id}/valores-iniciales/` (AV-363); 404 `sin-valores-iniciales` si la sección no los tiene. */
+export function obtenerValoresIniciales(servicio: ServicioPeriodico, signal?: AbortSignal) {
   return solicitarPlanificacion<ValoresIniciales>(`servicios/${servicio.id}/valores-iniciales/`, { signal })
 }
 
@@ -126,11 +119,7 @@ export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?
   })
 }
 
-/** `GET servicios/{id}/historial/` (AV-256), del más reciente al más antiguo. Hasta que exista, simulado (D9). */
-export async function listarHistorialServicio(servicioId: number, signal?: AbortSignal) {
-  if (DATOS_SIMULADOS) {
-    const { simularHistorialServicio } = await import('../simulados/serviciosPlanificacion')
-    return simularHistorialServicio(signal)
-  }
+/** `GET servicios/{id}/historial/` (AV-256), del más reciente al más antiguo. */
+export function listarHistorialServicio(servicioId: number, signal?: AbortSignal) {
   return solicitarPlanificacion<CambioServicio[]>(`servicios/${servicioId}/historial/`, { signal })
 }

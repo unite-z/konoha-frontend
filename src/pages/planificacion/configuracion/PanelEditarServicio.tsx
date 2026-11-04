@@ -7,7 +7,7 @@
  * Solo envía lo que cambia: un `PUT servicios/{id}/frecuencias/{estacion}/` por estación y `PUT servicios/{id}/duracion/`.
  * Avisa de que la frecuencia nueva solo afecta a los ciclos que se programen y de si un ciclo en curso ya supera la
  * duración nueva (Figma 367-3617). El subtítulo lleva la vía y el proveedor, y «Usar valores iniciales» rellena el
- * borrador con los de la sección (los dos del contrato de AV-363, simulados hasta entonces); «Ver historial» abre el historial (`DialogoHistorialServicio`, 367-3527, AV-256).
+ * borrador con los de la sección (AV-363); «Ver historial» abre el historial (`DialogoHistorialServicio`, 367-3527, AV-256).
  */
 import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -15,7 +15,6 @@ import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
-import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
 import { actualizarDuracion, actualizarFrecuencia, listarProgramaciones, obtenerValoresIniciales } from '@/services/api/planificacion'
@@ -164,8 +163,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
           compacto
           className={estilos.enlace}
           cargando={cargandoIniciales}
-          deshabilitado={!DATOS_SIMULADOS || enviando}
-          ayudaDeshabilitado={DATOS_SIMULADOS ? undefined : 'Aún no disponible.'}
+          deshabilitado={enviando}
           onClick={() => void usarValoresIniciales()}
         >
           Usar valores iniciales

@@ -32,9 +32,9 @@ export interface ServicioPeriodico {
   es_ruidoso: boolean
   frecuencias: FrecuenciaEstacion[]
   duracion: DuracionServicio | null
-  /** Contrato de AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
+  /** AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
   via?: 'Tercerizado' | 'PersonalPropio' | null
-  /** Contrato de AV-363: proveedor habitual si es tercerizado. */
+  /** AV-363: proveedor del contrato vigente (o del último) si es tercerizado. */
   proveedor?: string | null
 }
 
