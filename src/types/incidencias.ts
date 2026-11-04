@@ -39,3 +39,10 @@ export interface IncidenciaResumen {
   /** Capataz o proveedor a cargo, si ya se derivó. */
   responsable: string | null
 }
+
+/** Capataz al que se puede reasignar una incidencia (`GET incidencias/{id}/capataces/`, AV-280). */
+export interface CapatazDisponible {
+  id: number
+  nombre: string
+  cuadrilla: string
+}

@@ -2,11 +2,12 @@
 /**
  * Pestañas por grupo de estado con contador y tabla con incidencia, ubicación, severidad, vía, estado y tiempo
  * abierta (en tono de aviso si una sencilla pasa el plazo objetivo de 24 h, RN-019). Los datos son simulados
- * hasta que exista el backend (AV-274 y AV-280). La tarjeta de alertas de plazo, con «Reasignar» y «Anotar causa»,
- * llega en el siguiente PR; «Reportar incidencia», con AV-285.
+ * hasta que exista el backend (AV-274 y AV-280). Encima, la tarjeta de alertas de plazo de las sencillas con «Reasignar»
+ * y «Anotar causa» (`AlertasPlazo`, Figma 394-9392). «Reportar incidencia» llega con AV-285.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
 import EstadoError from '@/components/ui/EstadoError'
@@ -17,10 +18,12 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INCIDENCIAS } from '@/router/rutasApp'
 import { listarIncidencias } from '@/services/api/incidencias'
 import type { IncidenciaResumen } from '@/types/incidencias'
+import AlertasPlazo from './AlertasPlazo'
 import estilos from './Incidencias.module.css'
 import {
   ESTADO_INCIDENCIA,
   PESTANAS_BANDEJA,
+  alertasPlazo,
   SEVERIDAD_INCIDENCIA,
   VIA_INCIDENCIA,
   contadoresBandeja,
@@ -36,6 +39,10 @@ export default function BandejaIncidenciasPage() {
   const [pestana, setPestana] = useState<PestanaBandeja>('todas')
   const consulta = useConsulta('incidencias', (signal) => listarIncidencias(signal))
   const [ahora] = useState(() => Date.now())
+  // Reasignaciones hechas aquí, encima de la consulta hasta la siguiente.
+  const [locales, setLocales] = useState<Record<number, IncidenciaResumen>>({})
+  const [aviso, setAviso] = useState<string | null>(null)
+  const cerrarAviso = useCallback(() => setAviso(null), [])
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
     { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
@@ -55,7 +62,8 @@ export default function BandejaIncidenciasPage() {
       titulo: 'Estado',
       render: (i) => {
         const estado = ESTADO_INCIDENCIA[i.estado]
-        return <Estado tono={estado.tono} texto={estado.texto} punto />
+        // Como en Figma, «En atención» va relleno y sin punto.
+        return <Estado tono={estado.tono} texto={estado.texto} punto={i.estado !== 'EnAtencion'} />
       },
     },
     {
@@ -72,11 +80,16 @@ export default function BandejaIncidenciasPage() {
     return <EstadoError titulo="No pudimos cargar las incidencias" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
   }
 
-  const incidencias = consulta.datos ?? []
+  const incidencias = (consulta.datos ?? []).map((i) => locales[i.id] ?? i)
   const contadores = contadoresBandeja(incidencias)
   return (
     <div className={estilos.pagina}>
       <AvisoDatosSimulados />
+      <AlertasPlazo
+        alertas={alertasPlazo(incidencias, ahora)}
+        onAviso={setAviso}
+        onReasignada={(actualizada) => setLocales((previas) => ({ ...previas, [actualizada.id]: actualizada }))}
+      />
       <Pestanas
         etiqueta="Estado de las incidencias"
         pestanas={PESTANAS_BANDEJA.map((p) => ({ ...p, contador: consulta.datos ? contadores[p.valor] : undefined }))}
@@ -92,6 +105,7 @@ export default function BandejaIncidenciasPage() {
           vacio={{ titulo: 'Sin incidencias en esta pestaña', descripcion: 'Las incidencias reportadas aparecerán aquí.' }}
         />
       </Pestanas>
+      <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
   )
 }

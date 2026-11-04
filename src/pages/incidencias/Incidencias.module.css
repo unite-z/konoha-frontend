@@ -4,3 +4,51 @@
   flex-direction: column;
   gap: var(--space-6);
 }
+
+/* «Plazo de incidencias sencillas» (Figma 388-7027): tarjeta en aviso con una fila por alerta, separadas por una línea. */
+.alertas {
+  padding: calc(var(--space-2) + var(--space-1) / 2) var(--space-4) var(--space-1);
+  border: 1px solid var(--web-warning-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-bg);
+}
+
+.tituloAlertas {
+  margin: 0;
+  color: var(--color-warning);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.listaAlertas {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.filaAlerta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--web-warning-border);
+}
+
+.textoAlerta {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+@media (max-width: 767px) {
+  .filaAlerta {
+    flex-wrap: wrap;
+  }
+
+  .textoAlerta {
+    flex-basis: 100%;
+  }
+}

@@ -4,8 +4,8 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
-import type { IncidenciaResumen } from '@/types/incidencias'
-import { escenarioSimulado, responderSimulado } from './simulacion'
+import type { CapatazDisponible, IncidenciaResumen } from '@/types/incidencias'
+import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
 
@@ -38,4 +38,27 @@ export function incidenciasSimuladas(ahora: number = Date.now()): IncidenciaResu
 
 export function simularListarIncidencias(signal?: AbortSignal): Promise<IncidenciaResumen[]> {
   return responderSimulado(() => (escenarioSimulado() === 'vacio' ? [] : incidenciasSimuladas()), { signal })
+}
+
+const CAPATACES: CapatazDisponible[] = [
+  { id: 1, nombre: 'Luis P.', cuadrilla: 'Cuadrilla A' },
+  { id: 2, nombre: 'Marta R.', cuadrilla: 'Cuadrilla B' },
+  { id: 3, nombre: 'J. Ramos', cuadrilla: 'Cuadrilla C' },
+]
+
+export function simularRespuestaVacia(): Promise<void> {
+  return responderSimulado(() => undefined)
+}
+
+export function simularCapataces(signal?: AbortSignal): Promise<CapatazDisponible[]> {
+  return responderSimulado(() => CAPATACES, { signal })
+}
+
+export function simularReasignar(incidenciaId: number, capatazId: number): Promise<IncidenciaResumen> {
+  return responderSimulado(() => {
+    const incidencia = incidenciasSimuladas().find((i) => i.id === incidenciaId)
+    const capataz = CAPATACES.find((c) => c.id === capatazId)
+    if (!incidencia || !capataz) throw errorNoEncontrado()
+    return { ...incidencia, responsable: capataz.nombre }
+  })
 }
