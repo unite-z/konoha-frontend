@@ -14,8 +14,8 @@
  * - `ia-no-disponible`: al solicitar, 503;
  * - `error`, `sin-permiso` y `sin-sesion`: los genéricos de `simulacion.ts`.
  */
-import type { Paginado } from '../../types/comun'
-import type { EstadoSugerencia } from '../../types/ia'
+import type { Paginado } from '@/types/comun'
+import type { EstadoSugerencia } from '@/types/ia'
 import type {
   ActividadEstimable,
   AntecedenteComparable,
@@ -27,10 +27,10 @@ import type {
   EstimacionRecursos,
   SolicitudEstimacion,
   SugerenciaEstimacion,
-} from '../../types/estimacionIa'
-import { calcularDiferencia } from '../../utils/estimacionIa'
-import { formatearNumero } from '../../utils/formato'
-import { hoyLima } from '../../utils/instanteLima'
+} from '@/types/estimacionIa'
+import { calcularDiferencia } from '@/utils/estimacionIa'
+import { formatearNumero } from '@/utils/formato'
+import { hoyLima } from '@/utils/instanteLima'
 import { crearAlmacenSimulado, errorConflicto, errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const POR_PAGINA = 25

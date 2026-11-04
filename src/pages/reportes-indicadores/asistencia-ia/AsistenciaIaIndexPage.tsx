@@ -1,8 +1,8 @@
 /**
  * Índice de «Asistencia IA» (RF-IA-001, RN-IA-002, RF-IA-002, RF-IA-003 y RF-IA-004).
  */
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS } from '../../../router/rutasApp'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, RUTAS } from '@/router/rutasApp'
 import ListaEnlaces from '../ListaEnlaces'
 
 export default function AsistenciaIaIndexPage() {

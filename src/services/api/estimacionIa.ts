@@ -3,16 +3,16 @@
  * El frontend no llama a Operación de campo: las actividades estimables las sirve MOD-06
  * (`actividades-pendientes/`), y al confirmar solo se registra lo confirmado.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
-import type { Paginado } from '../../types/comun'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
+import type { Paginado } from '@/types/comun'
 import type {
   ActividadEstimable,
   CuerpoRecursosManual,
   CuerpoValidacionEstimacion,
   SolicitudEstimacion,
   SugerenciaEstimacion,
-} from '../../types/estimacionIa'
-import type { EstadoSugerencia } from '../../types/ia'
+} from '@/types/estimacionIa'
+import type { EstadoSugerencia } from '@/types/ia'
 import { solicitar } from './cliente'
 
 export interface FiltrosEstimaciones {

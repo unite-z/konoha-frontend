@@ -4,11 +4,11 @@
  * derecha. Al corregir, la ficha muestra los campos que recibe en `correccion`. Ya confirmada, muestra la decisión.
  */
 import type { ReactNode } from 'react'
-import Estado from '../../../../components/ui/Estado'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import Icono from '../../../../components/ui/Icono'
-import Tarjeta from '../../../../components/ui/Tarjeta'
-import type { AccionDecision } from '../../../../types/ia'
+import Estado from '@/components/ui/Estado'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Icono from '@/components/ui/Icono'
+import Tarjeta from '@/components/ui/Tarjeta'
+import type { AccionDecision } from '@/types/ia'
 import estilos from './Estimacion.module.css'
 
 const OPCIONES: { valor: AccionDecision; texto: string }[] = [
