@@ -52,9 +52,9 @@ export function crearRestriccion(cuerpo: RestriccionEntrada) {
 export async function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
   const ciclos = await solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
   if (!DATOS_SIMULADOS) return ciclos
-  // Hasta AV-364, el código del ciclo se simula (D9).
-  const { simularCodigosCiclos } = await import('../simulados/ciclosPlanificacion')
-  return simularCodigosCiclos(ciclos)
+  // Hasta AV-364 y AV-253, el código y el historial del ciclo se simulan (D9).
+  const { simularCiclos } = await import('../simulados/ciclosPlanificacion')
+  return simularCiclos(ciclos)
 }
 
 /** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */

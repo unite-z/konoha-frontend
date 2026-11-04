@@ -1,75 +1,66 @@
-// CU-004 y CU-007 · Detalle de ciclo sin ruta (AV-269, Figma «Detalle» 370-3811)
+// CU-004 y CU-007 · Detalle de ciclo sin ruta (AV-269, Figma «Detalle de ciclo sin ruta» 380-7171 y 370-3811)
 /**
- * Estado, proveedor, indicadores (fechas previstas, inicio y fin reales, duración y restricciones) y las
- * restricciones que coinciden con el periodo. El jefe inicia, finaliza o cancela desde aquí.
+ * Título con el código y el estado al lado, proveedor, fechas y franja debajo, tres indicadores (fechas previstas
+ * o inicio real, duración con el máximo y restricciones) y el historial. El jefe inicia, finaliza o cancela.
  *
  * No hay `GET programaciones/{id}/`: el ciclo se busca en `GET programaciones/` del mismo rango que la lista.
- * Faltan en el contrato el código del ciclo, el historial, el requerimiento asociado y «confirmado por» de los
- * avisos (AV-253), y «Registrar motivo» de la duración excedida (AV-255). La ruta del corte la añade AV-270.
+ * El código (AV-364) y el historial (AV-253) se simulan hasta que lleguen (D9). Faltan el requerimiento asociado
+ * (AV-263) y «confirmado por» de los avisos (AV-253). La ruta del corte la añade AV-270.
  */
 import { useCallback, useState } from 'react'
 import { useParams } from 'react-router'
+import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import Tarjeta from '@/components/ui/Tarjeta'
 import TarjetaIndicador, { FilaTarjetas } from '@/components/ui/TarjetaIndicador'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
+import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos, type CambioEstadoCiclo } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import type { Programacion, Restriccion } from '@/types/planificacion'
+import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import { conflictosDelPeriodo } from '../calendario/programarCiclo'
-import { EFECTO_RESTRICCION, ESTADO_PROGRAMACION, fechaCorta, periodoRestriccion } from '../resumen/resumenPlanificacion'
+import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
-import { accionesCiclo, duracionCiclo, periodoCiclo } from './detalleCiclo'
+import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo } from './detalleCiclo'
 
-const COLUMNAS_RESTRICCIONES: ColumnaTabla<Restriccion>[] = [
-  { clave: 'fechas', titulo: 'Fechas', render: (r) => periodoRestriccion(r.fecha_inicio, r.fecha_fin) },
-  { clave: 'tipo', titulo: 'Tipo', multilinea: true, render: (r) => r.tipo },
-  {
-    clave: 'efecto',
-    titulo: 'Efecto',
-    render: (r) => {
-      const efecto = EFECTO_RESTRICCION[r.efecto]
-      return <Estado tono={efecto.tono} texto={efecto.texto} />
-    },
-  },
-  { clave: 'descripcion', titulo: 'Descripción', multilinea: true, render: (r) => r.descripcion },
-]
-
-function textoRestricciones(conflictos: Restriccion[]): { valor: string; contexto: string } {
-  if (conflictos.length === 0) return { valor: 'Ninguna', contexto: 'Sin avisos ni prohibiciones en el periodo' }
-  const prohibiciones = conflictos.filter((r) => r.efecto === 'Prohibicion').length
-  const avisos = conflictos.length - prohibiciones
-  const partes = [avisos && `${avisos} ${avisos === 1 ? 'aviso' : 'avisos'}`, prohibiciones && `${prohibiciones} ${prohibiciones === 1 ? 'prohibición' : 'prohibiciones'}`]
-  return { valor: String(conflictos.length), contexto: partes.filter(Boolean).join(' y ') }
-}
-
-function FichaCiclo({ ciclo, hoy, onAccion }: { ciclo: Programacion; hoy: FechaIso; onAccion: ((cambio: CambioEstadoCiclo) => void) | null }) {
+function FichaCiclo({
+  ciclo,
+  hoy,
+  servicio,
+  onAccion,
+}: {
+  ciclo: Programacion
+  hoy: FechaIso
+  servicio: ServicioPeriodico | undefined
+  onAccion: ((cambio: CambioEstadoCiclo) => void) | null
+}) {
   const { desde, hasta } = periodoCiclo(ciclo, hoy)
-  const servicios = useConsulta('ciclo-servicios', (signal) => listarServiciosPeriodicos(signal))
   const restricciones = useConsulta(`ciclo-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
-  const ruidoso = servicios.datos?.find((s) => s.id === ciclo.tipo_servicio_id)?.es_ruidoso ?? true
-  const conflictos = conflictosDelPeriodo(restricciones.datos ?? [], desde, hasta, ruidoso)
-  const resumenRestricciones = textoRestricciones(conflictos)
-  const duracion = duracionCiclo(ciclo, hoy)
+  const conflictos = conflictosDelPeriodo(restricciones.datos ?? [], desde, hasta, servicio?.es_ruidoso ?? true)
+  const indicadores = indicadoresCiclo(ciclo, servicio, conflictos, hoy)
+  const historial = historialCiclo(ciclo)
   const estado = ESTADO_PROGRAMACION[ciclo.estado]
   const acciones = onAccion ? accionesCiclo(ciclo.estado) : []
 
   return (
     <>
+      <JuntoTitulo>
+        {/* Como en Figma, «En curso» va relleno y sin punto. */}
+        <Estado tono={estado.tono} texto={estado.texto} punto={ciclo.estado !== 'EnCurso'} />
+      </JuntoTitulo>
       {acciones.length > 0 && onAccion && (
         <AccionesPagina>
           {acciones.map((accion) => (
@@ -79,52 +70,34 @@ function FichaCiclo({ ciclo, hoy, onAccion }: { ciclo: Programacion; hoy: FechaI
           ))}
         </AccionesPagina>
       )}
-      <div className={estilos.cabecera}>
-        <Estado tono={estado.tono} texto={estado.texto} punto />
-        <p className={estilos.subtitulo}>
-          {ciclo.proveedor ?? 'Personal propio'} · {ciclo.estacion}
-        </p>
-      </div>
+      <AvisoDatosSimulados />
 
       <FilaTarjetas etiqueta="Indicadores del ciclo">
-        <TarjetaIndicador
-          etiqueta="Fechas previstas"
-          valor={periodoRestriccion(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)}
-        />
-        <TarjetaIndicador
-          etiqueta="Inicio real"
-          valor={ciclo.fecha_inicio_real ? fechaCorta(ciclo.fecha_inicio_real) : 'Sin iniciar'}
-          contexto={ciclo.fecha_fin_real ? `Fin real: ${fechaCorta(ciclo.fecha_fin_real)}` : ciclo.estado === 'EnCurso' ? 'Fin real pendiente' : undefined}
-        />
-        <TarjetaIndicador
-          etiqueta="Duración"
-          valor={duracion.valor}
-          contexto={duracion.contexto}
-          estado={duracion.exceso > 0 ? 'alerta' : 'normal'}
-          insignia={duracion.exceso > 0 ? { tono: 'error', texto: `Excede en ${duracion.exceso} ${duracion.exceso === 1 ? 'día' : 'días'}` } : undefined}
-        />
-        <TarjetaIndicador
-          etiqueta="Restricciones"
-          estado={restricciones.datos ? 'normal' : 'cargando'}
-          valor={resumenRestricciones.valor}
-          contexto={resumenRestricciones.contexto}
-        />
+        {indicadores.map((indicador) => (
+          <TarjetaIndicador
+            key={indicador.etiqueta}
+            etiqueta={indicador.etiqueta}
+            valor={indicador.valor}
+            contexto={indicador.contexto}
+            nota={indicador.nota}
+            estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
+            insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
+          />
+        ))}
       </FilaTarjetas>
 
-      <Tarjeta titulo="Restricciones del periodo" relleno="amplio">
-        {restricciones.estado === 'error' && !restricciones.datos ? (
-          <EstadoError titulo="No pudimos cargar las restricciones" descripcion={restricciones.error?.detalle ?? ''} onReintentar={restricciones.reintentar} />
-        ) : (
-          <TablaDatos
-            titulo="Restricciones del periodo"
-            columnas={COLUMNAS_RESTRICCIONES}
-            filas={conflictos}
-            claveFila={(r) => String(r.id)}
-            estado={restricciones.datos ? 'exito' : 'cargando'}
-            vacio={{ titulo: 'Sin restricciones', descripcion: 'Ningún aviso ni prohibición coincide con el ciclo.' }}
-          />
-        )}
-      </Tarjeta>
+      {historial.length > 0 && (
+        <Tarjeta titulo="Historial">
+          <ul className={estilos.historial}>
+            {historial.map((evento) => (
+              <li key={evento.clave} className={estilos.evento}>
+                <span>{evento.texto}</span>
+                <span className={estilos.detalleEvento}>{evento.detalle}</span>
+              </li>
+            ))}
+          </ul>
+        </Tarjeta>
+      )}
     </>
   )
 }
@@ -136,13 +109,21 @@ export default function CicloDetallePage() {
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   const { desde, hasta } = rangoCiclos(hoy)
   const consulta = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const servicios = useConsulta('ciclo-servicios', (signal) => listarServiciosPeriodicos(signal))
   const [local, setLocal] = useState<Programacion | null>(null)
   const [cambio, setCambio] = useState<CambioEstadoCiclo | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
   const ciclo = local?.id === id ? local : consulta.datos?.find((c) => c.id === id)
-  usePaginaActual(ciclo?.servicio ?? 'Ciclo', [MIGAS_PLANIFICACION.planificacion, MIGAS_PLANIFICACION.ciclos, { texto: ciclo?.servicio ?? 'Ciclo' }])
+  const servicio = servicios.datos?.find((s) => s.id === ciclo?.tipo_servicio_id)
+  // Como en Figma 380-7171: «Control fitosanitario · FIT-2026-T5», migas «Ciclos > FIT-2026-T5» y, debajo, proveedor,
+  // fechas y franja.
+  usePaginaActual(
+    ciclo ? [ciclo.servicio, ciclo.codigo].filter(Boolean).join(' · ') : 'Ciclo',
+    [MIGAS_PLANIFICACION.ciclos, { texto: ciclo ? (ciclo.codigo ?? ciclo.servicio) : 'Ciclo' }],
+    ciclo ? subtituloCiclo(ciclo, servicio) : undefined,
+  )
 
   let contenido
   if (consulta.estado === 'error' && !consulta.datos) {
@@ -162,14 +143,11 @@ export default function CicloDetallePage() {
       />
     )
   } else {
-    contenido = <FichaCiclo ciclo={ciclo} hoy={hoy} onAccion={puedeEditar ? setCambio : null} />
+    contenido = <FichaCiclo ciclo={ciclo} hoy={hoy} servicio={servicio} onAccion={puedeEditar ? setCambio : null} />
   }
 
   return (
     <div className={estilos.pagina}>
-      <BotonEnlace to={RUTAS_PLANIFICACION.ciclos} variante="fantasma" icono="chevron-left" className={estilos.volver}>
-        Volver a Ciclos
-      </BotonEnlace>
       {contenido}
       {ciclo && cambio && (
         <DialogoCambioCiclo

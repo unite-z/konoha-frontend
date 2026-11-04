@@ -20,8 +20,9 @@ const programada: Programacion = {
   fecha_fin_real: null,
 }
 const cambiarEstadoCiclo = vi.fn(async (_id: number, _cambio: string, fecha?: string) => ({ ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null }))
+const historial: { estado: 'Programada' | 'EnCurso'; fecha_hora: string; autor: string }[] = []
 vi.mock('@/services/api/planificacion', () => ({
-  listarProgramaciones: async () => [programada],
+  listarProgramaciones: async () => [programada, { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial }],
   listarServiciosPeriodicos: async () => [],
   listarRestricciones: async () => [
     { id: 3, tipo_restriccion_id: 1, tipo: 'Ceremonia', efecto: 'Advertencia', aplica_servicios_ruidosos: false, fecha_inicio: '2026-11-03', fecha_fin: '2026-11-03', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: 'Graduación', serie: null },
@@ -30,7 +31,7 @@ vi.mock('@/services/api/planificacion', () => ({
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
-vi.mock('@/utils/instanteLima', () => ({ hoyLima: () => '2026-11-02' }))
+vi.mock('@/utils/instanteLima', async (original) => ({ ...(await original<typeof import('@/utils/instanteLima')>()), hoyLima: () => '2026-11-02' }))
 vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
 
 beforeAll(() => {
@@ -57,7 +58,10 @@ describe('CicloDetallePage', () => {
   it('muestra el ciclo con sus restricciones e inicia con la fecha real', async () => {
     pintar('7')
     expect(await screen.findByText('Programada')).toBeTruthy()
-    expect(await screen.findByText('Graduación')).toBeTruthy()
+    // Como en Figma 370-3811: fechas previstas sin iniciar y el aviso del periodo en «Restricciones».
+    expect(screen.getByText('02 al 03/11')).toBeTruthy()
+    expect(await screen.findByText('1 aviso')).toBeTruthy()
+    expect(screen.getByText('Mar 03 · con constancia')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Cancelar ciclo' })).toBeTruthy()
 
     const usuario = userEvent.setup()
@@ -67,6 +71,17 @@ describe('CicloDetallePage', () => {
 
     expect(cambiarEstadoCiclo).toHaveBeenCalledWith(7, 'inicio', '2026-11-02')
     expect(await screen.findByRole('button', { name: 'Finalizar ciclo' })).toBeTruthy()
+  })
+
+  it('con historial lo lista del más reciente al más antiguo (AV-253)', async () => {
+    historial.push(
+      { estado: 'Programada', fecha_hora: '2026-10-19T09:30:00-05:00', autor: 'Robert G.' },
+      { estado: 'EnCurso', fecha_hora: '2026-11-02T06:10:00-05:00', autor: 'Robert G.' },
+    )
+    pintar('8')
+    const eventos = await screen.findAllByRole('listitem')
+    expect(eventos.map((e) => e.textContent)).toEqual(['Iniciado02/11 06:10 · Robert G.', 'Programado19/10 09:30 · Robert G.'])
+    expect(screen.getByText('Inicio real')).toBeTruthy()
   })
 
   it('avisa si el ciclo no existe', async () => {

@@ -78,6 +78,28 @@
 }
 
 /* Título de la página: estilo Título página de Figma, encima del contenido. */
+/* Título y lo que va pegado a él (`JuntoTitulo`), como el estado en «Detalle de ciclo» de Figma (380-7171). */
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.juntoTitulo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.juntoTitulo:empty {
+  display: none;
+}
+
+/* Sin subtítulo, el hueco va justo detrás del h1 y empuja la acción principal a la derecha. */
+.juntoSinSubtitulo {
+  margin-right: auto;
+}
+
 .titulo {
   font-size: var(--type-titulo-pagina-size);
   line-height: var(--type-titulo-pagina-line);

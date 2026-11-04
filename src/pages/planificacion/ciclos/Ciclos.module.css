@@ -18,25 +18,33 @@
   line-height: var(--type-leyenda-line);
 }
 
-/* Detalle de ciclo: volver, estado con el proveedor e indicadores, en columna. */
+/* Detalle de ciclo: indicadores e historial, en columna. */
 .pagina {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 }
 
-.volver {
-  align-self: flex-start;
+/* Historial (Figma 380-7171): cada transición con la hora y el autor a la derecha. */
+.historial {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.cabecera {
+.evento {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-default);
 }
 
-.subtitulo {
-  margin: 0;
+.detalleEvento {
   color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
 }
