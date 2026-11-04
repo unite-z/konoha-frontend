@@ -189,7 +189,7 @@ export default function DialogoNuevaEstimacion({ abierto, actividadInicialId, on
           <CampoFormulario
             id="estimacion-superficie"
             etiqueta="Superficie (m²)"
-            inputMode="decimal"
+            formato="decimal"
             ayuda="Opcional"
             value={superficie}
             error={errores.superficie}

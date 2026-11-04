@@ -110,7 +110,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
               id={`frecuencia-${estacion}-${clave}`}
               etiqueta={ETIQUETAS_FRECUENCIA[clave]}
               obligatorio={clave === 'teorica'}
-              inputMode="numeric"
+              formato="entero"
               compacto
               value={borrador.frecuencias[estacion][clave]}
               onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
@@ -126,8 +126,8 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
 
       <h3 className={estilos.apartado}>Duración del ciclo</h3>
       <div className={estilos.pareja}>
-        <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio inputMode="numeric" value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
-        <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" inputMode="numeric" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
+        <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
+        <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" formato="entero" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
         <CampoFormulario id="duracion-inicio" etiqueta="Hora de inicio" type="time" value={borrador.duracion.inicio} onChange={(e) => cambiarDuracion('inicio', e.target.value)} error={errorDuracion('inicio')} disabled={enviando} />
         <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />
       </div>

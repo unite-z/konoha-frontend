@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import CampoFormulario, { AreaTexto, ResumenErrores } from './CampoFormulario'
 
@@ -57,5 +58,23 @@ describe('CampoFormulario', () => {
 
     rerender(<ResumenErrores titulo="Revisa" errores={[]} />)
     expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('con formato entero no deja escribir ni pegar letras', async () => {
+    function Campo() {
+      const [valor, setValor] = useState('')
+      return <CampoFormulario id="dias" etiqueta="Días" formato="entero" value={valor} onChange={(e) => setValor(e.target.value)} />
+    }
+    render(<Campo />)
+    const campo = screen.getByLabelText('Días') as HTMLInputElement
+    expect(campo.inputMode).toBe('numeric')
+
+    const usuario = userEvent.setup()
+    await usuario.type(campo, '1a2')
+    expect(campo.value).toBe('12')
+    await usuario.clear(campo)
+    await usuario.click(campo)
+    await usuario.paste('3 días')
+    expect(campo.value).toBe('3')
   })
 })

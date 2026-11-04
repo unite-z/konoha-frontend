@@ -132,7 +132,8 @@ export default function FichaCampo({ campo, sugerido, modo, decision, error, fin
           <CampoFormulario
             {...comun}
             type={campo.tipo_dato === 'Fecha' ? 'date' : 'text'}
-            inputMode={campo.tipo_dato === 'Entero' ? 'numeric' : campo.tipo_dato === 'Decimal' ? 'decimal' : undefined}
+            formato={campo.tipo_dato === 'Entero' ? 'entero' : campo.tipo_dato === 'Decimal' ? 'decimal' : undefined}
+            negativo
             value={texto}
             onChange={(e) => onTexto(e.target.value)}
             onBlur={onSalir}

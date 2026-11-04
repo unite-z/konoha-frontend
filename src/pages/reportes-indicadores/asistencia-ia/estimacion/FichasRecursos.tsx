@@ -56,7 +56,7 @@ export default function FichasRecursos({ estimacion: est, modo, acciones, correg
             <CampoFormulario
               id="corregir-operarios"
               etiqueta="Operarios confirmados"
-              inputMode="numeric"
+              formato="entero"
               value={corregido.operarios}
               error={errores.operarios}
               onChange={(e) => onCorregir({ operarios: e.target.value })}
@@ -78,7 +78,7 @@ export default function FichasRecursos({ estimacion: est, modo, acciones, correg
               <CampoFormulario
                 id="corregir-duracion"
                 etiqueta="Duración confirmada"
-                inputMode="decimal"
+                formato="decimal"
                 value={corregido.duracion}
                 error={errores.duracion}
                 onChange={(e) => onCorregir({ duracion: e.target.value })}

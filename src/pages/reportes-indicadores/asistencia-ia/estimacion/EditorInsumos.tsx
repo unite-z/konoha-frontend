@@ -44,7 +44,7 @@ export default function EditorInsumos({ idBase, insumos, onCambiar, unidades, er
               id={`${idBase}-cantidad-${indice}`}
               etiqueta="Cantidad"
               compacto
-              inputMode="decimal"
+              formato="decimal"
               value={insumo.cantidad}
               error={errores[indice]?.cantidad}
               onChange={(e) => cambiar(indice, 'cantidad', e.target.value)}

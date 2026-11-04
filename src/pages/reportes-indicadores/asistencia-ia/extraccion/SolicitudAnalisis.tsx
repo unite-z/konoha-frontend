@@ -319,7 +319,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
               etiqueta="Reporte del proveedor (n.º)"
               ayuda="Número del reporte registrado en la atención tercerizada"
               obligatorio
-              inputMode="numeric"
+              formato="entero"
               autoComplete="off"
               value={numero}
               error={errorCampo}
