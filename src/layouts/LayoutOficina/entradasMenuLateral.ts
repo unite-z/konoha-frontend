@@ -125,8 +125,11 @@ export const MODULOS_MENU: ModuloMenu[] = [
         hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
       }
     : { texto: 'Incidencias', icono: 'triangle-alert' },
-  // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil.
-  { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] },
+  // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil. Como
+  // «Incidencias», sin backend (AV-274) solo con datos simulados (D9): sin ellos, «Próximamente».
+  DATOS_SIMULADOS
+    ? { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] }
+    : { texto: 'Mis incidencias', icono: 'clipboard' },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',
