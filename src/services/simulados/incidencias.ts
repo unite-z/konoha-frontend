@@ -5,7 +5,7 @@
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia, SeguimientoIncidencia, EstadoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -326,6 +326,36 @@ export function simularMisIncidencias(signal?: AbortSignal): Promise<IncidenciaR
   return responderSimulado(() => {
     const propias = incidenciasSimuladas().filter((i) => [34, 37, 33].includes(i.id))
     return escenarioSimulado() === 'vacio' ? [] : [...registradas, ...propias]
+  }, { signal })
+}
+
+/** Estados por los que pasa una incidencia hasta el suyo, según la vía. */
+function recorrido(estado: EstadoIncidencia, via: IncidenciaResumen['via']): EstadoIncidencia[] {
+  if (estado === 'Descartada') return ['Registrada', 'Descartada']
+  const derivada: EstadoIncidencia = via === 'Tercerizada' ? 'DerivadaTercerizada' : 'EnAtencion'
+  const orden: EstadoIncidencia[] = ['Registrada', 'Clasificada', derivada, 'Atendida', 'Cerrada']
+  return orden.slice(0, orden.indexOf(estado) + 1)
+}
+
+/** El seguimiento de una propia (Figma 391-8560): los pasos repartidos entre el registro y el cierre, o ahora. */
+export function simularMiIncidencia(id: number, signal?: AbortSignal): Promise<SeguimientoIncidencia> {
+  return responderSimulado(() => {
+    const ahora = Date.now()
+    const incidencia = [...registradas, ...incidenciasSimuladas(ahora)].find((i) => i.id === id)
+    if (!incidencia) throw errorNoEncontrado()
+    const desde = Date.parse(incidencia.fecha_registro)
+    const hasta = incidencia.fecha_cierre ? Date.parse(incidencia.fecha_cierre) : ahora
+    const estados = recorrido(incidencia.estado, incidencia.via)
+    const tramo = estados.length > 1 ? (hasta - desde) / (estados.length - 1) : 0
+    return {
+      id: incidencia.id,
+      codigo: incidencia.codigo,
+      tipo: incidencia.tipo,
+      estado: incidencia.estado,
+      minutos_cierre: incidencia.fecha_cierre ? Math.round((hasta - desde) / 60_000) : null,
+      pasos: estados.map((estado, indice) => ({ estado, fecha_hora: new Date(desde + tramo * indice).toISOString() })).reverse(),
+      evidencia: estados.includes('Atendida') ? { url: null } : null,
+    }
   }, { signal })
 }
 

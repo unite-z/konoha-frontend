@@ -36,6 +36,7 @@ import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
 import IncidenciaDetallePage from '../pages/incidencias/IncidenciaDetallePage'
+import MiIncidenciaPage from '../pages/incidencias/MiIncidenciaPage'
 import MisIncidenciasPage from '../pages/incidencias/MisIncidenciasPage'
 import CalendarioCuadrillaPage from '../pages/corte/CalendarioCuadrillaPage'
 import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
@@ -201,7 +202,10 @@ export const router = createBrowserRouter([
           {
             path: RUTAS_MIS_INCIDENCIAS.lista,
             element: <RutaConEntrada entrada="misIncidencias" seccion="Mis incidencias" />,
-            children: [{ index: true, element: <MisIncidenciasPage /> }], // HU-024
+            children: [
+              { index: true, element: <MisIncidenciasPage /> }, // HU-024
+              { path: ':id', element: <MiIncidenciaPage /> }, // HU-024 (seguimiento, Figma 391-8560)
+            ],
           },
           // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
           {

@@ -75,6 +75,20 @@ export interface IncidenciaDetalle extends IncidenciaResumen {
   historial?: EventoIncidencia[]
 }
 
+/** Seguimiento de una incidencia propia (`GET incidencias/mias/{id}/`, AV-274 y AV-279; Figma 391-8560). */
+export interface SeguimientoIncidencia {
+  id: number
+  codigo: string
+  tipo: string
+  estado: EstadoIncidencia
+  /** Minutos del registro al cierre; `null` mientras siga abierta. */
+  minutos_cierre: number | null
+  /** Estados por los que pasó, del más reciente al más antiguo. */
+  pasos: { estado: EstadoIncidencia; fecha_hora: InstanteIso }[]
+  /** Foto de la evidencia de la atención (`url` nula sin almacén de archivos); `null` si aún no se atendió. */
+  evidencia: { url: string | null } | null
+}
+
 export interface AtencionIncidencia {
   atendida_por: string
   atendida_en: InstanteIso

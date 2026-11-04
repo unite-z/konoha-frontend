@@ -2,11 +2,12 @@
 /**
  * Las incidencias que reportó el usuario, con su espacio, cuándo y el estado. Las que se reportaron sin conexión van
  * arriba como «Pendiente de enviar» y, sin conexión, una banda lo avisa; al volver la conexión se envían solas.
- * «+» abre «Reportar incidencia» (`?reportar=`, `DialogoReportarIncidencia`).
+ * «+» abre «Reportar incidencia» (`?reportar=`, `DialogoReportarIncidencia`) y cada una lleva a su seguimiento
+ * (`MiIncidenciaPage`).
  * Datos simulados hasta el backend (AV-274 y AV-279), con `AvisoDatosSimulados` (D9).
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -20,7 +21,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
-import { RUTAS_MIS_INCIDENCIAS } from '@/router/rutasApp'
+import { RUTAS_MIS_INCIDENCIAS, rutaMiIncidencia } from '@/router/rutasApp'
 import { listarMisIncidencias, registrarIncidencia } from '@/services/api/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
 import { useEnLinea } from '../corte/useEnLinea'
@@ -98,14 +99,16 @@ export default function MisIncidenciasPage() {
         {consulta.datos.map((incidencia) => {
           const estado = ESTADO_INCIDENCIA[incidencia.estado]
           return (
-            <li key={incidencia.id} className={estilos.miIncidencia}>
-              <span className={estilos.textosMiIncidencia}>
+            <li key={incidencia.id}>
+              <Link to={rutaMiIncidencia(incidencia.id)} className={`${estilos.miIncidencia} ${estilos.enlaceMiIncidencia}`}>
+                <span className={estilos.textosMiIncidencia}>
                 <span className={estilos.tituloMiIncidencia}>{incidencia.tipo}</span>
                 <span className={estilos.detalleMiIncidencia}>
                   {incidencia.espacio} · {cuandoReportada(incidencia.fecha_registro, hoy)}
                 </span>
               </span>
-              <Estado tono={estado.tono} texto={estado.texto} punto={incidencia.estado !== 'EnAtencion'} />
+                <Estado tono={estado.tono} texto={estado.texto} punto={incidencia.estado !== 'EnAtencion'} />
+              </Link>
             </li>
           )
         })}
