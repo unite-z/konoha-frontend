@@ -2,7 +2,6 @@ import { campoApi, todosCampo } from './operacionCampo'
 import { aErrorApi } from './cliente'
 import type { CatalogoCampo, EntradaTipoActividadCampo, TipoActividadCampo } from '@/types/operacionCampo'
 
-/** AV-62: contrato propuesto, pendiente de implementación en el backend. */
 export const listarClasesActividad = (signal?: AbortSignal) =>
   todosCampo<CatalogoCampo>('catalogos/clases-actividad/', {}, signal)
 
