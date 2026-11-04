@@ -1,6 +1,6 @@
 /**
  * Tipos del ciclo de corte de MOD-03 (RF-COR, AV-258 a AV-262). Reflejan el contrato previsto de
- * `GET planificacion/ciclos/{programacion}/`; hasta que exista, responde `services/simulados/corte.ts` (D9).
+ * `GET planificacion/ciclos/{programacion}/`.
  */
 import type { FechaIso } from './comun'
 import type { Programacion, Restriccion } from './planificacion'

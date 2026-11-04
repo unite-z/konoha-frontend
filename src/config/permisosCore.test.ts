@@ -59,8 +59,8 @@ describe('entradasMenu', () => {
     expect(entradasMenu(sesion('ingeniero-campo', ['CAM.CUADRILLA.CONSULTAR'])).has('campo')).toBe(true)
   })
 
-  it('la ruta de corte del capataz exige marcar jardines (AV-260); sin datos simulados no basta el rol', () => {
-    expect(entradasMenu(sesion('capataz', ['PLA.CORTE.MARCAR'])).has('corte')).toBe(true)
+  it('la ruta de corte del capataz exige registrar el avance del corte (AV-260); no basta el rol', () => {
+    expect(entradasMenu(sesion('capataz', ['PLA.CORTE.REGISTRAR'])).has('corte')).toBe(true)
     expect(entradasMenu(sesion('jefe-seccion', ['PLA.PLANIFICACION.CONSULTAR'])).has('corte')).toBe(false)
     expect(entradasMenu(sesion('capataz', [])).has('corte')).toBe(false)
   })

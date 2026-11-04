@@ -13,7 +13,7 @@ export const PERMISOS = {
   consultarHistorial: 'CORE.HISTORIAL.CONSULTAR',
   consultarPlanificacion: 'PLA.PLANIFICACION.CONSULTAR',
   /** Marcar jardines de la ruta de corte (contrato de AV-260 y AV-252). */
-  marcarCorte: 'PLA.CORTE.MARCAR',
+  registrarCorte: 'PLA.CORTE.REGISTRAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
@@ -38,8 +38,8 @@ export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   if (puede(sesion, PERMISOS.consultarCuadrillas)) entradas.add('campo')
   if (puede(sesion, PERMISOS.consultarInventario)) entradas.add('inventario')
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('planificacion')
-  // Ruta de hoy del capataz (AV-271): el permiso llega con AV-260; con datos simulados (D9), por el rol.
-  if (puede(sesion, PERMISOS.marcarCorte) || (DATOS_SIMULADOS && sesion?.rol.codigo === 'capataz')) entradas.add('corte')
+  // Ruta de hoy del capataz (AV-271): quien registra el avance del corte (AV-260).
+  if (puede(sesion, PERMISOS.registrarCorte)) entradas.add('corte')
   // Mis incidencias (AV-282): cualquier usuario con sesión reporta y sigue las suyas. Sin backend (AV-274), solo con
   // datos simulados (D9).
   if (sesion && DATOS_SIMULADOS) entradas.add('misIncidencias')
