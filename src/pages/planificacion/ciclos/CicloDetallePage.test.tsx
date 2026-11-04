@@ -23,19 +23,27 @@ const cambiarEstadoCiclo = vi.fn(async (_id: number, cambio: string, fecha?: str
   cambio === 'cancelacion' ? { ...programada, estado: 'Cancelada' } : { ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null },
 )
 const historial: { estado: 'Programada' | 'EnCurso'; fecha_hora: string; autor: string }[] = []
-vi.mock('@/services/api/planificacion', () => ({
-  listarProgramaciones: async () => [
+vi.mock('@/services/api/planificacion', async () => {
+  const { ErrorApi } = await import('@/services/api/cliente')
+  const ciclos = () => [
     programada,
     { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial },
     { ...programada, id: 9, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-11-01', fecha_fin_prevista: '2026-11-04', fecha_inicio_real: '2026-11-01' },
     { ...programada, id: 10, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-10-30', fecha_fin_prevista: '2026-11-02', fecha_inicio_real: '2026-10-30' },
-  ],
+  ]
+  return {
+  obtenerProgramacion: async (id: number) => {
+    const ciclo = ciclos().find((c) => c.id === id)
+    if (!ciclo) throw new ErrorApi(404, 'programacion-no-encontrada', 'No existe esa programación')
+    return { ...ciclo, restricciones: [] }
+  },
   listarServiciosPeriodicos: async () => [],
   listarRestricciones: async () => [
     { id: 3, tipo_restriccion_id: 1, tipo: 'Ceremonia', efecto: 'Advertencia', aplica_servicios_ruidosos: false, fecha_inicio: '2026-11-03', fecha_fin: '2026-11-03', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: 'Graduación', serie: null },
   ],
   cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string, motivo?: string) => cambiarEstadoCiclo(id, cambio, fecha, motivo),
-}))
+  }
+})
 vi.mock('@/services/api/corte', async () => {
   const { cicloCorteSimulado } = await import('@/services/simulados/corte')
   return {

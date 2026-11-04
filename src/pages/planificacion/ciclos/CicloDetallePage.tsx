@@ -27,7 +27,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { obtenerCicloCorte } from '@/services/api/corte'
-import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos, type CambioEstadoCiclo } from '@/services/api/planificacion'
+import { listarRestricciones, listarServiciosPeriodicos, obtenerProgramacion, type CambioEstadoCiclo } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { CicloCorte, InterrupcionCorte } from '@/types/corte'
@@ -37,7 +37,6 @@ import { conflictosDelPeriodo } from '../calendario/programarCiclo'
 import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
-import { rangoCiclos } from './ciclos'
 import { avanceRuta, esCorte, indicadorAvanceProgramado, indicadoresCorte, jardines, rutaCompleta } from './corte'
 import DialogoInterrupcion from './DialogoInterrupcion'
 import PestanasCorte from './PestanasCorte'
@@ -196,15 +195,14 @@ export default function CicloDetallePage() {
   const id = Number(idRuta)
   const hoy = hoyLima()
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
-  const { desde, hasta } = rangoCiclos(hoy)
-  const consulta = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const consulta = useConsulta(Number.isFinite(id) ? `ciclo:${id}` : null, (signal) => obtenerProgramacion(id, signal))
   const servicios = useConsulta('ciclo-servicios', (signal) => listarServiciosPeriodicos(signal))
   const [local, setLocal] = useState<Programacion | null>(null)
   const [cambio, setCambio] = useState<CambioEstadoCiclo | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
-  const ciclo = local?.id === id ? local : consulta.datos?.find((c) => c.id === id)
+  const ciclo = local?.id === id ? local : consulta.datos
   const servicio = servicios.datos?.find((s) => s.id === ciclo?.tipo_servicio_id)
   const conRuta = ciclo && esCorte(ciclo.servicio) ? ciclo : null
   const corte = useConsulta(conRuta ? `ciclo-corte:${conRuta.id}:${conRuta.estado}` : null, (signal) =>
@@ -230,9 +228,10 @@ export default function CicloDetallePage() {
   )
 
   let contenido
-  if (consulta.estado === 'error' && !consulta.datos) {
+  const noExiste = !Number.isFinite(id) || (consulta.estado === 'error' && consulta.error?.estado === 404)
+  if (consulta.estado === 'error' && !consulta.datos && !noExiste) {
     contenido = <EstadoError titulo="No pudimos cargar el ciclo" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
-  } else if (!consulta.datos) {
+  } else if (!consulta.datos && !noExiste) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
   } else if (!ciclo) {
     contenido = (
