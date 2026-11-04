@@ -20,7 +20,6 @@ import type { FechaIso } from '@/types/comun'
 import type { Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
-import DialogoRestriccion from '../DialogoRestriccion'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
 import {
@@ -37,6 +36,7 @@ import {
 } from './calendarioCapas'
 import DetalleActividad from './DetalleActividad'
 import DialogoBajaRestriccion from './DialogoBajaRestriccion'
+import PanelNuevaRestriccion from './PanelNuevaRestriccion'
 import PanelProgramarCiclo from './PanelProgramarCiclo'
 import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
@@ -231,8 +231,9 @@ export default function CalendarioPage() {
       </div>
 
       {registrando && (
-        <DialogoRestriccion
+        <PanelNuevaRestriccion
           fechaInicial={fecha}
+          servicios={servicios.datos ?? []}
           onCerrar={() => setRegistrando(false)}
           onCreadas={(creadas) => {
             setRegistrando(false)
