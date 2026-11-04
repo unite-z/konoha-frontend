@@ -26,6 +26,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
     - Pide el tipo en chips, la foto obligatoria, el espacio (entra con el que propone la ubicación), el ejemplar y la descripción.
     - Si ya hay una abierta igual, la hoja «Ya hay una incidencia abierta» ofrece «Añadir a la existente» o «Reportar igualmente» (391-8469).
     - Sin conexión queda pendiente y se envía al volver.
+  - Seguimiento (`MiIncidenciaPage.tsx`, `/mis-incidencias/:id`, 391-8560): cada fila de la lista lleva a él. Muestra el tiempo de cierre, los estados por los que pasó con su hora (el actual arriba) y la evidencia.
 
   Lógica en `misIncidencias.ts`, con prueba.
 
@@ -33,7 +34,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 
 | Qué | Dónde |
 |---|---|
-| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278), `cerrarIncidencia` y `devolverIncidencia` (AV-279), `obtenerCatalogosRegistro`, `registrarIncidencia`, `listarMisIncidencias`, `buscarPosiblesDuplicados` y `sumarReporte` (AV-274) |
+| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278), `cerrarIncidencia` y `devolverIncidencia` (AV-279), `obtenerCatalogosRegistro`, `registrarIncidencia`, `listarMisIncidencias`, `obtenerMiIncidencia`, `buscarPosiblesDuplicados` y `sumarReporte` (AV-274) |
 | Tipos | `types/incidencias.ts` (contrato de AV-274 y AV-280) |
 | Permisos | hasta AV-281, el de Planificación (`PLA.PLANIFICACION.CONSULTAR`) |
 | Rutas | `RUTAS_INCIDENCIAS` (prefijo `/incidencias`) y `rutaIncidencia(id)`; `RUTAS_MIS_INCIDENCIAS` (`/mis-incidencias`, entrada `misIncidencias` del menú) |

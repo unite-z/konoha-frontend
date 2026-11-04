@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SeguimientoIncidencia, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -178,6 +178,15 @@ export async function listarMisIncidencias(signal?: AbortSignal) {
     return simularMisIncidencias(signal)
   }
   return solicitarPlanificacion<IncidenciaResumen[]>('incidencias/mias/', { signal })
+}
+
+/** `GET incidencias/mias/{id}/` (AV-274 y AV-279): el seguimiento de una incidencia que reportó el usuario. */
+export async function obtenerMiIncidencia(id: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularMiIncidencia } = await import('../simulados/incidencias')
+    return simularMiIncidencia(id, signal)
+  }
+  return solicitarPlanificacion<SeguimientoIncidencia>(`incidencias/mias/${id}/`, { signal })
 }
 
 /** `GET incidencias/posibles-duplicados/?tipo&espacio&ejemplar` (AV-274): abiertas del mismo tipo en el mismo sitio. */
