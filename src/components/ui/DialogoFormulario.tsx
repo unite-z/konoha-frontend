@@ -7,6 +7,8 @@
  * - Con cambios sin guardar, cerrar pide confirmar el descarte dentro del mismo diálogo.
  * - Mientras envía no se puede cerrar ni volver a enviar (el botón primario queda en «cargando»).
  * - `error`: aviso sobre el formulario (errores del servidor que no son de un campo).
+ * - `ancho="lateral"`: panel a la derecha a toda la altura («Formulario en panel lateral», DESIGN.md 5), con el cuerpo
+ *   desplazable y las acciones abajo.
  */
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import AvisoEnLinea from './AvisoEnLinea'
@@ -26,7 +28,7 @@ export interface DialogoFormularioProps {
   hayCambios?: boolean
   /** Error general del envío (por ejemplo, el `detalle` del back-end). */
   error?: { titulo: string; detalle: string } | null
-  ancho?: 'normal' | 'amplio'
+  ancho?: 'normal' | 'amplio' | 'lateral'
   /** Muestra la leyenda «* Campo obligatorio». */
   conObligatorios?: boolean
   onEnviar: () => void
@@ -116,7 +118,7 @@ export default function DialogoFormulario({
   return (
     <dialog
       ref={referencia}
-      className={`${estilos.dialogo} ${ancho === 'amplio' ? estilos.amplio : ''}`}
+      className={`${estilos.dialogo} ${ancho === 'normal' ? '' : estilos[ancho]}`}
       aria-labelledby={idTitulo}
       aria-describedby={descripcion ? idDescripcion : undefined}
       onCancel={(evento) => {
