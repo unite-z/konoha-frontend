@@ -111,14 +111,13 @@ describe('CicloDetallePage', () => {
     expect(screen.getByText('Inicio real')).toBeTruthy()
   })
 
-  it('un corte en curso muestra avance, duración, interrupciones y la ruta, con la limpieza bloqueada (AV-270)', async () => {
+  it('un corte en curso muestra avance, duración, interrupciones y la ruta, y recuerda la limpieza (AV-270)', async () => {
     pintar('9')
     expect(await screen.findByText('62 %')).toBeTruthy()
     expect(screen.getByText('28 de 45 jardines')).toBeTruthy()
     expect(screen.getByText('Día 2 de 4')).toBeTruthy()
     expect(screen.getByText('Sociales → Ciencias')).toBeTruthy()
     expect(screen.getByRole('tab', { name: 'Ruta 45' }).getAttribute('aria-selected')).toBe('true')
-    expect(screen.getByRole('tab', { name: 'Limpieza' }).getAttribute('aria-disabled')).toBe('true')
     expect(screen.getByText('Limpieza: al completar la ruta')).toBeTruthy()
     expect(screen.getByText('+14 más')).toBeTruthy()
     expect(screen.getByText('Detenido por interrupción')).toBeTruthy()

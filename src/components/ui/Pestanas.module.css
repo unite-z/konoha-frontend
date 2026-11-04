@@ -42,12 +42,6 @@
   color: var(--color-text-primary);
 }
 
-.deshabilitada,
-.deshabilitada:hover {
-  color: var(--color-text-disabled);
-  cursor: not-allowed;
-}
-
 .activa {
   background: var(--color-bg-surface);
   box-shadow: var(--web-elev-1);

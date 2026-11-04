@@ -2,7 +2,7 @@
  * Pestañas del detalle del corte (AV-270, Figma 346-1334 y 371-4306): Ruta, Interrupciones y Limpieza, en caja.
  * - Ruta: cortados por día y por cortar, y la tabla de jardines con su estado y quién y cuándo lo marcó.
  * - Interrupciones: cada traslado con su hora, zonas, motivo y minutos descontados.
- * - Limpieza: deshabilitada hasta completar la ruta («Limpieza: al completar la ruta», RF-COR-006).
+ * - Limpieza: se registra al completar la ruta (RF-COR-006); mientras tanto, la Ruta lo recuerda a la derecha.
  */
 import { useState } from 'react'
 import BarraAvance from '@/components/ui/BarraAvance'
@@ -62,10 +62,10 @@ export default function PestanasCorte({ ciclo, corte, hoy, ahora }: PestanasCort
       pestanas={[
         { valor: 'ruta', texto: 'Ruta', contador: avance.total },
         { valor: 'interrupciones', texto: 'Interrupciones', contador: corte.interrupciones.length },
-        { valor: 'limpieza', texto: 'Limpieza', deshabilitada: !completa },
+        { valor: 'limpieza', texto: 'Limpieza' },
       ]}
       derecha={
-        completa ? undefined : (
+        completa || pestana !== 'ruta' ? undefined : (
           <>
             <Icono nombre="info" tamano="base" />
             Limpieza: al completar la ruta

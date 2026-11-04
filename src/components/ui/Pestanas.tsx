@@ -13,8 +13,6 @@ export interface Pestana {
   contador?: number
   /** Otro contenido junto al texto (por ejemplo, un `Estado`). */
   extra?: ReactNode
-  /** No se puede abrir todavía (Figma: «Limpieza» hasta completar la ruta); el motivo va en `derecha`. */
-  deshabilitada?: boolean
 }
 
 export interface PestanasProps {
@@ -36,19 +34,15 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, 
   const botones = useRef<(HTMLButtonElement | null)[]>([])
 
   function teclado(evento: KeyboardEvent<HTMLButtonElement>, indice: number) {
-    // Las flechas saltan las pestañas deshabilitadas.
-    const abiertas = pestanas.map((p, i) => (p.deshabilitada ? -1 : i)).filter((i) => i >= 0)
-    const posicion = abiertas.indexOf(indice)
-    const ultimo = abiertas.length - 1
-    const siguiente =
-      evento.key === 'ArrowRight' ? (posicion === ultimo ? 0 : posicion + 1)
-      : evento.key === 'ArrowLeft' ? (posicion <= 0 ? ultimo : posicion - 1)
+    const ultimo = pestanas.length - 1
+    const destino =
+      evento.key === 'ArrowRight' ? (indice === ultimo ? 0 : indice + 1)
+      : evento.key === 'ArrowLeft' ? (indice === 0 ? ultimo : indice - 1)
       : evento.key === 'Home' ? 0
       : evento.key === 'End' ? ultimo
       : null
-    if (siguiente === null) return
+    if (destino === null) return
     evento.preventDefault()
-    const destino = abiertas[siguiente]
     botones.current[destino]?.focus()
     onCambiar(pestanas[destino].valor)
   }
@@ -69,11 +63,8 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, 
             aria-selected={activa}
             aria-controls={`${base}-panel`}
             tabIndex={activa ? 0 : -1}
-            aria-disabled={pestana.deshabilitada || undefined}
-            className={`${estilos.pestana} ${activa ? estilos.activa : ''} ${pestana.deshabilitada ? estilos.deshabilitada : ''}`}
-            onClick={() => {
-              if (!pestana.deshabilitada) onCambiar(pestana.valor)
-            }}
+            className={`${estilos.pestana} ${activa ? estilos.activa : ''}`}
+            onClick={() => onCambiar(pestana.valor)}
             onKeyDown={(e) => teclado(e, indice)}
           >
             {pestana.texto}
