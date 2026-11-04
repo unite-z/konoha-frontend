@@ -85,3 +85,13 @@ fecha_solicitud: "2026-10-20", incidencia_id: null, encargo_id: null}`.
 El capataz solo puede registrar en su cuadrilla; un parte cerrado responde
 409 y los datos de origen inválidos responden 400. La integración con la
 base de datos y el servicio real sigue pendiente de prueba.
+
+## AV-70: medidas y tiempo
+
+El registro de actividad admite `superficie_m2`, `cantidad_solicitada`,
+`cantidad_ejecutada`, `unidad_medida_id` y `tiempo_minutos`. Los valores
+anteriores son opcionales para conservar el contrato previo. La superficie
+se expresa en m² y el tiempo en minutos (1 a 1440). Si se registra alguna
+cantidad, se exige una unidad de `GET catalogos/unidades-medida/`.
+El servidor rechaza valores negativos, unidad desconocida y tiempo fuera
+de rango antes de crear la actividad.

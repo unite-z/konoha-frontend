@@ -7,7 +7,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import { clasesActividadParaParte, listarTiposActividad } from '@/services/api/catalogoActividadesCampo'
 import { ErrorApi, aErrorApi } from '@/services/api/cliente'
-import type { ActividadCampo, CatalogoCampo, CuadrillaCampo, EncargoCampo, ParteCampo } from '@/types/operacionCampo'
+import type { ActividadCampo, CatalogoCampo, CuadrillaCampo, EncargoCampo, ParteCampo, UnidadMedidaCampo } from '@/types/operacionCampo'
 import { hoyLima } from '@/utils/operacionCampo'
 import { EstadoCatalogos } from './ComponentesCampo'
 import { useMutacionCampo } from './useCampo'
@@ -17,13 +17,14 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
   const [cuadrilla,setCuadrilla]=useState(''),[tipo,setTipo]=useState(''),[area,setArea]=useState('')
   const [clase,setClase]=useState('')
   const [fechaSolicitud,setFechaSolicitud]=useState(''),[incidencia,setIncidencia]=useState('')
+  const [superficie,setSuperficie]=useState(''),[solicitada,setSolicitada]=useState(''),[ejecutada,setEjecutada]=useState(''),[unidad,setUnidad]=useState(''),[tiempo,setTiempo]=useState('')
   const [fecha,setFecha]=useState(hoyLima()),[hora,setHora]=useState('08:00'),[encargo,setEncargo]=useState(''),[observaciones,setObservaciones]=useState('')
   const [cambios,setCambios]=useState(false),[errores,setErrores]=useState<Record<string,string>>({})
   const mutacion=useMutacionCampo()
   const intento=useRef<{cuerpo:string;clave:string}|null>(null)
   const catalogos=useConsulta('catalogos-actividad',async signal=>{
-    const [cuadrillas,tipos,areas,clases]=await Promise.all([todosCampo<CuadrillaCampo>('cuadrillas/',{activa:true},signal),listarTiposActividad(true,signal),todosCampo<CatalogoCampo>('catalogos/areas-verdes/',{activo:true},signal),clasesActividadParaParte(signal)])
-    return {cuadrillas,tipos,areas,clases}
+    const [cuadrillas,tipos,areas,clases,unidades]=await Promise.all([todosCampo<CuadrillaCampo>('cuadrillas/',{activa:true},signal),listarTiposActividad(true,signal),todosCampo<CatalogoCampo>('catalogos/areas-verdes/',{activo:true},signal),clasesActividadParaParte(signal),todosCampo<UnidadMedidaCampo>('catalogos/unidades-medida/',{},signal)])
+    return {cuadrillas,tipos,areas,clases,unidades}
   })
   const encargos=useConsulta(cuadrilla&&fecha?`encargos-actividad-${cuadrilla}-${fecha}`:null,signal=>todosCampo<EncargoCampo>('encargos/',{cuadrilla_id:cuadrilla,desde:fecha,hasta:fecha},signal))
   function cambiar(fn:()=>void) {setCambios(true);setErrores({});fn()}
@@ -47,6 +48,9 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
     if(fechaSolicitud && fechaSolicitud > fecha) errors.fechaSolicitud='La solicitud no puede ser posterior a la actividad'
     if(incidencia && (!Number.isSafeInteger(Number(incidencia)) || Number(incidencia) <= 0)) errors.incidencia='Indica un identificador de incidencia válido'
     if(incidencia && encargo) errors.incidencia='Selecciona una incidencia o un encargo de origen'
+    for(const [campo,valor] of Object.entries({superficie,solicitada,ejecutada})) if(valor && (!Number.isFinite(Number(valor)) || Number(valor)<0)) errors[campo]='Indica una cantidad no negativa'
+    if(Boolean(solicitada||ejecutada)!==Boolean(unidad)) errors.unidad='Las cantidades requieren una unidad de medida'
+    if(tiempo && (!Number.isInteger(Number(tiempo)) || Number(tiempo)<1 || Number(tiempo)>1440)) errors.tiempo='Indica entre 1 y 1440 minutos'
     if(!/^\d{2}:\d{2}$/.test(hora)) errors.hora='Indica la hora de la actividad'
     if(fecha&&hora&&new Date(`${fecha}T${hora}:00-05:00`).getTime()>Date.now()) errors.hora='La actividad no puede estar en el futuro'
     setErrores(errors)
@@ -55,7 +59,7 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
     void mutacion.enviar(async()=>{
       const parte=await asegurarParte()
       if(parte.estado==='Cerrado') throw new ErrorApi(409,'ParteCerrado','El parte de esa cuadrilla está cerrado para la fecha seleccionada. No se pueden agregar actividades')
-      const cuerpo={parte_id:parte.id,clase_actividad_id:clase?Number(clase):null,tipo_actividad_id:Number(tipo),area_verde_id:Number(area),fecha_hora_actividad:`${fecha}T${hora}:00-05:00`,fecha_solicitud:fechaSolicitud||null,incidencia_id:incidencia?Number(incidencia):null,encargo_id:encargo?Number(encargo):null,observaciones}
+      const cuerpo={parte_id:parte.id,clase_actividad_id:clase?Number(clase):null,tipo_actividad_id:Number(tipo),area_verde_id:Number(area),fecha_hora_actividad:`${fecha}T${hora}:00-05:00`,fecha_solicitud:fechaSolicitud||null,incidencia_id:incidencia?Number(incidencia):null,encargo_id:encargo?Number(encargo):null,superficie_m2:superficie?Number(superficie):null,cantidad_solicitada:solicitada?Number(solicitada):null,cantidad_ejecutada:ejecutada?Number(ejecutada):null,unidad_medida_id:unidad?Number(unidad):null,tiempo_minutos:tiempo?Number(tiempo):null,observaciones}
       const firma=JSON.stringify(cuerpo)
       if(!intento.current||intento.current.cuerpo!==firma) intento.current={cuerpo:firma,clave:crypto.randomUUID()}
       const actividad=await campoApi<ActividadCampo>('actividades/',{metodo:'POST',cuerpo,claveIdempotencia:intento.current.clave})
@@ -74,6 +78,11 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
         <Selector id="nueva-actividad-encargo" etiqueta="Encargo de origen" valor={encargo} opcionTodos="Sin encargo asociado" opciones={(encargos.datos??[]).filter(e=>e.tipo_actividad_id===Number(tipo)&&e.area_verde_id===Number(area)).map(e=>({valor:String(e.id),texto:e.descripcion}))} onCambiar={v=>cambiar(()=>setEncargo(v))} ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio." disabled={encargos.estado==='cargando'}/>
         <CampoFormulario id="nueva-actividad-fechaSolicitud" etiqueta="Fecha de solicitud" type="date" max={fecha||hoyLima()} value={fechaSolicitud} onChange={e=>cambiar(()=>setFechaSolicitud(e.target.value))} error={errores.fechaSolicitud}/>
         <CampoFormulario id="nueva-actividad-incidencia" etiqueta="Identificador de incidencia de origen" type="number" min="1" step="1" value={incidencia} onChange={e=>cambiar(()=>setIncidencia(e.target.value))} error={errores.incidencia}/>
+        <CampoFormulario id="nueva-actividad-superficie" etiqueta="Superficie intervenida (m²)" type="number" min="0" step="0.01" value={superficie} onChange={e=>cambiar(()=>setSuperficie(e.target.value))} error={errores.superficie}/>
+        <CampoFormulario id="nueva-actividad-solicitada" etiqueta="Cantidad solicitada" type="number" min="0" step="0.01" value={solicitada} onChange={e=>cambiar(()=>setSolicitada(e.target.value))} error={errores.solicitada}/>
+        <CampoFormulario id="nueva-actividad-ejecutada" etiqueta="Cantidad ejecutada" type="number" min="0" step="0.01" value={ejecutada} onChange={e=>cambiar(()=>setEjecutada(e.target.value))} error={errores.ejecutada}/>
+        <Selector id="nueva-actividad-unidad" etiqueta="Unidad de medida" valor={unidad} opcionTodos="Sin unidad" opciones={datos.unidades.map(u=>({valor:String(u.id),texto:`${u.nombre} (${u.simbolo})`}))} onCambiar={v=>cambiar(()=>setUnidad(v))} error={errores.unidad}/>
+        <CampoFormulario id="nueva-actividad-tiempo" etiqueta="Tiempo empleado (minutos)" type="number" min="1" max="1440" step="1" value={tiempo} onChange={e=>cambiar(()=>setTiempo(e.target.value))} error={errores.tiempo}/>
       </div>
       {encargos.estado==='error'&&<AvisoEnLinea tono="advertencia" accion={{texto:'Reintentar',onClick:encargos.reintentar}}>No se pudieron cargar los encargos. Puedes reintentar o registrar una actividad sin encargo asociado.</AvisoEnLinea>}
       <AreaTexto id="nueva-actividad-observaciones" etiqueta="Observaciones" maxLength={1000} value={observaciones} onChange={e=>cambiar(()=>setObservaciones(e.target.value))}/>
