@@ -11,6 +11,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
 import Boton from '../../components/ui/Boton'
+import Tarjeta from '../../components/ui/Tarjeta'
+import Casilla from '../../components/ui/Casilla'
 import CampoFormulario, { LeyendaObligatorio } from '../../components/ui/CampoFormulario'
 import { RUTAS_CORE, destinoTrasIngresoCore } from '../../router/rutasApp'
 import { aErrorApi } from '../../services/api/cliente'
@@ -84,7 +86,7 @@ export default function IngresoPage() {
 
   return (
     <main className={estilos.fondo}>
-      <section className={estilos.tarjeta} aria-labelledby="ingreso-titulo">
+      <Tarjeta relleno="amplio" etiquetadaPor="ingreso-titulo" className={estilos.tarjeta}>
         <p className={estilos.marca}>Gestión de Áreas Verdes · Campus PUCP</p>
         <h1 id="ingreso-titulo" className={estilos.titulo}>
           Inicia sesión
@@ -128,10 +130,12 @@ export default function IngresoPage() {
             disabled={enviando}
           />
           {movil && (
-            <label className={estilos.casilla}>
-              <input type="checkbox" checked={mantener} onChange={(e) => setMantener(e.target.checked)} disabled={enviando} />
-              <span>Mantener la sesión en este móvil (hasta 30 días). Úsalo solo en el móvil asignado.</span>
-            </label>
+            <Casilla
+              etiqueta="Mantener la sesión en este móvil (hasta 30 días). Úsalo solo en el móvil asignado."
+              marcada={mantener}
+              onCambiar={setMantener}
+              disabled={enviando}
+            />
           )}
           <p className={estilos.texto}>
             ¿Olvidaste tu contraseña? Pide al jefe de sección una contraseña temporal.
@@ -142,7 +146,7 @@ export default function IngresoPage() {
             </Boton>
           </div>
         </form>
-      </section>
+      </Tarjeta>
     </main>
   )
 }

@@ -80,7 +80,7 @@ export default function Adjuntos({ entidad, registroId, puedeAdjuntar }: Adjunto
       clave: 'accion',
       titulo: 'Acción',
       render: (a) => (
-        <Boton variante="terciario" compacto onClick={() => void descargar(a)} aria-label={`Descargar ${a.nombre}`}>
+        <Boton variante="fantasma" compacto onClick={() => void descargar(a)} aria-label={`Descargar ${a.nombre}`}>
           Descargar
         </Boton>
       ),

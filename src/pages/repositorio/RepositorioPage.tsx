@@ -4,8 +4,8 @@
  * lee del módulo dueño; si aún no está disponible, se dice así en lugar de mostrar datos inventados.
  */
 import { useState, type FormEvent } from 'react'
-import Badge from '../../components/ui/Badge'
 import Boton from '../../components/ui/Boton'
+import Tarjeta from '../../components/ui/Tarjeta'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import EstadoVacio from '../../components/ui/EstadoVacio'
 import Pestanas from '../../components/ui/Pestanas'
@@ -18,6 +18,7 @@ import { buscarEnRepositorio } from '../../services/api/core'
 import type { ElementoRepositorio, TipoRepositorio } from '../../types/core'
 import { formatearNumero } from '../../utils/formato'
 import estilos from '../usuarios-roles/UsuariosRoles.module.css'
+import Estado from '../../components/ui/Estado'
 
 const TITULO = 'Repositorio'
 
@@ -31,7 +32,7 @@ const TIPOS: { valor: TipoRepositorio; texto: string }[] = [
 const COLUMNAS: ColumnaTabla<ElementoRepositorio>[] = [
   { clave: 'nombre', titulo: 'Nombre', multilinea: true },
   { clave: 'detalle', titulo: 'Detalle', multilinea: true, render: (e) => e.detalle ?? '—' },
-  { clave: 'modulo', titulo: 'Origen', render: (e) => <Badge tono="neutral" texto={e.modulo} /> },
+  { clave: 'modulo', titulo: 'Origen', render: (e) => <Estado tono="neutro" texto={e.modulo} /> },
 ]
 
 export default function RepositorioPage() {
@@ -67,18 +68,20 @@ export default function RepositorioPage() {
           establecer({ tipo: valor, q: null, page: null })
         }}
       >
-        <form className={estilos.barraFiltros} role="search" onSubmit={buscar}>
-          <CampoFormulario
-            id="repositorio-q"
-            etiqueta="Buscar por nombre"
-            type="search"
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-          />
-          <Boton type="submit" variante="secundario">
-            Buscar
-          </Boton>
-        </form>
+        <Tarjeta>
+          <form className={estilos.barraFiltros} role="search" onSubmit={buscar}>
+            <CampoFormulario
+              id="repositorio-q"
+              etiqueta="Buscar por nombre"
+              type="search"
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+            />
+            <Boton type="submit" variante="secundario">
+              Buscar
+            </Boton>
+          </form>
+        </Tarjeta>
         {noDisponible ? (
           <EstadoVacio
             titulo="Próximamente"
