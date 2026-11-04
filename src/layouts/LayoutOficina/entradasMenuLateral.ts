@@ -10,6 +10,7 @@ import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { EntradaMenu } from '@/config/permisosCore'
 import { RUTAS_CAMPO, BASE_CAMPO } from '@/router/rutasCampo'
 import {
+  PREFIJO_CORTE,
   PREFIJO_INCIDENCIAS,
   PREFIJO_MODULO,
   PREFIJO_PLANIFICACION,
@@ -17,6 +18,7 @@ import {
   PREFIJO_USUARIOS,
   RUTAS,
   RUTAS_CORE,
+  RUTAS_CORTE,
   RUTAS_INCIDENCIAS,
   RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
@@ -59,6 +61,18 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
       { texto: 'Ciclos', icono: 'arrow-right-left', ruta: RUTAS_PLANIFICACION.ciclos },
       { texto: 'Configuración', textoMovil: 'Ajustes', icono: 'sliders', ruta: RUTAS_PLANIFICACION.configuracion },
+    ],
+  },
+  // El capataz en el móvil (AV-271, «Barra inferior · Capataz» de Figma 380-8204): su ruta y su calendario.
+  {
+    clave: 'corte',
+    texto: 'Corte de césped',
+    icono: 'scissors',
+    ruta: RUTAS_CORTE.rutaDeHoy,
+    prefijos: [PREFIJO_CORTE],
+    hijos: [
+      { texto: 'Ruta de hoy', icono: 'map-pin', ruta: RUTAS_CORTE.rutaDeHoy },
+      { texto: 'Calendario', icono: 'calendar' },
     ],
   },
   {

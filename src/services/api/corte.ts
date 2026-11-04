@@ -4,7 +4,7 @@
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte, InterrupcionCorte, LimpiezaCorte, NuevaInterrupcion, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
@@ -51,4 +51,41 @@ export async function obtenerRutaCorte(servicioId: number, signal?: AbortSignal)
     return simularRutaCorte(signal)
   }
   return solicitarPlanificacion<RutaCorte>(`servicios/${servicioId}/ruta/`, { signal })
+}
+
+/** `GET ruta-de-hoy/` (AV-260, capataz): el corte en curso de su cuadrilla con la ruta, o `ruta: null`. */
+export async function obtenerRutaDeHoy(signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularRutaDeHoy } = await import('../simulados/corte')
+    return simularRutaDeHoy(signal)
+  }
+  return solicitarPlanificacion<RespuestaRutaDeHoy>('ruta-de-hoy/', { signal })
+}
+
+/**
+ * `POST ciclos/{programacion}/jardines/{jardin}/marca/` (AV-260): marca el jardín como cortado con la hora real.
+ * `clave` va en `Idempotency-Key` para que un reenvío no duplique la marca; 409 `ya-marcado` si lo marcó otro.
+ */
+export async function marcarJardin(programacionId: number, jardinId: number, marcadoEn: string, clave: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularMarcarJardin } = await import('../simulados/corte')
+    return simularMarcarJardin(jardinId, marcadoEn)
+  }
+  return solicitarPlanificacion<JardinRuta>(`ciclos/${programacionId}/jardines/${jardinId}/marca/`, {
+    metodo: 'POST',
+    cuerpo: { marcado_en: marcadoEn },
+    cabeceras: { 'Idempotency-Key': clave },
+  })
+}
+
+/** `POST ciclos/{programacion}/jardines/{jardin}/observaciones/` (AV-260): observación sobre un jardín ya marcado. */
+export async function registrarObservacionJardin(programacionId: number, jardinId: number, texto: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularObservacionJardin } = await import('../simulados/corte')
+    return simularObservacionJardin(texto)
+  }
+  return solicitarPlanificacion<{ id: number; texto: string }>(`ciclos/${programacionId}/jardines/${jardinId}/observaciones/`, {
+    metodo: 'POST',
+    cuerpo: { texto },
+  })
 }

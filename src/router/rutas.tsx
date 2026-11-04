@@ -35,6 +35,7 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
+import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
 import CicloDetallePage from '../pages/planificacion/ciclos/CicloDetallePage'
 import CiclosPage from '../pages/planificacion/ciclos/CiclosPage'
@@ -50,7 +51,7 @@ import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/Contrato
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
-import RutaProtegida, { InicioRol, RutaConPermiso } from '../sesion/RutaProtegida'
+import RutaProtegida, { InicioRol, RutaConEntrada, RutaConPermiso } from '../sesion/RutaProtegida'
 import CambioContrasenaPage from '../pages/acceso/CambioContrasenaPage'
 import IngresoPage from '../pages/acceso/IngresoPage'
 import RepositorioPage from '../pages/repositorio/RepositorioPage'
@@ -59,7 +60,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
@@ -181,6 +182,15 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
               { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
+            ],
+          },
+          // MOD-03 · el capataz en el móvil (AV-271): su ruta del día.
+          {
+            path: PREFIJO_CORTE,
+            element: <RutaConEntrada entrada="corte" seccion="Corte de césped" />,
+            children: [
+              { index: true, element: <Navigate to={RUTAS_CORTE.rutaDeHoy} replace /> },
+              { path: RUTAS_CORTE.rutaDeHoy, element: <RutaDeHoyPage /> }, // RF-COR-002, HU-011 y CU-011
             ],
           },
           // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
