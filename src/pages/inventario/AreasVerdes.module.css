@@ -22,7 +22,7 @@
 }
 
 .tablaAreas {
-  margin-top: var(--space-5);
+  margin-top: var(--space-6);
 }
 
 .gestionSector {
@@ -37,7 +37,7 @@
   grid-column: 1 / -1;
   margin: 0;
   padding-inline-start: var(--space-4);
-  color: var(--color-texto-secundario);
+  color: var(--color-text-secondary);
 }
 
 .formulario {
