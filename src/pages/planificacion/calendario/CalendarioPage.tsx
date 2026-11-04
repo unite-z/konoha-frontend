@@ -1,10 +1,11 @@
-// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vista Mes (AV-266, Figma «Calendario con capas» 344-436)
+// RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes y Semana (AV-266, Figma 344-436 y 361-2252)
 import { useState } from 'react'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EventoCalendario from '@/components/ui/EventoCalendario'
+import Pestanas from '@/components/ui/Pestanas'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
@@ -13,39 +14,55 @@ import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import { desplazarMes, mesDeFecha, type Mes } from '@/utils/calendarioRestricciones'
+import { desplazarMes, mesDeFecha } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
 import DialogoRestriccion from '../DialogoRestriccion'
-import { nombreMes } from '../resumen/resumenPlanificacion'
+import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
-import { eventosDeCapas, semanasDelMes } from './calendarioCapas'
+import { diasDeSemana, eventosDeCapas, semanasDelMes, tituloSemana } from './calendarioCapas'
+import DetalleActividad from './DetalleActividad'
 import VistaMes from './VistaMes'
+import VistaSemana from './VistaSemana'
 import estilos from './Calendario.module.css'
 
-function aTexto({ anio, mes }: Mes): string {
-  return `${anio}-${String(mes).padStart(2, '0')}`
-}
+type Vista = 'mes' | 'semana'
+
+const VISTAS = [
+  { valor: 'mes', texto: 'Mes' },
+  { valor: 'semana', texto: 'Semana' },
+]
 
 export default function CalendarioPage() {
   usePaginaActual('Calendario', [MIGAS_PLANIFICACION.planificacion, { texto: 'Calendario' }])
   const hoy = hoyLima()
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
-  const [mes, setMes] = useState(() => mesDeFecha(hoy))
-  const [seleccionado, setSeleccionado] = useState<FechaIso | null>(hoy)
+  const [vista, setVista] = useState<Vista>('mes')
+  /** Día de referencia: el seleccionado en el mes y el que fija la semana. */
+  const [fecha, setFecha] = useState<FechaIso>(hoy)
+  const [agendaAbierta, setAgendaAbierta] = useState(true)
+  const [actividad, setActividad] = useState<string | null>(null)
   const [registrando, setRegistrando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
 
+  const mes = mesDeFecha(fecha)
   const semanas = semanasDelMes(mes)
-  const desde = semanas[0][0]
-  const hasta = semanas[semanas.length - 1][6]
-  const restricciones = useConsulta(`calendario-restricciones:${desde}`, (signal) => listarRestricciones(desde, hasta, signal))
-  const programaciones = useConsulta(`calendario-programaciones:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
+  const dias = diasDeSemana(fecha)
+  const desde = vista === 'mes' ? semanas[0][0] : dias[0]
+  const hasta = vista === 'mes' ? semanas[semanas.length - 1][6] : dias[6]
+  const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
+  const programaciones = useConsulta(`calendario-programaciones:${desde}:${hasta}`, (signal) => listarProgramaciones(desde, hasta, signal))
   const conError = [restricciones, programaciones].find((consulta) => consulta.estado === 'error' && !consulta.datos)
 
-  function irAMes(nuevo: Mes) {
-    setMes(nuevo)
-    const delMes = aTexto(nuevo) === hoy.slice(0, 7) ? hoy : `${aTexto(nuevo)}-01`
-    setSeleccionado(delMes)
+  /** Mes o semana anterior o siguiente; en el mes, el día pasa al primero del mes nuevo (o a hoy). */
+  function desplazar(sentido: -1 | 1) {
+    setActividad(null)
+    if (vista === 'semana') {
+      setFecha(sumarDias(fecha, 7 * sentido))
+      return
+    }
+    const nuevo = desplazarMes(mes, sentido)
+    const texto = `${nuevo.anio}-${String(nuevo.mes).padStart(2, '0')}`
+    setFecha(texto === hoy.slice(0, 7) ? hoy : `${texto}-01`)
   }
 
   let contenido
@@ -55,17 +72,29 @@ export default function CalendarioPage() {
     contenido = restricciones.cargaVisible || programaciones.cargaVisible ? <EstadoCarga forma="tabla" texto="Cargando el calendario…" /> : null
   } else {
     const eventos = eventosDeCapas(restricciones.datos, programaciones.datos)
+    const elegida = actividad ? eventos.find((evento) => evento.clave === actividad) : undefined
+    const lateral =
+      vista === 'mes'
+        ? agendaAbierta && <AgendaDia dia={fecha} eventos={eventos} onCerrar={() => setAgendaAbierta(false)} />
+        : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
     contenido = (
-      <div className={`${estilos.calendarioYAgenda} ${seleccionado ? '' : estilos.sinAgenda}`}>
-        <VistaMes
-          semanas={semanas}
-          eventos={eventos}
-          mes={aTexto(mes)}
-          hoy={hoy}
-          seleccionado={seleccionado}
-          onSeleccionar={setSeleccionado}
-        />
-        {seleccionado && <AgendaDia dia={seleccionado} eventos={eventos} onCerrar={() => setSeleccionado(null)} />}
+      <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
+        {vista === 'mes' ? (
+          <VistaMes
+            semanas={semanas}
+            eventos={eventos}
+            mes={fecha.slice(0, 7)}
+            hoy={hoy}
+            seleccionado={agendaAbierta ? fecha : null}
+            onSeleccionar={(dia) => {
+              setFecha(dia)
+              setAgendaAbierta(true)
+            }}
+          />
+        ) : (
+          <VistaSemana dias={dias} eventos={eventos} hoy={hoy} seleccionada={actividad} onSeleccionar={setActividad} />
+        )}
+        {lateral}
       </div>
     )
   }
@@ -80,22 +109,33 @@ export default function CalendarioPage() {
         </AccionesPagina>
       )}
 
-      <div className={estilos.barra}>
-        <Boton variante="secundario" compacto icono="chevron-left" onClick={() => irAMes(desplazarMes(mes, -1))}>
-          <span className="sr-only">Mes anterior</span>
-        </Boton>
-        <Boton variante="secundario" compacto icono="chevron-right" onClick={() => irAMes(desplazarMes(mes, 1))}>
-          <span className="sr-only">Mes siguiente</span>
-        </Boton>
-        <h2 className={estilos.tituloMes} aria-live="polite">
-          {nombreMes(`${aTexto(mes)}-01`)}
-        </h2>
-        <Boton variante="fantasma" compacto onClick={() => irAMes(mesDeFecha(hoy))}>
-          Hoy
-        </Boton>
-      </div>
+      <Pestanas etiqueta="Vista del calendario" pestanas={VISTAS} valor={vista} onCambiar={(valor) => setVista(valor as Vista)}>
+        <div className={estilos.pagina}>
+          <div className={estilos.barra}>
+            <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
+              <span className="sr-only">{vista === 'mes' ? 'Mes anterior' : 'Semana anterior'}</span>
+            </Boton>
+            <Boton variante="secundario" compacto icono="chevron-right" onClick={() => desplazar(1)}>
+              <span className="sr-only">{vista === 'mes' ? 'Mes siguiente' : 'Semana siguiente'}</span>
+            </Boton>
+            <h2 className={estilos.tituloMes} aria-live="polite">
+              {vista === 'mes' ? nombreMes(fecha) : tituloSemana(dias)}
+            </h2>
+            <Boton
+              variante="fantasma"
+              compacto
+              onClick={() => {
+                setFecha(hoy)
+                setActividad(null)
+              }}
+            >
+              Hoy
+            </Boton>
+          </div>
 
-      {contenido}
+          {contenido}
+        </div>
+      </Pestanas>
 
       <div className={estilos.leyenda} aria-label="Leyenda del calendario" role="group">
         <span className={estilos.rotuloLeyenda}>Actividades</span>
@@ -111,7 +151,7 @@ export default function CalendarioPage() {
 
       {registrando && (
         <DialogoRestriccion
-          fechaInicial={seleccionado ?? hoy}
+          fechaInicial={fecha}
           onCerrar={() => setRegistrando(false)}
           onCreadas={(creadas) => {
             setRegistrando(false)

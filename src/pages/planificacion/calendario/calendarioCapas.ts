@@ -7,7 +7,7 @@ import type { TipoEventoCalendario } from '@/components/ui/EventoCalendario'
 import type { FechaIso } from '@/types/comun'
 import type { EfectoRestriccion, EstadoProgramacion, Programacion, Restriccion } from '@/types/planificacion'
 import { rangoDelMes, type Mes } from '@/utils/calendarioRestricciones'
-import { sumarDias } from '../resumen/resumenPlanificacion'
+import { periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
 
 /** Carriles de eventos que caben en una celda del mes; el resto va al «+N más». */
 export const CARRILES_VISIBLES = 3
@@ -147,4 +147,44 @@ export function etiquetaDia(dia: FechaIso, eventos: EventoCapa[]): string {
   if (restricciones.length > 0) partes.push(`${restricciones.length} ${restricciones.length === 1 ? 'restricción' : 'restricciones'}`)
   if (actividades.length > 0) partes.push(`${actividades.length} ${actividades.length === 1 ? 'actividad' : 'actividades'}`)
   return partes.join(', ')
+}
+
+// --- Vista Semana --------------------------------------------------------------------------------------------
+
+const MESES_CORTOS = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.']
+
+/** Lunes a domingo de la semana de `fecha`. */
+export function diasDeSemana(fecha: FechaIso): FechaIso[] {
+  const lunes = sumarDias(fecha, -((new Date(`${fecha}T00:00:00Z`).getUTCDay() + 6) % 7))
+  return Array.from({ length: 7 }, (_, indice) => sumarDias(lunes, indice))
+}
+
+/** «16 al 22 nov. 2026», o «30 nov. al 06 dic. 2026» si la semana cruza de mes. */
+export function tituloSemana(dias: FechaIso[]): string {
+  const [inicio, fin] = [dias[0], dias[6]]
+  const mesFin = `${MESES_CORTOS[Number(fin.slice(5, 7)) - 1]} ${fin.slice(0, 4)}`
+  if (inicio.slice(0, 7) === fin.slice(0, 7)) return `${Number(inicio.slice(8, 10))} al ${Number(fin.slice(8, 10))} ${mesFin}`
+  return `${Number(inicio.slice(8, 10))} ${MESES_CORTOS[Number(inicio.slice(5, 7)) - 1]} al ${Number(fin.slice(8, 10))} ${mesFin}`
+}
+
+/** Fila «todo el día» de la semana: restricciones y actividades de varios días, en carriles. */
+export function filaTodoElDia(dias: FechaIso[], eventos: EventoCapa[]): SemanaCapas {
+  return distribuirSemana(dias, eventos.filter((evento) => evento.capa === 'restriccion' || evento.inicio !== evento.fin))
+}
+
+/** Actividades de un solo día, para la columna de ese día. */
+export function actividadesDeUnDia(dia: FechaIso, eventos: EventoCapa[]): EventoCapa[] {
+  return eventos.filter((evento) => evento.capa === 'actividad' && evento.inicio === dia && evento.fin === dia)
+}
+
+/** Restricciones que coinciden con los días de una actividad («Coincide con»). */
+export function coincidencias(actividad: EventoCapa, eventos: EventoCapa[]): EventoCapa[] {
+  return eventos
+    .filter((evento) => evento.capa === 'restriccion' && evento.inicio <= actividad.fin && evento.fin >= actividad.inicio)
+    .sort((a, b) => a.inicio.localeCompare(b.inicio))
+}
+
+/** Fechas de un evento: «jue. 19 nov.» o «16 al 19 nov.». */
+export function periodoEvento(evento: EventoCapa): string {
+  return periodoRestriccion(evento.inicio, evento.fin)
 }

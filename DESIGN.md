@@ -160,7 +160,7 @@ Reglas de tabla: texto a la izquierda, cifras a la derecha. Código de registro 
 | Figma | Código | Variantes | Cuándo sí |
 |---|---|---|---|
 | Celda de calendario | pendiente (tickets de MOD-03) | Tipo: Normal, Hoy, Fuera de mes, Seleccionado; hasta 3 eventos y «+N más» | vista mes |
-| Evento de calendario | `EventoCalendario` | `tipo`: `programada` (punto hueco), `enCurso` (punto relleno), `completada` (punto verde), `favorable`, `aviso` y `prohibicion` (pastilla de todo el día) y `mas` («+N más»); `barra` para una actividad de varios días. El Hueco de Figma es solo layout | dentro de una celda o de la vista lista |
+| Evento de calendario | `EventoCalendario` | `tipo`: `programada` (punto hueco), `enCurso` (punto relleno), `completada` (punto verde), `favorable`, `aviso` y `prohibicion` (pastilla de todo el día) y `mas` («+N más»); `barra` para una actividad de varios días y `ajustar` para que el texto pase a varias líneas en lugar de recortarse. El Hueco de Figma es solo layout | dentro de una celda o de la vista lista |
 | Chip de actividad | pendiente (tickets de MOD-03) | Estado: Programada, En curso, Completada, Prohibida | actividad en leyendas y listas |
 | Día del selector | pendiente (tickets de MOD-03) | Tipo: Normal, Vacío, Aviso, Prohibido, Seleccionado | selector de fechas al programar |
 | Día de la semana | pendiente (tickets de MOD-03) | Activo: Sí, No | repetición semanal (L M X J V S D) |

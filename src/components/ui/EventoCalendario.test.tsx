@@ -22,6 +22,12 @@ describe('EventoCalendario', () => {
     )
   })
 
+  it('con ajustar, el texto pasa a varias líneas', () => {
+    const { container } = render(<EventoCalendario tipo="programada" texto="Encargo · Cuad. C" ajustar />)
+
+    expect(container.firstElementChild?.className).toMatch(/ajustar/)
+  })
+
   it('pinta como barra una actividad de varios días', () => {
     const { container } = render(<EventoCalendario tipo="enCurso" texto="Corte de césped" barra />)
 
