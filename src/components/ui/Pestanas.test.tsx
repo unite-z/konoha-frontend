@@ -56,4 +56,26 @@ describe('Pestanas', () => {
     await usuario.keyboard('{Home}')
     expect(screen.getByRole('tabpanel').textContent).toBe('Panel todas')
   })
+
+  it('en caja pinta el contenido de la derecha', () => {
+    render(
+      <Pestanas
+        etiqueta="Ciclo de corte"
+        valor="ruta"
+        onCambiar={() => {}}
+        enCaja
+        derecha={<span>Limpieza: al completar la ruta</span>}
+        pestanas={[
+          { valor: 'ruta', texto: 'Ruta', contador: 45 },
+          { valor: 'limpieza', texto: 'Limpieza' },
+        ]}
+      >
+        <p>Panel ruta</p>
+      </Pestanas>,
+    )
+
+    expect(screen.getByText('Limpieza: al completar la ruta')).toBeTruthy()
+    expect(screen.getByRole('tabpanel', { name: 'Ruta 45' }).textContent).toBe('Panel ruta')
+  })
+
 })

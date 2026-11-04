@@ -7,6 +7,12 @@
   min-width: 0;
 }
 
+/* `sinMarco`: dentro de otro marco, sin borde ni radio propios. */
+.sinMarco {
+  border: 0;
+  border-radius: 0;
+}
+
 .desplazable {
   /* Contexto de posición: el texto solo para lectores de pantalla no desborda la página. */
   position: relative;

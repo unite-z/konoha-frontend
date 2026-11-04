@@ -65,6 +65,8 @@ export interface TablaDatosProps<F> {
   filaResaltada?: (fila: F) => boolean
   /** Filas de 40px. */
   compacta?: boolean
+  /** Sin borde ni radio, dentro de otro marco (Figma 346-1334: la ruta en la caja de pestañas del corte). */
+  sinMarco?: boolean
   ordenInicial?: { clave: string; direccion: DireccionOrden }
   /** Paginación del servidor. Sin ella, la tabla pagina en el cliente. */
   paginacionServidor?: PaginacionServidor
@@ -103,6 +105,7 @@ export default function TablaDatos<F>({
   onFilaClick,
   filaResaltada,
   compacta = false,
+  sinMarco = false,
   ordenInicial,
   paginacionServidor,
 }: TablaDatosProps<F>) {
@@ -172,7 +175,7 @@ export default function TablaDatos<F>({
   }
 
   return (
-    <div className={estilos.contenedor}>
+    <div className={`${estilos.contenedor} ${sinMarco ? estilos.sinMarco : ''}`}>
       <div
         className={`${estilos.desplazable} ${cabeceraFija ? estilos.cabeceraFija : ''}`}
         // Desplazamiento horizontal propio accesible con teclado.
