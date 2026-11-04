@@ -86,7 +86,8 @@ export default function LayoutOficina() {
           <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} />
           <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
-            {pagina.titulo && (
+            {pagina.titulo && pagina.tituloOculto && <h1 className="sr-only">{pagina.titulo}</h1>}
+            {pagina.titulo && !pagina.tituloOculto && (
               <div className={estilos.filaTitulo}>
                 {pagina.subtitulo ? (
                   <div>

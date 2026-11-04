@@ -65,6 +65,9 @@ import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
 import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
+/** «Acceso denegado» de Planificación (Figma 374-7925): el capataz tiene su ruta y su calendario en la app móvil. */
+const DESCRIPCION_SIN_PLANIFICACION = 'Tu ruta del día y el calendario están en la app móvil.'
+
 export const router = createBrowserRouter([
   { path: RUTAS_CORE.ingreso, element: <IngresoPage /> }, // RF-T-001
   {
@@ -168,7 +171,7 @@ export const router = createBrowserRouter([
           // MOD-03 «Planificación».
           {
             path: PREFIJO_PLANIFICACION,
-            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
+            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} seccion="Planificación" descripcion={DESCRIPCION_SIN_PLANIFICACION} />,
             children: [
               { index: true, element: <Navigate to={RUTAS_PLANIFICACION.resumen} replace /> },
               { path: RUTAS_PLANIFICACION.resumen, element: <ResumenPlanificacionPage /> }, // RF-PLA-008 y 009

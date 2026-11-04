@@ -3,12 +3,13 @@
  *
  * - `RutaProtegida`: sin sesión no se ve ninguna funcionalidad, solo el ingreso (CU-MOD01-001 paso 1).
  *   Con contraseña temporal lleva a definir una nueva antes de continuar (HU-MOD01-003).
- * - `RutaConPermiso`: con sesión pero sin el permiso, aviso «No tiene permiso para esta acción». Es solo
- *   usabilidad: el servidor responde 403 de todos modos y registra el intento.
+ * - `RutaConPermiso`: con sesión pero sin el permiso, aviso «No tiene permiso para esta acción» o, si se indica la
+ *   `seccion`, «Acceso denegado» centrado con «Volver al inicio» (Figma 374-7925). Es solo usabilidad: el servidor
+ *   responde 403 de todos modos y registra el intento.
  * - `InicioRol`: lleva a la primera sección que el rol puede usar.
  */
 import { Navigate, Outlet, useLocation } from 'react-router'
-import Boton from '../components/ui/Boton'
+import Boton, { BotonEnlace } from '../components/ui/Boton'
 import EstadoCarga from '../components/ui/EstadoCarga'
 import EstadoError from '../components/ui/EstadoError'
 import EstadoVacio from '../components/ui/EstadoVacio'
@@ -16,6 +17,7 @@ import { entradasMenu, puede } from '../config/permisosCore'
 import { usePaginaActual } from '../hooks/usePaginaActual'
 import { RUTAS, RUTAS_CORE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'
 import { useSesion, useSesionActiva } from './ContextoSesion'
+import estilos from './RutaProtegida.module.css'
 import { RUTAS_CAMPO } from '../router/rutasCampo'
 
 export default function RutaProtegida({ permitirContrasenaTemporal = false }: { permitirContrasenaTemporal?: boolean }) {
@@ -45,8 +47,34 @@ export default function RutaProtegida({ permitirContrasenaTemporal = false }: { 
   }
 }
 
-export function SinPermiso() {
-  usePaginaActual('Sin permiso', [])
+export interface SinPermisoProps {
+  /** Sección a la que se intenta entrar: con ella, «Acceso denegado» como en Figma (374-7925). */
+  seccion?: string
+  /** Dónde está lo que sí puede usar el rol (por ejemplo, la app móvil del capataz). */
+  descripcion?: string
+}
+
+export function SinPermiso({ seccion, descripcion }: SinPermisoProps) {
+  usePaginaActual(seccion ? 'Acceso denegado' : 'Sin permiso', seccion ? [{ texto: seccion }, { texto: 'Acceso denegado' }] : [], undefined, {
+    tituloOculto: Boolean(seccion),
+  })
+  if (seccion) {
+    return (
+      <div className={estilos.hueco}>
+        <EstadoVacio
+          centrado
+          icono="circle-x"
+          titulo={`No tienes acceso a ${seccion}`}
+          descripcion={descripcion ?? 'Tu rol no incluye esta sección. Si la necesitas, pide al jefe de sección que revise tu rol.'}
+          accion={
+            <BotonEnlace to="/" variante="secundario">
+              Volver al inicio
+            </BotonEnlace>
+          }
+        />
+      </div>
+    )
+  }
   return (
     <EstadoVacio
       icono="triangulo"
@@ -56,9 +84,9 @@ export function SinPermiso() {
   )
 }
 
-export function RutaConPermiso({ permiso }: { permiso: string }) {
+export function RutaConPermiso({ permiso, ...sinPermiso }: { permiso: string } & SinPermisoProps) {
   const sesion = useSesionActiva()
-  return puede(sesion, permiso) ? <Outlet /> : <SinPermiso />
+  return puede(sesion, permiso) ? <Outlet /> : <SinPermiso {...sinPermiso} />
 }
 
 export function InicioRol() {

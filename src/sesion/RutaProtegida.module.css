@@ -1,0 +1,6 @@
+/* «Acceso denegado» (Figma 374-7925): el estado centrado en el alto del panel de contenido. */
+.hueco {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+}

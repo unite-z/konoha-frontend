@@ -8,14 +8,15 @@ import { ContextoPagina, type Miga } from '../layouts/LayoutOficina/ContextoPagi
 /** Nombre de la aplicación en la pestaña del navegador (marca del mockup). */
 const NOMBRE_APLICACION = 'Gestión de Áreas Verdes'
 
-export function usePaginaActual(titulo: string, migas: Miga[], subtitulo?: string): void {
+export function usePaginaActual(titulo: string, migas: Miga[], subtitulo?: string, opciones: { tituloOculto?: boolean } = {}): void {
+  const tituloOculto = opciones.tituloOculto ?? false
   const contexto = useContext(ContextoPagina)
   const establecerPagina = contexto?.establecerPagina
   // Las migas se comparan por contenido para no actualizar el contexto en cada render.
   const claveMigas = JSON.stringify(migas)
 
   useEffect(() => {
-    establecerPagina?.({ titulo, migas: JSON.parse(claveMigas) as Miga[], subtitulo })
+    establecerPagina?.({ titulo, migas: JSON.parse(claveMigas) as Miga[], subtitulo, tituloOculto })
     document.title = `${titulo} · ${NOMBRE_APLICACION}`
-  }, [establecerPagina, titulo, claveMigas, subtitulo])
+  }, [establecerPagina, titulo, claveMigas, subtitulo, tituloOculto])
 }
