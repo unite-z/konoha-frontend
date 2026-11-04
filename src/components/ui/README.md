@@ -8,6 +8,8 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Anchos de `DialogoFormulario`:** `estrecho` (un solo campo, como «Registrar motivo» o «Iniciar CC-2026-11»; sin línea sobre los botones), `normal`, `amplio` y `lateral` (panel a la derecha).
 
+**Pestañas en caja y tabla sin marco:** `Pestanas` con `enCaja`, `derecha` y pestañas `deshabilitada`, y `TablaDatos` con `sinMarco` dentro de ella (detalle del corte).
+
 **Movimiento de los diálogos:** `AnimacionDialogo.module.css` (entrada y salida, centrada o lateral) y `useCierreAnimado.ts` (espera a que termine la salida antes de avisar con `onCerrar`) los comparten `DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`. Un diálogo nuevo los usa igual.
 
 **Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`. Para pasar a `Estado` una insignia de `utils/` con tono antiguo: `<Estado {...insigniaAEstado(insigniaEstado(x))} />` (`tonos.ts`).

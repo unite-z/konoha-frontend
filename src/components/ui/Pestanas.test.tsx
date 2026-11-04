@@ -56,4 +56,38 @@ describe('Pestanas', () => {
     await usuario.keyboard('{Home}')
     expect(screen.getByRole('tabpanel').textContent).toBe('Panel todas')
   })
+
+  it('no abre una pestaña deshabilitada, ni con el ratón ni con las flechas, y pinta el contenido de la derecha', async () => {
+    const usuario = userEvent.setup()
+    function Corte() {
+      const [valor, setValor] = useState('ruta')
+      return (
+        <Pestanas
+          etiqueta="Ciclo de corte"
+          valor={valor}
+          onCambiar={setValor}
+          enCaja
+          derecha={<span>Limpieza: al completar la ruta</span>}
+          pestanas={[
+            { valor: 'ruta', texto: 'Ruta', contador: 45 },
+            { valor: 'interrupciones', texto: 'Interrupciones', contador: 1 },
+            { valor: 'limpieza', texto: 'Limpieza', deshabilitada: true },
+          ]}
+        >
+          <p>Panel {valor}</p>
+        </Pestanas>
+      )
+    }
+    render(<Corte />)
+
+    const limpieza = screen.getByRole('tab', { name: 'Limpieza' })
+    expect(limpieza.getAttribute('aria-disabled')).toBe('true')
+    await usuario.click(limpieza)
+    expect(screen.getByText('Panel ruta')).toBeTruthy()
+
+    screen.getByRole('tab', { name: 'Interrupciones 1' }).focus()
+    await usuario.keyboard('{ArrowRight}')
+    expect(screen.getByText('Panel ruta')).toBeTruthy()
+    expect(screen.getByText('Limpieza: al completar la ruta')).toBeTruthy()
+  })
 })

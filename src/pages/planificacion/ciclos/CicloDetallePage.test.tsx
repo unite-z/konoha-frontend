@@ -24,13 +24,21 @@ const cambiarEstadoCiclo = vi.fn(async (_id: number, cambio: string, fecha?: str
 )
 const historial: { estado: 'Programada' | 'EnCurso'; fecha_hora: string; autor: string }[] = []
 vi.mock('@/services/api/planificacion', () => ({
-  listarProgramaciones: async () => [programada, { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial }],
+  listarProgramaciones: async () => [
+    programada,
+    { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial },
+    { ...programada, id: 9, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-11-01', fecha_fin_prevista: '2026-11-04', fecha_inicio_real: '2026-11-01' },
+  ],
   listarServiciosPeriodicos: async () => [],
   listarRestricciones: async () => [
     { id: 3, tipo_restriccion_id: 1, tipo: 'Ceremonia', efecto: 'Advertencia', aplica_servicios_ruidosos: false, fecha_inicio: '2026-11-03', fecha_fin: '2026-11-03', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: 'Graduación', serie: null },
   ],
   cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string, motivo?: string) => cambiarEstadoCiclo(id, cambio, fecha, motivo),
 }))
+vi.mock('@/services/api/corte', async () => {
+  const { cicloCorteSimulado } = await import('@/services/simulados/corte')
+  return { obtenerCicloCorte: async (ciclo: Programacion) => cicloCorteSimulado(ciclo) }
+})
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
 vi.mock('@/utils/instanteLima', async (original) => ({ ...(await original<typeof import('@/utils/instanteLima')>()), hoyLima: () => '2026-11-02' }))
@@ -101,6 +109,22 @@ describe('CicloDetallePage', () => {
     const eventos = await screen.findAllByRole('listitem')
     expect(eventos.map((e) => e.textContent)).toEqual(['Iniciado02/11 06:10 · Robert G.', 'Programado19/10 09:30 · Robert G.'])
     expect(screen.getByText('Inicio real')).toBeTruthy()
+  })
+
+  it('un corte en curso muestra avance, duración, interrupciones y la ruta, con la limpieza bloqueada (AV-270)', async () => {
+    pintar('9')
+    expect(await screen.findByText('62 %')).toBeTruthy()
+    expect(screen.getByText('28 de 45 jardines')).toBeTruthy()
+    expect(screen.getByText('Día 2 de 4')).toBeTruthy()
+    expect(screen.getByText('Sociales → Ciencias')).toBeTruthy()
+    expect(screen.getByRole('tab', { name: 'Ruta 45' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByRole('tab', { name: 'Limpieza' }).getAttribute('aria-disabled')).toBe('true')
+    expect(screen.getByText('Limpieza: al completar la ruta')).toBeTruthy()
+    expect(screen.getByText('+14 más')).toBeTruthy()
+    expect(screen.getByText('Detenido por interrupción')).toBeTruthy()
+
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'Interrupciones 1' }))
+    expect(screen.getByText('Ruido durante clases en las aulas Z201 a Z205.')).toBeTruthy()
   })
 
   it('avisa si el ciclo no existe', async () => {

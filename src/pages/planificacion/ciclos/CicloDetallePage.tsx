@@ -24,33 +24,48 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { obtenerCicloCorte } from '@/services/api/corte'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos, type CambioEstadoCiclo } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
+import type { CicloCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { hoyLima } from '@/utils/instanteLima'
+import { ahoraLimaLocal, hoyLima } from '@/utils/instanteLima'
 import { conflictosDelPeriodo } from '../calendario/programarCiclo'
 import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
-import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo } from './detalleCiclo'
+import { esCorte, indicadorAvanceProgramado, indicadoresCorte } from './corte'
+import PestanasCorte from './PestanasCorte'
+import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
 
 function FichaCiclo({
   ciclo,
   hoy,
   servicio,
+  corte,
   onAccion,
 }: {
   ciclo: Programacion
   hoy: FechaIso
   servicio: ServicioPeriodico | undefined
+  /** Ruta, interrupciones y limpiezas si el ciclo es de corte (AV-270). */
+  corte: CicloCorte | null
   onAccion: ((cambio: CambioEstadoCiclo) => void) | null
 }) {
   const { desde, hasta } = periodoCiclo(ciclo, hoy)
   const restricciones = useConsulta(`ciclo-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
   const conflictos = conflictosDelPeriodo(restricciones.datos ?? [], desde, hasta, servicio?.es_ruidoso ?? true)
-  const indicadores = indicadoresCiclo(ciclo, servicio, conflictos, hoy)
+  const base = indicadoresCiclo(ciclo, servicio, conflictos, hoy)
+  const ahora = ahoraLimaLocal()
+  // Corte (Figma 370-3811 y 346-1334): sin empezar, avance, fechas y restricciones; empezado, avance, duración
+  // «Día N de 4» e interrupciones.
+  const indicadores: (IndicadorCiclo & { notaAviso?: boolean })[] = !corte
+    ? base
+    : ciclo.estado === 'Programada' || ciclo.estado === 'Cancelada'
+      ? [{ ...indicadorAvanceProgramado(corte), exceso: 0 }, base[0], base[2]]
+      : indicadoresCorte(ciclo, servicio, corte, hoy, ahora).map((indicador, indice) => ({ ...indicador, exceso: indice === 1 ? base[1].exceso : 0 }))
   const historial = historialCiclo(ciclo)
   const estado = ESTADO_PROGRAMACION[ciclo.estado]
   const acciones = onAccion ? accionesCiclo(ciclo.estado) : []
@@ -79,14 +94,16 @@ function FichaCiclo({
             etiqueta={indicador.etiqueta}
             valor={indicador.valor}
             contexto={indicador.contexto}
-            nota={indicador.nota}
+            nota={indicador.notaAviso ? <span className={estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
             estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
             insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
           />
         ))}
       </FilaTarjetas>
 
-      {historial.length > 0 && (
+      {corte && <PestanasCorte ciclo={ciclo} corte={corte} hoy={hoy} ahora={ahora} />}
+
+      {!corte && historial.length > 0 && (
         <Tarjeta titulo="Historial">
           <ul className={estilos.historial}>
             {historial.map((evento) => (
@@ -117,12 +134,16 @@ export default function CicloDetallePage() {
 
   const ciclo = local?.id === id ? local : consulta.datos?.find((c) => c.id === id)
   const servicio = servicios.datos?.find((s) => s.id === ciclo?.tipo_servicio_id)
+  const conRuta = ciclo && esCorte(ciclo.servicio) ? ciclo : null
+  const corte = useConsulta(conRuta ? `ciclo-corte:${conRuta.id}:${conRuta.estado}` : null, (signal) =>
+    conRuta ? obtenerCicloCorte(conRuta, signal) : Promise.reject(new Error('Sin ciclo de corte')),
+  )
   // Como en Figma 380-7171: «Control fitosanitario · FIT-2026-T5», migas «Ciclos > FIT-2026-T5» y, debajo, proveedor,
   // fechas y franja.
   usePaginaActual(
     ciclo ? [ciclo.servicio, ciclo.codigo].filter(Boolean).join(' · ') : 'Ciclo',
     [MIGAS_PLANIFICACION.ciclos, { texto: ciclo ? (ciclo.codigo ?? ciclo.servicio) : 'Ciclo' }],
-    ciclo ? subtituloCiclo(ciclo, servicio) : undefined,
+    ciclo ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${corte.datos.jardines.length} jardines`].filter(Boolean).join(' · ') : undefined,
   )
 
   let contenido
@@ -143,7 +164,7 @@ export default function CicloDetallePage() {
       />
     )
   } else {
-    contenido = <FichaCiclo ciclo={ciclo} hoy={hoy} servicio={servicio} onAccion={puedeEditar ? setCambio : null} />
+    contenido = <FichaCiclo ciclo={ciclo} hoy={hoy} servicio={servicio} corte={corte.datos ?? null} onAccion={puedeEditar ? setCambio : null} />
   }
 
   return (

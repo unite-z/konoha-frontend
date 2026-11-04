@@ -13,6 +13,8 @@ export interface Pestana {
   contador?: number
   /** Otro contenido junto al texto (por ejemplo, un `Estado`). */
   extra?: ReactNode
+  /** No se puede abrir todavía (Figma: «Limpieza» hasta completar la ruta); el motivo va en `derecha`. */
+  deshabilitada?: boolean
 }
 
 export interface PestanasProps {
@@ -22,23 +24,31 @@ export interface PestanasProps {
   onCambiar: (valor: string) => void
   /** Contenido en la misma fila que las pestañas, a su izquierda (Figma: la navegación del Calendario). */
   barra?: ReactNode
+  /** Contenido a la derecha de las pestañas (Figma: «Limpieza: al completar la ruta» del detalle del corte). */
+  derecha?: ReactNode
+  /** En un marco con borde: las pestañas en una cabecera con línea inferior y el panel sin relleno (Figma 346-1334). */
+  enCaja?: boolean
   children: ReactNode
 }
 
-export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, children }: PestanasProps) {
+export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, derecha, enCaja = false, children }: PestanasProps) {
   const base = useId()
   const botones = useRef<(HTMLButtonElement | null)[]>([])
 
   function teclado(evento: KeyboardEvent<HTMLButtonElement>, indice: number) {
-    const ultimo = pestanas.length - 1
-    const destino =
-      evento.key === 'ArrowRight' ? (indice === ultimo ? 0 : indice + 1)
-      : evento.key === 'ArrowLeft' ? (indice === 0 ? ultimo : indice - 1)
+    // Las flechas saltan las pestañas deshabilitadas.
+    const abiertas = pestanas.map((p, i) => (p.deshabilitada ? -1 : i)).filter((i) => i >= 0)
+    const posicion = abiertas.indexOf(indice)
+    const ultimo = abiertas.length - 1
+    const siguiente =
+      evento.key === 'ArrowRight' ? (posicion === ultimo ? 0 : posicion + 1)
+      : evento.key === 'ArrowLeft' ? (posicion <= 0 ? ultimo : posicion - 1)
       : evento.key === 'Home' ? 0
       : evento.key === 'End' ? ultimo
       : null
-    if (destino === null) return
+    if (siguiente === null) return
     evento.preventDefault()
+    const destino = abiertas[siguiente]
     botones.current[destino]?.focus()
     onCambiar(pestanas[destino].valor)
   }
@@ -59,8 +69,11 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, 
             aria-selected={activa}
             aria-controls={`${base}-panel`}
             tabIndex={activa ? 0 : -1}
-            className={`${estilos.pestana} ${activa ? estilos.activa : ''}`}
-            onClick={() => onCambiar(pestana.valor)}
+            aria-disabled={pestana.deshabilitada || undefined}
+            className={`${estilos.pestana} ${activa ? estilos.activa : ''} ${pestana.deshabilitada ? estilos.deshabilitada : ''}`}
+            onClick={() => {
+              if (!pestana.deshabilitada) onCambiar(pestana.valor)
+            }}
             onKeyDown={(e) => teclado(e, indice)}
           >
             {pestana.texto}
@@ -73,16 +86,23 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, 
     </div>
   )
 
+  const cabecera = barra ? (
+    <div className={estilos.conBarra}>
+      <div className={estilos.barra}>{barra}</div>
+      {lista}
+    </div>
+  ) : derecha ? (
+    <div className={estilos.conDerecha}>
+      {lista}
+      <div className={estilos.derecha}>{derecha}</div>
+    </div>
+  ) : (
+    lista
+  )
+
   return (
-    <div className={estilos.contenedor}>
-      {barra ? (
-        <div className={estilos.conBarra}>
-          <div className={estilos.barra}>{barra}</div>
-          {lista}
-        </div>
-      ) : (
-        lista
-      )}
+    <div className={`${estilos.contenedor} ${enCaja ? estilos.caja : ''}`}>
+      {enCaja ? <div className={estilos.cabeceraCaja}>{cabecera}</div> : cabecera}
       <div role="tabpanel" id={`${base}-panel`} aria-labelledby={`${base}-tab-${valor}`} className={estilos.panel}>
         {children}
       </div>
