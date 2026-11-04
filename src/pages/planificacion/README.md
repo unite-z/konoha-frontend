@@ -3,7 +3,7 @@
 Planificación de servicios, en cuatro secciones desde el rediseño (AV-265): Resumen, Calendario, Ciclos y Configuración.
 
 - **Resumen** (`resumen/ResumenPlanificacionPage.tsx`, RF-PLA-008 y 009): indicadores del mes, bandeja «Necesita atención» (`NecesitaAtencion`, sustituye a la pantalla de alertas), próximos 14 días y restricciones próximas. Su lógica está en `resumen/resumenPlanificacion.ts`, con prueba.
-- **Calendario** (`/planificacion/calendario`): de momento, `CalendarioRestriccionesPage.tsx` (HU-MOD03-003). La vista con capas llega con AV-266.
+- **Calendario** (`calendario/CalendarioPage.tsx`, RF-PLA-003 y 007): un solo calendario con capas de restricciones y actividades (AV-266). Vista Mes (`VistaMes`) con agenda del día (`AgendaDia`) y «Nueva restricción». Su lógica (semanas, carriles de las barras de varios días y «+N más») está en `calendario/calendarioCapas.ts`, con prueba. Las vistas Semana y Lista, los filtros y «Dar de baja» llegan en los siguientes PR de AV-266.
 - **Ciclos**: llega con AV-269; hasta entonces, el menú la muestra como «Próximamente».
 - **Configuración** (`/planificacion/configuracion`): de momento, `ServiciosPeriodicosPage.tsx` (HU-MOD03-001 y 002) y sus diálogos (`DialogoFrecuencia`, `DialogoDuracion`, `DialogoRestriccion`). La vista unificada llega con AV-268.
 - Las rutas anteriores (`servicios-periodicos` y `calendario-restricciones`) redirigen a su sección (`RUTAS_PLANIFICACION_ANTIGUAS`).
@@ -22,6 +22,6 @@ Planificación de servicios, en cuatro secciones desde el rediseño (AV-265): Re
 
 **Entre módulos:** derivar una incidencia a encargo de MOD-04 (AV-277) o a requerimiento de MOD-05 (AV-278) se hace con un endpoint de MOD-03. El backend crea el encargo o el requerimiento; el front no llama a los servicios de MOD-04 ni de MOD-05. Las áreas verdes y los sectores se leen de MOD-02.
 
-**Ejemplo:** `CalendarioRestriccionesPage.tsx` calcula la rejilla del mes con `utils/calendarioRestricciones.ts`, que tiene su prueba.
+**Ejemplo:** `calendario/VistaMes.tsx` pinta cada semana con `distribuirSemana` de `calendario/calendarioCapas.ts`, que tiene su prueba.
 
 **Destino:** `modulos/planificacion/paginas/`.
