@@ -55,19 +55,6 @@
   border-bottom: 1px solid var(--color-border-default);
 }
 
-/* `.dialogo.lateral`: gana a la regla móvil de `.dialogo`, que va después. */
-@media (max-width: 40rem) {
-  .dialogo.lateral {
-    --dialogo-ancho: 100vw;
-    width: 100vw;
-    max-width: none; /* el navegador limita el ancho de <dialog> por defecto */
-    height: 100vh;
-    max-height: none;
-    margin: 0;
-    border-radius: 0;
-  }
-}
-
 .dialogo::backdrop {
   background: var(--web-scrim);
 }
@@ -153,5 +140,56 @@
 
   .acciones > * {
     flex: 1 1 100%;
+  }
+}
+
+/*
+ * En móvil, el panel lateral ocupa la pantalla como en Figma («Programar ciclo» 352-2324, «Reportar incidencia»
+ * 391-8394): la X a la izquierda del título, el cuerpo sobre el fondo de la aplicación y un solo botón primario a todo
+ * el ancho (la X hace de «Cancelar»). Va al final para ganar a la regla móvil de `.dialogo`.
+ */
+@media (max-width: 767px) {
+  .dialogo.lateral {
+    --dialogo-ancho: 100vw;
+    width: 100vw;
+    max-width: none; /* el navegador limita el ancho de <dialog> por defecto */
+    height: 100vh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--color-bg-page);
+  }
+
+  .lateral .cabecera {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-surface);
+  }
+
+  .lateral .titulo {
+    font-size: var(--type-heading-sm-size);
+    line-height: var(--type-heading-sm-line);
+    font-weight: var(--type-heading-sm-weight);
+  }
+
+  .lateral .cuerpo {
+    padding-top: var(--space-4);
+  }
+
+  .lateral .formulario > .acciones,
+  .lateral .descarte {
+    padding: var(--space-4);
+  }
+
+  .lateral .formulario > .acciones {
+    background: var(--color-bg-surface);
+  }
+
+  .lateral .cancelar {
+    display: none;
   }
 }

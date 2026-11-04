@@ -6,7 +6,7 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Campos numéricos:** `CampoFormulario` con `formato="entero"` o `"decimal"` filtra lo que se escribe o se pega (`filtrarNumero` en `campoFormularioUtil.ts`). Úsalo en lugar de `inputMode` o `type="number"`.
 
-**Anchos de `DialogoFormulario`:** `estrecho` (un solo campo, como «Registrar motivo» o «Iniciar CC-2026-11»; sin línea sobre los botones), `medio` (con `conCierre`, como «Registrar interrupción»), `normal`, `amplio` y `lateral` (panel a la derecha).
+**Anchos de `DialogoFormulario`:** `estrecho` (un solo campo, como «Registrar motivo» o «Iniciar CC-2026-11»; sin línea sobre los botones), `medio` (con `conCierre`, como «Registrar interrupción»), `normal`, `amplio` y `lateral` (panel a la derecha; en móvil, a pantalla completa con la X a la izquierda del título, el cuerpo sobre el fondo de la aplicación y solo el botón primario, como «Programar ciclo» 352-2324).
 
 **Pestañas en caja y tabla sin marco:** `Pestanas` con `enCaja`, `derecha` y `ancho="completo"` (pasos), y `TablaDatos` con `sinMarco` dentro de ella (detalle del corte). Una columna con `tituloOculto` deja su título solo para lectores de pantalla (acciones).
 

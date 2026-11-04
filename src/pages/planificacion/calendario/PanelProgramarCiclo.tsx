@@ -18,6 +18,7 @@ import Estado from '@/components/ui/Estado'
 import Pestanas from '@/components/ui/Pestanas'
 import Selector from '@/components/ui/Selector'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import { obtenerRutaCorte } from '@/services/api/corte'
 import { useConsulta } from '@/hooks/useConsulta'
 import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta } from '@/services/api/planificacion'
@@ -67,6 +68,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
   const [enviando, setEnviando] = useState(false)
   const [errorEnvio, setErrorEnvio] = useState<{ titulo: string; detalle: string } | null>(null)
 
+  const esMovil = useEsMovil()
   const servicio = servicios.find((s) => String(s.id) === servicioId)
   // Corte de césped (Figma 372-5523): un segundo paso «Ruta» con las zonas de MOD-02 (AV-259).
   const corte = servicio ? esCorte(servicio.nombre) : false
@@ -179,7 +181,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
               obligatorio
               valor={mesVentana}
               opcionTodos="Elige el mes"
-              opciones={mesesVentana(fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)))}
+              opciones={mesesVentana(fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)), esMovil)}
               onCambiar={setVentanaMes}
               error={validacion.errorVentana ?? undefined}
             />
@@ -206,7 +208,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
                 error={fechasValidas ? (validacion.errorPeriodo ?? undefined) : undefined}
               />
             </div>
-            {esPropuesta && <p className={estilos.detalle}>Fechas propuestas por el sistema</p>}
+            {esPropuesta && <p className={`${estilos.detalle} ${estilos.soloEscritorio}`}>Fechas propuestas por el sistema</p>}
   
             {fechasValidas && fin >= inicio && (
               <div className={estilos.bloqueAgenda}>
@@ -227,14 +229,14 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
                 {validacion.diasExcedidos ? (
                   <p className={estilos.diasExcedidos}>{validacion.diasExcedidos}</p>
                 ) : (
-                  textoDuracion(servicio) && <p className={estilos.detalle}>{textoDuracion(servicio)}</p>
+                  textoDuracion(servicio) && <p className={`${estilos.detalle} ${estilos.soloEscritorio}`}>{textoDuracion(servicio)}</p>
                 )}
               </div>
             )}
   
             {conflictos.length > 0 && (
               <div className={estilos.bloqueAgenda}>
-                <p className={estilos.rotuloConflictos}>
+                <p className={`${estilos.rotuloConflictos} ${estilos.soloEscritorio}`}>
                   Conflictos con restricciones <Estado tono={validacion.prohibiciones.length > 0 ? 'error' : 'aviso'} texto={String(conflictos.length)} punto={false} />
                 </p>
                 {[...validacion.avisos, ...validacion.prohibiciones]

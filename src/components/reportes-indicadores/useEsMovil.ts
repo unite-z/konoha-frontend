@@ -6,7 +6,11 @@ import { useSyncExternalStore } from 'react'
 
 const CONSULTA_MOVIL = '(max-width: 767px)'
 
+/** Sin `matchMedia` (jsdom en las pruebas) se toma escritorio. */
+const hayMatchMedia = () => typeof window.matchMedia === 'function'
+
 function suscribir(aviso: () => void): () => void {
+  if (!hayMatchMedia()) return () => undefined
   const consulta = window.matchMedia(CONSULTA_MOVIL)
   consulta.addEventListener('change', aviso)
   return () => consulta.removeEventListener('change', aviso)
@@ -15,7 +19,7 @@ function suscribir(aviso: () => void): () => void {
 export function useEsMovil(): boolean {
   return useSyncExternalStore(
     suscribir,
-    () => window.matchMedia(CONSULTA_MOVIL).matches,
+    () => hayMatchMedia() && window.matchMedia(CONSULTA_MOVIL).matches,
     () => false,
   )
 }
