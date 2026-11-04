@@ -7,7 +7,12 @@ import { ErrorApi } from '@/services/api/cliente'
 import { incidenciaSimulada } from '@/services/simulados/incidencias'
 import IncidenciaDetallePage from './IncidenciaDetallePage'
 
+const derivacion = vi.hoisted(() => ({ disponible: true }))
+
 vi.mock('@/services/api/incidencias', () => ({
+  get DERIVACION_DISPONIBLE() {
+    return derivacion.disponible
+  },
   obtenerIncidencia: async (id: number) => {
     const incidencia = incidenciaSimulada(id)
     if (!incidencia) throw new ErrorApi(404, 'no-encontrado', 'No se encontró el registro solicitado')
@@ -61,6 +66,16 @@ describe('IncidenciaDetallePage', () => {
     expect(screen.getByRole('heading', { name: 'Encargo a un capataz' })).toBeTruthy()
     await userEvent.setup().click(screen.getByRole('button', { name: 'Volver' }))
     expect(screen.getByRole('heading', { name: 'Derivar de nuevo' })).toBeTruthy()
+  })
+
+  it('sin el backend de la derivación (AV-277 y AV-278), avisa en lugar de derivar', async () => {
+    derivacion.disponible = false
+    pintar('32')
+    expect(await screen.findByText('Se canceló el encargo ENC-2026-118')).toBeTruthy()
+    await userEvent.setup().click(screen.getByRole('radio', { name: 'Encargo a un capataz' }))
+    expect(screen.getByText('Derivar aún no está disponible')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Encargo a un capataz' })).toBeNull()
+    derivacion.disponible = true
   })
 
   it('cerrada muestra el tiempo de cierre, la evidencia, el aviso y el historial (Figma 390-7811)', async () => {
