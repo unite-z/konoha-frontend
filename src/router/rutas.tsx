@@ -36,6 +36,7 @@ import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
 import IncidenciaDetallePage from '../pages/incidencias/IncidenciaDetallePage'
+import MisIncidenciasPage from '../pages/incidencias/MisIncidenciasPage'
 import CalendarioCuadrillaPage from '../pages/corte/CalendarioCuadrillaPage'
 import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
@@ -62,7 +63,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, RUTAS_MIS_INCIDENCIAS, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
@@ -195,6 +196,12 @@ export const router = createBrowserRouter([
               { path: RUTAS_CORTE.rutaDeHoy, element: <RutaDeHoyPage /> }, // RF-COR-002, HU-011 y CU-011
               { path: RUTAS_CORTE.calendario, element: <CalendarioCuadrillaPage /> }, // RF-PLA-007 (solo lectura)
             ],
+          },
+          // MOD-03 · mis incidencias (AV-282): cualquier usuario con sesión, con la regla de su entrada del menú.
+          {
+            path: RUTAS_MIS_INCIDENCIAS.lista,
+            element: <RutaConEntrada entrada="misIncidencias" seccion="Mis incidencias" />,
+            children: [{ index: true, element: <MisIncidenciasPage /> }], // HU-024
           },
           // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
           {

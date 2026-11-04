@@ -20,6 +20,7 @@ import {
   RUTAS_CORE,
   RUTAS_CORTE,
   RUTAS_INCIDENCIAS,
+  RUTAS_MIS_INCIDENCIAS,
   RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
@@ -124,6 +125,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
         hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
       }
     : { texto: 'Incidencias', icono: 'triangle-alert' },
+  // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil.
+  { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',

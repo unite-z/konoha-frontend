@@ -167,6 +167,17 @@ export const RUTAS_INCIDENCIAS = {
   bandeja: BASE_INCIDENCIAS, // HU-024 y HU-027 (AV-283)
 }
 
+/** MOD-03 · incidencias de quien las reporta, en el móvil (AV-282): cualquier usuario con sesión. */
+export const RUTAS_MIS_INCIDENCIAS = {
+  lista: '/mis-incidencias', // HU-024 (seguimiento propio)
+  reportar: '/mis-incidencias/reportar', // HU-020 y CU-020
+} as const
+
+/** Seguimiento de una incidencia propia (AV-282). */
+export function rutaMiIncidencia(id: number | string): string {
+  return `${RUTAS_MIS_INCIDENCIAS.lista}/${id}`
+}
+
 /** Detalle de una incidencia (AV-284). */
 export function rutaIncidencia(id: number): string {
   return `${RUTAS_INCIDENCIAS.bandeja}/${id}`

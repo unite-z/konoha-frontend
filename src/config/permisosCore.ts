@@ -31,7 +31,7 @@ export function puede(sesion: SesionCore | null, permiso: string): boolean {
 }
 
 /** Entradas de primer nivel del menú con enlace, según los permisos (HU-MOD01-007, «Menú por rol»). */
-export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
+export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'misIncidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
 
 export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   const entradas = new Set<EntradaMenu>()
@@ -40,6 +40,9 @@ export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('planificacion')
   // Ruta de hoy del capataz (AV-271): el permiso llega con AV-260; con datos simulados (D9), por el rol.
   if (puede(sesion, PERMISOS.marcarCorte) || (DATOS_SIMULADOS && sesion?.rol.codigo === 'capataz')) entradas.add('corte')
+  // Mis incidencias (AV-282): cualquier usuario con sesión reporta y sigue las suyas. Sin backend (AV-274), solo con
+  // datos simulados (D9).
+  if (sesion && DATOS_SIMULADOS) entradas.add('misIncidencias')
   // Incidencias: el permiso propio llega con AV-281; hasta entonces, el de Planificación (el jefe).
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('incidencias')
   // Servicios tercerizados incluye contratos y conformidades: el capataz no lo ve.

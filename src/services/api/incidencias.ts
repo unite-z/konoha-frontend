@@ -170,3 +170,12 @@ export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | 
   }
   return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo })
 }
+
+/** `GET incidencias/mias/` (AV-274 y AV-279): las incidencias que reportó el usuario, de la más reciente a la más antigua. */
+export async function listarMisIncidencias(signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularMisIncidencias } = await import('../simulados/incidencias')
+    return simularMisIncidencias(signal)
+  }
+  return solicitarPlanificacion<IncidenciaResumen[]>('incidencias/mias/', { signal })
+}
