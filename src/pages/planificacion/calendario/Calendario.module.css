@@ -344,9 +344,9 @@
 }
 
 .panelFiltros {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 /* «Sin resultados» ocupa el sitio del calendario, con borde discontinuo (Figma 374-6421). */
@@ -575,4 +575,40 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+/* Filtros: desplegable bajo su botón, sobre el calendario (Figma 374-5899). */
+.anclaFiltros {
+  position: relative;
+}
+
+.desplegableFiltros {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  width: 20rem;
+}
+
+.grupoFiltro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rotuloFiltro {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+.accionesFiltros {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }

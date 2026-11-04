@@ -152,12 +152,12 @@ describe('filtros del calendario', () => {
         programacion({ id: 2, tipo_servicio_id: 2, proveedor_id: null }),
       ],
     )
-    expect(filtrarEventos(eventos, { tipo: '2', proveedor: '' }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
-    expect(filtrarEventos(eventos, { tipo: '', proveedor: PERSONAL_PROPIO }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
-    expect(filtrarEventos(eventos, { tipo: '', proveedor: '5' }).map((e) => e.clave)).toEqual(['r-1', 'p-1'])
+    expect(filtrarEventos(eventos, { tipos: ['2'], proveedor: '' }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
+    expect(filtrarEventos(eventos, { tipos: [], proveedor: PERSONAL_PROPIO }).map((e) => e.clave)).toEqual(['r-1', 'p-2'])
+    expect(filtrarEventos(eventos, { tipos: [], proveedor: '5' }).map((e) => e.clave)).toEqual(['r-1', 'p-1'])
     const proveedores = opcionesProveedor(eventos)
     expect(proveedores.map((p) => p.texto)).toEqual(['Personal propio', 'Podas Altura Demo'])
-    expect(chipsFiltros({ tipo: '1', proveedor: '5' }, [{ valor: '1', texto: 'Corte de césped' }], proveedores).map((c) => c.texto)).toEqual([
+    expect(chipsFiltros({ tipos: ['1'], proveedor: '5' }, [{ valor: '1', texto: 'Corte de césped' }], proveedores).map((c) => c.texto)).toEqual([
       'Tipo: Corte de césped',
       'Proveedor: Podas Altura Demo',
     ])

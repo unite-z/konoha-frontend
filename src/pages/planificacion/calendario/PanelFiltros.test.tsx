@@ -8,21 +8,32 @@ import PanelFiltros from './PanelFiltros'
 afterEach(cleanup)
 
 describe('PanelFiltros', () => {
-  it('cambia tipo y proveedor y deja bloqueados cuadrilla, sector y lugar con su motivo', async () => {
-    const onCambiar = vi.fn()
+  it('elige varios tipos y proveedor y solo los aplica al pulsar «Aplicar»; cuadrilla, sector y lugar, bloqueados', async () => {
+    const onAplicar = vi.fn()
     render(
       <PanelFiltros
         id="panel"
         filtros={SIN_FILTROS}
-        tipos={[{ valor: '1', texto: 'Corte de césped' }]}
+        tipos={[
+          { valor: '1', texto: 'Corte de césped' },
+          { valor: '2', texto: 'Poda' },
+        ]}
         proveedores={[{ valor: 'propio', texto: 'Personal propio' }]}
-        onCambiar={onCambiar}
+        onAplicar={onAplicar}
+        onCerrar={vi.fn()}
       />,
     )
+    const usuario = userEvent.setup()
+    await usuario.click(screen.getByLabelText('Corte de césped'))
+    await usuario.click(screen.getByLabelText('Poda'))
+    await usuario.selectOptions(screen.getByLabelText('Proveedor'), 'propio')
+    expect(onAplicar).not.toHaveBeenCalled()
 
-    await userEvent.setup().selectOptions(screen.getByLabelText('Tipo de servicio'), '1')
-    expect(onCambiar).toHaveBeenCalledWith({ tipo: '1', proveedor: '' })
+    await usuario.click(screen.getByRole('button', { name: 'Aplicar' }))
+    expect(onAplicar).toHaveBeenCalledWith({ tipos: ['1', '2'], proveedor: 'propio' })
     expect((screen.getByLabelText('Cuadrilla') as HTMLSelectElement).disabled).toBe(true)
-    expect(screen.getAllByText('Aún no disponible.')).toHaveLength(3)
+
+    await usuario.click(screen.getByRole('button', { name: 'Limpiar' }))
+    expect(onAplicar).toHaveBeenLastCalledWith(SIN_FILTROS)
   })
 })
