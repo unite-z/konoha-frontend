@@ -168,8 +168,6 @@
   }
 }
 
-/* En móvil el título va en la barra superior (Figma 352-2038): el h1 queda solo para lectores de pantalla y la
-   fila del título conserva el subtítulo y las acciones. */
 /* Ficha de un registro en móvil (Figma 353-2242): el servicio como encabezado y el subtítulo corto. */
 .encabezadoMovil,
 .soloMovil {
@@ -193,6 +191,13 @@
     display: none;
   }
 
+  /* Sin nada visible en la fila (solo el h1 oculto), no deja hueco: el contenido empieza a 16 de la barra. */
+  .filaTitulo:not(:has(.subtitulo, .encabezadoMovil, .juntoTitulo:not(:empty), .accionesTitulo:not(:empty))) {
+    margin-bottom: 0;
+  }
+
+  /* En móvil el título va en la barra superior (Figma 352-2038): el h1 queda solo para lectores de pantalla y la
+     fila del título conserva el subtítulo y las acciones. */
   .titulo {
     position: absolute;
     width: 1px;

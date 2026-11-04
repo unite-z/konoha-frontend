@@ -29,6 +29,21 @@ describe('DialogoFormulario', () => {
     expect(screen.getByRole('button', { name: 'Programar ciclo' })).toBeTruthy()
   })
 
+  it('con ancho hoja es la hoja inferior del móvil: asa, sin X y los dos botones (Figma 375-6817)', () => {
+    render(
+      <DialogoFormulario abierto titulo="J-015 ya está marcado" descripcion="Por J. Ramos a las 10:18." textoConfirmar="Añadir observación" ancho="hoja" onEnviar={vi.fn()} onCerrar={vi.fn()}>
+        <p>Campos</p>
+      </DialogoFormulario>,
+    )
+
+    const dialogo = screen.getByRole('dialog', { name: 'J-015 ya está marcado' })
+    expect(dialogo.className).toMatch(/hoja/)
+    expect(dialogo.querySelector('[class*="asa"]')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Cerrar' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Añadir observación' })).toBeTruthy()
+  })
+
   it('el panel lateral sale hacia la derecha y avisa al terminar la animación', () => {
     vi.stubGlobal('matchMedia', (consulta: string) => ({ matches: consulta.includes('no-preference') }))
     const onCerrar = vi.fn()
