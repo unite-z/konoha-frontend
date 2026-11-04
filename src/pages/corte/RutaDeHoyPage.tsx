@@ -4,10 +4,16 @@
  * «Marcados». Un toque en un jardín por cortar lo marca con la hora real; en uno marcado, o si otro ya lo marcó (409
  * `ya-marcado`), abre la hoja «ya está marcado» con quién y cuándo y «Añadir observación».
  *
+ * Sin conexión (Figma 353-2396): la marca queda «Sin sincronizar» con la hora real y su clave, una banda dice cuántas
+ * faltan por enviar y, al volver la conexión, se envían solas. Si otro ya había marcado el jardín, un aviso lo dice
+ * («J-015 ya estaba marcado · J. Ramos, 10:18»). Las pendientes viven en la pantalla: la cola persistente en IndexedDB
+ * (que sobrevive a cerrar la aplicación) es la común de RF-T-012 (AV-226).
+ *
  * El backend (AV-260) aún no existe: con datos simulados responde `services/simulados/corte.ts` (D9).
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import BarraAvance from '@/components/ui/BarraAvance'
 import Boton from '@/components/ui/Boton'
@@ -26,7 +32,8 @@ import { MIGAS_CORTE } from '@/router/rutasApp'
 import { ErrorApi } from '@/services/api/cliente'
 import { marcarJardin, obtenerRutaDeHoy, registrarObservacionJardin } from '@/services/api/corte'
 import type { JardinRuta, RutaDeHoy } from '@/types/corte'
-import { detalleMarcado, marcados, porCortar, textoYaMarcado, tituloJardin } from './rutaDeHoy'
+import { detalleMarcado, detallePendiente, marcados, porCortar, textoSinConexion, textoYaEstabaMarcado, textoYaMarcado, tituloJardin, type MarcaPendiente } from './rutaDeHoy'
+import { useEnLinea } from './useEnLinea'
 import estilos from './RutaDeHoy.module.css'
 
 function nuevaClave(): string {
@@ -38,16 +45,24 @@ function ListaRuta({
   onMarcar,
   onAbrirMarcado,
   enviando,
+  sinSincronizar,
+  sinConexion,
 }: {
   ruta: RutaDeHoy
   onMarcar: (jardin: JardinRuta) => void
   onAbrirMarcado: (jardin: JardinRuta) => void
   enviando: number | null
+  /** Marcas hechas sin conexión, por jardín. */
+  sinSincronizar: Record<number, MarcaPendiente>
+  /** Sin conexión o con marcas por enviar: la banda y una sola lista, como en Figma 353-2396. */
+  sinConexion: boolean
 }) {
   const [pestana, setPestana] = useState('por-cortar')
-  const pendientes = porCortar(ruta.jardines)
+  const enEspera = ruta.jardines.filter((j) => sinSincronizar[j.id])
+  const pendientes = porCortar(ruta.jardines).filter((j) => !sinSincronizar[j.id])
   const hechos = marcados(ruta.jardines)
   const total = ruta.jardines.length
+  const avance = hechos.length + enEspera.length
 
   return (
     <>
@@ -58,14 +73,28 @@ function ListaRuta({
           </p>
           <p className={estilos.cifra}>
             <span className={estilos.numero}>
-              {hechos.length} de {total}
+              {avance} de {total}
             </span>
             <span>jardines</span>
           </p>
-          <BarraAvance valor={hechos.length} maximo={total} etiqueta="Avance de la ruta" textoValor={`${hechos.length} de ${total} jardines`} />
+          <BarraAvance valor={avance} maximo={total} etiqueta="Avance de la ruta" textoValor={`${avance} de ${total} jardines`} />
         </div>
       </Tarjeta>
 
+      {sinConexion ? (
+        <ul className={estilos.lista}>
+          {enEspera.map((jardin) => (
+            <li key={jardin.id}>
+              <FilaChecklist titulo={tituloJardin(jardin)} detalle={detallePendiente(sinSincronizar[jardin.id])} estado="Sin sincronizar" deshabilitada onPulsar={() => undefined} />
+            </li>
+          ))}
+          {pendientes.map((jardin) => (
+            <li key={jardin.id}>
+              <FilaChecklist titulo={tituloJardin(jardin)} detalle={jardin.zona} estado="Pendiente" onPulsar={() => onMarcar(jardin)} />
+            </li>
+          ))}
+        </ul>
+      ) : (
       <Pestanas
         etiqueta="Jardines de la ruta"
         valor={pestana}
@@ -100,6 +129,7 @@ function ListaRuta({
           </ul>
         )}
       </Pestanas>
+      )}
     </>
   )
 }
@@ -148,32 +178,75 @@ export default function RutaDeHoyPage() {
   const [locales, setLocales] = useState<Record<number, JardinRuta>>({})
   const [enviando, setEnviando] = useState<number | null>(null)
   const [abierto, setAbierto] = useState<JardinRuta | null>(null)
-  const [aviso, setAviso] = useState<{ mensaje: string; tono: 'exito' | 'error' } | null>(null)
+  const [aviso, setAviso] = useState<{ mensaje: string; tono: 'exito' | 'error' | 'info' } | null>(null)
+  const enLinea = useEnLinea()
+  const [sinSincronizar, setSinSincronizar] = useState<Record<number, MarcaPendiente>>({})
+  const enviandoCola = useRef(false)
 
   const servidor = consulta.datos?.ruta ?? null
   const ruta = servidor && { ...servidor, jardines: servidor.jardines.map((j) => locales[j.id] ?? j) }
 
-  async function marcar(jardin: JardinRuta) {
-    if (!ruta) return
-    setEnviando(jardin.id)
+  /**
+   * Envía una marca. Sin red (`ErrorApi` con estado 0) la deja sin sincronizar; si otro ya lo marcó (409), trae quién y
+   * cuándo y, si fue un toque, abre la hoja; si venía de la cola, lo avisa.
+   */
+  async function enviar(programacionId: number, jardin: JardinRuta, marca: MarcaPendiente, deLaCola: boolean) {
+    const quitarDeCola = () =>
+      setSinSincronizar((previas) => {
+        const resto = { ...previas }
+        delete resto[jardin.id]
+        return resto
+      })
     try {
-      const marcado = await marcarJardin(ruta.programacion_id, jardin.id, new Date().toISOString(), nuevaClave())
+      const marcado = await marcarJardin(programacionId, jardin.id, marca.marcado_en, marca.clave)
       setLocales((previas) => ({ ...previas, [jardin.id]: marcado }))
+      quitarDeCola()
     } catch (causa) {
+      if (causa instanceof ErrorApi && causa.estado === 0) {
+        setSinSincronizar((previas) => ({ ...previas, [jardin.id]: marca }))
+        return
+      }
+      quitarDeCola()
       if (causa instanceof ErrorApi && causa.codigo === 'ya-marcado') {
-        // Otro lo marcó antes: se trae la ruta para saber quién y cuándo, y se ofrece la observación.
         const actual = (await obtenerRutaDeHoy().catch(() => null))?.ruta?.jardines.find((j) => j.id === jardin.id)
-        if (actual) {
-          setLocales((previas) => ({ ...previas, [jardin.id]: actual }))
-          setAbierto(actual)
-        }
+        if (!actual) return
+        setLocales((previas) => ({ ...previas, [jardin.id]: actual }))
+        if (deLaCola) setAviso({ mensaje: textoYaEstabaMarcado(actual), tono: 'info' })
+        else setAbierto(actual)
       } else {
         setAviso({ mensaje: `No se pudo marcar ${jardin.codigo}`, tono: 'error' })
       }
-    } finally {
-      setEnviando(null)
     }
   }
+
+  async function marcar(jardin: JardinRuta) {
+    if (!ruta) return
+    const marca = { marcado_en: new Date().toISOString(), clave: nuevaClave() }
+    if (!enLinea) {
+      setSinSincronizar((previas) => ({ ...previas, [jardin.id]: marca }))
+      return
+    }
+    setEnviando(jardin.id)
+    await enviar(ruta.programacion_id, jardin, marca, false)
+    setEnviando(null)
+  }
+
+  // Al volver la conexión, se envían las marcas pendientes, una detrás de otra, con su hora y su clave.
+  const idsEnCola = Object.keys(sinSincronizar).join(',')
+  useEffect(() => {
+    if (!enLinea || !servidor || !idsEnCola || enviandoCola.current) return
+    enviandoCola.current = true
+    const cola = Object.entries(sinSincronizar)
+    void (async () => {
+      for (const [id, marca] of cola) {
+        const jardin = servidor.jardines.find((j) => j.id === Number(id))
+        if (jardin) await enviar(servidor.programacion_id, jardin, marca, true)
+      }
+      enviandoCola.current = false
+    })()
+    // Solo al cambiar la conexión o la cola; `enviar` y `sinSincronizar` se leen en ese momento.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [enLinea, idsEnCola, servidor])
 
   let contenido
   if (consulta.estado === 'error' && !consulta.datos) {
@@ -183,7 +256,22 @@ export default function RutaDeHoyPage() {
   } else if (!ruta) {
     contenido = <EstadoVacio titulo="Hoy no hay corte en tu cuadrilla" descripcion="Cuando el jefe de sección inicie un ciclo de corte, verás aquí tu ruta." />
   } else {
-    contenido = <ListaRuta ruta={ruta} enviando={enviando} onMarcar={(jardin) => void marcar(jardin)} onAbrirMarcado={setAbierto} />
+    const enCola = Object.keys(sinSincronizar).length
+    contenido = (
+      <>
+        {(!enLinea || enCola > 0) && (
+          <AvisoEnLinea tono="advertencia" icono="wifi-off" compacto titulo={textoSinConexion(enCola, enLinea)} />
+        )}
+        <ListaRuta
+          ruta={ruta}
+          enviando={enviando}
+          sinSincronizar={sinSincronizar}
+          sinConexion={!enLinea || enCola > 0}
+          onMarcar={(jardin) => void marcar(jardin)}
+          onAbrirMarcado={setAbierto}
+        />
+      </>
+    )
   }
 
   return (

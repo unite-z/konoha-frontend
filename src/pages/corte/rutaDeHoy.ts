@@ -36,3 +36,28 @@ export function textoYaMarcado(jardin: JardinRuta): string {
   const hora = horaMarca(jardin)
   return `Por ${jardin.marcado_por ?? 'otra persona'}${hora ? ` a las ${hora}` : ''}.`
 }
+
+/** Una marca hecha sin conexión: la hora real del toque y su clave de idempotencia, para enviarla al volver. */
+export interface MarcaPendiente {
+  marcado_en: string
+  clave: string
+}
+
+/** Detalle de una fila sin sincronizar: «11:05 · se enviará al tener conexión». */
+export function detallePendiente(marca: MarcaPendiente): string {
+  const hora = (instanteALocalLima(marca.marcado_en) ?? marca.marcado_en).slice(11, 16)
+  return `${hora} · se enviará al tener conexión`
+}
+
+/** «Sin conexión · 2 marcas pendientes de enviar», o «Enviando 2 marcas» si ya hay conexión. */
+export function textoSinConexion(pendientes: number, enLinea: boolean): string {
+  const marcas = `${pendientes} ${pendientes === 1 ? 'marca pendiente' : 'marcas pendientes'} de enviar`
+  if (enLinea) return `Enviando ${pendientes === 1 ? '1 marca' : `${pendientes} marcas`}`
+  return pendientes > 0 ? `Sin conexión · ${marcas}` : 'Sin conexión · las marcas se enviarán al volver'
+}
+
+/** Aviso de un jardín que, al enviarlo, ya había marcado otro: «J-015 ya estaba marcado · J. Ramos, 10:18». */
+export function textoYaEstabaMarcado(jardin: JardinRuta): string {
+  const quien = [jardin.marcado_por, horaMarca(jardin)].filter(Boolean).join(', ')
+  return quien ? `${jardin.codigo} ya estaba marcado · ${quien}` : `${jardin.codigo} ya estaba marcado`
+}

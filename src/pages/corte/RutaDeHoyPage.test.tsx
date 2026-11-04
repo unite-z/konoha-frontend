@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -101,6 +101,39 @@ describe('RutaDeHoyPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: /^J-017 · Jardín de Ingeniería, pendiente/ }))
     expect(await screen.findByRole('dialog', { name: 'J-017 ya está marcado' })).toBeTruthy()
     expect(screen.getByText('Por J. Ramos a las 11:02.')).toBeTruthy()
+  })
+
+  it('sin conexión guarda la marca con su hora y su clave y la envía al volver; si ya estaba marcada, lo avisa (Figma 353-2396)', async () => {
+    const enLinea = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    marcarJardin.mockImplementation(async (_programacion: number, id: number, marcadoEn: string) => {
+      if (id === 3) {
+        respuesta = { ruta: respuesta.ruta && { ...respuesta.ruta, jardines: respuesta.ruta.jardines.map((j) => (j.id === 3 ? jardin(3, 'J-017', 'Jardín de Ingeniería', '2026-11-04T11:02:00-05:00') : j)) } }
+        throw new ErrorApi(409, 'ya-marcado', 'J-017 ya estaba marcado')
+      }
+      return jardin(id, 'J-016', 'Talud de Química', marcadoEn)
+    })
+    pintar()
+    const usuario = userEvent.setup()
+    await screen.findByText('1 de 3')
+
+    await usuario.click(screen.getByRole('button', { name: /^J-016 · Talud de Química, pendiente/ }))
+    await usuario.click(screen.getByRole('button', { name: /^J-017 · Jardín de Ingeniería, pendiente/ }))
+    expect(marcarJardin).not.toHaveBeenCalled()
+    expect(screen.getByText('Sin conexión · 2 marcas pendientes de enviar')).toBeTruthy()
+    expect(screen.getByText('3 de 3')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^J-016 · Talud de Química, sin sincronizar/ }).textContent).toContain('se enviará al tener conexión')
+
+    enLinea.mockReturnValue(true)
+    await act(async () => {
+      window.dispatchEvent(new Event('online'))
+    })
+    expect(await screen.findByText('J-017 ya estaba marcado · J. Ramos, 11:02')).toBeTruthy()
+    expect(marcarJardin).toHaveBeenCalledTimes(2)
+    const [, , horaPrimera, clavePrimera] = marcarJardin.mock.calls[0]
+    expect(typeof horaPrimera).toBe('string')
+    expect(typeof clavePrimera).toBe('string')
+    expect(screen.queryByText(/Sin conexión/)).toBeNull()
+    enLinea.mockRestore()
   })
 
   it('sin corte hoy lo dice', async () => {
