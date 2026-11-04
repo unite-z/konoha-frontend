@@ -56,7 +56,7 @@ function pintar(id: string) {
 describe('CicloDetallePage', () => {
   it('muestra el ciclo con sus restricciones e inicia con la fecha real', async () => {
     pintar('7')
-    expect(await screen.findByRole('heading', { name: 'Control fitosanitario' })).toBeTruthy()
+    expect(await screen.findByText('Programada')).toBeTruthy()
     expect(await screen.findByText('Graduación')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Cancelar ciclo' })).toBeTruthy()
 

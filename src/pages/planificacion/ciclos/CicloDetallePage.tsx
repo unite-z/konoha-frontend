@@ -1,6 +1,6 @@
 // CU-004 y CU-007 · Detalle de ciclo sin ruta (AV-269, Figma «Detalle» 370-3811)
 /**
- * Cabecera con el estado, indicadores (fechas previstas, inicio y fin reales, duración y restricciones) y las
+ * Estado, proveedor, indicadores (fechas previstas, inicio y fin reales, duración y restricciones) y las
  * restricciones que coinciden con el periodo. El jefe inicia, finaliza o cancela desde aquí.
  *
  * No hay `GET programaciones/{id}/`: el ciclo se busca en `GET programaciones/` del mismo rango que la lista.
@@ -80,7 +80,6 @@ function FichaCiclo({ ciclo, hoy, onAccion }: { ciclo: Programacion; hoy: FechaI
         </AccionesPagina>
       )}
       <div className={estilos.cabecera}>
-        <h2 className={estilos.titulo}>{ciclo.servicio}</h2>
         <Estado tono={estado.tono} texto={estado.texto} punto />
         <p className={estilos.subtitulo}>
           {ciclo.proveedor ?? 'Personal propio'} · {ciclo.estacion}
@@ -91,7 +90,6 @@ function FichaCiclo({ ciclo, hoy, onAccion }: { ciclo: Programacion; hoy: FechaI
         <TarjetaIndicador
           etiqueta="Fechas previstas"
           valor={periodoRestriccion(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)}
-          contexto={ciclo.estado === 'Programada' ? 'Sin iniciar' : undefined}
         />
         <TarjetaIndicador
           etiqueta="Inicio real"
