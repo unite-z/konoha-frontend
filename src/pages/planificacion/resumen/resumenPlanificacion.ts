@@ -272,6 +272,14 @@ export function diaFigma(fecha: FechaIso): string {
   return `${DIAS_SEMANA_FIGMA[aFecha(fecha).getUTCDay()]} ${fecha.slice(8, 10)}`
 }
 
+/** «16 al 19/11/2026» o «16/11/2026», como el detalle de actividad de Figma. */
+export function periodoNumerico(inicio: FechaIso, fin: FechaIso): string {
+  const [anio, mes, dia] = [fin.slice(0, 4), fin.slice(5, 7), fin.slice(8, 10)]
+  if (inicio === fin) return `${dia}/${mes}/${anio}`
+  if (inicio.slice(0, 7) === fin.slice(0, 7)) return `${inicio.slice(8, 10)} al ${dia}/${mes}/${anio}`
+  return `${fechaNumerica(inicio)} al ${dia}/${mes}/${anio}`
+}
+
 /** «Lun 02» para un día y «16 al 19» para un periodo del mismo mes, como en Figma; de un mes a otro, con mes. */
 export function periodoFigma(inicio: FechaIso, fin: FechaIso): string {
   if (inicio === fin) return diaFigma(inicio)

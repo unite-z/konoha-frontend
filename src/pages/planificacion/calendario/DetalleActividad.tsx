@@ -1,21 +1,25 @@
 /**
- * Detalle de una actividad en la vista Semana (AV-266): estado, fechas, responsable y restricciones con las que
- * coincide. «Reprogramar» llega con el panel «Programar ciclo» (AV-267).
+ * Detalle de una actividad en la vista Semana (AV-266, Figma 361-2252): estado, fechas, responsable y restricciones
+ * con las que coincide. Al pie, «Reprogramar» (solo ciclos programados y para el jefe) abre «Programar ciclo» con sus
+ * datos. El código del ciclo llega con AV-364.
  */
 import Boton from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
 import EventoCalendario from '@/components/ui/EventoCalendario'
-import { ESTADO_PROGRAMACION, fechaCorta } from '../resumen/resumenPlanificacion'
-import { coincidencias, periodoEvento, type EventoCapa } from './calendarioCapas'
+import type { Programacion } from '@/types/planificacion'
+import { ESTADO_PROGRAMACION, diaFigma, periodoNumerico } from '../resumen/resumenPlanificacion'
+import { coincidencias, type EventoCapa } from './calendarioCapas'
 import estilos from './Calendario.module.css'
 
 export interface DetalleActividadProps {
   actividad: EventoCapa
   eventos: EventoCapa[]
   onCerrar: () => void
+  /** Solo para el jefe: reprograma un ciclo en estado Programada. */
+  onReprogramar?: (programacion: Programacion) => void
 }
 
-export default function DetalleActividad({ actividad, eventos, onCerrar }: DetalleActividadProps) {
+export default function DetalleActividad({ actividad, eventos, onCerrar, onReprogramar }: DetalleActividadProps) {
   if (actividad.capa !== 'actividad') return null
   const estado = ESTADO_PROGRAMACION[actividad.programacion.estado]
   const coinciden = coincidencias(actividad, eventos)
@@ -37,7 +41,7 @@ export default function DetalleActividad({ actividad, eventos, onCerrar }: Detal
       <dl className={estilos.datosActividad}>
         <div>
           <dt className={estilos.rotuloAgenda}>Fechas</dt>
-          <dd>{periodoEvento(actividad)}</dd>
+          <dd>{periodoNumerico(actividad.inicio, actividad.fin)}</dd>
         </div>
         <div>
           <dt className={estilos.rotuloAgenda}>Responsable</dt>
@@ -52,7 +56,7 @@ export default function DetalleActividad({ actividad, eventos, onCerrar }: Detal
               <ul className={estilos.listaAgenda}>
                 {coinciden.map((restriccion) => (
                   <li key={restriccion.clave}>
-                    <EventoCalendario tipo={restriccion.tipo} texto={`${fechaCorta(restriccion.inicio)} · ${restriccion.texto}`} ajustar />
+                    <EventoCalendario tipo={restriccion.tipo} texto={`${diaFigma(restriccion.inicio)} · ${restriccion.texto}`} ajustar />
                   </li>
                 ))}
               </ul>
@@ -60,6 +64,11 @@ export default function DetalleActividad({ actividad, eventos, onCerrar }: Detal
           </dd>
         </div>
       </dl>
+      {onReprogramar && actividad.programacion.estado === 'Programada' && (
+        <Boton variante="secundario" className={estilos.programarDia} onClick={() => onReprogramar(actividad.programacion)}>
+          Reprogramar
+        </Boton>
+      )}
     </section>
   )
 }

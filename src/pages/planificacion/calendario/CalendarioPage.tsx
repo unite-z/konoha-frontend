@@ -17,7 +17,7 @@ import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
-import type { Restriccion } from '@/types/planificacion'
+import type { Programacion, Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
@@ -61,6 +61,7 @@ export default function CalendarioPage() {
   const [fecha, setFecha] = useState<FechaIso>(hoy)
   const [agendaAbierta, setAgendaAbierta] = useState(true)
   const [actividad, setActividad] = useState<string | null>(null)
+  const [reprogramando, setReprogramando] = useState<Programacion | null>(null)
   const [filtros, setFiltros] = useState<FiltrosCalendario>(SIN_FILTROS)
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
@@ -127,7 +128,9 @@ export default function CalendarioPage() {
               onProgramarDia={puedeEditar ? (dia) => setParametros({ programar: '', dia }) : undefined}
             />
           )
-        : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
+        : elegida && (
+            <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} onReprogramar={puedeEditar ? setReprogramando : undefined} />
+          )
     contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
       <div className={estilos.sinResultados}>
         <EstadoVacio
@@ -143,7 +146,7 @@ export default function CalendarioPage() {
     ) : (
       <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
         {vista === 'lista' ? (
-          <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} />
+          <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} onReprogramar={puedeEditar ? setReprogramando : undefined} />
         ) : vista === 'mes' ? (
           <VistaMes
             semanas={semanas}
@@ -264,6 +267,20 @@ export default function CalendarioPage() {
           onProgramada={(programada) => {
             cerrarPanel()
             setAviso(`${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}.`)
+            programaciones.reintentar()
+          }}
+        />
+      )}
+      {puedeEditar && reprogramando && servicios.datos && (
+        <PanelProgramarCiclo
+          servicios={servicios.datos}
+          servicioInicial={null}
+          reprogramar={reprogramando}
+          onCerrar={() => setReprogramando(null)}
+          onProgramada={(nueva) => {
+            setReprogramando(null)
+            setActividad(null)
+            setAviso(`${nueva.servicio} reprogramado del ${nueva.fecha_inicio_prevista.slice(8, 10)} al ${nueva.fecha_fin_prevista.slice(8, 10)}.`)
             programaciones.reintentar()
           }}
         />

@@ -9,11 +9,13 @@ const api = vi.hoisted(() => ({
   restricciones: [] as Restriccion[],
   propuesta: { estacion: 'Primavera', fecha_inicio: '2026-11-11', fecha_fin: '2026-11-14', conflictos: [], ventana_libre_inicio: '2026-11-16' as string | null },
   crear: vi.fn(async () => ({ id: 9, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-11', fecha_fin_prevista: '2026-11-14' })),
+  cancelar: vi.fn(async () => ({})),
 }))
 vi.mock('@/services/api/planificacion', () => ({
   obtenerPropuesta: async () => api.propuesta,
   listarRestricciones: async () => api.restricciones,
   crearProgramacion: api.crear,
+  cambiarEstadoCiclo: api.cancelar,
 }))
 vi.mock('@/services/api/tercerizados', () => ({
   listarProveedores: async () => ({ count: 1, next: null, previous: null, results: [] }),
@@ -97,5 +99,30 @@ describe('PanelProgramarCiclo', () => {
     await usuario.click(screen.getByRole('button', { name: 'Usar' }))
     expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).value).toBe('2026-11-16')
     expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-11-19')
+  })
+
+  it('al reprogramar entra con las fechas del ciclo, crea el nuevo y cancela el anterior', async () => {
+    const onProgramada = vi.fn()
+    const ciclo = {
+      id: 5,
+      tipo_servicio_id: 1,
+      servicio: 'Corte de césped',
+      proveedor_id: 4,
+      proveedor: 'Servicios Verdes Demo S.A.C.',
+      estacion: 'Primavera' as const,
+      fecha_inicio_prevista: '2026-11-16',
+      fecha_fin_prevista: '2026-11-18',
+      estado: 'Programada' as const,
+      fecha_inicio_real: null,
+      fecha_fin_real: null,
+    }
+    render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={null} reprogramar={ciclo} onCerrar={vi.fn()} onProgramada={onProgramada} />)
+    expect(screen.getByRole('dialog', { name: 'Reprogramar ciclo' })).toBeTruthy()
+    await waitFor(() => expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).value).toBe('2026-11-16'))
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Reprogramar' }))
+    await waitFor(() => expect(api.cancelar).toHaveBeenCalledWith(5, 'cancelacion'))
+    expect(api.crear).toHaveBeenCalledWith(expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', proveedor_id: 4 }))
+    expect(onProgramada).toHaveBeenCalled()
   })
 })
