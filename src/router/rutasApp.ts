@@ -132,7 +132,8 @@ export const PREFIJO_PLANIFICACION = BASE_PLANIFICACION
 /** Secciones del rediseño de MOD-03 (AV-265): Resumen, Calendario, Ciclos (AV-269) y Configuración. */
 export const RUTAS_PLANIFICACION = {
   resumen: `${BASE_PLANIFICACION}/resumen`, // RF-PLA-008 y 009
-  calendario: `${BASE_PLANIFICACION}/calendario`, // HU-MOD03-003; vista nueva en AV-266
+  calendario: `${BASE_PLANIFICACION}/calendario`, // HU-MOD03-003 y 005, RF-PLA-003 y 007
+  ciclos: `${BASE_PLANIFICACION}/ciclos`, // RF-PLA-004 y CU-007 (AV-269)
   configuracion: `${BASE_PLANIFICACION}/configuracion`, // HU-MOD03-001 y 002; vista nueva en AV-268
 } as const
 

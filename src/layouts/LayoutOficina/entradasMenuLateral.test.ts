@@ -62,6 +62,7 @@ describe('seccionesMoviles', () => {
     expect(seccionesMoviles(RUTAS_PLANIFICACION.calendario).map((s) => s.texto)).toEqual([
       'Resumen',
       'Calendario',
+      'Ciclos',
       'Configuración',
     ])
     expect(seccionesMoviles(RUTAS.panel)).toHaveLength(5)
