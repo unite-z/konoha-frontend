@@ -16,6 +16,7 @@ import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
+import type { Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
 import DialogoRestriccion from '../DialogoRestriccion'
@@ -34,6 +35,7 @@ import {
   type FiltrosCalendario,
 } from './calendarioCapas'
 import DetalleActividad from './DetalleActividad'
+import DialogoBajaRestriccion from './DialogoBajaRestriccion'
 import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
 import VistaMes from './VistaMes'
@@ -60,6 +62,7 @@ export default function CalendarioPage() {
   const [filtros, setFiltros] = useState<FiltrosCalendario>(SIN_FILTROS)
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
+  const [baja, setBaja] = useState<Restriccion | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
   const mes = mesDeFecha(fecha)
@@ -102,7 +105,9 @@ export default function CalendarioPage() {
     const elegida = actividad ? eventos.find((evento) => evento.clave === actividad) : undefined
     const lateral =
       vista === 'mes'
-        ? agendaAbierta && <AgendaDia dia={fecha} eventos={eventos} onCerrar={() => setAgendaAbierta(false)} />
+        ? agendaAbierta && (
+            <AgendaDia dia={fecha} eventos={eventos} onCerrar={() => setAgendaAbierta(false)} onDarDeBaja={puedeEditar ? setBaja : undefined} />
+          )
         : elegida && <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} />
     contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
       <div className={estilos.sinResultados}>
@@ -217,6 +222,17 @@ export default function CalendarioPage() {
           onCreadas={(creadas) => {
             setRegistrando(false)
             setAviso(creadas.length === 1 ? 'Restricción registrada.' : `${creadas.length} restricciones registradas.`)
+            restricciones.reintentar()
+          }}
+        />
+      )}
+      {baja && (
+        <DialogoBajaRestriccion
+          restriccion={baja}
+          onCerrar={() => setBaja(null)}
+          onBaja={(serie) => {
+            setBaja(null)
+            setAviso(serie ? 'Serie de restricciones dada de baja.' : 'Restricción dada de baja.')
             restricciones.reintentar()
           }}
         />

@@ -1,12 +1,12 @@
 /**
  * Agenda del día seleccionado en la vista Mes (AV-266): restricciones de todo el día con su descripción y horario,
- * y actividades con su proveedor y estado. «Dar de baja» y «Programar este día» llegan con su acción
- * (AV-266, parte de restricciones, y AV-267).
+ * con «Dar de baja» para el jefe, y actividades con su proveedor y estado. «Programar este día» llega con AV-267.
  */
 import Boton from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
 import EventoCalendario from '@/components/ui/EventoCalendario'
 import type { FechaIso } from '@/types/comun'
+import type { Restriccion } from '@/types/planificacion'
 import { textoHorario } from '@/utils/planificacion'
 import { ESTADO_PROGRAMACION, nombreMes } from '../resumen/resumenPlanificacion'
 import { eventosDelDia, tituloDia, type EventoCapa } from './calendarioCapas'
@@ -16,9 +16,11 @@ export interface AgendaDiaProps {
   dia: FechaIso
   eventos: EventoCapa[]
   onCerrar: () => void
+  /** Solo para quien puede editar la planificación (jefe de sección). */
+  onDarDeBaja?: (restriccion: Restriccion) => void
 }
 
-export default function AgendaDia({ dia, eventos, onCerrar }: AgendaDiaProps) {
+export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja }: AgendaDiaProps) {
   const { restricciones, actividades } = eventosDelDia(dia, eventos)
   return (
     <section className={estilos.agenda} aria-labelledby="titulo-agenda">
@@ -43,11 +45,16 @@ export default function AgendaDia({ dia, eventos, onCerrar }: AgendaDiaProps) {
             const texto = [restriccion.tipo, restriccion.descripcion].filter(Boolean).join(' · ')
             return (
               <li key={evento.clave} className={estilos.restriccionAgenda}>
-                <EventoCalendario tipo={evento.tipo} texto={texto} />
+                <EventoCalendario tipo={evento.tipo} texto={texto} ajustar />
                 <span className={estilos.detalle}>
                   {horario}
                   {restriccion.aplica_servicios_ruidosos ? ' · solo servicios ruidosos' : ''}
                 </span>
+                {onDarDeBaja && (
+                  <Boton variante="fantasma" compacto onClick={() => onDarDeBaja(restriccion)}>
+                    Dar de baja<span className="sr-only"> {restriccion.tipo}</span>
+                  </Boton>
+                )}
               </li>
             )
           })}
@@ -65,7 +72,7 @@ export default function AgendaDia({ dia, eventos, onCerrar }: AgendaDiaProps) {
               const estado = ESTADO_PROGRAMACION[evento.programacion.estado]
               return (
                 <li key={evento.clave} className={estilos.actividadAgenda}>
-                  <EventoCalendario tipo={evento.tipo} texto={evento.texto} />
+                  <EventoCalendario tipo={evento.tipo} texto={evento.texto} ajustar />
                   <span className={estilos.detalle}>{evento.programacion.proveedor ?? 'Personal propio'}</span>
                   <Estado tono={estado.tono} texto={estado.texto} punto />
                 </li>
