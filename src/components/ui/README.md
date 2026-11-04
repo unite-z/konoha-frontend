@@ -12,6 +12,8 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Formularios de ficha:** `GrupoOpciones` con `segmentado` (control segmentado de radios, «Severidad» de «Clasificar»), `ListaDescripcion` con `columnas="filas"` (una fila por par, etiqueta a la izquierda y una línea entre filas, la ficha de una incidencia) y `Boton` con `variante="enlace"` (acción secundaria dentro de una tarjeta).
 
+**Adjuntar en un formulario:** `ZonaCarga` con `compacta` (fila punteada con un solo botón, «Adjuntar foto») y `GrupoOpciones` con `horizontal` y `repartido` (dos opciones a medias, «Reportado por»).
+
 **Detalle lateral:** `DialogoDetalle` con `lateral` para un panel de solo lectura a la derecha (historial de cambios).
 
 **Movimiento de los diálogos:** `AnimacionDialogo.module.css` (entrada y salida, centrada, lateral o, en móvil, la hoja desde abajo) y `useCierreAnimado.ts` (espera a que termine la salida antes de avisar con `onCerrar`) los comparten `DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`. Un diálogo nuevo los usa igual.

@@ -47,6 +47,8 @@ export interface GrupoOpcionesProps<V extends string> {
   descritoPor?: string
   /** Control segmentado: 2 o 3 opciones cortas repartidas en una fila (Figma 388-7305). */
   segmentado?: boolean
+  /** Con `horizontal`, las opciones se reparten el ancho («Reportado por» de «Registrar incidencia», 394-8504). */
+  repartido?: boolean
 }
 
 export default function GrupoOpciones<V extends string>({
@@ -63,6 +65,7 @@ export default function GrupoOpciones<V extends string>({
   horizontal = false,
   descritoPor,
   segmentado = false,
+  repartido = false,
 }: GrupoOpcionesProps<V>) {
   const idPropio = useId()
   const base = idBase ?? idPropio
@@ -87,7 +90,7 @@ export default function GrupoOpciones<V extends string>({
           </span>
         )}
       </legend>
-      <div className={[estilos.opciones, tarjeta && estilos.tarjetas, horizontal && estilos.horizontal, segmentado && estilos.segmentado].filter(Boolean).join(' ')}>
+      <div className={[estilos.opciones, tarjeta && estilos.tarjetas, horizontal && estilos.horizontal, repartido && estilos.repartido, segmentado && estilos.segmentado].filter(Boolean).join(' ')}>
         {opciones.map((opcion) => {
           const id = `${base}-${opcion.valor}`
           const elegida = opcion.valor === valor

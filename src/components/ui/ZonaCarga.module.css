@@ -46,3 +46,14 @@
   line-height: var(--type-body-sm-line);
   color: var(--color-error);
 }
+
+/* Compacta (Figma 394-8504): una fila punteada de 1 px con el botón a la izquierda y la ayuda al lado. */
+.compacta {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  border-width: 1px;
+  background: transparent;
+  text-align: left;
+}

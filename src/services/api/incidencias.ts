@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -142,4 +142,31 @@ export async function devolverIncidencia(incidenciaId: number, observaciones: st
     return simularDevolver(incidenciaId)
   }
   return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/devolver/`, { metodo: 'POST', cuerpo: { observaciones } })
+}
+
+/** `GET incidencias/catalogos-registro/` (AV-274): tipos, espacios con sus ejemplares y usuarios para el registro. */
+export async function obtenerCatalogosRegistro(signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularCatalogosRegistro } = await import('../simulados/incidencias')
+    return simularCatalogosRegistro(signal)
+  }
+  return solicitarPlanificacion<CatalogosRegistro>('incidencias/catalogos-registro/', { signal })
+}
+
+/**
+ * `POST incidencias/` (AV-274): registra la incidencia en nombre de otro; con foto, en multipart (`datos` en JSON y
+ * `foto`). Devuelve la incidencia Registrada.
+ */
+export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | null) {
+  if (DATOS_SIMULADOS) {
+    const { simularRegistrarIncidencia } = await import('../simulados/incidencias')
+    return simularRegistrarIncidencia(cuerpo)
+  }
+  if (foto) {
+    const formulario = new FormData()
+    formulario.append('datos', JSON.stringify(cuerpo))
+    formulario.append('foto', foto)
+    return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', formulario })
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo })
 }
