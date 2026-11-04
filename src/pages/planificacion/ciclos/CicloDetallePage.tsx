@@ -10,6 +10,8 @@
 import { useCallback, useState } from 'react'
 import { useParams } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import BarraAvance from '@/components/ui/BarraAvance'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
@@ -36,7 +38,7 @@ import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
-import { esCorte, indicadorAvanceProgramado, indicadoresCorte, rutaCompleta } from './corte'
+import { avanceRuta, esCorte, indicadorAvanceProgramado, indicadoresCorte, rutaCompleta } from './corte'
 import DialogoInterrupcion from './DialogoInterrupcion'
 import PestanasCorte from './PestanasCorte'
 import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
@@ -58,6 +60,9 @@ function FichaCiclo({
   const [interrumpiendo, setInterrumpiendo] = useState(false)
   const [nuevas, setNuevas] = useState<InterrupcionCorte[]>([])
   const [avisoCorte, setAvisoCorte] = useState<string | null>(null)
+  // En móvil (Figma 353-2242), las acciones van a todo el ancho bajo los indicadores y el corte en curso se resume en
+  // el avance con su barra, la duración y las interrupciones; la ruta, sus pestañas y el historial son de escritorio.
+  const esMovil = useEsMovil()
   // Las interrupciones registradas aquí se suman a las del servidor hasta la siguiente consulta.
   const corte = corteServidor && { ...corteServidor, interrupciones: [...corteServidor.interrupciones, ...nuevas] }
   const { desde, hasta } = periodoCiclo(ciclo, hoy)
@@ -80,32 +85,37 @@ function FichaCiclo({
     corte && rutaCompleta(corte) && accion.cambio === 'fin' ? { ...accion, texto: 'Cerrar ciclo' } : accion,
   )
 
+  const botones = acciones.length > 0 && onAccion && (
+    <>
+      {/* Corte en curso (Figma 346-1334): «Registrar interrupción» y la acción principal con icono. */}
+      {corte && ciclo.estado === 'EnCurso' && (
+        <Boton variante="secundario" icono="arrow-right-left" onClick={() => setInterrumpiendo(true)}>
+          Registrar interrupción
+        </Boton>
+      )}
+      {acciones.map((accion) => (
+        <Boton
+          key={accion.cambio}
+          variante={accion.variante}
+          // En móvil, «Finalizar ciclo» va sin icono, como en Figma 353-2242.
+          icono={corte && accion.cambio === 'fin' && !rutaCompleta(corte) && !esMovil ? 'circle-check' : undefined}
+          onClick={() => onAccion(accion.cambio)}
+        >
+          {accion.texto}
+        </Boton>
+      ))}
+    </>
+  )
+  const resumenMovil = esMovil && corte && (ciclo.estado === 'EnCurso' || ciclo.estado === 'Completada')
+  const avance = corte ? avanceRuta(corte.jardines) : null
+
   return (
     <>
       <JuntoTitulo>
         {/* Como en Figma, «En curso» va relleno y sin punto. */}
         <Estado tono={estado.tono} texto={estado.texto} punto={ciclo.estado !== 'EnCurso'} />
       </JuntoTitulo>
-      {acciones.length > 0 && onAccion && (
-        <AccionesPagina>
-          {/* Corte en curso (Figma 346-1334): «Registrar interrupción» y la acción principal con icono. */}
-          {corte && ciclo.estado === 'EnCurso' && (
-            <Boton variante="secundario" icono="arrow-right-left" onClick={() => setInterrumpiendo(true)}>
-              Registrar interrupción
-            </Boton>
-          )}
-          {acciones.map((accion) => (
-            <Boton
-              key={accion.cambio}
-              variante={accion.variante}
-              icono={corte && accion.cambio === 'fin' && !rutaCompleta(corte) ? 'circle-check' : undefined}
-              onClick={() => onAccion(accion.cambio)}
-            >
-              {accion.texto}
-            </Boton>
-          ))}
-        </AccionesPagina>
-      )}
+      {botones && !esMovil && <AccionesPagina>{botones}</AccionesPagina>}
       {corte && interrumpiendo && (
         <DialogoInterrupcion
           ciclo={ciclo}
@@ -122,23 +132,50 @@ function FichaCiclo({
       <AvisoTemporal mensaje={avisoCorte} onCerrar={() => setAvisoCorte(null)} />
       <AvisoDatosSimulados />
 
-      <FilaTarjetas etiqueta="Indicadores del ciclo">
-        {indicadores.map((indicador) => (
-          <TarjetaIndicador
-            key={indicador.etiqueta}
-            etiqueta={indicador.etiqueta}
-            valor={indicador.valor}
-            contexto={indicador.contexto}
-            nota={indicador.notaAviso || indicador.notaError ? <span className={indicador.notaError ? estilos.notaError : estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
-            estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
-            insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
-          />
-        ))}
-      </FilaTarjetas>
+      {resumenMovil && avance ? (
+        <div className={estilos.resumenMovil}>
+          <Tarjeta relleno="amplio">
+            <div>
+              <p className={estilos.cifraAvance}>
+                <span className={estilos.porcentajeAvance}>{indicadores[0].valor}</span>
+                <span>{indicadores[0].contexto}</span>
+              </p>
+              <BarraAvance valor={avance.cortados} maximo={avance.total} etiqueta="Avance de la ruta" textoValor={indicadores[0].contexto} />
+              <p className={indicadores[0].notaAviso ? estilos.notaAviso : estilos.notaAvance}>{indicadores[0].nota}</p>
+            </div>
+          </Tarjeta>
+          <div className={estilos.datosMovil}>
+            {indicadores.slice(1).map((indicador) => (
+              <Tarjeta key={indicador.etiqueta} relleno="amplio">
+                <div>
+                  <p className={estilos.etiquetaDato}>{indicador.etiqueta}</p>
+                  <p className={estilos.valorDato}>{indicador.valor}</p>
+                </div>
+              </Tarjeta>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <FilaTarjetas etiqueta="Indicadores del ciclo">
+          {indicadores.map((indicador) => (
+            <TarjetaIndicador
+              key={indicador.etiqueta}
+              etiqueta={indicador.etiqueta}
+              valor={indicador.valor}
+              contexto={indicador.contexto}
+              nota={indicador.notaAviso || indicador.notaError ? <span className={indicador.notaError ? estilos.notaError : estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
+              estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
+              insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
+            />
+          ))}
+        </FilaTarjetas>
+      )}
 
-      {corte && <PestanasCorte ciclo={ciclo} corte={corte} servicio={servicio} hoy={hoy} ahora={ahora} />}
+      {botones && esMovil && <div className={estilos.accionesMovil}>{botones}</div>}
 
-      {!corte && historial.length > 0 && (
+      {corte && !esMovil && <PestanasCorte ciclo={ciclo} corte={corte} servicio={servicio} hoy={hoy} ahora={ahora} />}
+
+      {!corte && !esMovil && historial.length > 0 && (
         <Tarjeta titulo="Historial">
           <ul className={estilos.historial}>
             {historial.map((evento) => (
@@ -179,6 +216,17 @@ export default function CicloDetallePage() {
     ciclo ? [ciclo.servicio, ciclo.codigo].filter(Boolean).join(' · ') : 'Ciclo',
     [MIGAS_PLANIFICACION.ciclos, { texto: ciclo ? (ciclo.codigo ?? ciclo.servicio) : 'Ciclo' }],
     ciclo ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${corte.datos.jardines.length} jardines`].filter(Boolean).join(' · ') : undefined,
+    // En móvil (Figma 353-2242): el código en la barra con la flecha a Ciclos, y el servicio como encabezado.
+    {
+      movil: ciclo
+        ? {
+            titulo: ciclo.codigo ?? ciclo.servicio,
+            encabezado: ciclo.codigo ? ciclo.servicio : undefined,
+            subtitulo: subtituloCiclo(ciclo, servicio),
+            volver: MIGAS_PLANIFICACION.ciclos,
+          }
+        : { volver: MIGAS_PLANIFICACION.ciclos },
+    },
   )
 
   let contenido
