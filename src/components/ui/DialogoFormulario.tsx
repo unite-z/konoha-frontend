@@ -12,6 +12,8 @@
  *   (347-1342).
  * - `ancho="lateral"`: panel a la derecha a toda la altura («Formulario en panel lateral», DESIGN.md 5), con el cuerpo
  *   desplazable y las acciones abajo.
+ * - `ancho="hoja"`: «Hoja inferior» del móvil (Figma 375-6772 y 375-6817): en móvil sale desde abajo a todo el ancho,
+ *   con el asa arriba y los dos botones en una fila; en escritorio es un diálogo estrecho.
  */
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import AvisoEnLinea from './AvisoEnLinea'
@@ -37,7 +39,7 @@ export interface DialogoFormularioProps {
   hayCambios?: boolean
   /** Error general del envío (por ejemplo, el `detalle` del back-end). */
   error?: { titulo: string; detalle: string } | null
-  ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'lateral'
+  ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'lateral' | 'hoja'
   /** X de cierre en la cabecera también en un diálogo centrado (el lateral la lleva siempre). */
   conCierre?: boolean
   /** Muestra la leyenda «* Campo obligatorio». */
@@ -139,7 +141,7 @@ export default function DialogoFormulario({
       className={[
         estilos.dialogo,
         ancho === 'normal' ? '' : estilos[ancho],
-        ancho === 'lateral' ? animacion.lateral : animacion.centrado,
+        ancho === 'lateral' ? animacion.lateral : ancho === 'hoja' ? animacion.hoja : animacion.centrado,
         saliendo ? animacion.saliendo : '',
       ]
         .filter(Boolean)
@@ -152,6 +154,7 @@ export default function DialogoFormulario({
       }}
     >
       <form className={estilos.formulario} onSubmit={enviar} noValidate aria-busy={enviando || undefined}>
+        {ancho === 'hoja' && <span className={estilos.asa} aria-hidden="true" />}
         <div className={estilos.cabecera}>
           <div className={estilos.textosCabecera}>
             <div className={estilos.lineaTitulo}>

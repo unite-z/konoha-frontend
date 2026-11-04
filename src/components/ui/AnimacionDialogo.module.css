@@ -12,8 +12,14 @@
     animation: entrar-derecha var(--duracion-panel) ease-out;
   }
 
+  /* Hoja inferior: en escritorio como el centrado; en móvil, desde abajo. */
+  .hoja[open] {
+    animation: aparecer-centro var(--duracion-transicion) ease-out;
+  }
+
   .centrado[open]::backdrop,
-  .lateral[open]::backdrop {
+  .lateral[open]::backdrop,
+  .hoja[open]::backdrop {
     animation: aparecer-velo var(--duracion-transicion) ease-out;
   }
 
@@ -26,8 +32,34 @@
     animation: salir-derecha var(--duracion-panel) ease-in forwards;
   }
 
+  .hoja.saliendo {
+    animation: desaparecer-centro var(--duracion-transicion) ease-in forwards;
+  }
+
   .saliendo::backdrop {
     animation: desaparecer-velo var(--duracion-transicion) ease-in forwards;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (max-width: 767px) {
+  .hoja[open] {
+    animation: entrar-abajo var(--duracion-panel) ease-out;
+  }
+
+  .hoja.saliendo {
+    animation: salir-abajo var(--duracion-panel) ease-in forwards;
+  }
+}
+
+@keyframes entrar-abajo {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes salir-abajo {
+  to {
+    transform: translateY(100%);
   }
 }
 
