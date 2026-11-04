@@ -101,8 +101,10 @@ export function indicadoresMes(
   )
   const estaSemana = delMes.filter((p) => seSolapa(p.fecha_inicio_prevista, p.fecha_fin_prevista, semana.desde, semana.hasta))
   const enCurso = programaciones.filter((p) => p.estado === 'EnCurso')
-  const frecuencia = alertas.filter((a) => a.tipo === 'FrecuenciaProxima').length
-  const duracion = alertas.filter((a) => a.tipo === 'DuracionExcedida' || a.tipo === 'DuracionProxima').length
+  const frecuencias = alertas.filter((a) => a.tipo === 'FrecuenciaProxima')
+  const vencidas = frecuencias.filter((a) => a.dias < 0).length
+  const excedidas = alertas.filter((a) => a.tipo === 'DuracionExcedida').length
+  const porExceder = alertas.filter((a) => a.tipo === 'DuracionProxima').length
   const restriccionesMes = restricciones.filter((r) => seSolapa(r.fecha_inicio, r.fecha_fin, mes.desde, mes.hasta))
   const diasRestringidos = new Set<FechaIso>()
   for (const r of restriccionesMes) {
@@ -126,8 +128,16 @@ export function indicadoresMes(
     {
       etiqueta: 'Alertas',
       valor: alertas.filter((a) => esTipoConocido(a.tipo)).length,
-      nota: `${frecuencia} ${frecuencia === 1 ? 'frecuencia' : 'frecuencias'} por vencer`,
-      detalle: `${duracion} ${duracion === 1 ? 'duración excedida' : 'duraciones excedidas'}`,
+      // «1 frecuencia vencida» y «1 excedida · 1 por exceder» (Figma 373-5370), o «1 frecuencia por vencer» y
+      // «1 duración excedida» (344-3).
+      nota:
+        vencidas > 0
+          ? `${vencidas} ${vencidas === 1 ? 'frecuencia vencida' : 'frecuencias vencidas'}`
+          : `${frecuencias.length} ${frecuencias.length === 1 ? 'frecuencia' : 'frecuencias'} por vencer`,
+      detalle:
+        porExceder > 0
+          ? `${excedidas} ${excedidas === 1 ? 'excedida' : 'excedidas'} · ${porExceder} por exceder`
+          : `${excedidas} ${excedidas === 1 ? 'duración excedida' : 'duraciones excedidas'}`,
     },
     {
       etiqueta: 'Días con restricción',
@@ -169,7 +179,7 @@ export function periodoRestriccion(inicio: FechaIso, fin: FechaIso): string {
   return `${fechaCorta(inicio)} al ${fechaCorta(fin)}`
 }
 
-export type AccionAtencion = 'programar' | 'verCiclo' | 'configurar'
+export type AccionAtencion = 'programar' | 'verCiclo' | 'registrarMotivo' | 'configurar'
 
 export interface ElementoAtencion {
   clave: string
@@ -180,6 +190,8 @@ export interface ElementoAtencion {
   accion: AccionAtencion
   servicioId: number
   programacionId: number | null
+  /** Id de la alerta (AV-255), para registrar su motivo. */
+  alertaId: number | null
 }
 
 /**
@@ -203,30 +215,47 @@ export function elementosAtencion(
     const ciclo = programaciones.find((p) => p.id === programacionId)
     return ciclo ? `En curso desde el ${fechaNumerica(ciclo.fecha_inicio_real ?? ciclo.fecha_inicio_prevista)}` : 'Ciclo en curso'
   }
+  // «Podas Altura Demo E.I.R.L. · máximo 10 días» (contrato de AV-255; si falta, se toma del ciclo y del servicio).
+  const proveedorYMaximo = (alerta: AlertaPlanificacion) => {
+    const ciclo = programaciones.find((p) => p.id === alerta.programacion_id)
+    const proveedor = alerta.proveedor ?? (ciclo ? (ciclo.proveedor ?? 'Personal propio') : null)
+    const maximo = alerta.maximo_dias ?? servicios.find((s) => s.id === alerta.servicio_id)?.duracion?.duracion_maxima_dias ?? null
+    const partes = [proveedor, maximo === null ? null : `máximo ${dias(maximo)}`].filter((parte): parte is string => Boolean(parte))
+    return partes.length > 0 ? partes.join(' · ') : enCursoDesde(alerta.programacion_id)
+  }
+  const sinCicloProgramado = (servicioId: number) =>
+    !programaciones.some((p) => p.tipo_servicio_id === servicioId && (p.estado === 'Programada' || p.estado === 'EnCurso'))
   for (const alerta of alertas) {
-    const base = { servicioId: alerta.servicio_id, programacionId: alerta.programacion_id }
+    const base = { servicioId: alerta.servicio_id, programacionId: alerta.programacion_id, alertaId: alerta.id ?? null }
     if (alerta.tipo === 'FrecuenciaProxima') {
       const vencida = alerta.dias < 0
+      const ultimo = ultimoCiclo(alerta.servicio_id)
       elementos.push({
         ...base,
         clave: `frecuencia-${alerta.servicio_id}`,
         tono: vencida ? 'error' : 'aviso',
-        icono: 'triangle-alert',
+        icono: vencida ? 'circle-x' : 'triangle-alert',
         titulo: vencida
-          ? `${alerta.servicio} · frecuencia máxima superada hace ${dias(-alerta.dias)}`
+          ? `${alerta.servicio} · frecuencia vencida`
           : `${alerta.servicio} · ${alerta.dias === 1 ? 'falta' : 'faltan'} ${dias(alerta.dias)} para la frecuencia máxima`,
-        detalle: ultimoCiclo(alerta.servicio_id) ? `Último ciclo: ${fechaNumerica(ultimoCiclo(alerta.servicio_id) ?? '')}` : 'Sin ciclos anteriores',
+        detalle: vencida
+          ? `Superó su máximo hace ${dias(-alerta.dias)}${sinCicloProgramado(alerta.servicio_id) ? ' · sin ciclo programado' : ''}`
+          : ultimo
+            ? `Último ciclo: ${fechaNumerica(ultimo)}`
+            : 'Sin ciclos anteriores',
         accion: 'programar',
       })
     } else if (alerta.tipo === 'DuracionExcedida') {
+      // Con el contrato de AV-255 (la alerta tiene id) se registra el motivo, como en Figma 373-5370; antes, «Ver ciclo».
+      const conMotivo = alerta.id !== undefined
       elementos.push({
         ...base,
         clave: `duracion-${alerta.programacion_id ?? alerta.servicio_id}`,
         tono: 'error',
         icono: 'circle-x',
-        titulo: `${alerta.servicio} · duración excedida en ${dias(alerta.dias)}`,
-        detalle: enCursoDesde(alerta.programacion_id),
-        accion: 'verCiclo',
+        titulo: conMotivo ? `${alerta.servicio} · ${dias(alerta.dias)} de exceso` : `${alerta.servicio} · duración excedida en ${dias(alerta.dias)}`,
+        detalle: conMotivo ? proveedorYMaximo(alerta) : enCursoDesde(alerta.programacion_id),
+        accion: conMotivo ? 'registrarMotivo' : 'verCiclo',
       })
     } else if (alerta.tipo === 'DuracionProxima') {
       elementos.push({
@@ -234,8 +263,8 @@ export function elementosAtencion(
         clave: `duracion-proxima-${alerta.programacion_id ?? alerta.servicio_id}`,
         tono: 'aviso',
         icono: 'triangle-alert',
-        titulo: `${alerta.servicio} · ${alerta.dias === 1 ? 'queda' : 'quedan'} ${dias(alerta.dias)} de su duración máxima`,
-        detalle: enCursoDesde(alerta.programacion_id),
+        titulo: `${alerta.servicio} · ${alerta.dias === 1 ? 'mañana' : `en ${dias(alerta.dias)}`} supera su máximo`,
+        detalle: proveedorYMaximo(alerta),
         accion: 'verCiclo',
       })
     }
@@ -251,6 +280,7 @@ export function elementosAtencion(
       accion: 'configurar',
       servicioId: servicio.id,
       programacionId: null,
+      alertaId: null,
     })
   }
   const orden = { error: 0, aviso: 1, info: 2 }

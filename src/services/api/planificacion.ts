@@ -1,6 +1,8 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
 import type {
+  AlertaAtendida,
   AlertaPlanificacion,
   DuracionEntrada,
   Estacion,
@@ -52,8 +54,23 @@ export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: 
 }
 
 /** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */
-export function listarAlertas(signal?: AbortSignal) {
-  return solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
+export async function listarAlertas(signal?: AbortSignal) {
+  const alertas = await solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
+  if (!DATOS_SIMULADOS) return alertas
+  const { simularIdsAlertas } = await import('../simulados/alertasPlanificacion')
+  return simularIdsAlertas(alertas)
+}
+
+/**
+ * `POST alertas/{id}/motivo/` (AV-255): registra el motivo o la acción de una alerta y la deja atendida.
+ * Hasta que exista el endpoint, con `VITE_DATOS_SIMULADOS=true` responde `services/simulados/` (D9).
+ */
+export async function registrarMotivoAlerta(id: number, motivo: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularRegistrarMotivo } = await import('../simulados/alertasPlanificacion')
+    return simularRegistrarMotivo(id, motivo)
+  }
+  return solicitarPlanificacion<AlertaAtendida>(`alertas/${id}/motivo/`, { metodo: 'POST', cuerpo: { motivo } })
 }
 
 /** `DELETE restricciones/{id}/?serie=` (solo jefe): da de baja la restricción o, con `serie`, toda su serie. */

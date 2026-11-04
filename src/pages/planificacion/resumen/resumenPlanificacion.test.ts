@@ -93,6 +93,12 @@ describe('indicadoresMes', () => {
     expect(indicadores[1].detalle).toBe('Desde el 28/10')
     expect(indicadores[2].detalle).toBe('1 duración excedida')
   })
+
+  it('las alertas dicen las frecuencias vencidas y las duraciones por exceder (Figma 373-5370)', () => {
+    const alertas = [alerta({ dias: -2 }), alerta({ tipo: 'DuracionExcedida', programacion_id: 4 }), alerta({ tipo: 'DuracionProxima', programacion_id: 5 })]
+    const [, , indicador] = indicadoresMes(HOY, [], alertas, [])
+    expect([indicador.valor, indicador.nota, indicador.detalle]).toEqual([3, '1 frecuencia vencida', '1 excedida · 1 por exceder'])
+  })
 })
 
 describe('elementosAtencion', () => {
@@ -124,9 +130,25 @@ describe('elementosAtencion', () => {
       [alerta({ dias: -2 }), alerta({ tipo: 'DuracionProxima', servicio: 'Poda', programacion_id: 5, dias: 1 })],
       [],
     )
-    expect(elementos.map((e) => [e.titulo, e.tono])).toEqual([
-      ['Corte de césped · frecuencia máxima superada hace 2 días', 'error'],
-      ['Poda · queda 1 día de su duración máxima', 'aviso'],
+    expect(elementos.map((e) => [e.titulo, e.detalle, e.tono])).toEqual([
+      ['Corte de césped · frecuencia vencida', 'Superó su máximo hace 2 días · sin ciclo programado', 'error'],
+      ['Poda · mañana supera su máximo', 'Ciclo en curso', 'aviso'],
+    ])
+  })
+
+  it('con el contrato de AV-255 la duración excedida pide el motivo y dice proveedor y máximo (Figma 373-5370)', () => {
+    const elementos = elementosAtencion(
+      [
+        alerta({ tipo: 'DuracionExcedida', servicio: 'Poda mayor del cierre', programacion_id: 4, dias: 1, id: 4, proveedor: 'Podas Altura Demo E.I.R.L.', maximo_dias: 10 }),
+        alerta({ tipo: 'DuracionProxima', servicio: 'Corte de césped', programacion_id: 5, dias: 1, id: 5 }),
+      ],
+      servicios,
+      [programacion({ id: 5, estado: 'EnCurso', proveedor: 'Fumigaciones Demo S.A.' })],
+    )
+    expect(elementos.map((e) => [e.titulo, e.detalle, e.accion, e.alertaId])).toEqual([
+      ['Poda mayor del cierre · 1 día de exceso', 'Podas Altura Demo E.I.R.L. · máximo 10 días', 'registrarMotivo', 4],
+      ['Corte de césped · mañana supera su máximo', 'Fumigaciones Demo S.A. · máximo 3 días', 'verCiclo', 5],
+      ['Control fitosanitario · sin duración configurada', 'Necesaria para programar', 'configurar', null],
     ])
   })
 })
