@@ -132,6 +132,7 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Estado de contenido | `EstadoVacio`, `EstadoCarga`, `EstadoError`, `EstadoSinAcceso` | tarjeta alineada a la izquierda · título, descripción y acción de texto («Reintentar») | toda zona con datos remotos; `EstadoSinAcceso` para el 403 | errores de un campo concreto |
 | Carga de archivo | `ZonaCarga` | Estado: Vacío, Adjunto, Error | adjuntar evidencias o informes | elegir ficheros ya subidos |
 | Diálogo · confirmación | `DialogoConfirmacion` | `variante`: `primario` o `destructivo` · `consecuencia` · campo opcional en `children` (motivo) · «Volver» (`textoVolver`) | confirmar una acción que no se deshace fácilmente | formularios largos (panel lateral) |
+| Diálogo · detalle | `DialogoDetalle` | `titulo`, `descripcion` · solo lectura, con «Cerrar» · `<dialog>` nativo: Esc cierra y el foco vuelve al botón que lo abrió · a pantalla completa en móvil | ver el detalle de un dato (los registros detrás de una barra o una cifra) | editar o confirmar (Diálogo · confirmación o panel lateral) |
 
 ### 4.2 Tablas
 

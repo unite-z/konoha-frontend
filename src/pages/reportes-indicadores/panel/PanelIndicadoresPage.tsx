@@ -16,7 +16,7 @@
  */
 import { useState } from 'react'
 import { useLocation } from 'react-router'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'

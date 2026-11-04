@@ -17,7 +17,7 @@
  * `sin_tiempo` de la URL; el filtro es del cliente, no se envía a la API).
  */
 import { useMemo, useState } from 'react'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
 import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'

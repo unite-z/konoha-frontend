@@ -12,7 +12,7 @@
  */
 import { useMemo, useState } from 'react'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import SelectoresFiltroGestion, { type CampoFiltroGestion } from '../../../components/reportes-indicadores/SelectoresFiltroGestion'
 import { AYUDA_CATALOGO_INCOMPLETO, MOTIVO_CATALOGO_NO_DISPONIBLE, type CatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'

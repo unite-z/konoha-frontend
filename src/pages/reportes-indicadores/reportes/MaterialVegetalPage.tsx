@@ -18,7 +18,7 @@
 import { useState } from 'react'
 import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
 import BotonExportar from '../../../components/reportes-indicadores/BotonExportar'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import GraficoAgrupado from '../../../components/reportes-indicadores/graficos/GraficoAgrupado'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
