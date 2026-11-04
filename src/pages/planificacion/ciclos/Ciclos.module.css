@@ -186,3 +186,66 @@
 .enlace:hover {
   text-decoration: underline;
 }
+
+/* Corte en curso en móvil (Figma 353-2242): avance con su barra y, debajo, duración e interrupciones en dos tarjetas. */
+.resumenMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cifraAvance {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.porcentajeAvance {
+  color: var(--color-text-primary);
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+}
+
+.notaAvance,
+.resumenMovil .notaAviso {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.notaAvance {
+  color: var(--color-text-secondary);
+}
+
+.datosMovil {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.etiquetaDato {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.valorDato {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line);
+  font-weight: var(--type-heading-sm-weight);
+}
+
+/* Acciones del ciclo en móvil: a todo el ancho, una debajo de otra y la principal al final. */
+.accionesMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

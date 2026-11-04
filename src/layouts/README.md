@@ -10,7 +10,7 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 | `BarrasMoviles.tsx` | Barra superior móvil y Barra inferior, por debajo de 768 px |
 | `Cabecera.tsx` | migas de la página; búsqueda global y usuario con su rol (sin título) |
 | `BarraContexto.tsx` | migas de pan |
-| `ContextoPagina.ts` | título y migas que declara cada página con `usePaginaActual`, y el hueco de acciones del título |
+| `ContextoPagina.ts` | título y migas que declara cada página con `usePaginaActual`, el hueco de acciones del título y, en la ficha de un registro, los datos de móvil (`movil`: código en la barra, flecha para volver, encabezado y subtítulo cortos) |
 | `AccionesPagina.tsx` | lleva la acción principal de la página (Botón primario) a la derecha del h1, con un portal |
 | (móvil) | el h1 queda solo para lectores de pantalla: el título va en la barra superior; la barra inferior usa `textoMovil` si la entrada lo tiene («Ajustes») |
 | `AccionMovil.tsx` | lleva la acción de la página a la barra superior móvil (el «+» del Calendario), con un portal |

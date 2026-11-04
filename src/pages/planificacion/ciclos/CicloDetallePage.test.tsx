@@ -149,6 +149,23 @@ describe('CicloDetallePage', () => {
     expect(await screen.findByText('Total: 3 días de corte + 3 de limpieza = 6')).toBeTruthy()
   })
 
+  it('en móvil, el corte en curso se resume como en Figma 353-2242, con las acciones debajo y sin la ruta', async () => {
+    const original = window.matchMedia
+    window.matchMedia = ((consulta: string) => ({ matches: true, media: consulta, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia
+    try {
+      pintar('9')
+      expect(await screen.findByText('62 %')).toBeTruthy()
+      expect(screen.getByRole('progressbar', { name: 'Avance de la ruta' }).getAttribute('aria-valuenow')).toBe('28')
+      expect(screen.getByText('Día 2 de 4')).toBeTruthy()
+      expect(screen.queryByText('Sociales → Ciencias')).toBeNull()
+      expect(screen.queryByRole('tab', { name: 'Ruta 45' })).toBeNull()
+      expect(screen.getByRole('button', { name: 'Registrar interrupción' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'Finalizar ciclo' })).toBeTruthy()
+    } finally {
+      window.matchMedia = original
+    }
+  })
+
   it('avisa si el ciclo no existe', async () => {
     pintar('99')
     expect(await screen.findByText('No existe este ciclo')).toBeTruthy()
