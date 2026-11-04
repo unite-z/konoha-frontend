@@ -319,3 +319,11 @@ export function simularRegistrarIncidencia(cuerpo: NuevaIncidencia): Promise<Inc
     return nueva
   })
 }
+
+/** Las del usuario (Figma 391-8522): las que registró en esta sesión y tres de siempre. */
+export function simularMisIncidencias(signal?: AbortSignal): Promise<IncidenciaResumen[]> {
+  return responderSimulado(() => {
+    const propias = incidenciasSimuladas().filter((i) => [34, 37, 33].includes(i.id))
+    return escenarioSimulado() === 'vacio' ? [] : [...registradas, ...propias]
+  }, { signal })
+}

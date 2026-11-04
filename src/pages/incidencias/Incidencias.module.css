@@ -333,3 +333,52 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Mis incidencias en el móvil (Figma 391-8522): una columna de tarjetas con el tipo, el espacio y el estado. */
+.paginaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.misIncidencias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.miIncidencia {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.textosMiIncidencia {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tituloMiIncidencia {
+  color: var(--color-text-primary);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.detalleMiIncidencia {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}

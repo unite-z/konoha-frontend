@@ -181,3 +181,12 @@ export interface NuevaIncidencia {
   ejemplar: string | null
   descripcion: string
 }
+
+/** Una incidencia reportada sin conexión que espera a enviarse (AV-282, cola de la pantalla hasta AV-226). */
+export interface ReportePendiente {
+  /** Clave de idempotencia del envío. */
+  clave: string
+  tipo: string
+  espacio: string
+  creado_en: string
+}

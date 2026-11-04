@@ -17,14 +17,21 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 
   Lógica en `detalleIncidencia.ts`, con prueba.
 
+- **Mis incidencias** (`MisIncidenciasPage.tsx`, `/mis-incidencias`, AV-282, Figma 391-8522 y 394-9964), en el móvil y para cualquier usuario con sesión:
+  - las incidencias que reportó, con el espacio, cuándo («hoy», «ayer», «12/10») y el estado;
+  - «+» en la barra superior para reportar;
+  - las reportadas sin conexión van arriba como «Pendiente de enviar» (`reportesPendientes.ts`, hasta la cola común de AV-226) y, sin conexión, una banda lo avisa.
+
+  Lógica en `misIncidencias.ts`, con prueba.
+
 **Datos simulados (D9):** el backend (AV-274 a 281) aún no existe. Con `VITE_DATOS_SIMULADOS=true`, `services/api/incidencias.ts` responde con `services/simulados/incidencias.ts` y la pantalla muestra `AvisoDatosSimulados`. Sin datos simulados, la entrada del menú sigue como «Próximamente».
 
 | Qué | Dónde |
 |---|---|
-| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278), `cerrarIncidencia` y `devolverIncidencia` (AV-279), `obtenerCatalogosRegistro` y `registrarIncidencia` (AV-274) |
+| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278), `cerrarIncidencia` y `devolverIncidencia` (AV-279), `obtenerCatalogosRegistro`, `registrarIncidencia` y `listarMisIncidencias` (AV-274) |
 | Tipos | `types/incidencias.ts` (contrato de AV-274 y AV-280) |
 | Permisos | hasta AV-281, el de Planificación (`PLA.PLANIFICACION.CONSULTAR`) |
-| Rutas | `RUTAS_INCIDENCIAS` (prefijo `/incidencias`) y `rutaIncidencia(id)` |
+| Rutas | `RUTAS_INCIDENCIAS` (prefijo `/incidencias`) y `rutaIncidencia(id)`; `RUTAS_MIS_INCIDENCIAS` (`/mis-incidencias`, entrada `misIncidencias` del menú) |
 
 **Ejemplo:** la columna «Abierta» usa `horasAbierta` y `superaObjetivo` de `bandeja.ts`.
 
