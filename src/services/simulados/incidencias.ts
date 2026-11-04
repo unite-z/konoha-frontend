@@ -5,7 +5,7 @@
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { CatalogosRegistro, NuevaIncidencia, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -286,6 +286,7 @@ const CATALOGOS_REGISTRO: CatalogosRegistro = {
     { id: 1, nombre: 'Ana Q.' },
     { id: 2, nombre: 'Luis P.' },
   ],
+  espacio_sugerido: 'Jardín de la Biblioteca',
 }
 
 export function simularCatalogosRegistro(signal?: AbortSignal): Promise<CatalogosRegistro> {
@@ -325,5 +326,14 @@ export function simularMisIncidencias(signal?: AbortSignal): Promise<IncidenciaR
   return responderSimulado(() => {
     const propias = incidenciasSimuladas().filter((i) => [34, 37, 33].includes(i.id))
     return escenarioSimulado() === 'vacio' ? [] : [...registradas, ...propias]
+  }, { signal })
+}
+
+/** Una «Rama caída» abierta en el Jardín de la Biblioteca (INC-2026-041) para ver el posible duplicado (391-8469). */
+export function simularPosiblesDuplicados(tipo: string, espacio: string, signal?: AbortSignal): Promise<PosibleDuplicado[]> {
+  return responderSimulado(() => {
+    const abierta = incidenciasSimuladas().find((i) => i.id === 41)
+    if (!abierta || tipo !== abierta.tipo || espacio !== abierta.espacio) return []
+    return [{ id: abierta.id, codigo: abierta.codigo, tipo: abierta.tipo, ejemplar: 'T-0412', fecha_registro: abierta.fecha_registro }]
   }, { signal })
 }

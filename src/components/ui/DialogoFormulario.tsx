@@ -42,6 +42,13 @@ export interface DialogoFormularioProps {
   ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'lateral' | 'hoja'
   /** X de cierre en la cabecera también en un diálogo centrado (el lateral la lleva siempre). */
   conCierre?: boolean
+  /** Con `hoja`: los botones a todo el ancho, el principal arriba («Ya hay una incidencia abierta», Figma 391-8469). */
+  accionesApiladas?: boolean
+  /**
+   * Acción propia del botón secundario («Reportar igualmente»), distinta de cerrar: Esc y la X siguen llamando a
+   * `onCerrar`.
+   */
+  onCancelar?: () => void
   /** Muestra la leyenda «* Campo obligatorio». */
   conObligatorios?: boolean
   /** Botón principal deshabilitado (por ejemplo, sin cambios o con errores a la vista, como en Figma). */
@@ -65,6 +72,8 @@ export default function DialogoFormulario({
   textoCancelar = 'Cancelar',
   ancho = 'normal',
   conCierre = false,
+  accionesApiladas = false,
+  onCancelar,
   conObligatorios = true,
   envioDeshabilitado = false,
   onEnviar,
@@ -199,13 +208,13 @@ export default function DialogoFormulario({
             </div>
           </div>
         ) : (
-          <div className={estilos.acciones}>
+          <div className={`${estilos.acciones} ${accionesApiladas ? estilos.apiladas : ''}`}>
             {enviando && onCancelarEnvio ? (
               <Boton variante="secundario" onClick={onCancelarEnvio}>
                 Cancelar envío
               </Boton>
             ) : (
-              <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando} className={estilos.cancelar}>
+              <Boton variante="secundario" onClick={onCancelar ?? pedirCierre} deshabilitado={enviando} className={estilos.cancelar}>
                 {textoCancelar}
               </Boton>
             )}

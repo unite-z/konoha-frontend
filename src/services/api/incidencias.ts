@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CatalogosRegistro, NuevaIncidencia, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -178,4 +178,25 @@ export async function listarMisIncidencias(signal?: AbortSignal) {
     return simularMisIncidencias(signal)
   }
   return solicitarPlanificacion<IncidenciaResumen[]>('incidencias/mias/', { signal })
+}
+
+/** `GET incidencias/posibles-duplicados/?tipo&espacio&ejemplar` (AV-274): abiertas del mismo tipo en el mismo sitio. */
+export async function buscarPosiblesDuplicados(tipo: string, espacio: string, ejemplar: string | null, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularPosiblesDuplicados } = await import('../simulados/incidencias')
+    return simularPosiblesDuplicados(tipo, espacio, signal)
+  }
+  return solicitarPlanificacion<PosibleDuplicado[]>('incidencias/posibles-duplicados/', { parametros: { tipo, espacio, ejemplar }, signal })
+}
+
+/** `POST incidencias/{id}/reportes/` (AV-274): suma el reporte (descripción y foto) a una incidencia abierta. */
+export async function sumarReporte(incidenciaId: number, descripcion: string, foto: File | null) {
+  if (DATOS_SIMULADOS) {
+    const { simularRespuestaVacia } = await import('../simulados/incidencias')
+    return simularRespuestaVacia()
+  }
+  const formulario = new FormData()
+  formulario.append('descripcion', descripcion)
+  if (foto) formulario.append('foto', foto)
+  return solicitarPlanificacion<void>(`incidencias/${incidenciaId}/reportes/`, { metodo: 'POST', formulario })
 }

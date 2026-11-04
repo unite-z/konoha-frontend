@@ -27,9 +27,11 @@ export interface ZonaCargaProps {
   textoBoton?: string
   /** Permite elegir varios archivos (por defecto, sí). */
   multiple?: boolean
+  /** Hueco punteado del tamaño de una miniatura, con icono de cámara y el texto («Otra», Figma 391-8394). */
+  miniatura?: boolean
 }
 
-export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error, id, onArchivos, compacta = false, textoBoton = 'Seleccionar archivos', multiple = true }: ZonaCargaProps) {
+export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error, id, onArchivos, compacta = false, textoBoton = 'Seleccionar archivos', multiple = true, miniatura = false }: ZonaCargaProps) {
   const entrada = useRef<HTMLInputElement>(null)
   const idAyuda = useId()
   const [encima, setEncima] = useState(false)
@@ -44,7 +46,7 @@ export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error,
 
   return (
     <div
-      className={[estilos.zona, compacta && estilos.compacta, encima && estilos.encima, error && estilos.conError, deshabilitada && estilos.deshabilitada]
+      className={[estilos.zona, compacta && estilos.compacta, miniatura && estilos.miniatura, encima && estilos.encima, error && estilos.conError, deshabilitada && estilos.deshabilitada]
         .filter(Boolean)
         .join(' ')}
       onDragOver={(e) => {
@@ -54,13 +56,19 @@ export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error,
       onDragLeave={() => setEncima(false)}
       onDrop={soltar}
     >
-      {!compacta && <Icono nombre="documento" />}
-      {!compacta && <p className={estilos.texto}>Arrastra los archivos aquí o selecciónalos</p>}
-      {!compacta && (
+      {!compacta && !miniatura && <Icono nombre="documento" />}
+      {!compacta && !miniatura && <p className={estilos.texto}>Arrastra los archivos aquí o selecciónalos</p>}
+      {!compacta && !miniatura && (
         <p id={idAyuda} className={estilos.ayuda}>
           {ayuda}
         </p>
       )}
+      {miniatura ? (
+        <Boton id={id} variante="fantasma" className={estilos.botonMiniatura} deshabilitado={deshabilitada} onClick={() => entrada.current?.click()}>
+          <Icono nombre="camera" tamano="md" />
+          <span>{textoBoton}</span>
+        </Boton>
+      ) : (
       <Boton
         id={id}
         variante={compacta ? 'fantasma' : 'secundario'}
@@ -72,6 +80,7 @@ export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error,
       >
         {textoBoton}
       </Boton>
+      )}
       {compacta && ayuda && (
         <p id={idAyuda} className={estilos.ayuda}>
           {ayuda}
@@ -92,7 +101,8 @@ export default function ZonaCarga({ acepta, ayuda, deshabilitada = false, error,
           if (archivos.length > 0) onArchivos(archivos)
         }}
       />
-      {error && (
+      {/* En la miniatura no cabe: solo marca el borde y la pantalla pinta el mensaje debajo. */}
+      {error && !miniatura && (
         <p className={estilos.error} role="alert">
           <Icono nombre="aspa" tamano="sm" />
           <span>{error}</span>

@@ -167,6 +167,17 @@ export interface CatalogosRegistro {
   tipos: string[]
   espacios: { nombre: string; ejemplares: string[] }[]
   usuarios: { id: number; nombre: string }[]
+  /** Espacio más cercano a la ubicación del móvil (`?lat&lng`, con MOD-02); `null` sin ubicación. */
+  espacio_sugerido?: string | null
+}
+
+/** Incidencia abierta que parece la misma (`GET incidencias/posibles-duplicados/`, AV-274, Figma 391-8469). */
+export interface PosibleDuplicado {
+  id: number
+  codigo: string
+  tipo: string
+  ejemplar: string | null
+  fecha_registro: InstanteIso
 }
 
 /**
@@ -189,4 +200,7 @@ export interface ReportePendiente {
   tipo: string
   espacio: string
   creado_en: string
+  /** Lo que se enviará al volver la conexión. */
+  cuerpo?: NuevaIncidencia
+  foto?: File | null
 }
