@@ -22,13 +22,14 @@ export function useListadoCampo<T>(recurso: string, filtros: string[]) {
 export function useMutacionCampo() {
   const [enviando,setEnviando]=useState(false)
   const [detalle,setDetalle]=useState('')
+  const [estadoError,setEstadoError]=useState<number|null>(null)
   const bloqueo=useRef(false)
   async function enviar(operacion:()=>Promise<unknown>,exito:()=>void) {
     if(bloqueo.current) return
-    bloqueo.current=true;setEnviando(true);setDetalle('')
+    bloqueo.current=true;setEnviando(true);setDetalle('');setEstadoError(null)
     try {await operacion();exito()}
-    catch(cause) {const error=aErrorApi(cause); const campos=Object.entries(error.errores_campo).map(([field,messages])=>`${field}: ${messages.join('. ')}`);setDetalle(campos.length?campos.join(' · '):error.detalle)}
+    catch(cause) {const error=aErrorApi(cause);setEstadoError(error.estado); const campos=Object.entries(error.errores_campo).map(([field,messages])=>`${field}: ${messages.join('. ')}`);setDetalle(campos.length?campos.join(' · '):error.detalle)}
     finally {bloqueo.current=false;setEnviando(false)}
   }
-  return {enviando,enviar,setDetalle,error:detalle?{titulo:'No se pudo guardar',detalle}:null}
+  return {enviando,enviar,setDetalle,estadoError,error:detalle?{titulo:'No se pudo guardar',detalle}:null}
 }
