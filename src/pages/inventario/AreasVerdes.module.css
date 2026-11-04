@@ -14,6 +14,32 @@
   max-width: 30rem;
 }
 
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.tablaAreas {
+  margin-top: var(--space-5);
+}
+
+.gestionSector {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 20rem;
+}
+
+.historialSector {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-inline-start: var(--space-4);
+  color: var(--color-texto-secundario);
+}
+
 .formulario {
   max-width: 42rem;
 }
