@@ -220,7 +220,8 @@ export function elementosAtencion(
     const ciclo = programaciones.find((p) => p.id === alerta.programacion_id)
     const proveedor = alerta.proveedor ?? (ciclo ? (ciclo.proveedor ?? 'Personal propio') : null)
     const maximo = alerta.maximo_dias ?? servicios.find((s) => s.id === alerta.servicio_id)?.duracion?.duracion_maxima_dias ?? null
-    const partes = [proveedor, maximo === null ? null : `máximo ${dias(maximo)}`].filter((parte): parte is string => Boolean(parte))
+    // «PM-2026 · Podas Altura Demo E.I.R.L. · máximo 10 días», con el código del ciclo de AV-364 si lo hay.
+    const partes = [ciclo?.codigo ?? null, proveedor, maximo === null ? null : `máximo ${dias(maximo)}`].filter((parte): parte is string => Boolean(parte))
     return partes.length > 0 ? partes.join(' · ') : enCursoDesde(alerta.programacion_id)
   }
   const sinCicloProgramado = (servicioId: number) =>
