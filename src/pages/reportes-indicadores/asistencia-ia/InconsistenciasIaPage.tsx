@@ -15,7 +15,6 @@ import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmerge
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
@@ -46,6 +45,8 @@ import estilosIa from './AsistenciaIa.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
 import DialogoAnalisis from './inconsistencias/DialogoAnalisis'
 import estilosHallazgo from './inconsistencias/Inconsistencias.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 const TITULO = 'Revisión de inconsistencias'
 const POR_PAGINA = 25
@@ -64,13 +65,13 @@ function DatoObservado({ sugerencia: s }: { sugerencia: SugerenciaInconsistencia
 }
 
 const COLUMNAS: ColumnaTabla<SugerenciaInconsistencia>[] = [
-  { clave: 'tipo', titulo: 'Hallazgo', render: (s) => <Badge {...insigniaTipoHallazgo(s.contenido.tipo_hallazgo)} /> },
+  { clave: 'tipo', titulo: 'Hallazgo', render: (s) => <Estado {...insigniaAEstado(insigniaTipoHallazgo(s.contenido.tipo_hallazgo))} /> },
   { clave: 'conjunto', titulo: 'Conjunto', render: (s) => ETIQUETA_CONJUNTO[s.contenido.conjunto] },
   { clave: 'dato', titulo: 'Dato observado', render: (s) => <DatoObservado sugerencia={s} /> },
   { clave: 'registros', titulo: 'Registros', multilinea: true, render: codigos },
-  { clave: 'confianza', titulo: 'Confianza', render: (s) => <Badge {...insigniaConfianza(s.contenido.confianza)} /> },
+  { clave: 'confianza', titulo: 'Confianza', render: (s) => <Estado {...insigniaAEstado(insigniaConfianza(s.contenido.confianza))} /> },
   { clave: 'fecha_creacion', titulo: 'Detectado', render: (s) => formatearFechaHora(s.fecha_creacion) },
-  { clave: 'estado', titulo: 'Estado', render: (s) => <Badge {...insigniaEstadoHallazgo(s.estado)} /> },
+  { clave: 'estado', titulo: 'Estado', render: (s) => <Estado {...insigniaAEstado(insigniaEstadoHallazgo(s.estado))} /> },
 ]
 
 function FichaHallazgo({ sugerencia: s, onAbrir }: { sugerencia: SugerenciaInconsistencia; onAbrir: () => void }) {
@@ -78,15 +79,15 @@ function FichaHallazgo({ sugerencia: s, onAbrir }: { sugerencia: SugerenciaIncon
     <li>
       <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
         <span className={estilosIa.cabeceraFicha}>
-          <Badge {...insigniaTipoHallazgo(s.contenido.tipo_hallazgo)} />
-          <Badge {...insigniaEstadoHallazgo(s.estado)} />
+          <Estado {...insigniaAEstado(insigniaTipoHallazgo(s.contenido.tipo_hallazgo))} />
+          <Estado {...insigniaAEstado(insigniaEstadoHallazgo(s.estado))} />
         </span>
         <span className={estilosIa.codigoAtencion}>{textoDatoObservado(s.contenido)}</span>
         <span className={estilosIa.metaAtencion}>
           {ETIQUETA_CONJUNTO[s.contenido.conjunto]} · {codigos(s)}
         </span>
         <span className={estilosIa.pieFicha}>
-          <Badge {...insigniaConfianza(s.contenido.confianza)} />
+          <Estado {...insigniaAEstado(insigniaConfianza(s.contenido.confianza))} />
         </span>
         <span className={estilosIa.datosFicha}>{s.estado === 'Propuesta' ? 'Revisar' : 'Ver'} hallazgo n.º {s.id}</span>
       </button>

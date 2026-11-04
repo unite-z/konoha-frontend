@@ -24,9 +24,9 @@
 }
 
 .titulo {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
 }
 
 .ayuda,
@@ -38,9 +38,9 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--green-700);
+  color: var(--color-action-primary);
   font: inherit;
-  font-weight: var(--type-label-md-weight);
+  font-weight: var(--type-cuerpo-medio-weight);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -63,7 +63,7 @@
 /* Deja encima el espacio de la etiqueta y de la ayuda del campo. */
 .accionBusqueda,
 .accionManual {
-  padding-top: calc(var(--type-label-md-line) + var(--type-body-sm-line) + 2 * var(--space-1));
+  padding-top: calc(var(--type-cuerpo-line) + var(--type-leyenda-line) + 2 * var(--space-1));
 }
 
 .manual {
@@ -101,12 +101,12 @@
     background-color var(--duracion-transicion);
 }
 .opcion:hover {
-  border-color: var(--green-700);
-  background: var(--green-50);
+  border-color: var(--color-action-primary);
+  background: var(--color-action-subtle);
 }
 .opcion svg {
   flex: none;
-  color: var(--green-700);
+  color: var(--color-action-primary);
 }
 
 .textoOpcion {
@@ -117,14 +117,14 @@
 }
 
 .tituloOpcion {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .metaOpcion {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }
@@ -165,10 +165,10 @@
 
 .leyendaGrupo {
   margin-bottom: var(--space-2);
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 .informe {
@@ -186,13 +186,13 @@
     background-color var(--duracion-transicion);
 }
 .informe:hover {
-  border-color: var(--green-700);
+  border-color: var(--color-action-primary);
 }
 
 .informeActivo,
 .informeActivo:hover {
-  border-color: var(--green-700);
-  background: var(--green-50);
+  border-color: var(--color-action-primary);
+  background: var(--color-action-subtle);
 }
 
 .etiquetaInforme {
@@ -205,7 +205,7 @@
 }
 .etiquetaInforme input {
   margin-top: var(--space-1);
-  accent-color: var(--green-700);
+  accent-color: var(--color-action-primary);
 }
 
 .verPropuesta {

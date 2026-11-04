@@ -26,9 +26,9 @@
 }
 
 .titulo {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
   overflow-wrap: anywhere;
 }
 

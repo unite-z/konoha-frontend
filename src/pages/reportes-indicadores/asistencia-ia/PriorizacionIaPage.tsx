@@ -13,7 +13,6 @@ import { useLocation, useNavigate } from 'react-router'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
@@ -34,6 +33,8 @@ import estilosIa from './AsistenciaIa.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
 import DialogoSolicitudPriorizacion from './priorizacion/DialogoSolicitudPriorizacion'
 import estilosPriorizacion from './priorizacion/Priorizacion.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 const TITULO = 'Prioridades de atención'
 const POR_PAGINA = 25
@@ -51,7 +52,7 @@ function ResumenPrioridades({ propuesta }: { propuesta: SugerenciaPriorizacion }
   return (
     <span className={estilosPriorizacion.resumenPrioridades}>
       {PRIORIDADES.filter((p) => cuenta[p] > 0).map((p) => (
-        <Badge key={p} {...insigniaPrioridad(p)} texto={`${formatearNumero(cuenta[p])} ${p.toLowerCase()}${cuenta[p] === 1 ? '' : 's'}`} />
+        <Estado key={p} {...insigniaAEstado(insigniaPrioridad(p))} texto={`${formatearNumero(cuenta[p])} ${p.toLowerCase()}${cuenta[p] === 1 ? '' : 's'}`} />
       ))}
     </span>
   )
@@ -73,8 +74,8 @@ const COLUMNAS: ColumnaTabla<SugerenciaPriorizacion>[] = [
   { clave: 'alcance', titulo: 'Alcance', multilinea: true, render: alcanceDe },
   { clave: 'elementos', titulo: 'Elementos', alineacion: 'derecha', render: (s) => formatearNumero(s.contenido.elementos.length) },
   { clave: 'prioridades', titulo: 'Prioridades sugeridas', render: (s) => <ResumenPrioridades propuesta={s} /> },
-  { clave: 'suficiencia', titulo: 'Datos', render: (s) => <Badge {...insigniaSuficiencia(s.contenido.suficiencia)} /> },
-  { clave: 'estado', titulo: 'Estado', render: (s) => <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} /> },
+  { clave: 'suficiencia', titulo: 'Datos', render: (s) => <Estado {...insigniaAEstado(insigniaSuficiencia(s.contenido.suficiencia))} /> },
+  { clave: 'estado', titulo: 'Estado', render: (s) => <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} /> },
 ]
 
 function FichaPropuesta({ propuesta: s, onAbrir }: { propuesta: SugerenciaPriorizacion; onAbrir: () => void }) {
@@ -83,7 +84,7 @@ function FichaPropuesta({ propuesta: s, onAbrir }: { propuesta: SugerenciaPriori
       <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
         <span className={estilosIa.cabeceraFicha}>
           <span className={estilosIa.codigoAtencion}>{formatearFechaHora(s.fecha_creacion)}</span>
-          <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} />
+          <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} />
         </span>
         <span className={estilosIa.metaAtencion}>{alcanceDe(s)}</span>
         <span className={estilosIa.pieFicha}>

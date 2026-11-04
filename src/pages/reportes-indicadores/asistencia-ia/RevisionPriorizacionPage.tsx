@@ -15,7 +15,6 @@ import BloqueContextoIA from '../../../components/reportes-indicadores/BloqueCon
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import Badge from '../../../components/ui/Badge'
 import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
@@ -52,6 +51,8 @@ import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
 import { idDecision } from './extraccion/valoresCampo'
 import FichaElemento from './priorizacion/FichaElemento'
 import estilosPriorizacion from './priorizacion/Priorizacion.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 interface Revision {
   /** Versión de la propuesta a la que corresponde el estado. */
@@ -102,7 +103,7 @@ export default function RevisionPriorizacionPage() {
   }
 
   const volver = (
-    <BotonEnlace to={rutaBandeja} variante="terciario">
+    <BotonEnlace to={rutaBandeja} variante="fantasma">
       Volver a la bandeja
     </BotonEnlace>
   )
@@ -226,7 +227,7 @@ export default function RevisionPriorizacionPage() {
 
       <section className={estilosPriorizacion.cabecera} aria-label="Identificación de la propuesta">
         <div className={estilosPriorizacion.lineaTitulo}>
-          <Badge {...insigniaSugerencia(propuesta.estado, propuesta.etiqueta_estado)} />
+          <Estado {...insigniaAEstado(insigniaSugerencia(propuesta.estado, propuesta.etiqueta_estado))} />
           {enPropuesta && <span className={estilosPriorizacion.aviso}>Propuesta: aún no se ha registrado</span>}
         </div>
         <div className={estilosIa.datosFicha}>

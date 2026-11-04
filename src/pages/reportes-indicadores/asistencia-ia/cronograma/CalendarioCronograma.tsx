@@ -7,7 +7,6 @@
  * Al pulsar una propuesta se abre su ficha en el panel lateral. Las modificadas se ven en sus nuevas fechas.
  */
 import { useState } from 'react'
-import Badge from '../../../../components/ui/Badge'
 import Boton from '../../../../components/ui/Boton'
 import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
 import type { FechaIso } from '../../../../types/comun'
@@ -33,6 +32,8 @@ import {
 import { formatearFecha } from '../../../../utils/formato'
 import { hoyLima } from '../../../../utils/instanteLima'
 import estilos from './Calendario.module.css'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 const DIAS = ['lun.', 'mar.', 'mié.', 'jue.', 'vie.', 'sáb.', 'dom.']
 
@@ -96,7 +97,7 @@ function FilaSemana({
                 const idBurbuja = `restriccion-${dia}-${j}`
                 return (
                   <span key={r.descripcion} className={estilos.restriccion} tabIndex={0} aria-describedby={idBurbuja}>
-                    <Badge {...PRESENTACION_RESTRICCION[r.tipo]} />
+                    <Estado {...insigniaAEstado(PRESENTACION_RESTRICCION[r.tipo])} />
                     <span id={idBurbuja} role="tooltip" className={`${estilos.burbuja} ${i >= 4 ? estilos.burbujaIzquierda : ''}`}>
                       <strong>{PRESENTACION_RESTRICCION[r.tipo].texto}:</strong> {r.descripcion}
                       {r.espacio ? ` · ${r.espacio}` : ' · Todo el campus'}
@@ -202,10 +203,10 @@ export default function CalendarioCronograma({
           <Boton variante="secundario" compacto onClick={irAHoy}>
             Hoy
           </Boton>
-          <Boton variante="terciario" compacto aria-label={vista === 'semana' ? 'Semana anterior' : 'Mes anterior'} onClick={() => mover(-1)}>
+          <Boton variante="fantasma" compacto aria-label={vista === 'semana' ? 'Semana anterior' : 'Mes anterior'} onClick={() => mover(-1)}>
             ‹
           </Boton>
-          <Boton variante="terciario" compacto aria-label={vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'} onClick={() => mover(1)}>
+          <Boton variante="fantasma" compacto aria-label={vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'} onClick={() => mover(1)}>
             ›
           </Boton>
           <h3 className={estilos.titulo} aria-live="polite">

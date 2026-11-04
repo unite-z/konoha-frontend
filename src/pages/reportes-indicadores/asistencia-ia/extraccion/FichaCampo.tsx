@@ -4,7 +4,6 @@
  * Los ids de las opciones y del campo de corrección son los que usa el resumen de errores para llevar el foco.
  */
 import type { ReactNode } from 'react'
-import Badge from '../../../../components/ui/Badge'
 import CampoFormulario, { AreaTexto } from '../../../../components/ui/CampoFormulario'
 import Icono from '../../../../components/ui/Icono'
 import Selector from '../../../../components/ui/Selector'
@@ -13,6 +12,8 @@ import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '../../../../utils/estado
 import { SIN_VALOR } from '../../../../utils/formato'
 import estilos from './FichaCampo.module.css'
 import { ACCIONES, idCorreccion, idDecision, MENSAJES, partirEnLineas, textoValorSimple, tieneValor } from './valoresCampo'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 /** Decisión en curso de un dato. */
 export interface DecisionCampo {
@@ -81,16 +82,16 @@ export default function FichaCampo({ campo, sugerido, modo, decision, error, fin
   const idAyuda = `ayuda-${clave}`
 
   let estado = estilos.pendiente
-  let insignia: ReactNode = modo === 'editar' ? <Badge tono="neutral" texto="Pendiente" /> : null
+  let insignia: ReactNode = modo === 'editar' ? <Estado tono="neutro" texto="Pendiente" /> : null
   if (error) {
     estado = estilos.conError
-    insignia = <Badge tono="error" texto={errorPendiente ? 'Falta decidir' : 'Revisa el valor'} />
+    insignia = <Estado tono="error" texto={errorPendiente ? 'Falta decidir' : 'Revisa el valor'} />
   } else if (modo === 'editar' && decision?.accion) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(decision.accion)} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(decision.accion))} />
   } else if (modo === 'final' && final) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(final.accion)} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(final.accion))} />
   }
 
   function correccion(): ReactNode {

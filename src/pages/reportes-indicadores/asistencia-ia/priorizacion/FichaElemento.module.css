@@ -7,16 +7,16 @@
 }
 
 .puntuacion {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
 .subtitulo {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 /* «Datos que la sustentan»: pares compactos en dos columnas. */
@@ -25,8 +25,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2) var(--space-4);
   margin: 0;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
 }
 .sustento dt {
   color: var(--color-text-secondary);

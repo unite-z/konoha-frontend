@@ -7,7 +7,6 @@
 import type { ReactNode } from 'react'
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Badge from '../../../../components/ui/Badge'
 import Boton from '../../../../components/ui/Boton'
 import Icono from '../../../../components/ui/Icono'
 import type { AccionDecision } from '../../../../types/ia'
@@ -24,6 +23,8 @@ import {
 import estilos from '../extraccion/FichaCampo.module.css'
 import { ACCIONES, idDecision } from '../extraccion/valoresCampo'
 import estilosCronograma from './Cronograma.module.css'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 const ETIQUETA_ACCION: Record<AccionDecision, string> = { aceptar: 'Aceptar', corregir: 'Modificar', descartar: 'Descartar' }
 
@@ -46,16 +47,16 @@ export default function FichaPropuesta({ propuesta: p, modo, decision, error, fi
   const idTitulo = `propuesta-${p.clave}`
 
   let estado = estilos.pendiente
-  let insignia: ReactNode = modo === 'editar' ? <Badge tono="neutral" texto="Pendiente" /> : null
+  let insignia: ReactNode = modo === 'editar' ? <Estado tono="neutro" texto="Pendiente" /> : null
   if (error) {
     estado = estilos.conError
-    insignia = <Badge tono="error" texto="Revisa la decisión" />
+    insignia = <Estado tono="error" texto="Revisa la decisión" />
   } else if (modo === 'editar' && decision?.accion) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(decision.accion)} texto={decision.accion === 'corregir' ? 'Modificada' : insigniaAccion(decision.accion).texto} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(decision.accion))} texto={decision.accion === 'corregir' ? 'Modificada' : insigniaAccion(decision.accion).texto} />
   } else if (modo === 'final' && final) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(final.accion)} texto={final.accion === 'corregir' ? 'Modificada' : insigniaAccion(final.accion).texto} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(final.accion))} texto={final.accion === 'corregir' ? 'Modificada' : insigniaAccion(final.accion).texto} />
   }
 
   return (
@@ -112,7 +113,7 @@ export default function FichaPropuesta({ propuesta: p, modo, decision, error, fi
               {decision?.accion === 'corregir' && (
                 <div className={estilos.correccion}>
                   <p>{decision.valores ? `Modificado: ${textoCambios(decision.valores)}` : 'Aún no has indicado los cambios'}</p>
-                  <Boton variante="terciario" onClick={onModificar}>
+                  <Boton variante="fantasma" onClick={onModificar}>
                     {decision.valores ? 'Cambiar la modificación' : 'Indicar los cambios'}
                   </Boton>
                 </div>

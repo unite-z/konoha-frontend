@@ -28,8 +28,8 @@
 }
 
 .datos dt {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-muted);
 }
 
@@ -37,7 +37,7 @@
   margin: var(--space-1) 0 0;
   font-size: var(--type-body-lg-size);
   line-height: var(--type-body-lg-line);
-  font-weight: var(--type-label-md-weight);
+  font-weight: var(--type-cuerpo-medio-weight);
   color: var(--color-text-primary);
   overflow-wrap: anywhere;
 }
@@ -64,7 +64,7 @@
   overflow-wrap: anywhere;
 }
 .nombreDocumento svg {
-  color: var(--green-700);
+  color: var(--color-action-primary);
 }
 
 .cobertura {

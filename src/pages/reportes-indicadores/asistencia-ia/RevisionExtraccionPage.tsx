@@ -122,7 +122,7 @@ export default function RevisionExtraccionPage() {
   }
 
   const volver = (
-    <BotonEnlace to={rutaBandeja} variante="terciario">
+    <BotonEnlace to={rutaBandeja} variante="fantasma">
       Volver a la bandeja
     </BotonEnlace>
   )

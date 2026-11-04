@@ -5,7 +5,6 @@
  */
 import { useState } from 'react'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Badge from '../../../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../../../components/ui/Boton'
 import Icono from '../../../../components/ui/Icono'
 import { useConsulta } from '../../../../hooks/useConsulta'
@@ -18,6 +17,8 @@ import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../../utils/fo
 import estilos from './CabeceraPropuesta.module.css'
 import { cargarInforme } from './consultasApoyo'
 import { coberturaSugerencia } from './valoresCampo'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 export default function CabeceraPropuesta({ sugerencia }: { sugerencia: SugerenciaIA }) {
   const { entrada, ia } = sugerencia.contenido
@@ -63,9 +64,9 @@ export default function CabeceraPropuesta({ sugerencia }: { sugerencia: Sugerenc
   return (
     <section className={estilos.cabecera} aria-label="Identificación de la propuesta">
       <div className={estilos.lineaTitulo}>
-        <Badge {...insigniaSugerencia(sugerencia.estado, sugerencia.etiqueta_estado)} />
+        <Estado {...insigniaAEstado(insigniaSugerencia(sugerencia.estado, sugerencia.etiqueta_estado))} />
         {atencion && (
-          <BotonEnlace to={rutaDetalleAtencion(atencion.id)} variante="terciario">
+          <BotonEnlace to={rutaDetalleAtencion(atencion.id)} variante="fantasma">
             Ver la atención en Servicios tercerizados
           </BotonEnlace>
         )}
