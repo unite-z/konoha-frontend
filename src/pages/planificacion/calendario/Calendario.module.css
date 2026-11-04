@@ -14,6 +14,7 @@
 
 .tituloMes {
   margin: 0;
+  white-space: nowrap;
   color: var(--color-text-primary);
   font-size: var(--type-titulo-seccion-size);
   font-weight: var(--type-titulo-seccion-weight);
@@ -24,7 +25,7 @@
 .calendarioYAgenda {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16rem;
-  align-items: start;
+  align-items: stretch;
   gap: var(--space-4);
 }
 
@@ -128,6 +129,7 @@
 .agenda {
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   gap: var(--space-4);
   padding: var(--space-4);
   border: 1px solid var(--color-border-default);
@@ -559,4 +561,10 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* «Programar este día», al pie de la agenda y a todo el ancho (Figma 344-436). */
+.programarDia {
+  width: 100%;
+  margin-top: auto;
 }

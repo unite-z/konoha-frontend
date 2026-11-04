@@ -43,7 +43,8 @@ describe('VistaLista', () => {
     const filas = within(screen.getByRole('table')).getAllByRole('row').slice(1)
     expect(filas.map((fila) => within(fila).getAllByRole('cell')[1].textContent)).toEqual(['Riego', 'Corte de césped'])
     expect(within(filas[0]).getByText('Personal propio')).toBeTruthy()
-    expect(within(filas[1]).getByText('19 nov. · Jueves culturales')).toBeTruthy()
+    expect(within(filas[1]).getByText('Jue 19 · Jueves culturales')).toBeTruthy()
+    expect(within(filas[1]).getByText('16 al 19')).toBeTruthy()
   })
 
   it('sin actividades muestra el estado vacío', () => {

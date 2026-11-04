@@ -69,7 +69,7 @@ function seSolapa(inicio: FechaIso, fin: FechaIso, desde: FechaIso, hasta: Fecha
 
 export const ESTADO_PROGRAMACION: Record<EstadoProgramacion, { texto: string; tono: TonoEstado }> = {
   Programada: { texto: 'Programada', tono: 'info' },
-  EnCurso: { texto: 'En curso', tono: 'aviso' },
+  EnCurso: { texto: 'En curso', tono: 'acento' },
   Completada: { texto: 'Completada', tono: 'exito' },
   Cancelada: { texto: 'Cancelada', tono: 'neutro' },
 }
@@ -266,6 +266,18 @@ export function proximosCiclos(hoy: FechaIso, programaciones: Programacion[]): P
 }
 
 const DIAS_SEMANA_FIGMA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+/** «Jue 19», como en Figma (sin mes). */
+export function diaFigma(fecha: FechaIso): string {
+  return `${DIAS_SEMANA_FIGMA[aFecha(fecha).getUTCDay()]} ${fecha.slice(8, 10)}`
+}
+
+/** «Lun 02» para un día y «16 al 19» para un periodo del mismo mes, como en Figma; de un mes a otro, con mes. */
+export function periodoFigma(inicio: FechaIso, fin: FechaIso): string {
+  if (inicio === fin) return diaFigma(inicio)
+  if (inicio.slice(0, 7) === fin.slice(0, 7)) return `${inicio.slice(8, 10)} al ${fin.slice(8, 10)}`
+  return `${fechaCorta(inicio)} al ${fechaCorta(fin)}`
+}
 
 export interface RestriccionProxima {
   clave: string

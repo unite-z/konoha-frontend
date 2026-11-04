@@ -1,6 +1,7 @@
 /**
  * Agenda del día seleccionado en la vista Mes (AV-266): restricciones de todo el día con su descripción y horario,
- * con «Dar de baja» para el jefe, y actividades con su proveedor y estado. «Programar este día» llega con AV-267.
+ * con «Dar de baja» para el jefe, y actividades con su proveedor y estado. Al pie, «Programar este día» abre
+ * «Programar ciclo» con ese día de inicio (Figma 344-436).
  */
 import Boton from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
@@ -18,9 +19,11 @@ export interface AgendaDiaProps {
   onCerrar: () => void
   /** Solo para quien puede editar la planificación (jefe de sección). */
   onDarDeBaja?: (restriccion: Restriccion) => void
+  /** Solo para el jefe: abre «Programar ciclo» empezando ese día. */
+  onProgramarDia?: (dia: FechaIso) => void
 }
 
-export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja }: AgendaDiaProps) {
+export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja, onProgramarDia }: AgendaDiaProps) {
   const { restricciones, actividades } = eventosDelDia(dia, eventos)
   return (
     <section className={estilos.agenda} aria-labelledby="titulo-agenda">
@@ -81,6 +84,12 @@ export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja }: Agend
           </ul>
         )}
       </div>
+
+      {onProgramarDia && (
+        <Boton variante="secundario" icono="plus-circle" className={estilos.programarDia} onClick={() => onProgramarDia(dia)}>
+          Programar este día
+        </Boton>
+      )}
     </section>
   )
 }

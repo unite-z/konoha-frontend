@@ -23,6 +23,7 @@ import { fechaCorta, periodoRestriccion, sumarDias } from '../resumen/resumenPla
 import {
   MAXIMO_JUSTIFICACION,
   conflictosDelPeriodo,
+  diasDelPeriodo,
   franjaDeDias,
   textoDuracion,
   textoVentana,
@@ -36,11 +37,13 @@ const PERSONAL_PROPIO = 'propio'
 export interface PanelProgramarCicloProps {
   servicios: ServicioPeriodico[]
   servicioInicial: number | null
+  /** Día de inicio elegido en el calendario («Programar este día»): sustituye al inicio propuesto. */
+  fechaInicial?: string | null
   onCerrar: () => void
   onProgramada: (programacion: Programacion) => void
 }
 
-export default function PanelProgramarCiclo({ servicios, servicioInicial, onCerrar, onProgramada }: PanelProgramarCicloProps) {
+export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaInicial = null, onCerrar, onProgramada }: PanelProgramarCicloProps) {
   const [servicioId, setServicioId] = useState(servicioInicial ? String(servicioInicial) : '')
   const [proveedor, setProveedor] = useState('')
   const [inicio, setInicio] = useState('')
@@ -58,12 +61,18 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, onCerr
   const hasta = fechasValidas ? [fin, sumarDias(inicio, 7)].sort().at(-1) ?? fin : ''
   const restricciones = useConsulta(fechasValidas ? `programar-restricciones:${desde}:${hasta}` : null, (signal) => listarRestricciones(desde, hasta, signal))
 
-  // Al elegir servicio, el panel entra con las fechas que propone el sistema.
+  // Al elegir servicio, el panel entra con las fechas que propone el sistema; con un día elegido en el calendario,
+  // empieza ese día y conserva la duración propuesta.
   useEffect(() => {
     if (!propuesta.datos) return
+    if (fechaInicial) {
+      setInicio(fechaInicial)
+      setFin(sumarDias(fechaInicial, diasDelPeriodo(propuesta.datos.fecha_inicio, propuesta.datos.fecha_fin) - 1))
+      return
+    }
     setInicio(propuesta.datos.fecha_inicio)
     setFin(propuesta.datos.fecha_fin)
-  }, [propuesta.datos])
+  }, [propuesta.datos, fechaInicial])
 
   const delPeriodo = restricciones.datos ?? []
   const conflictos = fechasValidas ? conflictosDelPeriodo(delPeriodo, inicio, fin, servicio?.es_ruidoso ?? true) : []

@@ -6,8 +6,8 @@ import Estado from '@/components/ui/Estado'
 import EventoCalendario from '@/components/ui/EventoCalendario'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { SIN_VALOR } from '@/utils/formato'
-import { ESTADO_PROGRAMACION, fechaCorta } from '../resumen/resumenPlanificacion'
-import { actividadesDelPeriodo, coincidencias, periodoEvento, type EventoCapa } from './calendarioCapas'
+import { ESTADO_PROGRAMACION, diaFigma, periodoFigma } from '../resumen/resumenPlanificacion'
+import { actividadesDelPeriodo, coincidencias, type EventoCapa } from './calendarioCapas'
 import estilos from './Calendario.module.css'
 
 export interface VistaListaProps {
@@ -18,7 +18,7 @@ export interface VistaListaProps {
 
 export default function VistaLista({ eventos, desde, hasta }: VistaListaProps) {
   const columnas: ColumnaTabla<EventoCapa>[] = [
-    { clave: 'fecha', titulo: 'Fecha', render: (evento) => periodoEvento(evento) },
+    { clave: 'fecha', titulo: 'Fecha', render: (evento) => periodoFigma(evento.inicio, evento.fin) },
     { clave: 'actividad', titulo: 'Actividad', multilinea: true, render: (evento) => evento.texto },
     {
       clave: 'responsable',
@@ -45,7 +45,7 @@ export default function VistaLista({ eventos, desde, hasta }: VistaListaProps) {
         return (
           <span className={estilos.restriccionesFila}>
             {coinciden.map((restriccion) => (
-              <EventoCalendario key={restriccion.clave} tipo={restriccion.tipo} texto={`${fechaCorta(restriccion.inicio)} · ${restriccion.texto}`} />
+              <EventoCalendario key={restriccion.clave} tipo={restriccion.tipo} texto={`${diaFigma(restriccion.inicio)} · ${restriccion.texto}`} />
             ))}
           </span>
         )
