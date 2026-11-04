@@ -35,6 +35,7 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
+import IncidenciaDetallePage from '../pages/incidencias/IncidenciaDetallePage'
 import CalendarioCuadrillaPage from '../pages/corte/CalendarioCuadrillaPage'
 import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
@@ -199,7 +200,10 @@ export const router = createBrowserRouter([
           {
             path: PREFIJO_INCIDENCIAS,
             element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
-            children: [{ index: true, element: <BandejaIncidenciasPage /> }], // HU-024 y HU-027 (AV-283)
+            children: [
+              { index: true, element: <BandejaIncidenciasPage /> }, // HU-024 y HU-027 (AV-283)
+              { path: ':id', element: <IncidenciaDetallePage /> }, // HU-021 a HU-023 (AV-284)
+            ],
           },
           { path: '*', element: <PaginaNoEncontrada /> },
         ],

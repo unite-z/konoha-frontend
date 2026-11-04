@@ -52,3 +52,101 @@
     flex-basis: 100%;
   }
 }
+
+/* Detalle (Figma 388-7305): ficha a la izquierda (452) y tarjeta de acción a la derecha (304). */
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 11rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* La tarjeta de acción alta, con los botones al pie, como en Figma. */
+.accion {
+  display: flex;
+  flex-direction: column;
+  min-height: 30rem;
+}
+
+.camposAccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pieAccion {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.pieAccion > :only-child {
+  margin-left: auto;
+}
+
+/* «Cancelar» o «Volver» junto a la acción principal, a la derecha (Figma 389-7300 y 394-8782). */
+.pieDerecha {
+  justify-content: flex-end;
+}
+
+.sugerenciaIa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.errorAccion {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+@media (max-width: 767px) {
+  .detalle {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accion {
+    min-height: 0;
+  }
+}

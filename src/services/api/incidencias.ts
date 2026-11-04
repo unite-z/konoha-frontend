@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CapatazDisponible, IncidenciaResumen } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -40,4 +40,49 @@ export async function reasignarIncidencia(incidenciaId: number, capatazId: numbe
     return simularReasignar(incidenciaId, capatazId)
   }
   return solicitarPlanificacion<IncidenciaResumen>(`incidencias/${incidenciaId}/reasignar/`, { metodo: 'POST', cuerpo: { capataz_id: capatazId } })
+}
+
+/** `GET incidencias/{id}/` (AV-274): ficha con la ubicación, el ejemplar, la descripción y quién la reportó. */
+export async function obtenerIncidencia(id: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularObtenerIncidencia } = await import('../simulados/incidencias')
+    return simularObtenerIncidencia(id, signal)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${id}/`, { signal })
+}
+
+/** `POST incidencias/{id}/clasificar/` (AV-276): severidad, impacto y vía; devuelve la incidencia Clasificada. */
+export async function clasificarIncidencia(id: number, cuerpo: Clasificacion) {
+  if (DATOS_SIMULADOS) {
+    const { simularClasificar } = await import('../simulados/incidencias')
+    return simularClasificar(id, cuerpo)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${id}/clasificar/`, { metodo: 'POST', cuerpo })
+}
+
+/** `POST incidencias/{id}/descartar/` (AV-276): con motivo; devuelve la incidencia Descartada. */
+export async function descartarIncidencia(id: number, motivo: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularDescartar } = await import('../simulados/incidencias')
+    return simularDescartar(id)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${id}/descartar/`, { metodo: 'POST', cuerpo: { motivo } })
+}
+
+/** `GET incidencias/inspectores/` (AV-276): ingenieros y practicantes que pueden inspeccionar en campo. */
+export async function listarInspectores(signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularInspectores } = await import('../simulados/incidencias')
+    return simularInspectores(signal)
+  }
+  return solicitarPlanificacion<Inspector[]>('incidencias/inspectores/', { signal })
+}
+
+/** `POST incidencias/{id}/inspeccion/` (AV-276): pide la inspección en campo; la incidencia sigue Registrada. */
+export async function solicitarInspeccion(id: number, cuerpo: SolicitudInspeccion) {
+  if (DATOS_SIMULADOS) {
+    const { simularRespuestaVacia } = await import('../simulados/incidencias')
+    return simularRespuestaVacia()
+  }
+  return solicitarPlanificacion<void>(`incidencias/${id}/inspeccion/`, { metodo: 'POST', cuerpo })
 }
