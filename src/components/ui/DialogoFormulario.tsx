@@ -7,6 +7,7 @@
  * - Con cambios sin guardar, cerrar pide confirmar el descarte dentro del mismo diálogo.
  * - Mientras envía no se puede cerrar ni volver a enviar (el botón primario queda en «cargando»).
  * - `error`: aviso sobre el formulario (errores del servidor que no son de un campo).
+ * - `ancho="estrecho"` (440 de Figma): formularios de un solo campo, como «Registrar motivo» (373-5658).
  * - `ancho="lateral"`: panel a la derecha a toda la altura («Formulario en panel lateral», DESIGN.md 5), con el cuerpo
  *   desplazable y las acciones abajo.
  */
@@ -30,7 +31,7 @@ export interface DialogoFormularioProps {
   hayCambios?: boolean
   /** Error general del envío (por ejemplo, el `detalle` del back-end). */
   error?: { titulo: string; detalle: string } | null
-  ancho?: 'normal' | 'amplio' | 'lateral'
+  ancho?: 'estrecho' | 'normal' | 'amplio' | 'lateral'
   /** Muestra la leyenda «* Campo obligatorio». */
   conObligatorios?: boolean
   /** Botón principal deshabilitado (por ejemplo, sin cambios o con errores a la vista, como en Figma). */

@@ -121,6 +121,20 @@ export interface AlertaPlanificacion {
   /** Frecuencia: días que faltan para el máximo (negativo si ya pasó). Duración: días de exceso o que faltan. */
   dias: number
   mensaje: string
+  /** Contrato de AV-255: la alerta se guarda con su id para registrar el motivo (`POST alertas/{id}/motivo/`). */
+  id?: number
+  /** Contrato de AV-255: proveedor del ciclo («Personal propio» o la razón social) y máximo de días del servicio. */
+  proveedor?: string | null
+  maximo_dias?: number | null
+}
+
+/** Respuesta de `POST alertas/{id}/motivo/` (AV-255): la alerta queda atendida con su motivo y su autor. */
+export interface AlertaAtendida {
+  id: number
+  estado: 'Atendida'
+  motivo: string
+  atendida_por: string
+  fecha_atencion: string
 }
 
 /** `GET servicios/{id}/propuesta/`: fechas del siguiente ciclo, conflictos y primera ventana libre si los hay. */
