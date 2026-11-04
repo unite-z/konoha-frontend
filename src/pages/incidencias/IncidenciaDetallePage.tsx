@@ -1,7 +1,8 @@
 // HU-021 a HU-023 · Detalle de incidencia (AV-284, Figma «Incidencia · clasificar» 388-7305)
 /**
  * A la izquierda, la foto y la ficha (ubicación, ejemplar, descripción y quién la reportó); a la derecha, la tarjeta
- * de acción según el estado, que llega en los siguientes PR de AV-284 («Clasificar» y la derivación por cada vía). Datos simulados hasta el backend (AV-274 a AV-278), con `AvisoDatosSimulados` (D9).
+ * de acción según el estado. Registrada: «Clasificar» (`TarjetaClasificar`). La derivación por cada vía llega en los
+ * siguientes PR de AV-284. Datos simulados hasta el backend (AV-274 a AV-278), con `AvisoDatosSimulados` (D9).
  */
 import { useCallback, useState } from 'react'
 import { useParams } from 'react-router'
@@ -19,18 +20,21 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_INCIDENCIAS, RUTAS_INCIDENCIAS } from '@/router/rutasApp'
 import { obtenerIncidencia } from '@/services/api/incidencias'
+import type { IncidenciaDetalle } from '@/types/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
 import { ESTADO_INCIDENCIA } from './bandeja'
 import { textoEjemplar, textoReporto, textoUbicacion } from './detalleIncidencia'
+import TarjetaClasificar from './TarjetaClasificar'
 import estilos from './Incidencias.module.css'
 
 export default function IncidenciaDetallePage() {
   const { id: idRuta } = useParams()
   const id = Number(idRuta)
   const consulta = useConsulta(`incidencia:${id}`, (signal) => obtenerIncidencia(id, signal))
+  const [local, setLocal] = useState<IncidenciaDetalle | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
-  const incidencia = consulta.datos
+  const incidencia = local?.id === id ? local : consulta.datos
   usePaginaActual(incidencia ? `${incidencia.tipo} · ${incidencia.codigo}` : 'Incidencia', [MIGAS_INCIDENCIAS.incidencias, { texto: incidencia?.codigo ?? 'Incidencia' }])
 
   if (consulta.estado === 'error' && !consulta.datos) {
@@ -73,6 +77,17 @@ export default function IncidenciaDetallePage() {
             ]}
           />
         </div>
+        {incidencia.estado === 'Registrada' && (
+          <TarjetaClasificar
+            key={incidencia.id}
+            incidencia={incidencia}
+            onAviso={setAviso}
+            onCambiada={(cambiada, mensaje) => {
+              setLocal(cambiada)
+              setAviso(mensaje)
+            }}
+          />
+        )}
       </div>
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
