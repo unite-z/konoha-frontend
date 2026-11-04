@@ -47,13 +47,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
     clave: 'planificacion',
     texto: 'Planificación',
     icono: 'calendar',
-    ruta: RUTAS_PLANIFICACION.servicios,
+    ruta: RUTAS_PLANIFICACION.resumen,
     prefijos: [PREFIJO_PLANIFICACION],
     hijos: [
-      { texto: 'Servicios periódicos', icono: 'repeat', ruta: RUTAS_PLANIFICACION.servicios },
-      { texto: 'Calendario de restricciones', icono: 'calendar', ruta: RUTAS_PLANIFICACION.restricciones },
-      { texto: 'Programación' },
-      { texto: 'Calendario de actividades' },
+      { texto: 'Resumen', icono: 'dashboard', ruta: RUTAS_PLANIFICACION.resumen },
+      { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
+      { texto: 'Ciclos', icono: 'list' }, // AV-269
+      { texto: 'Configuración', icono: 'settings', ruta: RUTAS_PLANIFICACION.configuracion },
     ],
   },
   {

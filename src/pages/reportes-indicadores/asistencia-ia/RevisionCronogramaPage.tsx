@@ -303,7 +303,7 @@ export default function RevisionCronogramaPage() {
             titulo="No hay actividades pendientes en el periodo"
             descripcion="Puedes planificar de forma manual en Planificación."
             accion={
-              <BotonEnlace to={RUTAS_PLANIFICACION.servicios} variante="secundario">
+              <BotonEnlace to={RUTAS_PLANIFICACION.resumen} variante="secundario">
                 Planificar de forma manual
               </BotonEnlace>
             }

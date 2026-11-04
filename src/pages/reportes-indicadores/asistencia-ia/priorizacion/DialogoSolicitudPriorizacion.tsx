@@ -108,7 +108,7 @@ export default function DialogoSolicitudPriorizacion({ abierto, onCerrar, onCrea
         <AvisoEnLinea
           tono="error"
           titulo="La IA no está disponible"
-          accion={{ texto: 'Continuar sin IA', onClick: () => navigate(RUTAS_PLANIFICACION.servicios) }}
+          accion={{ texto: 'Continuar sin IA', onClick: () => navigate(RUTAS_PLANIFICACION.resumen) }}
         >
           {error?.detalle}
         </AvisoEnLinea>

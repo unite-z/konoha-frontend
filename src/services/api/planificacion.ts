@@ -1,6 +1,16 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
 import type { FechaIso } from '@/types/comun'
-import type { DuracionEntrada, Estacion, FrecuenciaEntrada, Restriccion, RestriccionEntrada, ServicioPeriodico, TipoRestriccion } from '@/types/planificacion'
+import type {
+  AlertaPlanificacion,
+  DuracionEntrada,
+  Estacion,
+  FrecuenciaEntrada,
+  Programacion,
+  Restriccion,
+  RestriccionEntrada,
+  ServicioPeriodico,
+  TipoRestriccion,
+} from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 export function listarServiciosPeriodicos(signal?: AbortSignal) {
@@ -32,4 +42,14 @@ export function listarRestricciones(desde: FechaIso, hasta: FechaIso, signal?: A
 /** `POST restricciones/` (solo jefe). Devuelve las restricciones creadas (varias si hay recurrencia). */
 export function crearRestriccion(cuerpo: RestriccionEntrada) {
   return solicitarPlanificacion<Restriccion[]>('restricciones/', { metodo: 'POST', cuerpo })
+}
+
+/** `GET programaciones/?desde&hasta`: ciclos que se solapan con el periodo (máximo 400 días). */
+export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
+  return solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
+}
+
+/** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */
+export function listarAlertas(signal?: AbortSignal) {
+  return solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
 }

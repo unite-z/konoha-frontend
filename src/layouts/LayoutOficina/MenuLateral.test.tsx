@@ -83,22 +83,20 @@ describe('MenuLateral', () => {
   })
 
   it('en otra sección, el módulo anterior deja de estar marcado', () => {
-    const menu = pintar(RUTAS_PLANIFICACION.restricciones)
+    const menu = pintar(RUTAS_PLANIFICACION.calendario)
 
-    expect(within(menu).getAllByRole('link', { current: 'page' }).map((a) => a.textContent)).toEqual([
-      'Calendario de restricciones',
-    ])
+    expect(within(menu).getAllByRole('link', { current: 'page' }).map((a) => a.textContent)).toEqual(['Calendario'])
   })
 
   it('las entradas no disponibles no son enlaces y se anuncian deshabilitadas', () => {
-    const menu = pintar(RUTAS_PLANIFICACION.servicios)
+    const menu = pintar(RUTAS_PLANIFICACION.resumen)
 
-    expect(within(menu).queryByRole('link', { name: /Programación/ })).toBeNull()
-    expect(within(menu).getByText('Programación').closest('[aria-disabled="true"]')).not.toBeNull()
+    expect(within(menu).queryByRole('link', { name: /Ciclos/ })).toBeNull()
+    expect(within(menu).getByText('Ciclos').closest('[aria-disabled="true"]')).not.toBeNull()
   })
 
   it('sin el permiso de un módulo, el módulo no aparece', () => {
-    const menu = pintar(RUTAS_PLANIFICACION.servicios, [PERMISOS.consultarPlanificacion])
+    const menu = pintar(RUTAS_PLANIFICACION.resumen, [PERMISOS.consultarPlanificacion])
 
     expect(within(menu).getByRole('link', { name: 'Planificación' })).toBeTruthy()
     expect(within(menu).queryByRole('link', { name: 'Áreas verdes y mapa' })).toBeNull()
@@ -113,11 +111,11 @@ describe('MenuLateral', () => {
     expect(inventario.getAttribute('aria-expanded')).toBe('true')
     const planificacion = within(menu).getByRole('button', { name: 'Desplegar Planificación' })
     expect(planificacion.getAttribute('aria-expanded')).toBe('false')
-    expect(within(menu).queryByRole('link', { name: 'Servicios periódicos' })).toBeNull()
+    expect(within(menu).queryByRole('link', { name: 'Resumen' })).toBeNull()
 
     await usuario.click(planificacion)
     expect(planificacion.getAttribute('aria-expanded')).toBe('true')
-    expect(within(menu).getByRole('link', { name: 'Servicios periódicos' })).toBeTruthy()
+    expect(within(menu).getByRole('link', { name: 'Resumen' })).toBeTruthy()
 
     await usuario.click(inventario)
     expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
@@ -148,7 +146,7 @@ describe('MenuLateral comprimido', () => {
   })
 
   it('arriba está el logo de la marca', () => {
-    pintarComprimido(RUTAS_PLANIFICACION.servicios)
+    pintarComprimido(RUTAS_PLANIFICACION.resumen)
 
     const marca = screen.getByText('Áreas Verdes').closest('div')
     expect(marca?.querySelector('[aria-hidden="true"] svg')).not.toBeNull()
@@ -156,7 +154,7 @@ describe('MenuLateral comprimido', () => {
 
   it('el botón de la marca es un interruptor para fijar el menú abierto', async () => {
     const usuario = userEvent.setup()
-    const { alternar } = pintarComprimido(RUTAS_PLANIFICACION.servicios)
+    const { alternar } = pintarComprimido(RUTAS_PLANIFICACION.resumen)
 
     const boton = screen.getByRole('button', { name: 'Fijar menú abierto' })
     expect(boton.getAttribute('aria-pressed')).toBe('false')

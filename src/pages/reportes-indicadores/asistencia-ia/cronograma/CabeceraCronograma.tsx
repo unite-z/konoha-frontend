@@ -54,7 +54,7 @@ export default function CabeceraCronograma({ propuesta, puedeConfirmar }: { prop
             {decision?.resumen.aceptados ?? 0} aceptadas, {decision?.resumen.corregidos ?? 0} modificadas y {decision?.resumen.descartados ?? 0}{' '}
             descartadas. Programaciones creadas: {formatearNumero(decision?.programaciones_creadas.length ?? 0)}.
           </p>
-          <BotonEnlace to={RUTAS_PLANIFICACION.servicios} variante="fantasma">
+          <BotonEnlace to={RUTAS_PLANIFICACION.resumen} variante="fantasma">
             Ver en Planificación
           </BotonEnlace>
         </AvisoEnLinea>

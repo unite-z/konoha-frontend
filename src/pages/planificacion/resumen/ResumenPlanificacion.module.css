@@ -1,0 +1,146 @@
+/* Resumen de planificación (MOD-03, AV-265): solo layout y tokens; paneles con Tarjeta e indicadores con TarjetaIndicador. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mes {
+  margin: calc(-1 * var(--space-4)) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* Bandejas a la izquierda y restricciones en una columna fija a la derecha, como en Figma (344-3). */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21.25rem;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Tres columnas: marca (icono, fecha o periodo), textos y acción o estado. */
+.fila {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.titulo {
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-pequeno-line);
+}
+
+.detalle {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  font-weight: var(--type-leyenda-weight);
+  line-height: var(--type-leyenda-line);
+}
+
+/* Icono de 16 sobre cuadrado de 32 con el fondo del tono. */
+.icono {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+}
+
+.aviso {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* Caja de fecha de 44 (mes y día) de «Próximos 14 días». */
+.cajaFecha {
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-8) + var(--space-3));
+  height: calc(var(--space-8) + var(--space-3));
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.cajaMes {
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.cajaDia {
+  color: var(--color-text-primary);
+  font-size: var(--type-titulo-tarjeta-size);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  line-height: var(--type-titulo-tarjeta-line);
+}
+
+.periodo {
+  flex: none;
+  width: 5.5rem;
+  color: var(--color-text-secondary);
+  font-size: var(--type-etiqueta-size);
+  font-weight: var(--type-etiqueta-weight);
+  line-height: var(--type-etiqueta-line);
+}
+
+@media (max-width: 1023px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* En móvil, la acción o el estado bajan bajo los textos. */
+@media (max-width: 40rem) {
+  .fila {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .fila > :nth-child(3) {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

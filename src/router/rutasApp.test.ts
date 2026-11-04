@@ -13,7 +13,7 @@ describe('esRutaTercerizados', () => {
 describe('rutas de MOD-03', () => {
   it('reconoce el prefijo exacto', () => {
     expect(esRutaPlanificacion('/planificacion')).toBe(true)
-    expect(esRutaPlanificacion(RUTAS_PLANIFICACION.restricciones)).toBe(true)
+    expect(esRutaPlanificacion(RUTAS_PLANIFICACION.calendario)).toBe(true)
     expect(esRutaPlanificacion('/planificacionX')).toBe(false)
   })
 })

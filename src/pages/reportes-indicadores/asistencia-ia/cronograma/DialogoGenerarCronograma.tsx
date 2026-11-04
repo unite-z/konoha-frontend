@@ -92,7 +92,7 @@ export default function DialogoGenerarCronograma({ abierto, onCerrar, onCreada }
         <AvisoEnLinea
           tono="error"
           titulo="La IA no está disponible"
-          accion={{ texto: 'Planificar de forma manual', onClick: () => navigate(RUTAS_PLANIFICACION.servicios) }}
+          accion={{ texto: 'Planificar de forma manual', onClick: () => navigate(RUTAS_PLANIFICACION.resumen) }}
         >
           {error?.detalle}
         </AvisoEnLinea>

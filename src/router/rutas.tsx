@@ -33,6 +33,7 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioRestriccionesPage from '../pages/planificacion/CalendarioRestriccionesPage'
+import ResumenPlanificacionPage from '../pages/planificacion/resumen/ResumenPlanificacionPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
@@ -53,7 +54,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS } from './rutasApp'
+import { PREFIJO_PLANIFICACION, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
@@ -162,9 +163,12 @@ export const router = createBrowserRouter([
             path: PREFIJO_PLANIFICACION,
             element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} />,
             children: [
-              { index: true, element: <Navigate to={RUTAS_PLANIFICACION.servicios} replace /> },
-              { path: RUTAS_PLANIFICACION.servicios, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
-              { path: RUTAS_PLANIFICACION.restricciones, element: <CalendarioRestriccionesPage /> }, // HU-MOD03-003
+              { index: true, element: <Navigate to={RUTAS_PLANIFICACION.resumen} replace /> },
+              { path: RUTAS_PLANIFICACION.resumen, element: <ResumenPlanificacionPage /> }, // RF-PLA-008 y 009
+              { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioRestriccionesPage /> }, // HU-MOD03-003
+              { path: RUTAS_PLANIFICACION.configuracion, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
+              { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
+              { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
             ],
           },
           { path: '*', element: <PaginaNoEncontrada /> },
