@@ -131,7 +131,7 @@ export default function ProveedorNuevoPage() {
             id={IDS.ruc}
             etiqueta="RUC"
             obligatorio
-            inputMode="numeric"
+            formato="entero"
             maxLength={11}
             ayuda="11 dígitos"
             value={borrador.ruc}

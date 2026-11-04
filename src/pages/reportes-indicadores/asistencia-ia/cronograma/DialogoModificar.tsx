@@ -84,7 +84,7 @@ export default function DialogoModificar({ propuesta, valoresIniciales, espacios
         <CampoFormulario
           id="modificar-operarios"
           etiqueta="Operarios"
-          inputMode="numeric"
+          formato="entero"
           value={operarios}
           error={errores.operarios}
           onChange={(e) => setOperarios(e.target.value)}

@@ -24,7 +24,7 @@ export default function FormularioRecursos({ idBase, valores, onCambiar, errores
         id={`${idBase}-operarios`}
         etiqueta="Operarios"
         obligatorio
-        inputMode="numeric"
+        formato="entero"
         value={valores.operarios}
         error={errores.operarios}
         onChange={(e) => cambiar({ operarios: e.target.value })}
@@ -34,7 +34,7 @@ export default function FormularioRecursos({ idBase, valores, onCambiar, errores
           id={`${idBase}-duracion`}
           etiqueta="Duración"
           obligatorio
-          inputMode="decimal"
+          formato="decimal"
           value={valores.duracion}
           error={errores.duracion}
           onChange={(e) => cambiar({ duracion: e.target.value })}

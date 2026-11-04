@@ -4,6 +4,8 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Va aquí:** controles y piezas visuales sin lógica de negocio: `Boton`, `Estado`, `CampoFormulario`, `Selector`, `TablaDatos`, `DialogoConfirmacion`, `Tarjeta`, `Casilla`, `GrupoOpciones`, `EstadoCarga`, `EstadoSinAcceso`, `EventoCalendario`…
 
+**Campos numéricos:** `CampoFormulario` con `formato="entero"` o `"decimal"` filtra lo que se escribe o se pega (`filtrarNumero` en `campoFormularioUtil.ts`). Úsalo en lugar de `inputMode` o `type="number"`.
+
 **Movimiento de los diálogos:** `AnimacionDialogo.module.css` (entrada y salida, centrada o lateral) y `useCierreAnimado.ts` (espera a que termine la salida antes de avisar con `onCerrar`) los comparten `DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`. Un diálogo nuevo los usa igual.
 
 **Nombres antiguos** (no los uses en código nuevo; se retiran al migrar cada módulo): `Badge` → `Estado`; `variante="terciario"` → `fantasma`. Para pasar a `Estado` una insignia de `utils/` con tono antiguo: `<Estado {...insigniaAEstado(insigniaEstado(x))} />` (`tonos.ts`).

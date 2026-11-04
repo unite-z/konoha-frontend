@@ -31,3 +31,38 @@ export function clasesDeControl(error?: string, bloqueado?: boolean, extra?: str
     .filter(Boolean)
     .join(' ')
 }
+
+/** Tipo de contenido de un campo de una línea: filtra lo que se escribe o se pega. */
+export type FormatoCampo = 'entero' | 'decimal'
+
+export interface OpcionesFormato {
+  /** Decimales como máximo (solo `decimal`). */
+  decimales?: number
+  /** Admite un signo menos al principio (coordenadas). */
+  negativo?: boolean
+}
+
+/**
+ * Deja solo lo que admite el formato: `entero`, dígitos; `decimal`, dígitos, espacios (separador de miles) y un
+ * único separador decimal, coma o punto, con `decimales` como máximo. El valor se valida igualmente al guardar.
+ */
+export function filtrarNumero(valor: string, formato: FormatoCampo, { decimales, negativo = false }: OpcionesFormato = {}): string {
+  const signo = negativo && valor.trimStart().startsWith('-') ? '-' : ''
+  if (formato === 'entero') return signo + valor.replace(/\D/g, '')
+  let separador = false
+  let enDecimales = 0
+  let limpio = ''
+  for (const caracter of valor) {
+    if (/\d/.test(caracter)) {
+      if (separador && decimales !== undefined && enDecimales >= decimales) continue
+      if (separador) enDecimales += 1
+      limpio += caracter
+    } else if ((caracter === ',' || caracter === '.') && !separador && decimales !== 0) {
+      separador = true
+      limpio += caracter
+    } else if (caracter === ' ' && !separador) {
+      limpio += caracter
+    }
+  }
+  return signo + limpio
+}
