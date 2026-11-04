@@ -62,4 +62,12 @@ describe('IncidenciaDetallePage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Volver' }))
     expect(screen.getByRole('heading', { name: 'Derivar de nuevo' })).toBeTruthy()
   })
+
+  it('cerrada muestra el tiempo de cierre, la evidencia, el aviso y el historial (Figma 390-7811)', async () => {
+    pintar('34')
+    expect(await screen.findByText('2 h 25 min')).toBeTruthy()
+    expect(screen.getByText('Se avisó a Ana Q.')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Historial' })).toBeTruthy()
+    expect(screen.getByText('Atendida · Sistema (encargo terminado)')).toBeTruthy()
+  })
 })

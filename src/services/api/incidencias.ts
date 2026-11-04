@@ -125,3 +125,21 @@ export async function crearRequerimiento(incidenciaId: number, cuerpo: NuevoRequ
   }
   return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/requerimiento/`, { metodo: 'POST', cuerpo })
 }
+
+/** `POST incidencias/{id}/cerrar/` (AV-279): cierra una atendida con evidencia; 409 `sin-evidencia` si no la tiene. */
+export async function cerrarIncidencia(incidenciaId: number, observaciones?: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularCerrar } = await import('../simulados/incidencias')
+    return simularCerrar(incidenciaId)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/cerrar/`, { metodo: 'POST', cuerpo: { observaciones } })
+}
+
+/** `POST incidencias/{id}/devolver/` (AV-279): la devuelve a En atención con observaciones obligatorias. */
+export async function devolverIncidencia(incidenciaId: number, observaciones: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularDevolver } = await import('../simulados/incidencias')
+    return simularDevolver(incidenciaId)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/devolver/`, { metodo: 'POST', cuerpo: { observaciones } })
+}

@@ -7,7 +7,7 @@ const incidencias = incidenciasSimuladas(ahora)
 
 describe('bandeja de incidencias', () => {
   it('agrupa los 8 estados en tres pestañas', () => {
-    expect(contadoresBandeja(incidencias)).toEqual({ todas: 10, abiertas: 4, enProceso: 4, cerradas: 2 })
+    expect(contadoresBandeja(incidencias)).toEqual({ todas: 11, abiertas: 4, enProceso: 5, cerradas: 2 })
     expect(incidenciasDePestana(incidencias, 'cerradas').map((i) => i.estado)).toEqual(['Cerrada', 'Descartada'])
   })
 

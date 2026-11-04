@@ -4,6 +4,7 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
+import { ErrorApi } from '../api/cliente'
 import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
@@ -26,6 +27,7 @@ const SEMILLAS: Semilla[] = [
   { id: 35, codigo: 'INC-2026-035', tipo: 'Rama caída', tipo_sencilla: true, espacio: 'Jardín de Ciencias', severidad: 'Media', via: 'PersonalPropio', estado: 'Atendida', canal: 'App', responsable: 'Luis P.', horas: 50 },
   { id: 34, codigo: 'INC-2026-034', tipo: 'Césped dañado', tipo_sencilla: true, espacio: 'Explanada central', severidad: 'Baja', via: 'PersonalPropio', estado: 'Cerrada', canal: 'Correo', responsable: 'Marta R.', horas: 120, cerradaTras: 20 },
   { id: 32, codigo: 'INC-2026-032', tipo: 'Rama colgante', tipo_sencilla: false, espacio: 'Jardín de la Biblioteca', severidad: 'Media', via: 'PersonalPropio', estado: 'Clasificada', canal: 'Web', responsable: null, horas: 20 },
+  { id: 31, codigo: 'INC-2026-031', tipo: 'Hojarasca en exceso', tipo_sencilla: true, espacio: 'Jardín de Sociales', severidad: 'Baja', via: 'PersonalPropio', estado: 'Atendida', canal: 'App', responsable: 'Luis P.', horas: 6 },
   { id: 33, codigo: 'INC-2026-033', tipo: 'Basura en jardín', tipo_sencilla: true, espacio: 'Jardín de Sociales', severidad: null, via: null, estado: 'Descartada', canal: 'Presencial', responsable: null, horas: 170, cerradaTras: 3 },
 ]
 
@@ -93,6 +95,8 @@ export function simularReasignar(incidenciaId: number, capatazId: number): Promi
 const DETALLES: Record<number, Pick<IncidenciaDetalle, 'zona' | 'descripcion' | 'ejemplar' | 'reportado_por' | 'impacto'>> = {
   41: { zona: 'Ciencias', descripcion: 'Rama grande caída sobre el paso peatonal.', ejemplar: { codigo: 'T-0412', especie: 'Ficus', altura_m: 7 }, reportado_por: 'Ana Q.', impacto: null },
   40: { zona: 'Ciencias', descripcion: 'El aspersor del sector norte no se apaga.', ejemplar: null, reportado_por: 'Mesa de partes', impacto: null },
+  35: { zona: 'Ciencias', descripcion: 'Rama caída sobre el camino del jardín.', ejemplar: { codigo: 'T-0388', especie: 'Jacarandá', altura_m: 4 }, reportado_por: 'Ana Q.', impacto: 'Medio' },
+  34: { zona: 'Central', descripcion: 'Césped levantado junto a la fuente.', ejemplar: null, reportado_por: 'Ana Q.', impacto: 'Bajo' },
   37: { zona: 'Estacionamientos', descripcion: 'Árbol inclinado hacia la vía de salida.', ejemplar: { codigo: 'T-0907', especie: 'Eucalipto', altura_m: 12 }, reportado_por: 'Vigilancia', impacto: 'Alto' },
   32: { zona: 'Ciencias', descripcion: 'Rama colgando a 6 m sobre la banca.', ejemplar: { codigo: 'T-0415', especie: 'Ficus', altura_m: 8 }, reportado_por: 'Ana Q.', impacto: 'Medio' },
   39: { zona: 'Sociales', descripcion: 'Rama colgando sobre la entrada del pabellón.', ejemplar: { codigo: 'T-0218', especie: 'Molle', altura_m: 4 }, reportado_por: 'Luis P.', impacto: 'Medio' },
@@ -113,6 +117,33 @@ const REQUERIMIENTOS: Record<number, RequerimientoIncidencia> = {
   },
 }
 
+/** Atención de las atendidas y cerradas (Figma 390-8008): INC-2026-031 sin evidencia, para ver que no se puede cerrar. */
+function atencionSimulada(id: number, ahora: number): IncidenciaDetalle['atencion'] {
+  const evidencias = [
+    { id: 1, url: null },
+    { id: 2, url: null },
+  ]
+  const hace = (horas: number) => new Date(ahora - horas * HORA).toISOString()
+  if (id === 35) return { atendida_por: 'Luis P.', atendida_en: hace(1), encargo_codigo: 'ENC-2026-118', evidencias }
+  if (id === 31) return { atendida_por: 'Luis P.', atendida_en: hace(1), encargo_codigo: null, evidencias: [] }
+  if (id === 34) return { atendida_por: 'Marta R.', atendida_en: hace(100), encargo_codigo: 'ENC-2026-101', evidencias }
+  return null
+}
+
+/** Historial de la incidencia según su estado, de lo más reciente a lo más antiguo (Figma 390-7811). */
+function historialSimulado(incidencia: IncidenciaResumen): IncidenciaDetalle['historial'] {
+  const registro = Date.parse(incidencia.fecha_registro)
+  const despues = (minutos: number) => new Date(registro + minutos * 60_000).toISOString()
+  const eventos = [{ texto: `Registrada · ${incidencia.id === 34 ? 'Ana Q.' : 'Personal de campo'}`, fecha_hora: incidencia.fecha_registro }]
+  if (incidencia.estado === 'Registrada') return eventos
+  eventos.unshift({ texto: 'Clasificada · Robert G.', fecha_hora: despues(15) })
+  if (incidencia.estado === 'Clasificada' || incidencia.estado === 'Descartada') return eventos
+  eventos.unshift({ texto: `Derivada · ${incidencia.via === 'Tercerizada' ? 'requerimiento' : 'encargo ENC-2026-101'}`, fecha_hora: despues(16) })
+  if (incidencia.estado === 'Atendida' || incidencia.estado === 'Cerrada') eventos.unshift({ texto: 'Atendida · Sistema (encargo terminado)', fecha_hora: despues(140) })
+  if (incidencia.estado === 'Cerrada') eventos.unshift({ texto: 'Cerrada · Robert G.', fecha_hora: despues(145) })
+  return eventos
+}
+
 /** Encargos cancelados que obligan a derivar de nuevo (Figma 390-8582). */
 const CANCELADOS: Record<number, { codigo: string; motivo: string }> = {
   32: { codigo: 'ENC-2026-118', motivo: 'la cuadrilla B no tiene escalera.' },
@@ -131,7 +162,17 @@ export function incidenciaSimulada(id: number, ahora: number = Date.now()): Inci
   const resumen = incidenciasSimuladas(ahora).find((i) => i.id === id)
   if (!resumen) return null
   const detalle = DETALLES[id] ?? { zona: null, descripcion: `${resumen.tipo} en ${resumen.espacio}.`, ejemplar: null, reportado_por: 'Personal de campo', impacto: null }
-  return { ...resumen, ...detalle, foto_url: null, requerimiento: REQUERIMIENTOS[id] ?? null, encargo_cancelado: CANCELADOS[id] ?? null, ...cambios.get(id) }
+  return {
+    ...resumen,
+    ...detalle,
+    foto_url: null,
+    requerimiento: REQUERIMIENTOS[id] ?? null,
+    encargo_cancelado: CANCELADOS[id] ?? null,
+    atencion: atencionSimulada(id, ahora),
+    cierre: id === 34 ? { minutos: 145, avisado_a: 'Ana Q.' } : null,
+    historial: historialSimulado(resumen),
+    ...cambios.get(id),
+  }
 }
 
 export function simularObtenerIncidencia(id: number, signal?: AbortSignal): Promise<IncidenciaDetalle> {
@@ -197,5 +238,35 @@ export function simularRequerimiento(id: number, cuerpo: NuevoRequerimiento): Pr
     const incidencia = incidenciaSimulada(id)
     if (!incidencia) throw errorNoEncontrado()
     return incidencia
+  })
+}
+
+export function simularCerrar(id: number): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const actual = incidenciaSimulada(id)
+    if (!actual) throw errorNoEncontrado()
+    if (!actual.atencion?.evidencias.length) throw new ErrorApi(409, 'sin-evidencia', 'Para cerrar hace falta la evidencia.')
+    const minutos = Math.round((Date.now() - Date.parse(actual.fecha_registro)) / 60_000)
+    cambios.set(id, {
+      ...cambios.get(id),
+      estado: 'Cerrada',
+      fecha_cierre: new Date().toISOString(),
+      cierre: { minutos, avisado_a: actual.reportado_por },
+      historial: [{ texto: 'Cerrada · Robert G.', fecha_hora: new Date().toISOString() }, ...(actual.historial ?? [])],
+    })
+    return incidenciaSimulada(id) ?? actual
+  })
+}
+
+export function simularDevolver(id: number): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const actual = incidenciaSimulada(id)
+    if (!actual) throw errorNoEncontrado()
+    cambios.set(id, {
+      ...cambios.get(id),
+      estado: 'EnAtencion',
+      historial: [{ texto: 'Devuelta a En atención · Robert G.', fecha_hora: new Date().toISOString() }, ...(actual.historial ?? [])],
+    })
+    return incidenciaSimulada(id) ?? actual
   })
 }

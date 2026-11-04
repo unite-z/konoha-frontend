@@ -11,6 +11,8 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
   - **Clasificada por personal propio:** «Encargo a un capataz» (`TarjetaEncargo.tsx`, 389-7502, AV-277). Lleva el capataz libre ese día, el espacio, la actividad, el plazo (por defecto mañana, RN-019), lo que se incluye y «Avisar al capataz». Si ninguna cuadrilla tiene hueco, el capataz queda en error con la carga de cada cuadrilla y «Reprogramar plazo» (394-8975).
   - **Clasificada por la vía tercerizada:** «Requerimiento a un proveedor» (`TarjetaRequerimiento.tsx`, 389-7706, AV-278). Lleva el proveedor, el contrato vigente, el servicio, el tipo de atención (por defecto extraordinaria) y, con ejemplar, «Crear también la poda del ejemplar». Si el proveedor no tiene contrato, avisa de que va como extraordinaria con orden de servicio (389-7903).
   - **Encargo cancelado:** un aviso con el encargo y el motivo, y «Derivar de nuevo» (`TarjetaDerivarDeNuevo.tsx`, 390-8582), que abre el encargo o el requerimiento.
+  - **Atendida:** «Revisar atención» (`TarjetaRevisarAtencion.tsx`, 390-8008, AV-285). Muestra quién la atendió y cuándo, el encargo, la evidencia y las observaciones, con «Devolver» y «Cerrar incidencia». Sin evidencia no se puede cerrar (390-8205). «Devolver» pide observaciones y la vuelve a En atención (390-8390).
+  - **Cerrada:** el tiempo de cierre, la evidencia y a quién se avisó (`TarjetaCerrada.tsx`). A la izquierda, el historial de transiciones, con «Sistema» en las automáticas (`HistorialIncidencia.tsx`, 390-7811).
   - **Derivada a tercerizado:** el avance del requerimiento de MOD-05 (`TarjetaSeguimientoRequerimiento.tsx`, 394-9194). Muestra los pasos requerimiento, orden de compra, informe del proveedor y conformidad, con su fecha o «pendiente».
 
   Lógica en `detalleIncidencia.ts`, con prueba.
@@ -19,7 +21,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 
 | Qué | Dónde |
 |---|---|
-| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278) |
+| Servicios | `services/api/incidencias.ts` (base prevista `/api/v1/planificacion/incidencias/`): `listarIncidencias`, `anotarCausaRetraso`, `listarCapatacesDisponibles` y `reasignarIncidencia` (AV-280), `obtenerIncidencia`, `clasificarIncidencia`, `descartarIncidencia`, `listarInspectores` y `solicitarInspeccion` (AV-274 y AV-276), `listarActividadesEncargo` y `crearEncargo` (AV-277), `listarProveedoresIncidencia` y `crearRequerimiento` (AV-278), `cerrarIncidencia` y `devolverIncidencia` (AV-279) |
 | Tipos | `types/incidencias.ts` (contrato de AV-274 y AV-280) |
 | Permisos | hasta AV-281, el de Planificación (`PLA.PLANIFICACION.CONSULTAR`) |
 | Rutas | `RUTAS_INCIDENCIAS` (prefijo `/incidencias`) y `rutaIncidencia(id)` |

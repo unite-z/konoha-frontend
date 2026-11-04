@@ -67,6 +67,26 @@ export interface IncidenciaDetalle extends IncidenciaResumen {
   requerimiento?: RequerimientoIncidencia | null
   /** El último encargo interno se canceló y hay que derivarla de nuevo (AV-277, Figma 390-8582). */
   encargo_cancelado?: { codigo: string; motivo: string } | null
+  /** Atendida: quién y cuándo, el encargo y la evidencia que dejó (AV-279, Figma 390-8008). */
+  atencion?: AtencionIncidencia | null
+  /** Cerrada: minutos desde el registro hasta el cierre y a quién se avisó (AV-279, Figma 390-7811). */
+  cierre?: { minutos: number; avisado_a: string | null } | null
+  /** Transiciones, de la más reciente a la más antigua; «Sistema» en las automáticas. */
+  historial?: EventoIncidencia[]
+}
+
+export interface AtencionIncidencia {
+  atendida_por: string
+  atendida_en: InstanteIso
+  encargo_codigo: string | null
+  /** Fotos de la evidencia (`url` nula mientras no haya almacén de archivos). */
+  evidencias: { id: number; url: string | null }[]
+}
+
+export interface EventoIncidencia {
+  /** «Atendida · Sistema (encargo terminado)». */
+  texto: string
+  fecha_hora: InstanteIso
 }
 
 export type EstadoPaso = 'Hecho' | 'EnCurso' | 'Pendiente'
@@ -135,4 +155,9 @@ export interface NuevoRequerimiento {
   tipo_atencion: TipoAtencion
   /** Crear también la poda del ejemplar (si lo hay). */
   crear_poda: boolean
+}
+
+/** Cuerpo de `POST incidencias/{id}/devolver/` (AV-279): vuelve a En atención con observaciones obligatorias. */
+export interface Devolucion {
+  observaciones: string
 }
