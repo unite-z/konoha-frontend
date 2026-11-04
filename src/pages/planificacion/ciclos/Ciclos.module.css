@@ -1,0 +1,19 @@
+/* Ciclos (MOD-03, AV-269): solo layout; la tabla es TablaDatos. */
+
+/* Avance: barra y porcentaje en la misma celda (Figma «Tabla · celda», Avance). */
+.avance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 8rem;
+}
+
+.avance > :first-child {
+  flex: 1;
+}
+
+.porcentaje {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}

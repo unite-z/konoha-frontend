@@ -35,6 +35,7 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
+import CiclosPage from '../pages/planificacion/ciclos/CiclosPage'
 import ResumenPlanificacionPage from '../pages/planificacion/resumen/ResumenPlanificacionPage'
 import ServiciosPeriodicosPage from '../pages/planificacion/ServiciosPeriodicosPage'
 import CoberturasPage from '../pages/inventario/CoberturasPage'
@@ -170,6 +171,7 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to={RUTAS_PLANIFICACION.resumen} replace /> },
               { path: RUTAS_PLANIFICACION.resumen, element: <ResumenPlanificacionPage /> }, // RF-PLA-008 y 009
               { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioPage /> }, // HU-MOD03-003 y 005, RF-PLA-003 y 007
+              { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
               { path: RUTAS_PLANIFICACION.configuracion, element: <ServiciosPeriodicosPage /> }, // HU-MOD03-001 y 002
               { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },

@@ -52,7 +52,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [
       { texto: 'Resumen', icono: 'dashboard', ruta: RUTAS_PLANIFICACION.resumen },
       { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
-      { texto: 'Ciclos', icono: 'list' }, // AV-269
+      { texto: 'Ciclos', icono: 'list', ruta: RUTAS_PLANIFICACION.ciclos },
       { texto: 'Configuración', icono: 'settings', ruta: RUTAS_PLANIFICACION.configuracion },
     ],
   },
