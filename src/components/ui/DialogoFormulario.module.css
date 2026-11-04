@@ -75,11 +75,14 @@
   flex: 1;
 }
 
+/* `.dialogo.lateral`: gana a la regla móvil de `.dialogo`, que va después. */
 @media (max-width: 40rem) {
-  .lateral {
+  .dialogo.lateral {
     --dialogo-ancho: 100vw;
     width: 100vw;
+    max-width: none; /* el navegador limita el ancho de <dialog> por defecto */
     height: 100vh;
+    max-height: none;
     margin: 0;
     border-radius: 0;
   }
