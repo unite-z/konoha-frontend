@@ -5,6 +5,7 @@ import CampoFormulario from '../../components/ui/CampoFormulario'
 import Selector from '../../components/ui/Selector'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
+import ExportarExcel from '../../components/core/ExportarExcel'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
 import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '../../hooks/useConsulta'
@@ -27,7 +28,7 @@ export default function ParticipantesPage() {
   const cuadrillas=useConsulta('filtro-cuadrillas',signal=>todosCampo<CuadrillaCampo>('cuadrillas/',{},signal))
   const [actual,setActual]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
-    <AccionesPagina>{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
+    <AccionesPagina><ExportarExcel listado="actividades" />{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
     <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
     <Tarjeta>

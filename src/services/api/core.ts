@@ -169,6 +169,16 @@ export function confirmarImportacion(id: number): Promise<Importacion> {
   return solicitarCore(`importaciones/${id}/confirmar/`, { metodo: 'POST' })
 }
 
+// --- Exportación a Excel (RF-T-011) ------------------------------------------------------------------------
+
+/** Listados que se exportan a Excel. Incidencias se añade cuando exista su módulo (hoy el backend responde 409). */
+export type ListadoExportable = 'actividades' | 'atenciones' | 'ejemplares'
+
+/** `GET exportaciones/{tipo}/`: el `.xlsx` del listado, con los datos autorizados (RF-T-011). */
+export function exportarListado(listado: ListadoExportable): Promise<Blob> {
+  return descargarCore(`exportaciones/${listado}/`)
+}
+
 export function descargarAdjunto(id: number): Promise<Blob> {
   return descargarCore(`adjuntos/${id}/contenido/`)
 }
