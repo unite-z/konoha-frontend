@@ -70,3 +70,13 @@ export function obtenerPropuesta(servicioId: number, signal?: AbortSignal) {
 export function crearProgramacion(cuerpo: NuevaProgramacion) {
   return solicitarPlanificacion<Programacion>('programaciones/', { metodo: 'POST', cuerpo })
 }
+
+export type CambioEstadoCiclo = 'inicio' | 'fin' | 'cancelacion'
+
+/**
+ * `POST programaciones/{id}/{inicio|fin|cancelacion}/` (solo jefe): Programada a En curso, En curso a Completada o
+ * Programada a Cancelada, con la fecha real (hoy si no se indica). 409 si el estado actual no lo permite.
+ */
+export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?: FechaIso) {
+  return solicitarPlanificacion<Programacion>(`programaciones/${id}/${cambio}/`, { metodo: 'POST', cuerpo: fecha ? { fecha } : {} })
+}

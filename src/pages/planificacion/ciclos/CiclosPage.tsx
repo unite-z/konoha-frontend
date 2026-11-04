@@ -1,5 +1,6 @@
 // RF-PLA-004 y CU-007 · Ciclos (AV-269, Figma «Ciclos» 346-1032)
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import BarraAvance from '@/components/ui/BarraAvance'
 import { BotonEnlace } from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
@@ -10,7 +11,7 @@ import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaCiclo } from '@/router/rutasApp'
 import { listarProgramaciones } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { Programacion } from '@/types/planificacion'
@@ -22,6 +23,7 @@ import { PESTANAS_CICLOS, avanceCiclo, ciclosDePestana, contadoresCiclos, ordena
 
 export default function CiclosPage() {
   usePaginaActual('Ciclos', [MIGAS_PLANIFICACION.planificacion, { texto: 'Ciclos' }])
+  const navegar = useNavigate()
   const hoy = hoyLima()
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   const [pestana, setPestana] = useState<PestanaCiclos>('todos')
@@ -86,6 +88,7 @@ export default function CiclosPage() {
           columnas={columnas}
           filas={filas}
           claveFila={(c) => String(c.id)}
+          onFilaClick={(c) => void navegar(rutaCiclo(c.id))}
           estado={!consulta.datos ? 'cargando' : 'exito'}
           vacio={{ titulo: 'Sin ciclos en esta pestaña', descripcion: 'Los ciclos que se programen aparecerán aquí.' }}
         />

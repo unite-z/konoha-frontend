@@ -143,6 +143,11 @@ export const RUTAS_PLANIFICACION_ANTIGUAS = {
   restricciones: `${BASE_PLANIFICACION}/calendario-restricciones`,
 } as const
 
+/** Detalle de un ciclo (AV-269). */
+export function rutaCiclo(id: number): string {
+  return `${RUTAS_PLANIFICACION.ciclos}/${id}`
+}
+
 /** `true` si la ruta pertenece a MOD-03. */
 export function esRutaPlanificacion(ruta: string): boolean {
   return ruta === BASE_PLANIFICACION || ruta.startsWith(`${BASE_PLANIFICACION}/`)
@@ -150,6 +155,7 @@ export function esRutaPlanificacion(ruta: string): boolean {
 
 export const MIGAS_PLANIFICACION = {
   planificacion: { texto: 'Planificación', ruta: RUTAS_PLANIFICACION.resumen },
+  ciclos: { texto: 'Ciclos', ruta: RUTAS_PLANIFICACION.ciclos },
 } satisfies Record<string, Miga>
 
 export const MIGAS_TERCERIZADOS = {
