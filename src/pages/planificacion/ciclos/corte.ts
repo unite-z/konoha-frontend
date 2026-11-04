@@ -11,6 +11,11 @@ import { diasDelPeriodo } from '../calendario/programarCiclo'
 import { diaFigma, fechaNumerica, sumarDias } from '../resumen/resumenPlanificacion'
 
 /** El corte de césped es el único servicio con ruta de jardines (RF-COR-001). */
+/** «1 jardín» o «3 jardines». */
+export function jardines(n: number): string {
+  return n === 1 ? '1 jardín' : `${n} jardines`
+}
+
 export function esCorte(servicio: string): boolean {
   return servicio.toLowerCase().startsWith('corte')
 }
@@ -114,7 +119,7 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
     {
       etiqueta: 'Avance de la ruta',
       valor: `${avance.porcentaje} %`,
-      contexto: `${avance.cortados} de ${avance.total} jardines`,
+      contexto: `${avance.cortados} de ${jardines(avance.total)}`,
       nota: completa ? 'Ruta completa' : marca.texto,
       notaAviso: !completa && marca.desfasada,
     },
@@ -142,7 +147,7 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
 /** Indicador del avance de un corte que aún no empezó (Figma 370-3811): «0 %», «0 de 45 jardines». */
 export function indicadorAvanceProgramado(corte: CicloCorte): IndicadorCorte {
   const avance = avanceRuta(corte.jardines)
-  return { etiqueta: 'Avance de la ruta', valor: `${avance.porcentaje} %`, contexto: `${avance.cortados} de ${avance.total} jardines`, nota: 'Sin marcas todavía' }
+  return { etiqueta: 'Avance de la ruta', valor: `${avance.porcentaje} %`, contexto: `${avance.cortados} de ${jardines(avance.total)}`, nota: 'Sin marcas todavía' }
 }
 
 /** La ruta está completa: ya se puede registrar la limpieza y cerrar el ciclo (RF-COR-006). */

@@ -38,7 +38,7 @@ import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { rangoCiclos } from './ciclos'
-import { avanceRuta, esCorte, indicadorAvanceProgramado, indicadoresCorte, rutaCompleta } from './corte'
+import { avanceRuta, esCorte, indicadorAvanceProgramado, indicadoresCorte, jardines, rutaCompleta } from './corte'
 import DialogoInterrupcion from './DialogoInterrupcion'
 import PestanasCorte from './PestanasCorte'
 import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
@@ -215,7 +215,7 @@ export default function CicloDetallePage() {
   usePaginaActual(
     ciclo ? [ciclo.servicio, ciclo.codigo].filter(Boolean).join(' · ') : 'Ciclo',
     [MIGAS_PLANIFICACION.ciclos, { texto: ciclo ? (ciclo.codigo ?? ciclo.servicio) : 'Ciclo' }],
-    ciclo ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${corte.datos.jardines.length} jardines`].filter(Boolean).join(' · ') : undefined,
+    ciclo ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${jardines(corte.datos.jardines.length)}`].filter(Boolean).join(' · ') : undefined,
     // En móvil (Figma 353-2242): el código en la barra con la flecha a Ciclos, y el servicio como encabezado.
     {
       movil: ciclo
