@@ -11,7 +11,7 @@
  */
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import GraficoAgrupado from '../../../components/reportes-indicadores/graficos/GraficoAgrupado'
 import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'

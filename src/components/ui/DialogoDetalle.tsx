@@ -1,10 +1,10 @@
 /**
- * DialogoDetalle: diálogo modal de solo lectura (Guía Web 5.10), con el mismo comportamiento que
- * DialogoFormulario: `<dialog>` nativo con `showModal()`, Esc cierra y el foco vuelve al botón que lo abrió.
- * En móvil ocupa toda la pantalla.
+ * DialogoDetalle: «Diálogo · detalle» del sistema (DESIGN.md, 4.1). Modal de solo lectura con el mismo
+ * comportamiento que DialogoFormulario: `<dialog>` nativo con `showModal()`, Esc cierra y el foco vuelve al
+ * botón que lo abrió. En móvil ocupa toda la pantalla.
  */
 import { useEffect, useId, useRef, type ReactNode } from 'react'
-import Boton from '../ui/Boton'
+import Boton from './Boton'
 import estilos from './DialogoDetalle.module.css'
 
 export interface DialogoDetalleProps {

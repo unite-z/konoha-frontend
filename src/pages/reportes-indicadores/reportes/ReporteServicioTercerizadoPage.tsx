@@ -12,7 +12,7 @@
 import { useMemo, useState } from 'react'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
 import BotonExportar from '../../../components/reportes-indicadores/BotonExportar'
-import DialogoDetalle from '../../../components/reportes-indicadores/DialogoDetalle'
+import DialogoDetalle from '../../../components/ui/DialogoDetalle'
 import { AYUDA_CATALOGO_INCOMPLETO, MOTIVO_CATALOGO_NO_DISPONIBLE } from '../../../components/reportes-indicadores/useCatalogosFiltros'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
 import Boton from '../../../components/ui/Boton'
