@@ -8,11 +8,14 @@
  */
 import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
-import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { Link } from 'react-router'
+import Boton from '@/components/ui/Boton'
 import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
 import Casilla from '@/components/ui/Casilla'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import Estado from '@/components/ui/Estado'
+import Icono from '@/components/ui/Icono'
 import Selector from '@/components/ui/Selector'
 import SelectorBuscable from '@/components/ui/SelectorBuscable'
 import { useConsulta } from '@/hooks/useConsulta'
@@ -25,7 +28,8 @@ import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import { validarRestriccion, type BorradorRestriccion, type ErroresRestriccion } from '@/utils/validacionPlanificacion'
 import { rangoCiclos } from '../ciclos/ciclos'
-import { EFECTO_RESTRICCION, periodoRestriccion } from '../resumen/resumenPlanificacion'
+import { EFECTO_RESTRICCION } from '../resumen/resumenPlanificacion'
+import { textoVentana } from './programarCiclo'
 import estilos from './Calendario.module.css'
 import { DIAS_REPETICION, ciclosAfectados, duracionRestriccion, errorRepeticion, fechasDeRepeticion, textoRepeticion } from './nuevaRestriccion'
 
@@ -66,6 +70,11 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
   const { desde, hasta: hastaCiclos } = rangoCiclos(hoyLima())
   const ciclos = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hastaCiclos, signal))
   const tipo = tipos.datos?.find((t) => String(t.id) === borrador.tipo)
+  // Parte del tipo; el jefe la puede cambiar en esta restricción (AV-366).
+  const [ruidososElegido, setRuidososElegido] = useState<boolean | null>(null)
+  const soloRuidosos = ruidososElegido ?? tipo?.aplica_servicios_ruidosos ?? false
+  const setSoloRuidosos = (valor: boolean) => setRuidososElegido(valor)
+  const [duplicado, setDuplicado] = useState(false)
 
   const fechasValidas = /^\d{4}-\d{2}-\d{2}$/.test(borrador.fechaInicio) && /^\d{4}-\d{2}-\d{2}$/.test(borrador.fechaFin)
   const inicios = !fechasValidas ? [] : repite && dias.length > 0 && hasta ? fechasDeRepeticion(borrador.fechaInicio, hasta, dias) : [borrador.fechaInicio]
@@ -73,10 +82,10 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
   const ruidosos = new Set(servicios.filter((s) => s.es_ruidoso).map((s) => s.id))
   const afectados =
     tipo && tipo.efecto !== 'Favorable'
-      ? ciclosAfectados(ciclos.datos ?? [], inicios, duracion, tipo.aplica_servicios_ruidosos, (id) => ruidosos.has(id))
+      ? ciclosAfectados(ciclos.datos ?? [], inicios, duracion, soloRuidosos, (id) => ruidosos.has(id))
       : []
 
-  async function guardar() {
+  async function guardar(forzar = false) {
     if (enCurso.current) return
     const { errores: locales, entrada } = validarRestriccion(borrador)
     const repeticion = repite ? errorRepeticion(borrador.fechaInicio, hasta, dias) : undefined
@@ -92,10 +101,19 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
           ...entrada,
           ...(lugar ? { area_verde_id: lugar.id } : {}),
           ...(repite ? { recurrencia: { dias_semana: [...dias].sort(), hasta } } : {}),
+          ...(tipo ? { aplica_servicios_ruidosos: soloRuidosos } : {}),
+          ...(forzar ? { forzar: true } : {}),
         }),
       )
     } catch (causa) {
       const fallo = aErrorApi(causa)
+      // AV-257: otra restricción con el mismo tipo, fecha y lugar. Se pregunta y se puede guardar igualmente.
+      if (fallo.codigo === 'posible-duplicado') {
+        setDuplicado(true)
+        enCurso.current = false
+        setEnviando(false)
+        return
+      }
       const delServidor: Errores = {}
       for (const [campoApi, mensajes] of Object.entries(fallo.errores_campo)) {
         const campo = CAMPOS_API[campoApi]
@@ -119,7 +137,16 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
   )
   const nivel = tipo ? EFECTO_RESTRICCION[tipo.efecto] : null
 
+  const resumenDuplicado = [
+    borrador.descripcion.trim() || tipo?.nombre,
+    repite && dias.length > 0 && hasta ? `${textoRepeticion(dias, inicios.length).split(' · ')[0].toLowerCase()} hasta el ${hasta.slice(8, 10)}/${hasta.slice(5, 7)}` : fechasValidas ? textoVentana({ inicio: borrador.fechaInicio, fin: borrador.fechaFin }) : null,
+    lugar ? lugar.nombre : 'todo el campus',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
+    <>
     <DialogoFormulario
       abierto
       ancho="lateral"
@@ -128,6 +155,7 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
       enviando={enviando}
       hayCambios={JSON.stringify(borrador) !== JSON.stringify(inicial) || Boolean(lugar) || repite}
       error={error ?? (tipos.estado === 'error' ? { titulo: 'No se pudieron cargar los tipos', detalle: tipos.error?.detalle ?? '' } : null)}
+      conObligatorios={false}
       onEnviar={() => void guardar()}
       onCerrar={onCerrar}
     >
@@ -139,7 +167,10 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
           valor={borrador.tipo}
           opcionTodos="Elige un tipo"
           opciones={(tipos.datos ?? []).map((t) => ({ valor: String(t.id), texto: t.nombre }))}
-          onCambiar={(valor) => cambiar('tipo', valor)}
+          onCambiar={(valor) => {
+            cambiar('tipo', valor)
+            setRuidososElegido(null)
+          }}
           error={errores.tipo}
           disabled={enviando}
         />
@@ -150,7 +181,6 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
           </div>
         )}
       </div>
-      {tipo?.aplica_servicios_ruidosos && <p className={estilos.detalle}>Este tipo solo afecta a los servicios ruidosos.</p>}
 
       <div className={estilos.fechasPanel}>
         {fecha('fechaInicio', 'Desde')}
@@ -160,7 +190,6 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
       <SelectorBuscable<AreaVerde>
         id="restriccion-lugar"
         etiqueta="Lugar"
-        ayuda="Sin lugar, la restricción es de todo el campus."
         valor={lugar}
         claveDe={(a) => a.id}
         textoDe={(a) => a.nombre}
@@ -173,12 +202,12 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
       {(!conHorario || !conNota) && (
         <div className={estilos.accionesOpcionales}>
           {!conHorario && (
-            <Boton variante="fantasma" compacto icono="plus" onClick={() => setConHorario(true)}>
+            <Boton variante="fantasma" compacto icono="plus" className={estilos.enlaceAccion} onClick={() => setConHorario(true)}>
               Añadir franja horaria
             </Boton>
           )}
           {!conNota && (
-            <Boton variante="fantasma" compacto icono="plus" onClick={() => setConNota(true)}>
+            <Boton variante="fantasma" compacto icono="plus" className={estilos.enlaceAccion} onClick={() => setConNota(true)}>
               Añadir nota
             </Boton>
           )}
@@ -194,45 +223,85 @@ export default function PanelNuevaRestriccion({ fechaInicial, servicios, onCerra
         <AreaTexto id="restriccion-descripcion" etiqueta="Nota" maxLength={200} value={borrador.descripcion} onChange={(e) => cambiar('descripcion', e.target.value)} error={errores.descripcion} disabled={enviando} />
       )}
 
+      {/* Como en Figma 364-2570: «Solo servicios ruidosos» parte del tipo y se puede cambiar (AV-366); la zona de alta
+          actividad aún no tiene requisito ni ticket. */}
+      <Casilla etiqueta="Solo servicios ruidosos" marcada={soloRuidosos} onCambiar={setSoloRuidosos} disabled={enviando || !tipo} />
+      <div className={estilos.proximamente}>
+        <Casilla etiqueta="Zona de alta actividad" marcada={false} onCambiar={() => {}} disabled />
+        <Estado tono="neutro" texto="Próximamente" punto={false} />
+      </div>
       <Casilla etiqueta="Se repite" marcada={repite} onCambiar={setRepite} disabled={enviando} />
       {repite && (
         <div className={estilos.bloqueAgenda}>
-          <fieldset className={estilos.diasRepeticion} aria-describedby={errores.dias ? 'restriccion-dias-error' : undefined}>
-            <legend className={estilos.detalle}>Días de la semana</legend>
-            {DIAS_REPETICION.map((d) => (
-              <Casilla
-                key={d.valor}
-                etiqueta={d.nombre}
-                marcada={dias.includes(d.valor)}
-                onCambiar={(marcada) => setDias((previos) => (marcada ? [...previos, d.valor] : previos.filter((x) => x !== d.valor)))}
-                disabled={enviando}
-              />
-            ))}
-          </fieldset>
+          <div className={estilos.repeticion}>
+            <fieldset className={estilos.diasRepeticion} aria-describedby={errores.dias ? 'restriccion-dias-error' : undefined}>
+              <legend className="sr-only">Días de la semana</legend>
+              {DIAS_REPETICION.map((d) => {
+                const elegido = dias.includes(d.valor)
+                return (
+                  <Boton
+                    key={d.valor}
+                    variante={elegido ? 'primario' : 'secundario'}
+                    compacto
+                    className={estilos.diaRepeticion}
+                    aria-pressed={elegido}
+                    deshabilitado={enviando}
+                    onClick={() => setDias((previos) => (elegido ? previos.filter((x) => x !== d.valor) : [...previos, d.valor]))}
+                  >
+                    <span aria-hidden="true">{d.corto}</span>
+                    <span className="sr-only">{d.nombre}</span>
+                  </Boton>
+                )
+              })}
+            </fieldset>
+            <CampoFormulario id="restriccion-hasta" etiqueta="Hasta" obligatorio type="date" min={borrador.fechaInicio} value={hasta} onChange={(e) => setHasta(e.target.value)} error={errores.hasta} disabled={enviando} />
+          </div>
           {errores.dias && (
             <p id="restriccion-dias-error" className={estilos.errorRepeticion}>
               {errores.dias}
             </p>
           )}
-          <CampoFormulario id="restriccion-hasta" etiqueta="Se repite hasta" obligatorio type="date" min={borrador.fechaInicio} value={hasta} onChange={(e) => setHasta(e.target.value)} error={errores.hasta} disabled={enviando} />
           {dias.length > 0 && inicios.length > 0 && <p className={estilos.detalle}>{textoRepeticion(dias, inicios.length)}</p>}
         </div>
       )}
 
       {afectados.length > 0 && (
-        <AvisoEnLinea tono="advertencia" titulo={afectados.length === 1 ? 'Coincide con 1 ciclo programado' : `Coincide con ${afectados.length} ciclos programados`}>
-          <ul className={estilos.listaAfectados}>
+        <>
+          <AvisoEnLinea tono="advertencia" titulo={afectados.length === 1 ? 'Coincide con 1 ciclo programado' : `Coincide con ${afectados.length} ciclos programados`}>
+            <ul className={estilos.listaAfectados}>
+              {afectados.map((c) => (
+                <li key={c.id}>
+                  {c.servicio} · {textoVentana({ inicio: c.fecha_inicio_prevista, fin: c.fecha_fin_prevista })}
+                </li>
+              ))}
+            </ul>
+          </AvisoEnLinea>
+          {/* «Revisar ciclo ›» bajo el aviso, como en Figma; con varios ciclos, uno por ciclo. */}
+          <div className={estilos.accionesOpcionales}>
             {afectados.map((c) => (
-              <li key={c.id}>
-                {c.servicio} · {periodoRestriccion(c.fecha_inicio_prevista, c.fecha_fin_prevista)}{' '}
-                <BotonEnlace to={rutaCiclo(c.id)} variante="fantasma" compacto>
-                  Revisar ciclo
-                </BotonEnlace>
-              </li>
+              <Link key={c.id} to={rutaCiclo(c.id)} className={estilos.enlaceRuta}>
+                {afectados.length === 1 ? 'Revisar ciclo' : `Revisar ${c.servicio}`}
+                <Icono nombre="chevron-right" tamano="sm" />
+              </Link>
             ))}
-          </ul>
-        </AvisoEnLinea>
+          </div>
+        </>
       )}
     </DialogoFormulario>
+    {duplicado && (
+      <DialogoConfirmacion
+        abierto
+        titulo="Ya existe una restricción igual"
+        consecuencia={resumenDuplicado}
+        textoConfirmar="Guardar igualmente"
+        cargando={enviando}
+        onConfirmar={() => {
+          setDuplicado(false)
+          void guardar(true)
+        }}
+        onCancelar={() => setDuplicado(false)}
+      />
+    )}
+    </>
   )
 }
