@@ -4,7 +4,7 @@
  */
 import type { TonoEstado } from '@/components/ui/Estado'
 import type { FechaIso } from '@/types/comun'
-import { ESTACIONES, type DuracionEntrada, type DuracionServicio, type Estacion, type FrecuenciaEntrada, type FrecuenciaEstacion, type ServicioPeriodico, type ValoresIniciales } from '@/types/planificacion'
+import { ESTACIONES, type DuracionEntrada, type DuracionServicio, type Estacion, type FrecuenciaEntrada, type FrecuenciaEstacion, type CambioServicio, type ServicioPeriodico, type ValoresIniciales } from '@/types/planificacion'
 import { horaCorta } from '@/utils/planificacion'
 import {
   validarDuracion,
@@ -153,4 +153,22 @@ export function detalleServicio(servicio: ServicioPeriodico): string | null {
   const via = servicio.via === 'Tercerizado' ? 'Tercerizado' : servicio.via === 'PersonalPropio' ? 'Personal propio' : null
   if (via) return servicio.es_ruidoso ? `${via} · ruidoso` : via
   return servicio.es_ruidoso ? 'Ruidoso' : null
+}
+
+const NOMBRE_CAMPO: Record<Exclude<CambioServicio['campo'], 'inicial'>, { texto: string; unidad: string }> = {
+  frecuencia_teorica_dias: { texto: 'Teórica', unidad: 'días' },
+  frecuencia_practica_dias: { texto: 'Práctica', unidad: 'días' },
+  frecuencia_maxima_dias: { texto: 'Máxima', unidad: 'días' },
+  duracion_maxima_dias: { texto: 'Duración', unidad: 'días de servicio' },
+  dias_limpieza: { texto: 'Limpieza', unidad: 'días' },
+  hora_inicio: { texto: 'Hora de inicio', unidad: '' },
+  hora_fin: { texto: 'Hora de fin', unidad: '' },
+}
+
+/** «Duración: 4 → 3 días de servicio», «Máxima en otoño: 50 → 45 días» o «Configuración inicial» (Figma 367-3527). */
+export function textoCambio(cambio: CambioServicio): string {
+  if (cambio.campo === 'inicial') return 'Configuración inicial'
+  const { texto, unidad } = NOMBRE_CAMPO[cambio.campo]
+  const donde = cambio.estacion ? `${texto} en ${cambio.estacion.toLowerCase()}` : texto
+  return `${donde}: ${cambio.anterior ?? 'sin valor'} → ${cambio.nuevo ?? 'sin valor'}${unidad ? ` ${unidad}` : ''}`
 }

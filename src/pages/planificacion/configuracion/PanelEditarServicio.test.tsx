@@ -27,6 +27,10 @@ vi.mock('@/services/api/planificacion', () => ({
     frecuencias: (['Verano', 'Otoño', 'Invierno', 'Primavera'] as const).map((estacion) => ({ estacion, frecuencia_teorica_dias: 90, frecuencia_practica_dias: 90, frecuencia_maxima_dias: 100 })),
     duracion: { duracion_maxima_dias: 1, dias_limpieza: 0, hora_inicio: '06:00', hora_fin: '18:00' },
   }),
+  listarHistorialServicio: async () => [
+    { campo: 'duracion_maxima_dias', estacion: null, anterior: '4', nuevo: '3', fecha_hora: '2026-10-28T09:12:00-05:00', autor: 'Robert G.' },
+    { campo: 'inicial', estacion: null, anterior: null, nuevo: null, fecha_hora: '2026-10-14T11:05:00-05:00', autor: 'Robert G.' },
+  ],
   actualizarFrecuencia: vi.fn(),
   actualizarDuracion: vi.fn(),
 }))
@@ -65,5 +69,15 @@ describe('PanelEditarServicio (Figma 367-3334 y 367-3617)', () => {
     expect(screen.getByText('Solo afecta a los ciclos que se programen a partir de ahora')).toBeTruthy()
     expect(await screen.findByText('1 ciclo en curso ya supera el nuevo máximo')).toBeTruthy()
     expect(screen.getByText('Al guardar se generará una alerta de duración excedida.')).toBeTruthy()
+  })
+
+  it('«Ver historial» abre el historial de cambios del servicio (Figma 367-3527)', async () => {
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Ver historial' }))
+    expect(screen.getByRole('dialog', { name: 'Historial de cambios' })).toBeTruthy()
+    expect(await screen.findByText('Duración: 4 → 3 días de servicio')).toBeTruthy()
+    expect(screen.getByText('28/10/2026 09:12 · Robert G.')).toBeTruthy()
+    expect(screen.getByText('Configuración inicial')).toBeTruthy()
   })
 })

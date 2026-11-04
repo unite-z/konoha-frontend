@@ -2,6 +2,9 @@
  * DialogoDetalle: «Diálogo · detalle» del sistema (DESIGN.md, 4.1). Modal de solo lectura con el mismo
  * comportamiento que DialogoFormulario: `<dialog>` nativo con `showModal()`, Esc cierra y el foco vuelve al
  * botón que lo abrió. En móvil ocupa toda la pantalla.
+ *
+ * `lateral`: panel a la derecha a toda la altura, con X de cierre y línea bajo la cabecera, como «Historial de
+ * cambios» de Figma (367-3527). Entra y sale con la animación lateral.
  */
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import Boton from './Boton'
@@ -15,10 +18,12 @@ export interface DialogoDetalleProps {
   /** Contexto breve bajo el título. */
   descripcion?: ReactNode
   onCerrar: () => void
+  /** Panel lateral (Figma 367-3527) en lugar de diálogo centrado. */
+  lateral?: boolean
   children: ReactNode
 }
 
-export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar, children }: DialogoDetalleProps) {
+export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar, lateral = false, children }: DialogoDetalleProps) {
   const referencia = useRef<HTMLDialogElement>(null)
   const origenFoco = useRef<HTMLElement | null>(null)
   const idTitulo = useId()
@@ -60,7 +65,9 @@ export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar,
   return (
     <dialog
       ref={referencia}
-      className={[estilos.dialogo, animacion.centrado, saliendo ? animacion.saliendo : ''].filter(Boolean).join(' ')}
+      className={[estilos.dialogo, lateral ? estilos.lateral : '', lateral ? animacion.lateral : animacion.centrado, saliendo ? animacion.saliendo : '']
+        .filter(Boolean)
+        .join(' ')}
       aria-labelledby={idTitulo}
       aria-describedby={descripcion ? idDescripcion : undefined}
       onCancel={(evento) => {
@@ -70,13 +77,20 @@ export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar,
     >
       <div className={estilos.marco}>
         <div className={estilos.cabecera}>
-          <h2 id={idTitulo} className={estilos.titulo}>
-            {titulo}
-          </h2>
-          {descripcion && (
-            <div id={idDescripcion} className={estilos.descripcion}>
-              {descripcion}
-            </div>
+          <div>
+            <h2 id={idTitulo} className={estilos.titulo}>
+              {titulo}
+            </h2>
+            {descripcion && (
+              <div id={idDescripcion} className={estilos.descripcion}>
+                {descripcion}
+              </div>
+            )}
+          </div>
+          {lateral && (
+            <Boton variante="fantasma" compacto icono="x" onClick={cerrar}>
+              <span className="sr-only">Cerrar</span>
+            </Boton>
           )}
         </div>
         <div className={estilos.cuerpo}>{abierto && children}</div>

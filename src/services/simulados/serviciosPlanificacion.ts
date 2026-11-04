@@ -3,7 +3,7 @@
  * la vía y el proveedor habitual (todos tercerizados, con el proveedor de demostración según el servicio) y los
  * valores iniciales de la sección para «Usar valores iniciales».
  */
-import { ESTACIONES, type ServicioPeriodico, type ValoresIniciales } from '@/types/planificacion'
+import { ESTACIONES, type CambioServicio, type ServicioPeriodico, type ValoresIniciales } from '@/types/planificacion'
 import { responderSimulado } from './simulacion'
 
 function proveedorDe(nombre: string): string {
@@ -37,4 +37,16 @@ export function valoresInicialesDe(servicio: ServicioPeriodico): ValoresIniciale
 
 export function simularValoresIniciales(servicio: ServicioPeriodico, signal?: AbortSignal): Promise<ValoresIniciales> {
   return responderSimulado(() => valoresInicialesDe(servicio), { signal })
+}
+
+/** Tres cambios del corte de Figma 367-3527: duración 4 a 3, máxima de otoño 50 a 45 y la configuración inicial. */
+export function simularHistorialServicio(signal?: AbortSignal): Promise<CambioServicio[]> {
+  return responderSimulado(
+    () => [
+      { campo: 'duracion_maxima_dias', estacion: null, anterior: '4', nuevo: '3', fecha_hora: '2026-10-28T09:12:00-05:00', autor: 'Robert G.' },
+      { campo: 'frecuencia_maxima_dias', estacion: 'Otoño', anterior: '50', nuevo: '45', fecha_hora: '2026-10-20T16:40:00-05:00', autor: 'Robert G.' },
+      { campo: 'inicial', estacion: null, anterior: null, nuevo: null, fecha_hora: '2026-10-14T11:05:00-05:00', autor: 'Robert G.' },
+    ],
+    { signal },
+  )
 }
