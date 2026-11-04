@@ -59,8 +59,12 @@ export function BarraInferior() {
             className={`${estilos.pestana} ${actual ? estilos.actual : ''}`}
             aria-current={actual ? 'page' : undefined}
           >
-            {seccion.icono && <Icono nombre={seccion.icono} tamano="md" />}
-            <span>{seccion.textoMovil ?? seccion.texto}</span>
+            {seccion.icono && (
+              <span className={estilos.fondo}>
+                <Icono nombre={seccion.icono} tamano="md" />
+              </span>
+            )}
+            <span className={estilos.texto}>{seccion.textoMovil ?? seccion.texto}</span>
           </Link>
         )
       })}

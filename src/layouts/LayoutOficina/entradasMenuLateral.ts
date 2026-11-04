@@ -72,7 +72,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
     prefijos: [PREFIJO_CORTE],
     hijos: [
       { texto: 'Ruta de hoy', icono: 'map-pin', ruta: RUTAS_CORTE.rutaDeHoy },
-      { texto: 'Calendario', icono: 'calendar' },
+      { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_CORTE.calendario },
     ],
   },
   {

@@ -4,9 +4,10 @@
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import type { CalendarioCuadrilla, CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
+import { listarProgramaciones, listarRestricciones } from './planificacion'
 
 /** `GET ciclos/{programacion}/`: ruta con las marcas, interrupciones y limpiezas del corte. */
 export async function obtenerCicloCorte(ciclo: Programacion, signal?: AbortSignal) {
@@ -88,4 +89,16 @@ export async function registrarObservacionJardin(programacionId: number, jardinI
     metodo: 'POST',
     cuerpo: { texto },
   })
+}
+
+/**
+ * `GET calendario-cuadrilla/?desde&hasta` (AV-254, capataz): actividades de su cuadrilla y restricciones del periodo.
+ * Con datos simulados, las programaciones y restricciones de siempre a nombre de «Cuadrilla B».
+ */
+export async function obtenerCalendarioCuadrilla(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal): Promise<CalendarioCuadrilla> {
+  if (DATOS_SIMULADOS) {
+    const [programaciones, restricciones] = await Promise.all([listarProgramaciones(desde, hasta, signal), listarRestricciones(desde, hasta, signal)])
+    return { cuadrilla: 'Cuadrilla B', programaciones, restricciones }
+  }
+  return solicitarPlanificacion<CalendarioCuadrilla>('calendario-cuadrilla/', { parametros: { desde, hasta }, signal })
 }

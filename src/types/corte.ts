@@ -3,6 +3,7 @@
  * `GET planificacion/ciclos/{programacion}/`; hasta que exista, responde `services/simulados/corte.ts` (D9).
  */
 import type { FechaIso } from './comun'
+import type { Programacion, Restriccion } from './planificacion'
 
 export type EstadoJardin = 'Pendiente' | 'Cortado'
 
@@ -105,4 +106,15 @@ export interface RutaDeHoy {
 export interface NuevaMarca {
   /** Hora real del toque (ISO), aunque se envíe después. */
   marcado_en: string
+}
+
+/**
+ * `GET calendario-cuadrilla/?desde&hasta` (AV-254 y AV-252): calendario de solo lectura del capataz, con las
+ * actividades de su cuadrilla y las restricciones del periodo.
+ */
+export interface CalendarioCuadrilla {
+  /** «Cuadrilla B». */
+  cuadrilla: string
+  programaciones: Programacion[]
+  restricciones: Restriccion[]
 }
