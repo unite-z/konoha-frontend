@@ -729,6 +729,28 @@
   }
 }
 
+/* «Programar ciclo» en móvil (Figma 352-2324): proveedor y ventana en una fila, siete días sin letra en la franja. */
+@media (max-width: 767px) {
+  .proveedorVentana {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+  }
+
+  .franja {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .diaFranja:nth-child(n + 8),
+  .letraFranja {
+    display: none;
+  }
+
+  .diaFranja > :last-child {
+    height: var(--space-8);
+    font-size: var(--type-cuerpo-size);
+  }
+}
+
 .movil {
   display: flex;
   flex-direction: column;

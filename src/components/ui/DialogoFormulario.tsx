@@ -202,7 +202,7 @@ export default function DialogoFormulario({
                 Cancelar envío
               </Boton>
             ) : (
-              <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando}>
+              <Boton variante="secundario" onClick={pedirCierre} deshabilitado={enviando} className={estilos.cancelar}>
                 {textoCancelar}
               </Boton>
             )}

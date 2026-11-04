@@ -109,13 +109,16 @@ export function textoDuracion(servicio: ServicioPeriodico | undefined): string |
   return limpieza ? `${total} días: ${maxima} ${de} + ${limpieza} de limpieza` : `${total} ${total === 1 ? 'día' : 'días'} ${de}`
 }
 
-/** Meses que se ofrecen como ventana de un tercerizado: el del inicio propuesto y los dos siguientes. */
-export function mesesVentana(desde: FechaIso): { valor: string; texto: string }[] {
+/**
+ * Meses que se ofrecen como ventana de un tercerizado: el del inicio propuesto y los dos siguientes. `corto` da
+ * «Nov 2026», como el campo estrecho de móvil en Figma (352-2324); en escritorio, «Noviembre 2026».
+ */
+export function mesesVentana(desde: FechaIso, corto = false): { valor: string; texto: string }[] {
   const nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
   const [anio, mes] = desde.split('-').map(Number)
   return [0, 1, 2].map((desplazamiento) => {
     const fecha = new Date(Date.UTC(anio, mes - 1 + desplazamiento, 1))
-    return { valor: fecha.toISOString().slice(0, 7), texto: `${nombres[fecha.getUTCMonth()]} ${fecha.getUTCFullYear()}` }
+    return { valor: fecha.toISOString().slice(0, 7), texto: `${corto ? nombres[fecha.getUTCMonth()].slice(0, 3) : nombres[fecha.getUTCMonth()]} ${fecha.getUTCFullYear()}` }
   })
 }
 

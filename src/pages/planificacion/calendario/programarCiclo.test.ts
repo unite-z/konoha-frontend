@@ -68,6 +68,8 @@ describe('validarProgramacion', () => {
       { valor: '2026-12', texto: 'Diciembre 2026' },
       { valor: '2027-01', texto: 'Enero 2027' },
     ])
+    // En móvil, el campo es estrecho y el mes va abreviado (Figma 352-2324).
+    expect(mesesVentana('2026-11-16', true).map((m) => m.texto)).toEqual(['Nov 2026', 'Dic 2026', 'Ene 2027'])
   })
 })
 
