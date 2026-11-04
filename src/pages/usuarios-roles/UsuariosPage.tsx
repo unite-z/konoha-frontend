@@ -5,13 +5,14 @@
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import Badge from '../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../components/ui/Boton'
+import Tarjeta from '../../components/ui/Tarjeta'
 import Selector, { OPCION_TODOS } from '../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../hooks/usePaginaActual'
+import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_CORE, RUTAS_CORE, rutaDetalleUsuario } from '../../router/rutasApp'
 import { listarUsuarios } from '../../services/api/core'
 import type { CodigoRol, UsuarioConContrasena, UsuarioResumen } from '../../types/core'
@@ -20,6 +21,8 @@ import { formatearFecha, formatearFechaHora, formatearNumero } from '../../utils
 import DialogoContrasenaTemporal from './DialogoContrasenaTemporal'
 import DialogoCuenta from './DialogoCuenta'
 import estilos from './UsuariosRoles.module.css'
+import Estado from '../../components/ui/Estado'
+import { TONO_ESTADO } from '../../components/ui/tonos'
 
 const TITULO = 'Usuarios'
 const POR_PAGINA = 25
@@ -37,7 +40,7 @@ const COLUMNAS: ColumnaTabla<UsuarioResumen>[] = [
     ),
   },
   { clave: 'rol', titulo: 'Rol', render: (u) => u.rol_nombre },
-  { clave: 'estado', titulo: 'Estado', render: (u) => <Badge tono={ESTADO_CUENTA[u.estado].tono} texto={ESTADO_CUENTA[u.estado].texto} /> },
+  { clave: 'estado', titulo: 'Estado', render: (u) => <Estado tono={TONO_ESTADO[ESTADO_CUENTA[u.estado].tono]} texto={ESTADO_CUENTA[u.estado].texto} /> },
   { clave: 'vigencia', titulo: 'Vigencia', render: (u) => (u.fecha_fin_vigencia ? `Hasta ${formatearFecha(u.fecha_fin_vigencia)}` : 'Sin fin') },
   { clave: 'acceso', titulo: 'Último acceso', render: (u) => (u.ultimo_acceso ? formatearFechaHora(u.ultimo_acceso) : 'Nunca') },
   {
@@ -46,7 +49,7 @@ const COLUMNAS: ColumnaTabla<UsuarioResumen>[] = [
     render: (u) => (
       <span className={estilos.badges}>
         {u.destacados.map((d) => (
-          <Badge key={d} tono="advertencia" texto={DESTACADO[d].texto} ayuda={DESTACADO[d].ayuda} />
+          <Estado key={d} tono="aviso" texto={DESTACADO[d].texto} ayuda={DESTACADO[d].ayuda} />
         ))}
       </span>
     ),
@@ -87,42 +90,42 @@ export default function UsuariosPage() {
 
   return (
     <div className={estilos.pagina}>
-      <div className={estilos.barraAcciones}>
-        <p className={estilos.descripcion}>Quién tiene acceso al sistema, con qué rol y cuándo entró por última vez.</p>
-        <div className={estilos.acciones}>
-          <BotonEnlace to={RUTAS_CORE.accesos} variante="secundario">
-            Registro de accesos
-          </BotonEnlace>
-          <Boton onClick={() => setAlta(true)}>Nueva cuenta</Boton>
-        </div>
-      </div>
+      <AccionesPagina>
+        <BotonEnlace to={RUTAS_CORE.accesos} variante="secundario">
+          Registro de accesos
+        </BotonEnlace>
+        <Boton onClick={() => setAlta(true)}>Nueva cuenta</Boton>
+      </AccionesPagina>
+      <p className={estilos.descripcion}>Quién tiene acceso al sistema, con qué rol y cuándo entró por última vez.</p>
 
-      <form className={estilos.barraFiltros} aria-label="Filtrar cuentas" onSubmit={(e) => e.preventDefault()}>
-        <Selector
-          id="usuarios-rol"
-          etiqueta="Rol"
-          valor={filtros.rol}
-          opciones={OPCIONES_ROL}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => establecer({ rol: valor || null, page: null })}
-        />
-        <Selector
-          id="usuarios-estado"
-          etiqueta="Estado"
-          valor={filtros.estado}
-          opciones={OPCIONES_ESTADO}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => establecer({ estado: valor || null, page: null })}
-        />
-        <Selector
-          id="usuarios-vigencia"
-          etiqueta="Vigencia"
-          valor={filtros.vigencia}
-          opciones={[{ valor: 'si', texto: 'Vence en los próximos 7 días' }]}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => establecer({ vigencia: valor || null, page: null })}
-        />
-      </form>
+      <Tarjeta>
+        <form className={estilos.barraFiltros} aria-label="Filtrar cuentas" onSubmit={(e) => e.preventDefault()}>
+          <Selector
+            id="usuarios-rol"
+            etiqueta="Rol"
+            valor={filtros.rol}
+            opciones={OPCIONES_ROL}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => establecer({ rol: valor || null, page: null })}
+          />
+          <Selector
+            id="usuarios-estado"
+            etiqueta="Estado"
+            valor={filtros.estado}
+            opciones={OPCIONES_ESTADO}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => establecer({ estado: valor || null, page: null })}
+          />
+          <Selector
+            id="usuarios-vigencia"
+            etiqueta="Vigencia"
+            valor={filtros.vigencia}
+            opciones={[{ valor: 'si', texto: 'Vence en los próximos 7 días' }]}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => establecer({ vigencia: valor || null, page: null })}
+          />
+        </form>
+      </Tarjeta>
 
       <p className={`${estilos.resumenResultados} cifra`} aria-live="polite">
         {consulta.estado === 'exito' || consulta.estado === 'vacio'

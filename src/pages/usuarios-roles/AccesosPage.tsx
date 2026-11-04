@@ -3,8 +3,8 @@
  * Inicios de sesión correctos y fallidos, bloqueos, accesos denegados y rechazos por falta de permiso.
  * Solo se consulta: la base no admite modificarlo ni borrarlo (RI-35).
  */
-import Badge from '../../components/ui/Badge'
 import Selector, { OPCION_TODOS } from '../../components/ui/Selector'
+import Tarjeta from '../../components/ui/Tarjeta'
 import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
 import { useConsulta } from '../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
@@ -15,6 +15,8 @@ import type { Acceso, ResultadoAcceso } from '../../types/core'
 import { RESULTADO_ACCESO } from '../../utils/etiquetasCore'
 import { formatearFechaHora } from '../../utils/formato'
 import estilos from './UsuariosRoles.module.css'
+import Estado from '../../components/ui/Estado'
+import { TONO_ESTADO } from '../../components/ui/tonos'
 
 const TITULO = 'Registro de accesos'
 
@@ -24,7 +26,7 @@ const COLUMNAS: ColumnaTabla<Acceso>[] = [
   {
     clave: 'resultado',
     titulo: 'Resultado',
-    render: (a) => <Badge tono={RESULTADO_ACCESO[a.resultado].tono} texto={RESULTADO_ACCESO[a.resultado].texto} />,
+    render: (a) => <Estado tono={TONO_ESTADO[RESULTADO_ACCESO[a.resultado].tono]} texto={RESULTADO_ACCESO[a.resultado].texto} />,
   },
   { clave: 'canal', titulo: 'Canal', render: (a) => a.canal },
   { clave: 'detalle', titulo: 'Detalle', multilinea: true, render: (a) => [a.motivo, a.ruta].filter(Boolean).join(' · ') || '—' },
@@ -47,16 +49,18 @@ export default function AccesosPage() {
   return (
     <div className={estilos.pagina}>
       <p className={estilos.descripcion}>Lo que se registra aquí no se puede modificar ni borrar.</p>
-      <form className={estilos.barraFiltros} aria-label="Filtrar accesos" onSubmit={(e) => e.preventDefault()}>
-        <Selector
-          id="accesos-resultado"
-          etiqueta="Resultado"
-          valor={filtros.resultado}
-          opciones={OPCIONES}
-          opcionTodos={OPCION_TODOS}
-          onCambiar={(valor) => establecer({ resultado: valor || null, page: null })}
-        />
-      </form>
+      <Tarjeta>
+        <form className={estilos.barraFiltros} aria-label="Filtrar accesos" onSubmit={(e) => e.preventDefault()}>
+          <Selector
+            id="accesos-resultado"
+            etiqueta="Resultado"
+            valor={filtros.resultado}
+            opciones={OPCIONES}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => establecer({ resultado: valor || null, page: null })}
+          />
+        </form>
+      </Tarjeta>
       <TablaDatos
         titulo={TITULO}
         columnas={COLUMNAS}

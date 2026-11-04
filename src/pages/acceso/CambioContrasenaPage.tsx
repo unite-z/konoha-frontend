@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
+import Tarjeta from '../../components/ui/Tarjeta'
 import Boton from '../../components/ui/Boton'
 import CampoFormulario, { LeyendaObligatorio } from '../../components/ui/CampoFormulario'
 import { aErrorApi } from '../../services/api/cliente'
@@ -68,7 +69,7 @@ export default function CambioContrasenaPage() {
 
   return (
     <main className={estilos.fondo}>
-      <section className={estilos.tarjeta} aria-labelledby="contrasena-titulo">
+      <Tarjeta relleno="amplio" etiquetadaPor="contrasena-titulo" className={estilos.tarjeta}>
         <p className={estilos.marca}>Gestión de Áreas Verdes · Campus PUCP</p>
         <h1 id="contrasena-titulo" className={estilos.titulo}>
           {obligatoria ? 'Define tu contraseña' : 'Cambiar contraseña'}
@@ -125,11 +126,11 @@ export default function CambioContrasenaPage() {
           />
           <div className={estilos.acciones}>
             {obligatoria ? (
-              <Boton variante="terciario" type="button" onClick={() => void cerrarSesion()} deshabilitado={enviando}>
+              <Boton variante="fantasma" type="button" onClick={() => void cerrarSesion()} deshabilitado={enviando}>
                 Cerrar sesión
               </Boton>
             ) : (
-              <Boton variante="terciario" type="button" onClick={() => navegar(-1)} deshabilitado={enviando}>
+              <Boton variante="fantasma" type="button" onClick={() => navegar(-1)} deshabilitado={enviando}>
                 Cancelar
               </Boton>
             )}
@@ -138,7 +139,7 @@ export default function CambioContrasenaPage() {
             </Boton>
           </div>
         </form>
-      </section>
+      </Tarjeta>
     </main>
   )
 }

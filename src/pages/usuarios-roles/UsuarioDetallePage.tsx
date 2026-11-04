@@ -10,8 +10,8 @@
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router'
 import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
+import Tarjeta from '../../components/ui/Tarjeta'
 import AvisoTemporal from '../../components/ui/AvisoTemporal'
-import Badge from '../../components/ui/Badge'
 import Boton from '../../components/ui/Boton'
 import { AreaTexto } from '../../components/ui/CampoFormulario'
 import DialogoConfirmacion from '../../components/ui/DialogoConfirmacion'
@@ -40,6 +40,8 @@ import DialogoCambioRol from './DialogoCambioRol'
 import DialogoContrasenaTemporal from './DialogoContrasenaTemporal'
 import DialogoCuenta from './DialogoCuenta'
 import estilos from './UsuariosRoles.module.css'
+import Estado from '../../components/ui/Estado'
+import { TONO_ESTADO } from '../../components/ui/tonos'
 
 type Accion = 'editar' | 'rol' | 'desactivar' | 'cerrar-sesiones' | 'contrasena' | null
 
@@ -112,7 +114,7 @@ export default function UsuarioDetallePage() {
         </AvisoEnLinea>
       )}
 
-      <section className={estilos.seccion} aria-labelledby="cuenta-datos">
+      <Tarjeta relleno="amplio" etiquetadaPor="cuenta-datos">
         <div className={estilos.barraAcciones}>
           <h2 id="cuenta-datos" className={estilos.tituloSeccion}>
             Datos de la cuenta
@@ -155,7 +157,7 @@ export default function UsuarioDetallePage() {
             { etiqueta: 'Correo', valor: u.correo },
             { etiqueta: 'Teléfono', valor: u.telefono },
             { etiqueta: 'Rol', valor: u.rol_nombre },
-            { etiqueta: 'Estado', valor: <Badge tono={ESTADO_CUENTA[u.estado].tono} texto={ESTADO_CUENTA[u.estado].texto} /> },
+            { etiqueta: 'Estado', valor: <Estado tono={TONO_ESTADO[ESTADO_CUENTA[u.estado].tono]} texto={ESTADO_CUENTA[u.estado].texto} /> },
             { etiqueta: 'Vigencia', valor: u.fecha_fin_vigencia ? `Hasta ${formatearFecha(u.fecha_fin_vigencia)}` : 'Sin fin' },
             { etiqueta: 'Último acceso', valor: u.ultimo_acceso ? formatearFechaHora(u.ultimo_acceso) : 'Nunca' },
             u.debe_cambiar_contrasena && { etiqueta: 'Contraseña', valor: 'Temporal: la cambiará al entrar' },
@@ -164,16 +166,16 @@ export default function UsuarioDetallePage() {
               valor: (
                 <span className={estilos.badges}>
                   {u.destacados.map((d) => (
-                    <Badge key={d} tono="advertencia" texto={DESTACADO[d].texto} ayuda={DESTACADO[d].ayuda} />
+                    <Estado key={d} tono="aviso" texto={DESTACADO[d].texto} ayuda={DESTACADO[d].ayuda} />
                   ))}
                 </span>
               ),
             },
           ]}
         />
-      </section>
+      </Tarjeta>
 
-      <section className={estilos.seccion} aria-labelledby="cuenta-historial">
+      <Tarjeta relleno="amplio" etiquetadaPor="cuenta-historial">
         <h2 id="cuenta-historial" className={estilos.tituloSeccion}>
           Historial de la cuenta
         </h2>
@@ -187,7 +189,7 @@ export default function UsuarioDetallePage() {
           error={{ titulo: 'No pudimos cargar el historial', descripcion: historial.error?.detalle ?? '', onReintentar: historial.reintentar, nivel: 3 }}
           compacta
         />
-      </section>
+      </Tarjeta>
 
       {accion === 'editar' && (
         <DialogoCuenta cuenta={u} onCerrar={() => setAccion(null)} onActualizada={() => actualizado('Datos actualizados')} />

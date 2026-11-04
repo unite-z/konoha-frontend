@@ -6,6 +6,7 @@
  */
 import { useRef, useState } from 'react'
 import { AreaTexto } from '../../components/ui/CampoFormulario'
+import GrupoOpciones from '../../components/ui/GrupoOpciones'
 import DialogoFormulario from '../../components/ui/DialogoFormulario'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
@@ -14,7 +15,6 @@ import { aErrorApi } from '../../services/api/cliente'
 import { cambiarRol, listarRoles } from '../../services/api/core'
 import type { CodigoRol, RolUsuario, UsuarioResumen } from '../../types/core'
 import { validarMotivo } from '../../utils/validacionCore'
-import estilos from './UsuariosRoles.module.css'
 
 export interface DialogoCambioRolProps {
   cuenta: UsuarioResumen
@@ -75,34 +75,24 @@ export default function DialogoCambioRol({ cuenta, onCerrar, onCambiado }: Dialo
       ) : !roles.datos ? (
         <EstadoCarga forma="tabla" filas={4} />
       ) : (
-        <fieldset id="rol-opciones" tabIndex={-1} className={estilos.roles} aria-describedby={errores.rol ? 'rol-error' : undefined}>
-          <legend>Rol *</legend>
-          {roles.datos.map((r) => (
-            <label key={r.codigo} className={estilos.opcionRol} aria-disabled={!r.activo}>
-              <input
-                type="radio"
-                name="rol"
-                value={r.codigo}
-                checked={rol === r.codigo}
-                disabled={!r.activo || enviando}
-                onChange={() => setRol(r.codigo)}
-              />
-              <span>
-                <strong>{r.nombre}</strong>
-                {r.codigo === cuenta.rol && ' (actual)'}
-                <br />
-                <span className={estilos.ayuda}>
-                  {r.activo ? `${r.descripcion}. ${r.permisos.length} permisos.` : 'Previsto para una fase posterior: sin acceso.'}
-                </span>
-              </span>
-            </label>
-          ))}
-          {errores.rol && (
-            <p id="rol-error" role="alert" className={estilos.ayuda}>
-              {errores.rol}
-            </p>
-          )}
-        </fieldset>
+        // `rol-opciones` recibe el foco cuando falta elegir rol (resumen de errores del diálogo).
+        <div id="rol-opciones" tabIndex={-1}>
+          <GrupoOpciones
+            etiqueta="Rol"
+            idBase="rol"
+            obligatorio
+            opciones={roles.datos.map((r) => ({
+              valor: r.codigo,
+              texto: r.codigo === cuenta.rol ? `${r.nombre} (actual)` : r.nombre,
+              descripcion: r.activo ? `${r.descripcion}. ${r.permisos.length} permisos.` : 'Previsto para una fase posterior: sin acceso.',
+              deshabilitada: !r.activo,
+            }))}
+            valor={rol || null}
+            onCambiar={setRol}
+            error={errores.rol}
+            deshabilitado={enviando}
+          />
+        </div>
       )}
       <AreaTexto
         id="rol-motivo"
