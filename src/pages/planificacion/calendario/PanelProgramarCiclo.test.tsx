@@ -8,6 +8,7 @@ import PanelProgramarCiclo from './PanelProgramarCiclo'
 
 const api = vi.hoisted(() => ({
   restricciones: [] as Restriccion[],
+  sinZonas: false,
   propuesta: { estacion: 'Primavera', fecha_inicio: '2026-11-11', fecha_fin: '2026-11-14', conflictos: [], ventana_libre_inicio: '2026-11-16' as string | null },
   crear: vi.fn(async () => ({ id: 9, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-11', fecha_fin_prevista: '2026-11-14' })),
   cancelar: vi.fn(async () => ({})),
@@ -22,13 +23,15 @@ vi.mock('@/services/api/planificacion', () => ({
 }))
 vi.mock('@/services/api/corte', () => ({
   obtenerRutaCorte: async () => ({
-    zonas: [
+    zonas: api.sinZonas
+      ? []
+      : [
       { zona: 'Ciencias', jardines: 16, en_ruta: true },
       { zona: 'Sociales', jardines: 11, en_ruta: true },
       { zona: 'Letras', jardines: 9, en_ruta: true },
       { zona: 'Ingeniería', jardines: 9, en_ruta: true },
       { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
-    ],
+        ],
     fuera_de_frecuencia: { dias_desde_ultimo: 47, maximo_dias: 45 },
   }),
 }))
@@ -103,6 +106,23 @@ describe('PanelProgramarCiclo', () => {
       ventana_mes: '2026-11',
       zonas: ['Ciencias', 'Sociales', 'Letras', 'Ingeniería'],
     })
+  })
+
+  it('sin zonas en MOD-02 programa el corte sin ruta (AV-369)', async () => {
+    api.restricciones = []
+    api.sinZonas = true
+    const usuario = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <PanelProgramarCiclo servicios={[corte]} servicioInicial={1} onCerrar={vi.fn()} onProgramada={vi.fn()} />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText('Fechas propuestas por el sistema')).toBeTruthy()
+    await usuario.selectOptions(screen.getByLabelText(/^Proveedor/), '4')
+    await usuario.click(screen.getByRole('button', { name: 'Programar ciclo' }))
+    await waitFor(() => expect(api.crear).toHaveBeenCalled())
+    expect(api.crear).toHaveBeenCalledWith(expect.objectContaining({ zonas: undefined }))
+    api.sinZonas = false
   })
 
   it('con un tercerizado pide la ventana y avisa bajo «Fin» si el periodo pasa del máximo', async () => {
