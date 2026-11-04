@@ -21,9 +21,9 @@
  */
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
-import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
-import Icono, { type NombreIconoFigma } from '../../components/ui/Icono'
-import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, entradasMenu, puede } from '@/config/permisosCore'
+import Icono, { type NombreIconoFigma } from '@/components/ui/Icono'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
 import UsuarioMenu from './UsuarioMenu'
 import estilos from './MenuLateral.module.css'
