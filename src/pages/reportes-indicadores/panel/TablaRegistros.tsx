@@ -5,7 +5,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
 import { rutaDetalleAtencion } from '../../../router/rutasApp'
 import type {
@@ -18,6 +17,8 @@ import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../utils/forma
 import { insigniaEstadoAtencion, numeroDeDecimal } from '../../../utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
 import { MAXIMO_REGISTROS } from './registros'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 /** Código de la atención con enlace a su ficha de MOD-05 (misma sesión; Guía Web 5.8: «abre la atención»). */
 function enlaceAtencion(fila: { atencion_id: number; codigo: string }): ReactNode {
@@ -28,7 +29,7 @@ const COLUMNAS_ATENCIONES_ESPACIO: ColumnaTabla<FilaAtencionEspacio>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} /> },
+  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
 ]
 
@@ -36,7 +37,7 @@ const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} /> },
+  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
   { clave: 'proveedor', titulo: 'Proveedor', ordenable: true },
 ]
 

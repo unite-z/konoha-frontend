@@ -18,6 +18,7 @@ import type { ResultadoIndicador } from '../../../types/reportesGestion'
 import { formatearNumero } from '../../../utils/formato'
 import { valorTarjeta } from '../../../utils/reportesGestion'
 import { esConteo, gruposDesglose, tieneRegistros } from './desglose'
+import Tarjeta from '../../../components/ui/Tarjeta'
 
 /** Barras visibles antes de «Ver todas». */
 const BARRAS_INICIALES = 10
@@ -62,7 +63,7 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
   }
 
   return (
-    <section className={comunes.superficie} aria-label={`Desglose de ${resultado.indicador.nombre}`}>
+    <Tarjeta etiqueta={`Desglose de ${resultado.indicador.nombre}`}>
       <CabeceraGrafico
         titulo={resultado.indicador.nombre}
         total={valor !== null ? `${valor} ${resultado.indicador.unidad}` : undefined}
@@ -106,11 +107,11 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
           <p className="cifra">
             Mostrando {formatearNumero(visibles.length)} de {formatearNumero(grupo.barras.length)}
           </p>
-          <Boton variante="terciario" onClick={() => setVerTodas((v) => !v)}>
+          <Boton variante="fantasma" onClick={() => setVerTodas((v) => !v)}>
             {verTodas ? 'Ver menos' : `Ver todas (${formatearNumero(grupo.barras.length)})`}
           </Boton>
         </div>
       )}
-    </section>
+    </Tarjeta>
   )
 }

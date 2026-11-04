@@ -43,13 +43,13 @@
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   box-shadow: var(--web-elev-1);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
 .tituloLeyenda {
-  font-weight: var(--type-label-sm-weight);
+  font-weight: var(--type-etiqueta-weight);
   color: var(--color-text-primary);
 }
 
@@ -77,8 +77,8 @@
 .simboloEspacio {
   width: var(--marcador-atencion);
   height: var(--marcador-atencion);
-  background: var(--green-100);
-  border: var(--borde-espacio) solid var(--green-500);
+  background: var(--color-action-subtle);
+  border: var(--borde-espacio) solid var(--color-action-primary);
 }
 
 /* Móvil: un mapa más bajo, para que quepa en pantalla junto al panel de capas. */

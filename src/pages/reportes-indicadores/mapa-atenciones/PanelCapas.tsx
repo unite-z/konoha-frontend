@@ -3,8 +3,8 @@
  * atención con su total, filtro por tipo de uso y resumen de la atención seleccionada (CU-MOD06-003, paso 6),
  * con acceso a la atención y al historial del espacio (paso 7). Presentacional.
  */
-import Badge from '../../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
+import Casilla from '../../../components/ui/Casilla'
 import ListaDescripcion from '../../../components/ui/ListaDescripcion'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
 import { rutaDetalleAtencion } from '../../../router/rutasApp'
@@ -13,6 +13,8 @@ import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../utils/forma
 import type { FilaMapa } from '../../../utils/mapaAtenciones'
 import { insigniaEstadoAtencion, TIPOS_ATENCION } from '../../../utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 export interface PanelCapasProps {
   totales: TotalTipoAtencion[]
@@ -35,7 +37,7 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
     <>
       <div className={estilos.cabeceraSeleccion}>
         <span className="cifra">{fila.codigo}</span>
-        <Badge {...insigniaEstadoAtencion(fila.estado)} />
+        <Estado {...insigniaAEstado(insigniaEstadoAtencion(fila.estado))} />
       </div>
       <ListaDescripcion
         columnas="una"
@@ -56,7 +58,7 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
           Ver atención
         </BotonEnlace>
         <Boton
-          variante="terciario"
+          variante="fantasma"
           deshabilitado={areaVerdeId === null}
           ayudaDeshabilitado="Esta atención no tiene espacio asociado"
           onClick={() => {
@@ -82,17 +84,12 @@ export default function PanelCapas({ totales, visibles, onCambiarVisible, selecc
         {TIPOS_ATENCION.map((tipo) => {
           const total = totales.find((t) => t.tipo_atencion === tipo)?.total
           return (
-            <label key={tipo} className={estilos.casilla}>
-              <input
-                type="checkbox"
-                checked={visibles.has(tipo)}
-                onChange={(evento) => onCambiarVisible(tipo, evento.target.checked)}
-              />
-              <span>
-                {tipo}
-                {total !== undefined && <span className="cifra"> ({formatearNumero(total)})</span>}
-              </span>
-            </label>
+            <Casilla
+              key={tipo}
+              etiqueta={total !== undefined ? `${tipo} (${formatearNumero(total)})` : tipo}
+              marcada={visibles.has(tipo)}
+              onCambiar={(marcada) => onCambiarVisible(tipo, marcada)}
+            />
           )
         })}
         <p className={estilos.ayuda}>Las casillas muestran u ocultan cada tipo en el mapa y en la lista</p>

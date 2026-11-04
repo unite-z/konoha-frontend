@@ -19,7 +19,6 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import { ChipsFiltrosActivos, type FiltroActivo } from '../../../components/ui/ChipsFiltro'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
@@ -56,6 +55,8 @@ import estilosReportes from '../reportes/Reportes.module.css'
 import ListaAtencionesMovil from './ListaAtencionesMovil'
 import PanelCapas from './PanelCapas'
 import estilos from './MapaAtenciones.module.css'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 // MapLibre solo se descarga cuando hay algo que dibujar (Guía Web 8.3).
 const LienzoMapaAtenciones = lazy(() => import('./LienzoMapaAtenciones'))
@@ -100,14 +101,14 @@ const COLUMNAS: ColumnaTabla<FilaMapa>[] = [
   },
   { clave: 'tipo_atencion', titulo: 'Tipo de atención', ordenable: true },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio' },
-  { clave: 'estado', titulo: 'Estado', render: (f) => <Badge {...insigniaEstadoAtencion(f.estado)} /> },
+  { clave: 'estado', titulo: 'Estado', render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true },
   { clave: 'ejemplar_codigo', titulo: 'Ejemplar', render: (f) => f.ejemplar_codigo ?? SIN_VALOR },
   {
     clave: 'con_ubicacion',
     titulo: 'Ubicación',
     render: (f) =>
-      f.con_ubicacion ? <Badge tono="info" texto="En el mapa" /> : <Badge tono="neutral" texto="Sin ubicación" />,
+      f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />,
   },
 ]
 
