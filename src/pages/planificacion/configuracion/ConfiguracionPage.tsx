@@ -15,12 +15,14 @@ import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
+import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import PanelEditarServicio from './PanelEditarServicio'
+import PanelNuevaRestriccion from '../calendario/PanelNuevaRestriccion'
 import SeriesRestricciones from './SeriesRestricciones'
 import { SIN_CONFIGURAR, detalleServicio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia } from './configuracionServicios'
 import { agruparSeries, rangoSeries } from './series'
@@ -37,6 +39,7 @@ export default function ConfiguracionPage() {
   const restricciones = useConsulta(`series:${desde}`, (signal) => listarRestricciones(desde, hasta, signal))
   const [pestana, setPestana] = useState<PestanaConfiguracion>('servicios')
   const [bajas, setBajas] = useState<string[]>([])
+  const [registrando, setRegistrando] = useState(false)
   const [cambios, setCambios] = useState<Record<number, ServicioPeriodico>>({})
   const [editando, setEditando] = useState<ServicioPeriodico | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -100,9 +103,17 @@ export default function ConfiguracionPage() {
   }
 
   const servicios = (consulta.datos ?? []).map((s) => cambios[s.id] ?? s)
-  const series = agruparSeries(restricciones.datos ?? [], hoy).filter((s) => !bajas.includes(s.serie))
+  const series = agruparSeries(restricciones.datos ?? [], hoy).filter((s) => !bajas.includes(s.clave))
   return (
     <>
+      {/* Como en Figma 366-3687, «Nueva restricción» va en la fila del título en la pestaña de las series. */}
+      {pestana === 'series' && puedeEditar && (
+        <AccionesPagina>
+          <Boton variante="primario" onClick={() => setRegistrando(true)}>
+            Nueva restricción
+          </Boton>
+        </AccionesPagina>
+      )}
       <Pestanas
         etiqueta="Configuración"
         pestanas={[
@@ -129,8 +140,8 @@ export default function ConfiguracionPage() {
             cargando={!restricciones.datos}
             puedeEditar={puedeEditar}
             onBaja={(serie) => {
-              setBajas((previas) => [...previas, serie.serie])
-              setAviso(`Serie ${serie.tipo} dada de baja.`)
+              setBajas((previas) => [...previas, serie.clave])
+              setAviso(serie.serie ? `Serie ${serie.descripcion ?? serie.tipo} dada de baja.` : `${serie.descripcion ?? serie.tipo} dada de baja.`)
             }}
           />
         )}
@@ -144,6 +155,18 @@ export default function ConfiguracionPage() {
             actualizar(s)
             setEditando(null)
             setAviso(`Configuración de ${s.nombre} guardada.`)
+          }}
+        />
+      )}
+      {registrando && (
+        <PanelNuevaRestriccion
+          fechaInicial={hoy}
+          servicios={servicios}
+          onCerrar={() => setRegistrando(false)}
+          onCreadas={(creadas) => {
+            setRegistrando(false)
+            restricciones.reintentar()
+            setAviso(creadas.length === 1 ? 'Restricción registrada.' : `${creadas.length} restricciones registradas.`)
           }}
         />
       )}
