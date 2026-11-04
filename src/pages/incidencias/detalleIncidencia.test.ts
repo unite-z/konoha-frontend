@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { incidenciaSimulada } from '@/services/simulados/incidencias'
-import { descripcionTercerizada, textoEjemplar, textoReporto, textoUbicacion, viaSugerida } from './detalleIncidencia'
+import { descripcionTercerizada, horasHistorial, textoEjemplar, textoReporto, textoTiempoCierre, textoUbicacion, viaSugerida } from './detalleIncidencia'
 
 const ahora = Date.parse('2026-11-04T14:20:00-05:00')
 
@@ -20,4 +20,17 @@ describe('detalleIncidencia', () => {
     expect(incidencia && textoEjemplar(incidencia)).toBe('T-0412 · Ficus · 7 m')
     expect(incidencia && textoReporto(incidencia, '2026-11-04')).toBe('Ana Q. · app móvil · hoy 11:50')
   })
+
+  it('escribe el tiempo de cierre y las horas del historial (Figma 390-7811)', () => {
+    expect(textoTiempoCierre(145)).toBe('2 h 25 min')
+    expect(textoTiempoCierre(40)).toBe('40 min')
+    expect(textoTiempoCierre(60 * 50)).toBe('2 días 2 h')
+    const eventos = [
+      { texto: 'Cerrada · Robert G.', fecha_hora: '2026-11-04T11:45:00-05:00' },
+      { texto: 'Atendida · Sistema', fecha_hora: '2026-11-04T11:40:00-05:00' },
+      { texto: 'Registrada · Ana Q.', fecha_hora: '2026-11-03T09:20:00-05:00' },
+    ]
+    expect(horasHistorial(eventos, '2026-11-04')).toEqual(['hoy 11:45', '11:40', '03/11 09:20'])
+  })
 })
+

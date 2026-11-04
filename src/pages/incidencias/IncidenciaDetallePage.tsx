@@ -27,7 +27,10 @@ import { ESTADO_INCIDENCIA } from './bandeja'
 import { textoEjemplar, textoReporto, textoUbicacion } from './detalleIncidencia'
 import TarjetaClasificar from './TarjetaClasificar'
 import TarjetaEncargo from './TarjetaEncargo'
+import HistorialIncidencia from './HistorialIncidencia'
+import TarjetaCerrada from './TarjetaCerrada'
 import TarjetaDerivarDeNuevo from './TarjetaDerivarDeNuevo'
+import TarjetaRevisarAtencion from './TarjetaRevisarAtencion'
 import TarjetaRequerimiento from './TarjetaRequerimiento'
 import TarjetaSeguimientoRequerimiento from './TarjetaSeguimientoRequerimiento'
 import estilos from './Incidencias.module.css'
@@ -64,6 +67,7 @@ export default function IncidenciaDetallePage() {
   if (!incidencia) return consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
 
   const estado = ESTADO_INCIDENCIA[incidencia.estado]
+  const cerrada = incidencia.estado === 'Cerrada'
   const cancelado = incidencia.estado === 'Clasificada' ? (incidencia.encargo_cancelado ?? null) : null
   const elegida = viaElegida?.id === incidencia.id ? viaElegida.via : null
   // Con el encargo cancelado, la vía es la que se elige en «Derivar de nuevo»; si no, la de la clasificación.
@@ -86,7 +90,7 @@ export default function IncidenciaDetallePage() {
               Motivo: {cancelado.motivo}
             </AvisoEnLinea>
           )}
-          <div className={estilos.foto} aria-label={incidencia.foto_url ? undefined : 'Sin foto'} role={incidencia.foto_url ? undefined : 'img'}>
+          <div className={`${estilos.foto} ${cerrada ? estilos.fotoBaja : ''}`} aria-label={incidencia.foto_url ? undefined : 'Sin foto'} role={incidencia.foto_url ? undefined : 'img'}>
             {incidencia.foto_url ? <img src={incidencia.foto_url} alt={`Foto de ${incidencia.tipo}`} /> : <Icono nombre="image" tamano="md" />}
           </div>
           <ListaDescripcion
@@ -98,6 +102,7 @@ export default function IncidenciaDetallePage() {
               { etiqueta: 'Reportó', valor: textoReporto(incidencia, hoyLima()) },
             ]}
           />
+          {cerrada && incidencia.historial && incidencia.historial.length > 0 && <HistorialIncidencia eventos={incidencia.historial} />}
         </div>
         {/* Clasificada por la vía de personal propio: el encargo a un capataz (Figma 389-7502 y 394-8975). */}
         {incidencia.estado === 'Clasificada' && via === 'PersonalPropio' && <TarjetaEncargo key={incidencia.id} incidencia={incidencia} onVolver={volver} onCreado={derivada} />}
@@ -107,6 +112,12 @@ export default function IncidenciaDetallePage() {
         {cancelado && !elegida && <TarjetaDerivarDeNuevo onElegir={(nueva) => setViaElegida({ id: incidencia.id, via: nueva })} />}
         {/* Derivada a tercerizado: el avance del requerimiento (Figma 394-9194). */}
         {incidencia.estado === 'DerivadaTercerizada' && incidencia.requerimiento && <TarjetaSeguimientoRequerimiento requerimiento={incidencia.requerimiento} />}
+        {/* Atendida: revisar la atención y cerrar o devolver (Figma 390-8008, 390-8205 y 390-8390). */}
+        {incidencia.estado === 'Atendida' && incidencia.atencion && (
+          <TarjetaRevisarAtencion key={incidencia.id} incidencia={incidencia} atencion={incidencia.atencion} onCambiada={derivada} />
+        )}
+        {/* Cerrada: tiempo de cierre, evidencia y aviso al reportante (Figma 390-7811). */}
+        {cerrada && <TarjetaCerrada incidencia={incidencia} />}
         {incidencia.estado === 'Registrada' && (
           <TarjetaClasificar
             key={incidencia.id}

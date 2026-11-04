@@ -2,7 +2,7 @@
  * Lógica pura del detalle de incidencia (AV-284, Figma 388-7305 y 389-7300): textos de la ficha y vía sugerida.
  * Se prueba en `detalleIncidencia.test.ts`.
  */
-import type { CapatazDisponible, IncidenciaDetalle, ViaIncidencia } from '@/types/incidencias'
+import type { AtencionIncidencia, CapatazDisponible, EventoIncidencia, IncidenciaDetalle, ViaIncidencia } from '@/types/incidencias'
 import { instanteALocalLima } from '@/utils/instanteLima'
 
 /** Altura desde la que se sugiere el proveedor tercerizado (poda de altura, AV-276). */
@@ -74,4 +74,36 @@ export function textoCarga(capataz: CapatazDisponible): string {
 /** Lo que va con el encargo (Figma 389-7502): la foto, la descripción y el ejemplar, si lo hay. */
 export function incluyeEncargo(incidencia: IncidenciaDetalle): string[] {
   return ['Foto', 'Descripción', incidencia.ejemplar?.codigo].filter((x): x is string => Boolean(x))
+}
+
+/** «hoy 11:40» o «03/11 11:40». */
+function cuando(instante: string, hoy: string): string {
+  const local = instanteALocalLima(instante) ?? instante
+  return local.slice(0, 10) === hoy ? `hoy ${local.slice(11, 16)}` : `${diaMes(local.slice(0, 10))} ${local.slice(11, 16)}`
+}
+
+/** «Atendida por Luis P. · hoy 11:40 · encargo ENC-2026-118» (Figma 390-8008). */
+export function textoAtendida(atencion: AtencionIncidencia, hoy: string): string {
+  return [`Atendida por ${atencion.atendida_por}`, cuando(atencion.atendida_en, hoy), atencion.encargo_codigo && `encargo ${atencion.encargo_codigo}`].filter(Boolean).join(' · ')
+}
+
+/** «2 h 25 min», «40 min» o «3 días 2 h». */
+export function textoTiempoCierre(minutos: number): string {
+  const horas = Math.floor(minutos / 60)
+  const resto = minutos % 60
+  if (horas === 0) return `${resto} min`
+  if (horas < 48) return resto ? `${horas} h ${resto} min` : `${horas} h`
+  const dias = Math.floor(horas / 24)
+  return horas % 24 ? `${dias} días ${horas % 24} h` : `${dias} días`
+}
+
+/**
+ * Hora de cada evento del historial (Figma 390-7811): el más reciente con «hoy» si es de hoy y los demás del mismo
+ * día solo con la hora; los de otro día, con la fecha.
+ */
+export function horasHistorial(eventos: EventoIncidencia[], hoy: string): string[] {
+  return eventos.map((evento, indice) => {
+    const texto = cuando(evento.fecha_hora, hoy)
+    return indice > 0 && texto.startsWith('hoy ') ? texto.slice(4) : texto
+  })
 }
