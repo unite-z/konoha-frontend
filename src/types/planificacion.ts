@@ -71,7 +71,13 @@ export interface Restriccion {
   serie: string | null
 }
 
-/** Cuerpo de `POST restricciones/`. Pronto admitirá `recurrencia: {dias_semana, hasta}`. */
+/** Repetición semanal: días ISO (1 lunes, 7 domingo) desde la fecha de inicio hasta `hasta` (máximo 200 fechas). */
+export interface RecurrenciaRestriccion {
+  dias_semana: number[]
+  hasta: FechaIso
+}
+
+/** Cuerpo de `POST restricciones/`. Con `recurrencia`, crea una restricción por fecha con la misma `serie`. */
 export interface RestriccionEntrada {
   tipo_restriccion_id: number
   fecha_inicio: FechaIso
@@ -80,6 +86,7 @@ export interface RestriccionEntrada {
   hora_fin?: string
   area_verde_id?: number
   descripcion?: string
+  recurrencia?: RecurrenciaRestriccion
 }
 
 export type EstadoProgramacion = 'Programada' | 'EnCurso' | 'Completada' | 'Cancelada'
