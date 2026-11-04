@@ -4,7 +4,6 @@
  * servidor vuelve a comprobarlo y la pantalla siempre maneja el 403.
  */
 import type { SesionCore } from '../types/core'
-import { DATOS_SIMULADOS } from './datosSimulados'
 
 export const PERMISOS = {
   gestionarUsuarios: 'CORE.USUARIO.GESTIONAR',
@@ -14,6 +13,8 @@ export const PERMISOS = {
   consultarPlanificacion: 'PLA.PLANIFICACION.CONSULTAR',
   /** Marcar jardines de la ruta de corte (contrato de AV-260 y AV-252). */
   registrarCorte: 'PLA.CORTE.REGISTRAR',
+  /** Reportar incidencias y consultar la bandeja y la ficha (AV-281: los cuatro roles). */
+  registrarIncidencia: 'PLA.INCIDENCIA.REGISTRAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
@@ -40,11 +41,11 @@ export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('planificacion')
   // Ruta de hoy del capataz (AV-271): quien registra el avance del corte (AV-260).
   if (puede(sesion, PERMISOS.registrarCorte)) entradas.add('corte')
-  // Mis incidencias (AV-282): cualquier usuario con sesión reporta y sigue las suyas. Sin backend (AV-274), solo con
-  // datos simulados (D9).
-  if (sesion && DATOS_SIMULADOS) entradas.add('misIncidencias')
-  // Incidencias: el permiso propio llega con AV-281; hasta entonces, el de Planificación (el jefe).
-  if (puede(sesion, PERMISOS.consultarPlanificacion)) entradas.add('incidencias')
+  // Incidencias (AV-281): la bandeja y la ficha, y «Mis incidencias» para reportar y seguir las propias (AV-282).
+  if (puede(sesion, PERMISOS.registrarIncidencia)) {
+    entradas.add('incidencias')
+    entradas.add('misIncidencias')
+  }
   // Servicios tercerizados incluye contratos y conformidades: el capataz no lo ve.
   if (puede(sesion, PERMISOS.registrarAtencion) || puede(sesion, PERMISOS.consultarContratos)) {
     entradas.add('tercerizados')

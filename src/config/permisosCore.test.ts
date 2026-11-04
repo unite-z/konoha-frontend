@@ -17,6 +17,7 @@ const CAPATAZ = sesion('capataz', [
   'CORE.CATALOGO.CONSULTAR',
   'CORE.REPOSITORIO.CONSULTAR',
   'PLA.PLANIFICACION.CONSULTAR',
+  'PLA.INCIDENCIA.REGISTRAR',
   'CAM.PARTE.REGISTRAR',
   'CAM.CUADRILLA.CONSULTAR',
   'INV.INVENTARIO.CONSULTAR',
@@ -36,7 +37,13 @@ describe('entradasMenu', () => {
     const menu = entradasMenu(CAPATAZ)
     expect(menu.has('usuarios')).toBe(false)
     expect(menu.has('tercerizados')).toBe(false)
-    expect([...menu].sort()).toEqual(['campo', 'incidencias', 'inventario', 'planificacion', 'repositorio'])
+    expect([...menu].sort()).toEqual(['campo', 'incidencias', 'inventario', 'misIncidencias', 'planificacion', 'repositorio'])
+  })
+
+  it('incidencias y «Mis incidencias» exigen registrar incidencias (AV-281), no planificación', () => {
+    expect(entradasMenu(sesion('practicante', ['PLA.INCIDENCIA.REGISTRAR'])).has('misIncidencias')).toBe(true)
+    expect(entradasMenu(sesion('practicante', ['PLA.PLANIFICACION.CONSULTAR'])).has('incidencias')).toBe(false)
+    expect(entradasMenu(sesion('practicante', ['PLA.PLANIFICACION.CONSULTAR'])).has('misIncidencias')).toBe(false)
   })
 
   it('solo el jefe ve «Usuarios y roles»', () => {

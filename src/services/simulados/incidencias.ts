@@ -1,6 +1,8 @@
 /**
- * Datos simulados de incidencias de MOD-03 (AV-283), solo con `VITE_DATOS_SIMULADOS=true`: el backend (AV-274 a
- * AV-281) aún no existe. Las fechas se calculan hacia atrás desde ahora para que los plazos se vean siempre igual.
+ * Datos simulados de incidencias de MOD-03 (AV-283). La aplicación usa el backend (AV-274 a AV-281) salvo en la
+ * derivación a encargo o a requerimiento (AV-277 y AV-278), que solo responde con `VITE_DATOS_SIMULADOS=true`; el resto
+ * son datos de ejemplo de las pruebas. Las fechas se calculan hacia atrás desde ahora para que los plazos se vean
+ * siempre igual.
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
