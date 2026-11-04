@@ -14,14 +14,15 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
+import Pestanas from '../../../components/ui/Pestanas'
 import Boton from '../../../components/ui/Boton'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_SOLICITAR_IA } from '../../../config/permisos'
 import { useRolActual } from '../../../sesion/ContextoSesion'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
+import AccionesPagina from '../../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionExtraccion } from '../../../router/rutasApp'
 import { listarExtracciones } from '../../../services/api/ia'
 import type { EstadoSugerencia, SugerenciaIA } from '../../../types/ia'
@@ -221,67 +222,68 @@ export default function ExtraccionReporteProveedorPage() {
             onCancelar={() => setSolicitudAbierta(false)}
           />
         ) : (
-          <div className={estilosIa.accionPrincipal}>
+          <AccionesPagina>
             <Boton variante="primario" onClick={() => setSolicitudAbierta(true)} aria-expanded={false}>
               Analizar informe
             </Boton>
-          </div>
+          </AccionesPagina>
         ))}
 
       <section className={estilos.seccion} aria-labelledby="titulo-propuestas">
         <h2 id="titulo-propuestas" className={estilos.tituloSeccion}>
           Propuestas de extracción
         </h2>
-        <GrupoChips
+        <Pestanas
           etiqueta="Estado de la propuesta"
-          opciones={OPCIONES_ESTADO}
+          pestanas={OPCIONES_ESTADO}
           valor={estadoFiltro}
           onCambiar={(valor) => establecer({ estado: valor, page: null })}
-        />
-        {estadoTabla &&
-          (esMovil && estadoTabla === 'exito' ? (
-            <>
-              <ul className={estilosIa.fichas} aria-label="Propuestas de extracción">
-                {propuestas.map((s) => (
-                  <FichaPropuesta
-                    key={s.id}
-                    sugerencia={s}
-                    atencion={atenciones.get(s.contenido.entrada.atencion_id)}
-                    onAbrir={() => abrirRevision(s)}
-                  />
-                ))}
-              </ul>
-              {total > POR_PAGINA && (
-                <div className={estilosIa.paginacionFichas}>
-                  <p className="cifra">
-                    Página {formatearNumero(pagina)} de {formatearNumero(Math.ceil(total / POR_PAGINA))}
-                  </p>
-                  <Boton variante="secundario" deshabilitado={pagina <= 1} onClick={() => cambiarPagina(pagina - 1)}>
-                    Anterior
-                  </Boton>
-                  <Boton
-                    variante="secundario"
-                    deshabilitado={pagina * POR_PAGINA >= total}
-                    onClick={() => cambiarPagina(pagina + 1)}
-                  >
-                    Siguiente
-                  </Boton>
-                </div>
-              )}
-            </>
-          ) : (
-            <TablaDatos
-              titulo="Propuestas de extracción"
-              columnas={columnas(atenciones)}
-              filas={propuestas}
-              claveFila={(s) => String(s.id)}
-              estado={estadoTabla}
-              onFilaClick={(s) => abrirRevision(s)}
-              paginacionServidor={{ pagina, total, porPagina: POR_PAGINA, onCambiarPagina: cambiarPagina }}
-              vacio={vacio}
-              error={error}
-            />
-          ))}
+        >
+          {estadoTabla &&
+            (esMovil && estadoTabla === 'exito' ? (
+              <>
+                <ul className={estilosIa.fichas} aria-label="Propuestas de extracción">
+                  {propuestas.map((s) => (
+                    <FichaPropuesta
+                      key={s.id}
+                      sugerencia={s}
+                      atencion={atenciones.get(s.contenido.entrada.atencion_id)}
+                      onAbrir={() => abrirRevision(s)}
+                    />
+                  ))}
+                </ul>
+                {total > POR_PAGINA && (
+                  <div className={estilosIa.paginacionFichas}>
+                    <p className="cifra">
+                      Página {formatearNumero(pagina)} de {formatearNumero(Math.ceil(total / POR_PAGINA))}
+                    </p>
+                    <Boton variante="secundario" deshabilitado={pagina <= 1} onClick={() => cambiarPagina(pagina - 1)}>
+                      Anterior
+                    </Boton>
+                    <Boton
+                      variante="secundario"
+                      deshabilitado={pagina * POR_PAGINA >= total}
+                      onClick={() => cambiarPagina(pagina + 1)}
+                    >
+                      Siguiente
+                    </Boton>
+                  </div>
+                )}
+              </>
+            ) : (
+              <TablaDatos
+                titulo="Propuestas de extracción"
+                columnas={columnas(atenciones)}
+                filas={propuestas}
+                claveFila={(s) => String(s.id)}
+                estado={estadoTabla}
+                onFilaClick={(s) => abrirRevision(s)}
+                paginacionServidor={{ pagina, total, porPagina: POR_PAGINA, onCambiarPagina: cambiarPagina }}
+                vacio={vacio}
+                error={error}
+              />
+            ))}
+        </Pestanas>
       </section>
     </div>
   )

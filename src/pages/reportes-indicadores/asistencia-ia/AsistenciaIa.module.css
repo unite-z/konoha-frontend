@@ -1,9 +1,5 @@
 /* Páginas de asistencia IA (RF-IA-001): espaciado de la Guía Web 4.1. */
 
-.accionPrincipal {
-  display: flex;
-}
-
 /* --- Bandeja ----------------------------------------------------------------- */
 .celdaAtencion {
   display: flex;
@@ -155,7 +151,6 @@
 }
 
 @media (max-width: 767px) {
-  .accionPrincipal > *,
   .cabeceraRevision > button {
     flex: 1 1 100%;
   }

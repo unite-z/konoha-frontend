@@ -21,8 +21,10 @@ import {
   type DecisionEnCursoCronograma,
 } from '../../../../utils/cronogramaIa'
 import estilos from '../extraccion/FichaCampo.module.css'
-import { ACCIONES, idDecision } from '../extraccion/valoresCampo'
+import { ACCIONES } from '../extraccion/valoresCampo'
 import estilosCronograma from './Cronograma.module.css'
+import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
+import Casilla from '../../../../components/ui/Casilla'
 import Estado from '../../../../components/ui/Estado'
 import { insigniaAEstado } from '../../../../components/ui/tonos'
 
@@ -90,26 +92,15 @@ export default function FichaPropuesta({ propuesta: p, modo, decision, error, fi
           </div>
 
           {modo === 'editar' && (
-            <fieldset className={estilos.panelDecision}>
-              <legend className={estilos.etiquetaDecision}>Tu decisión</legend>
-              <div className={estilos.opciones}>
-                {ACCIONES.map((accion) => {
-                  const elegida = decision?.accion === accion
-                  return (
-                    <label key={accion} className={`${estilos.opcion} ${elegida ? estilos.opcionElegida : ''}`}>
-                      <input
-                        type="radio"
-                        id={idDecision(p.clave, accion)}
-                        name={`decision-${p.clave}`}
-                        value={accion}
-                        checked={elegida}
-                        onChange={() => onAccion(accion)}
-                      />
-                      {ETIQUETA_ACCION[accion]}
-                    </label>
-                  )
-                })}
-              </div>
+            <div className={estilos.panelDecision}>
+              <GrupoOpciones
+                etiqueta="Tu decisión"
+                idBase={`decision-${p.clave}`}
+                horizontal
+                opciones={ACCIONES.map((accion) => ({ valor: accion, texto: ETIQUETA_ACCION[accion] }))}
+                valor={decision?.accion ?? null}
+                onCambiar={onAccion}
+              />
               {decision?.accion === 'corregir' && (
                 <div className={estilos.correccion}>
                   <p>{decision.valores ? `Modificado: ${textoCambios(decision.valores)}` : 'Aún no has indicado los cambios'}</p>
@@ -119,18 +110,15 @@ export default function FichaPropuesta({ propuesta: p, modo, decision, error, fi
                 </div>
               )}
               {prohibiciones.length > 0 && decision?.accion && decision.accion !== 'descartar' && (
-                <label className={estilosCronograma.casilla}>
-                  <input
-                    type="checkbox"
-                    id={idConfirmaRestriccion(p.clave)}
-                    checked={decision.confirma}
-                    onChange={(e) => onConfirma(e.target.checked)}
-                  />
-                  Confirmo programar pese a la prohibición: {prohibiciones.map((r) => r.descripcion).join(', ')}
-                </label>
+                <Casilla
+                  id={idConfirmaRestriccion(p.clave)}
+                  etiqueta={`Confirmo programar pese a la prohibición: ${prohibiciones.map((r) => r.descripcion).join(', ')}`}
+                  marcada={decision.confirma}
+                  onCambiar={onConfirma}
+                />
               )}
               {error && <p className={estilos.error}>{error}</p>}
-            </fieldset>
+            </div>
           )}
 
           {modo === 'final' && (

@@ -14,15 +14,16 @@ import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoD
 import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
+import Pestanas from '../../../components/ui/Pestanas'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
 import Boton from '../../../components/ui/Boton'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
 import { puede, ROLES_SOLICITAR_IA } from '../../../config/permisos'
 import { useConsulta } from '../../../hooks/useConsulta'
 import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
 import { usePaginaActual } from '../../../hooks/usePaginaActual'
+import AccionesPagina from '../../../layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionInconsistencia } from '../../../router/rutasApp'
 import { listarInconsistencias } from '../../../services/api/inconsistenciasIa'
 import { useRolActual } from '../../../sesion/ContextoSesion'
@@ -166,11 +167,11 @@ export default function InconsistenciasIaPage() {
       </AvisoEnLinea>
 
       {puedeAnalizar && (
-        <div className={estilosIa.accionPrincipal}>
+        <AccionesPagina>
           <Boton variante="primario" onClick={() => setAnalisisAbierto(true)}>
             Analizar datos
           </Boton>
-        </div>
+        </AccionesPagina>
       )}
 
       <section className={estilos.seccion} aria-labelledby="titulo-hallazgos">
@@ -178,35 +179,37 @@ export default function InconsistenciasIaPage() {
           Hallazgos
         </h2>
         <div className={estilosHallazgo.filtros}>
-          <GrupoChips
+          <Pestanas
             etiqueta="Estado del hallazgo"
-            opciones={[
+            pestanas={[
               // «Todos» va explícito en la URL: sin parámetro se muestran las pendientes.
               { valor: 'todos', texto: 'Todos' },
               ...ESTADOS_HALLAZGO.map((e, i) => ({
                 valor: e.valor,
-                texto: recuentos.datos ? `${e.plural} (${formatearNumero(recuentos.datos[i])})` : e.plural,
+                texto: e.plural,
+                contador: recuentos.datos?.[i],
               })),
             ]}
             valor={consultaApi.estado ?? 'todos'}
             onCambiar={(valor) => establecer({ estado: valor, page: null })}
-          />
-          <Selector
-            id="filtro-tipo-hallazgo"
-            etiqueta="Tipo de hallazgo"
-            valor={consultaApi.tipo_hallazgo ?? ''}
-            opciones={TIPOS_HALLAZGO.map((t) => ({ valor: t, texto: ETIQUETA_TIPO_HALLAZGO[t] }))}
-            opcionTodos={OPCION_TODOS}
-            onCambiar={(valor) => establecer({ tipo: valor || null, page: null })}
-          />
-          <Selector
-            id="filtro-conjunto"
-            etiqueta="Conjunto de datos"
-            valor={consultaApi.conjunto ?? ''}
-            opciones={CONJUNTOS.map((c) => ({ valor: c, texto: ETIQUETA_CONJUNTO[c] }))}
-            opcionTodos={OPCION_TODOS}
-            onCambiar={(valor) => establecer({ conjunto: valor || null, page: null })}
-          />
+          >
+            <Selector
+              id="filtro-tipo-hallazgo"
+              etiqueta="Tipo de hallazgo"
+              valor={consultaApi.tipo_hallazgo ?? ''}
+              opciones={TIPOS_HALLAZGO.map((t) => ({ valor: t, texto: ETIQUETA_TIPO_HALLAZGO[t] }))}
+              opcionTodos={OPCION_TODOS}
+              onCambiar={(valor) => establecer({ tipo: valor || null, page: null })}
+            />
+            <Selector
+              id="filtro-conjunto"
+              etiqueta="Conjunto de datos"
+              valor={consultaApi.conjunto ?? ''}
+              opciones={CONJUNTOS.map((c) => ({ valor: c, texto: ETIQUETA_CONJUNTO[c] }))}
+              opcionTodos={OPCION_TODOS}
+              onCambiar={(valor) => establecer({ conjunto: valor || null, page: null })}
+            />
+          </Pestanas>
         </div>
         {estadoTabla &&
           (esMovil && estadoTabla === 'exito' ? (

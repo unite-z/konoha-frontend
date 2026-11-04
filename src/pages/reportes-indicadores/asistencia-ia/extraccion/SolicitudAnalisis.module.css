@@ -34,16 +34,6 @@
   color: var(--color-text-secondary);
 }
 
-.enlace {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-action-primary);
-  font: inherit;
-  font-weight: var(--type-cuerpo-medio-weight);
-  text-decoration: underline;
-  cursor: pointer;
-}
 
 /* Búsqueda: el campo crece y el botón queda alineado con él. */
 .busqueda,

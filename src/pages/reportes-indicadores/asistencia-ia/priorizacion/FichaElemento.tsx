@@ -19,8 +19,9 @@ import {
   type DecisionEnCurso,
 } from '../../../../utils/priorizacionIa'
 import estilos from '../extraccion/FichaCampo.module.css'
-import { ACCIONES, idDecision } from '../extraccion/valoresCampo'
+import { ACCIONES } from '../extraccion/valoresCampo'
 import estilosElemento from './FichaElemento.module.css'
+import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
 import Estado from '../../../../components/ui/Estado'
 import { insigniaAEstado } from '../../../../components/ui/tonos'
 
@@ -112,26 +113,16 @@ export default function FichaElemento({ elemento: e, modo, decision, error, fina
           </div>
 
           {modo === 'editar' && (
-            <fieldset className={estilos.panelDecision} aria-describedby={sinDecision ? `error-${e.clave}` : undefined}>
-              <legend className={estilos.etiquetaDecision}>Tu decisión</legend>
-              <div className={estilos.opciones}>
-                {ACCIONES.map((accion) => {
-                  const elegida = decision?.accion === accion
-                  return (
-                    <label key={accion} className={`${estilos.opcion} ${elegida ? estilos.opcionElegida : ''}`}>
-                      <input
-                        type="radio"
-                        id={idDecision(e.clave, accion)}
-                        name={`decision-${e.clave}`}
-                        value={accion}
-                        checked={elegida}
-                        onChange={() => onAccion(accion)}
-                      />
-                      {ETIQUETA_OPCION_ACCION[accion]}
-                    </label>
-                  )
-                })}
-              </div>
+            <div className={estilos.panelDecision}>
+              <GrupoOpciones
+                etiqueta="Tu decisión"
+                idBase={`decision-${e.clave}`}
+                horizontal
+                opciones={ACCIONES.map((accion) => ({ valor: accion, texto: ETIQUETA_OPCION_ACCION[accion] }))}
+                valor={decision?.accion ?? null}
+                onCambiar={onAccion}
+                descritoPor={sinDecision ? `error-${e.clave}` : undefined}
+              />
               {sinDecision && (
                 <p id={`error-${e.clave}`} className={estilos.error}>
                   {MENSAJES_PRIORIZACION.sinDecision}
@@ -150,7 +141,7 @@ export default function FichaElemento({ elemento: e, modo, decision, error, fina
                   />
                 </div>
               )}
-            </fieldset>
+            </div>
           )}
 
           {modo === 'final' && (

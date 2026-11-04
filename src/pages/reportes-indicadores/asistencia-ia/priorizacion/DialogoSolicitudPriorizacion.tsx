@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
 import DialogoFormulario from '../../../../components/ui/DialogoFormulario'
+import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
 import Selector, { OPCION_TODOS } from '../../../../components/ui/Selector'
 import { MOTIVO_CATALOGO_NO_DISPONIBLE } from '../../../../components/reportes-indicadores/useCatalogosFiltros'
 import { useConsulta } from '../../../../hooks/useConsulta'
@@ -16,11 +17,10 @@ import { obtenerCatalogoComparacion } from '../../../../services/api/reportesGes
 import type { AlcancePriorizacion, SolicitudPriorizacion, SugerenciaPriorizacion } from '../../../../types/priorizacionIa'
 import { enteroPositivo } from '../../../../utils/reportesGestion'
 import { OPCIONES_ALCANCE } from '../../../../utils/priorizacionIa'
-import estilosOpciones from '../extraccion/FichaCampo.module.css'
-import estilos from './Priorizacion.module.css'
 
 const HORIZONTES: SolicitudPriorizacion['horizonte_dias'][] = [7, 15, 30]
 
+/** `GrupoOpciones` en fila para valores de texto o número (el horizonte en días es un número). */
 function GrupoRadios<V extends string | number>({
   leyenda,
   nombre,
@@ -35,17 +35,17 @@ function GrupoRadios<V extends string | number>({
   onCambiar: (valor: V) => void
 }) {
   return (
-    <fieldset className={estilos.grupo}>
-      <legend className={estilos.leyenda}>{leyenda}</legend>
-      <div className={estilosOpciones.opciones}>
-        {opciones.map((o) => (
-          <label key={String(o.valor)} className={`${estilosOpciones.opcion} ${o.valor === valor ? estilosOpciones.opcionElegida : ''}`}>
-            <input type="radio" name={nombre} value={String(o.valor)} checked={o.valor === valor} onChange={() => onCambiar(o.valor)} />
-            {o.texto}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <GrupoOpciones
+      etiqueta={leyenda}
+      nombre={nombre}
+      horizontal
+      opciones={opciones.map((o) => ({ valor: String(o.valor), texto: o.texto }))}
+      valor={String(valor)}
+      onCambiar={(texto) => {
+        const elegida = opciones.find((o) => String(o.valor) === texto)
+        if (elegida) onCambiar(elegida.valor)
+      }}
+    />
   )
 }
 

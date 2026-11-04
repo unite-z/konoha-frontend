@@ -39,6 +39,10 @@ export interface GrupoOpcionesProps<V extends string> {
   idBase?: string
   /** Deshabilita todo el grupo (por ejemplo, mientras se envía el formulario). */
   deshabilitado?: boolean
+  /** Opciones en una fila (decisiones cortas como «Aceptar / Corregir / Descartar»); en móvil se apilan. */
+  horizontal?: boolean
+  /** Ids de textos externos que describen el grupo (ayuda o error que la pantalla pinta fuera). */
+  descritoPor?: string
 }
 
 export default function GrupoOpciones<V extends string>({
@@ -52,6 +56,8 @@ export default function GrupoOpciones<V extends string>({
   etiquetaOculta = false,
   idBase,
   deshabilitado = false,
+  horizontal = false,
+  descritoPor,
 }: GrupoOpcionesProps<V>) {
   const idPropio = useId()
   const base = idBase ?? idPropio
@@ -65,7 +71,7 @@ export default function GrupoOpciones<V extends string>({
       disabled={deshabilitado}
       aria-required={obligatorio || undefined}
       aria-invalid={error ? true : undefined}
-      aria-describedby={error ? idError : undefined}
+      aria-describedby={[error && idError, descritoPor].filter(Boolean).join(' ') || undefined}
     >
       <legend className={etiquetaOculta ? 'sr-only' : estilos.etiqueta}>
         {etiqueta}
@@ -76,7 +82,7 @@ export default function GrupoOpciones<V extends string>({
           </span>
         )}
       </legend>
-      <div className={`${estilos.opciones} ${tarjeta ? estilos.tarjetas : ''}`}>
+      <div className={[estilos.opciones, tarjeta && estilos.tarjetas, horizontal && estilos.horizontal].filter(Boolean).join(' ')}>
         {opciones.map((opcion) => {
           const id = `${base}-${opcion.valor}`
           const elegida = opcion.valor === valor

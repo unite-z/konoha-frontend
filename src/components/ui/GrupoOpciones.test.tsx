@@ -81,4 +81,15 @@ describe('GrupoOpciones', () => {
 
     for (const radio of screen.getAllByRole('radio')) expect((radio as HTMLInputElement).matches(':disabled')).toBe(true)
   })
+
+  it('descritoPor enlaza textos externos con el grupo, junto al error propio', () => {
+    render(
+      <>
+        <p id="ayuda-externa">Sin valor detectado.</p>
+        <GrupoOpciones etiqueta="Tu decisión" opciones={OPCIONES} valor={null} onCambiar={vi.fn()} descritoPor="ayuda-externa" horizontal />
+      </>,
+    )
+
+    expect(screen.getByRole('group', { name: 'Tu decisión' }).getAttribute('aria-describedby')).toBe('ayuda-externa')
+  })
 })

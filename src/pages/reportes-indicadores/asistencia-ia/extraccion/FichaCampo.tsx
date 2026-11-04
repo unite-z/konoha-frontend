@@ -11,7 +11,8 @@ import { claveCampo, type AccionDecision, type CampoSolicitado, type DecisionFin
 import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '../../../../utils/estados'
 import { SIN_VALOR } from '../../../../utils/formato'
 import estilos from './FichaCampo.module.css'
-import { ACCIONES, idCorreccion, idDecision, MENSAJES, partirEnLineas, textoValorSimple, tieneValor } from './valoresCampo'
+import { ACCIONES, idCorreccion, MENSAJES, partirEnLineas, textoValorSimple, tieneValor } from './valoresCampo'
+import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
 import Estado from '../../../../components/ui/Estado'
 import { insigniaAEstado } from '../../../../components/ui/tonos'
 
@@ -171,34 +172,21 @@ export default function FichaCampo({ campo, sugerido, modo, decision, error, fin
           </div>
 
           {modo === 'editar' && (
-            <fieldset className={estilos.panelDecision} aria-describedby={errorPendiente ? `error-${clave}` : undefined}>
-              <legend className={estilos.etiquetaDecision}>Tu decisión</legend>
-              <div className={estilos.opciones}>
-                {ACCIONES.map((accion) => {
-                  const deshabilitada = accion === 'aceptar' && sinValor
-                  const elegida = decision?.accion === accion
-                  return (
-                    <label
-                      key={accion}
-                      className={`${estilos.opcion} ${elegida ? estilos.opcionElegida : ''} ${
-                        deshabilitada ? estilos.opcionDeshabilitada : ''
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        id={idDecision(clave, accion)}
-                        name={`decision-${clave}`}
-                        value={accion}
-                        checked={elegida}
-                        disabled={deshabilitada}
-                        aria-describedby={deshabilitada ? idAyuda : undefined}
-                        onChange={() => onAccion(accion)}
-                      />
-                      {ETIQUETA_OPCION_ACCION[accion]}
-                    </label>
-                  )
-                })}
-              </div>
+            <div className={estilos.panelDecision}>
+              {/* Ids `decision-${clave}-${accion}` (idDecision): los enlaza el resumen de pendientes. */}
+              <GrupoOpciones
+                etiqueta="Tu decisión"
+                idBase={`decision-${clave}`}
+                horizontal
+                opciones={ACCIONES.map((accion) => ({
+                  valor: accion,
+                  texto: ETIQUETA_OPCION_ACCION[accion],
+                  deshabilitada: accion === 'aceptar' && sinValor,
+                }))}
+                valor={decision?.accion ?? null}
+                onCambiar={onAccion}
+                descritoPor={[sinValor && idAyuda, errorPendiente && `error-${clave}`].filter(Boolean).join(' ') || undefined}
+              />
               {sinValor && (
                 <p id={idAyuda} className={estilos.ayuda}>
                   {MENSAJES.sinValorAceptar}
@@ -210,7 +198,7 @@ export default function FichaCampo({ campo, sugerido, modo, decision, error, fin
                 </p>
               )}
               {decision?.accion === 'corregir' && <div className={estilos.correccion}>{correccion()}</div>}
-            </fieldset>
+            </div>
           )}
 
           {modo === 'final' && (
