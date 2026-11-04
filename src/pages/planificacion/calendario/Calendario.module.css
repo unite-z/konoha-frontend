@@ -354,7 +354,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(var(--space-12) * 7);
+  min-height: calc(var(--space-12) * 13);
   border: 1px dashed var(--color-border-default);
   border-radius: var(--radius-lg);
 }

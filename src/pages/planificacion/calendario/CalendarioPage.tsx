@@ -135,6 +135,7 @@ export default function CalendarioPage() {
       <div className={estilos.sinResultados}>
         <EstadoVacio
           icono="filter"
+          centrado
           titulo="No hay actividades con estos filtros"
           accion={
             <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>

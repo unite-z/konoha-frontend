@@ -15,6 +15,24 @@
   color: var(--color-text-muted);
 }
 
+/* `centrado`: sin tarjeta, centrado y con el icono en un círculo de fondo sutil. */
+.centrado {
+  align-items: center;
+  text-align: center;
+  background: none;
+  border: 0;
+}
+
+.centrado .icono {
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-8) + var(--space-2));
+  height: calc(var(--space-8) + var(--space-2));
+  margin-bottom: var(--space-1);
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+}
+
 .titulo {
   font-size: var(--type-titulo-tarjeta-size);
   line-height: var(--type-titulo-tarjeta-line);
