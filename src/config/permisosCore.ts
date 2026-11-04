@@ -15,6 +15,7 @@ export const PERMISOS = {
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
+  consultarPartes: 'CAM.PARTE.CONSULTAR',
   consultarInventario: 'INV.INVENTARIO.CONSULTAR',
   registrarInventario: 'INV.INVENTARIO.REGISTRAR',
 } as const
