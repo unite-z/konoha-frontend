@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
 import PanelProgramarCiclo from './PanelProgramarCiclo'
@@ -16,6 +17,18 @@ vi.mock('@/services/api/planificacion', () => ({
   listarRestricciones: async () => api.restricciones,
   crearProgramacion: api.crear,
   cambiarEstadoCiclo: api.cancelar,
+}))
+vi.mock('@/services/api/corte', () => ({
+  obtenerRutaCorte: async () => ({
+    zonas: [
+      { zona: 'Ciencias', jardines: 16, en_ruta: true },
+      { zona: 'Sociales', jardines: 11, en_ruta: true },
+      { zona: 'Letras', jardines: 9, en_ruta: true },
+      { zona: 'Ingeniería', jardines: 9, en_ruta: true },
+      { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
+    ],
+    fuera_de_frecuencia: { dias_desde_ultimo: 47, maximo_dias: 45 },
+  }),
 }))
 vi.mock('@/services/api/tercerizados', () => ({
   listarProveedores: async () => ({ count: 1, next: null, previous: null, results: [] }),
@@ -84,6 +97,7 @@ describe('PanelProgramarCiclo', () => {
       fecha_fin_prevista: '2026-11-14',
       justificacion: 'Solo hay cuadrilla esa semana',
       ventana_mes: '2026-11',
+      zonas: ['Ciencias', 'Sociales', 'Letras', 'Ingeniería'],
     })
   })
 
@@ -143,5 +157,23 @@ describe('PanelProgramarCiclo', () => {
     await waitFor(() => expect(api.cancelar).toHaveBeenCalledWith(5, 'cancelacion'))
     expect(api.crear).toHaveBeenCalledWith(expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', proveedor_id: 4 }))
     expect(onProgramada).toHaveBeenCalled()
+  })
+
+  it('en el corte tiene el paso «Ruta», avisa de que va fuera de frecuencia y deja ajustar las zonas (Figma 372-5523)', async () => {
+    api.restricciones = []
+    const usuario = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <PanelProgramarCiclo servicios={[corte]} servicioInicial={1} onCerrar={vi.fn()} onProgramada={vi.fn()} />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Fuera de frecuencia')).toBeTruthy()
+    await usuario.click(screen.getByRole('tab', { name: '2 · Ruta' }))
+    expect(screen.getByText('Han pasado 47 días desde el último ciclo (máximo 45).')).toBeTruthy()
+    expect(screen.getByText('Ruta de jardines · 45')).toBeTruthy()
+    expect(screen.getByText('Fuera de esta ruta')).toBeTruthy()
+    await usuario.click(screen.getByRole('checkbox', { name: 'Sociales' }))
+    expect(screen.getByText('Ruta de jardines · 34')).toBeTruthy()
   })
 })

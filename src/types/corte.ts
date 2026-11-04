@@ -68,3 +68,16 @@ export interface NuevaInterrupcion {
   aviso_proveedor: boolean
   registrar_restriccion: boolean
 }
+
+/** Una zona de la ruta de MOD-02 que se copia al programar el corte (AV-259); `en_ruta` falso si no es de esta ruta. */
+export interface ZonaRuta {
+  zona: string
+  jardines: number
+  en_ruta: boolean
+}
+
+/** `GET servicios/{id}/ruta/` (AV-259): la ruta propuesta y la marca «fuera de frecuencia» (CU-010 1a). */
+export interface RutaCorte {
+  zonas: ZonaRuta[]
+  fuera_de_frecuencia: { dias_desde_ultimo: number; maximo_dias: number } | null
+}

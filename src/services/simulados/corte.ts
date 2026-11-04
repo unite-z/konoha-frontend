@@ -5,7 +5,7 @@
  * tercer día, la ruta completa; desde el cuarto, una jornada de limpieza, y desde el quinto, dos: «No cumple»);
  * completado, todo cortado y una jornada de limpieza.
  */
-import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, ZonaAlternativa } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { responderSimulado } from './simulacion'
 
@@ -119,4 +119,21 @@ export function simularRegistrarInterrupcion(cuerpo: NuevaInterrupcion): Promise
     aviso_proveedor: cuerpo.aviso_proveedor,
     registrada_como_restriccion: cuerpo.registrar_restriccion,
   }))
+}
+
+/** Ruta de 45 jardines en cuatro zonas, más Estacionamientos fuera de ella, y 47 días desde el último corte (máximo 45). */
+export function simularRutaCorte(signal?: AbortSignal): Promise<RutaCorte> {
+  return responderSimulado(
+    () => ({
+      zonas: [
+        { zona: 'Ciencias', jardines: 16, en_ruta: true },
+        { zona: 'Sociales', jardines: 11, en_ruta: true },
+        { zona: 'Letras', jardines: 9, en_ruta: true },
+        { zona: 'Ingeniería', jardines: 9, en_ruta: true },
+        { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
+      ],
+      fuera_de_frecuencia: { dias_desde_ultimo: 47, maximo_dias: 45 },
+    }),
+    { signal },
+  )
 }

@@ -634,3 +634,49 @@
   justify-content: flex-end;
   gap: var(--space-2);
 }
+
+/* Paso «Ruta» del corte (Figma 372-5523): título con «Ajustar» y las zonas en una lista con borde. */
+.cabeceraRuta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.enlaceRuta {
+  color: var(--color-action-text);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  text-decoration: none;
+}
+
+.enlaceRuta:hover {
+  text-decoration: underline;
+}
+
+.zonasRuta {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.zonaRuta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.zonaRuta + .zonaRuta {
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* Cada paso de «Programar ciclo» del corte: los campos en columna, como el panel sin pasos. */
+.pasoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
