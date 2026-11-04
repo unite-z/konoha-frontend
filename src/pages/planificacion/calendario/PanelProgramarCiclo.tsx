@@ -21,7 +21,7 @@ import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSim
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import { obtenerRutaCorte } from '@/services/api/corte'
 import { useConsulta } from '@/hooks/useConsulta'
-import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta } from '@/services/api/planificacion'
+import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta, reprogramarProgramacion } from '@/services/api/planificacion'
 import { listarProveedores, listarTodo } from '@/services/api/tercerizados'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { diaFigma, fechaCorta, fechaNumerica, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
@@ -115,10 +115,22 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
     if (!servicio || !proveedor || !validacion.puedeGuardar) return
     setEnviando(true)
     setErrorEnvio(null)
+    const proveedorId = proveedor === PERSONAL_PROPIO ? null : Number(proveedor)
+    // Reprogramar con el mismo servicio y quien lo hace solo cambia las fechas (AV-362): el ciclo conserva su código y
+    // su historial. Si cambia el servicio o el proveedor, se programa otro ciclo y se cancela el anterior.
+    if (reprogramar && servicio.id === reprogramar.tipo_servicio_id && proveedorId === reprogramar.proveedor_id) {
+      try {
+        onProgramada(await reprogramarProgramacion(reprogramar.id, { fecha_inicio_prevista: inicio, fecha_fin_prevista: fin, justificacion: justificacion.trim() || undefined }))
+      } catch (causa) {
+        setErrorEnvio({ titulo: 'No se pudo reprogramar el ciclo', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+        setEnviando(false)
+      }
+      return
+    }
     try {
       const creada = await crearProgramacion({
         tipo_servicio_id: servicio.id,
-        proveedor_id: proveedor === PERSONAL_PROPIO ? null : Number(proveedor),
+        proveedor_id: proveedorId,
         fecha_inicio_prevista: inicio,
         fecha_fin_prevista: fin,
         justificacion: justificacion.trim() || undefined,
@@ -127,7 +139,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
       })
       if (reprogramar) {
         try {
-          await cambiarEstadoCiclo(reprogramar.id, 'cancelacion')
+          await cambiarEstadoCiclo(reprogramar.id, 'cancelacion', undefined, `Reprogramado como ${creada.codigo ?? creada.servicio}`)
         } catch (causa) {
           setErrorEnvio({
             titulo: 'El ciclo nuevo quedó programado, pero no se pudo cancelar el anterior',
