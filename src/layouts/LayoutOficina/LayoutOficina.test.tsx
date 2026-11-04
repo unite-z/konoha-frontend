@@ -66,7 +66,7 @@ describe('LayoutOficina', () => {
     expect(fila?.contains(boton)).toBe(true)
   })
 
-  it('la cabecera lleva las migas y el usuario, sin título', () => {
+  it('la cabecera lleva solo las migas; el usuario va en el menú lateral', () => {
     pintar()
 
     const cabecera = screen.getByRole('banner')
@@ -74,8 +74,9 @@ describe('LayoutOficina', () => {
     expect(within(migas).getByRole('link', { name: 'Áreas verdes' }).getAttribute('href')).toBe('/areas-verdes')
     expect(within(migas).getByText('Coberturas vegetales').getAttribute('aria-current')).toBe('page')
     expect(within(cabecera).queryByRole('heading')).toBeNull()
-    expect(within(cabecera).getByText('Robert G.')).toBeTruthy()
-    expect(within(cabecera).getByRole('button', { name: 'Cerrar sesión' })).toBeTruthy()
+    expect(within(cabecera).queryByRole('searchbox')).toBeNull()
+    expect(within(cabecera).queryByText('Robert G.')).toBeNull()
+    expect(within(screen.getByRole('complementary')).getByText('Robert G.')).toBeTruthy()
   })
 
   it('ofrece «Saltar al contenido» hacia el main', () => {

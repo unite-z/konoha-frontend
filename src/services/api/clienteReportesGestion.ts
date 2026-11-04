@@ -1,9 +1,8 @@
 /**
  * Cliente de los reportes de gestión del MOD-06 (`/api/v1/reportes/panel|material-vegetal|mapa-atenciones|…`).
  *
- * Reutiliza el transporte de MOD-05: misma sesión HTTP Basic (`establecerAutorizacion`) y mismos errores
- * (`ErrorApi`, que lee `errores` por campo). 401 = sin credenciales; 403 = sin permiso.
- * Los demás reportes del MOD-06 siguen con `cliente.ts` (sin autenticación): no cambian.
+ * Reutiliza el transporte de MOD-05: misma sesión de MOD-01 y mismos errores (`ErrorApi`, que lee `errores` por
+ * campo). 401 = sin sesión; 403 = sin permiso. Los demás reportes del MOD-06 van por `cliente.ts`, con la misma sesión.
  *
  * Descargas (RF-REP-009): `descargarReportesGestion` usa las piezas que exporta el cliente de MOD-05 (URL y nombre
  * del archivo) sin modificarlo, y `guardarArchivo` entrega el blob al navegador.

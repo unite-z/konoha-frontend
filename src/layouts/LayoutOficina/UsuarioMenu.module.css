@@ -1,0 +1,99 @@
+/*
+ * Bloque de usuario del Menú lateral (DESIGN.md, 4.3). Mismos márgenes que la marca: el avatar queda centrado
+ * bajo los iconos, comprimido y desplegado (MenuLateral.module.css).
+ */
+.usuario {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-6);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border-default);
+  white-space: nowrap;
+}
+
+.avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-8) + var(--space-3));
+  height: calc(var(--space-8) + var(--space-3));
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
+}
+
+.datos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nombre,
+.rol {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nombre {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  color: var(--color-text-primary);
+}
+
+.rol {
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
+}
+
+.opciones {
+  display: flex;
+  flex: none;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.opciones:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* El `ellipsis` de Figma es vertical. */
+.iconoVertical {
+  transform: rotate(90deg);
+}
+
+/* Desplegable abierto: Sombra lg, sobre el bloque y dentro del ancho del menú. */
+.lista {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--web-elev-3);
+}
+
+.lista[hidden] {
+  display: none;
+}

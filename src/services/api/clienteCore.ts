@@ -7,7 +7,9 @@
  * - 401 avisa a la sesión (`alPerderSesion`) para volver al ingreso (CU-MOD01-006 2b).
  * Los errores se interpretan igual que en el resto de clientes (`ErrorApi`).
  */
-import { ErrorApi, MENSAJE_SIN_CONEXION, esCancelacion, interpretarError } from './cliente'
+import { ErrorApi, MENSAJE_SIN_CONEXION, avisarSesionPerdida, esCancelacion, interpretarError, leerCookie } from './cliente'
+
+export { alPerderSesion, avisarSesionPerdida, leerCookie } from './cliente'
 
 export const API_CORE_URL: string = import.meta.env.VITE_API_CORE_URL || '/api/v1/core'
 
@@ -24,7 +26,6 @@ export interface OpcionesCore {
   signal?: AbortSignal
 }
 
-let alPerder: (() => void) | null = null
 
 /** Cuerpo completo de cada error, para los campos extra de MOD-01 (por ejemplo, `cuenta_id`). */
 const cuerpos = new WeakMap<ErrorApi, Record<string, unknown>>()
@@ -38,25 +39,6 @@ function errorDe(estado: number, datos: unknown): ErrorApi {
   const error = interpretarError(estado, datos)
   if (datos && typeof datos === 'object') cuerpos.set(error, datos as Record<string, unknown>)
   return error
-}
-
-/** Registra a quién avisar cuando la API responde 401 (sesión caducada, cerrada o cuenta desactivada). */
-export function alPerderSesion(funcion: (() => void) | null): void {
-  alPerder = funcion
-}
-
-/** Avisa de que la sesión se perdió (401). Lo usan también los clientes de MOD-05 y MOD-03. */
-export function avisarSesionPerdida(): void {
-  alPerder?.()
-}
-
-/** Valor de una cookie legible por scripts (solo `XSRF-TOKEN`; la de sesión es `HttpOnly`). */
-export function leerCookie(nombre: string, cookies: string = typeof document === 'undefined' ? '' : document.cookie): string | null {
-  for (const parte of cookies.split(';')) {
-    const [clave, ...valor] = parte.trim().split('=')
-    if (clave === nombre) return decodeURIComponent(valor.join('='))
-  }
-  return null
 }
 
 export function construirUrlCore(ruta: string, parametros?: Record<string, ValorParametro>): string {

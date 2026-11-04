@@ -6,6 +6,9 @@
  * - errores de validación de DRF: `{campo: [mensajes]}`;
  * - errores propios de DRF: `{detail: "..."}` (por ejemplo, 403).
  *
+ * Sesión de MOD-01 (AV-327): la cookie `HttpOnly` viaja sola, las escrituras llevan el token CSRF y un 401 avisa a la
+ * sesión para volver al ingreso.
+ *
  * Las páginas nunca llaman a `fetch` directamente: usan `reportes.ts` e `ia.ts`.
  */
 
@@ -58,6 +61,27 @@ export interface OpcionesSolicitud {
   /** Cuerpo JSON (solo en POST). */
   cuerpo?: unknown
   signal?: AbortSignal
+}
+
+let alPerder: (() => void) | null = null
+
+/** Registra a quién avisar cuando la API responde 401 (sesión caducada, cerrada o cuenta desactivada). */
+export function alPerderSesion(funcion: (() => void) | null): void {
+  alPerder = funcion
+}
+
+/** Avisa de que la sesión se perdió (401). Lo usan todos los clientes con la sesión de MOD-01. */
+export function avisarSesionPerdida(): void {
+  alPerder?.()
+}
+
+/** Valor de una cookie legible por scripts (solo `XSRF-TOKEN`; la de sesión es `HttpOnly`). */
+export function leerCookie(nombre: string, cookies: string = typeof document === 'undefined' ? '' : document.cookie): string | null {
+  for (const parte of cookies.split(';')) {
+    const [clave, ...valor] = parte.trim().split('=')
+    if (clave === nombre) return decodeURIComponent(valor.join('='))
+  }
+  return null
 }
 
 /** Construye la URL relativa a `API_BASE_URL` con los parámetros no vacíos. */
@@ -115,6 +139,7 @@ function aplanarMensajes(valor: unknown): string[] {
  */
 export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Promise<T> {
   const { metodo = 'GET', parametros, cuerpo, signal } = opciones
+  const token = metodo === 'GET' ? null : leerCookie('XSRF-TOKEN')
   let respuesta: Response
   try {
     respuesta = await fetch(construirUrl(ruta, parametros), {
@@ -122,7 +147,9 @@ export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {
       headers: {
         Accept: 'application/json',
         ...(cuerpo !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
       },
+      credentials: 'same-origin',
       body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
       signal,
     })
@@ -130,6 +157,8 @@ export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {
     if (esCancelacion(error)) throw error
     throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
   }
+
+  if (respuesta.status === 401) avisarSesionPerdida()
 
   let datos: unknown = null
   const texto = await respuesta.text()

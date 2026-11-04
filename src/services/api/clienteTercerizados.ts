@@ -1,9 +1,8 @@
 /**
  * Cliente de la API de MOD-05 (`/api/tercerizados/`).
  *
- * Diferencias con `cliente.ts` (MOD-06), que no cambia:
- * - Sesión de MOD-01 (AV-234): la cookie `HttpOnly` viaja sola y las escrituras llevan el token CSRF.
- *   La interfaz no guarda ninguna credencial. Un 401 avisa a la sesión de MOD-01 para volver al ingreso.
+ * Misma sesión de MOD-01 que `cliente.ts` (MOD-06): la cookie `HttpOnly` viaja sola, las escrituras llevan el token
+ * CSRF y un 401 avisa a la sesión para volver al ingreso. La interfaz no guarda ninguna credencial. Además:
  * - Métodos GET, POST y PATCH; cuerpo JSON o `FormData` (multipart, el navegador pone el `boundary`).
  * - Descarga de archivos autenticada (blob).
  * Los errores se interpretan igual que en MOD-06 (`ErrorApi`), así las páginas los tratan del mismo modo.
