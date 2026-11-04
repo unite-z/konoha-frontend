@@ -75,3 +75,46 @@ export function superaObjetivo(incidencia: IncidenciaResumen, horas: number): bo
   const pendiente = !['Atendida', 'Cerrada', 'Descartada'].includes(incidencia.estado)
   return incidencia.tipo_sencilla && incidencia.via !== 'Tercerizada' && pendiente && horas > 24
 }
+
+/**
+ * Nivel de la alerta de plazo de una sencilla del personal propio (RN-019, AV-280): pasa el objetivo a las 24 h,
+ * está cerca del máximo desde las 40 h (faltan 8 o menos para las 48) y vence a las 48 h.
+ */
+export type NivelPlazo = 'SuperaObjetivo' | 'CercaMaximo' | 'Vencida'
+
+export const NIVEL_PLAZO: Record<NivelPlazo, { texto: string; tono: TonoEstado }> = {
+  SuperaObjetivo: { texto: 'Supera el objetivo', tono: 'aviso' },
+  CercaMaximo: { texto: 'Cerca del máximo', tono: 'error' },
+  Vencida: { texto: 'Vencida', tono: 'error' },
+}
+
+export function nivelPlazo(incidencia: IncidenciaResumen, horas: number): NivelPlazo | null {
+  if (!superaObjetivo(incidencia, horas)) return null
+  if (horas > 48) return 'Vencida'
+  if (horas >= 40) return 'CercaMaximo'
+  return 'SuperaObjetivo'
+}
+
+export interface AlertaPlazo {
+  incidencia: IncidenciaResumen
+  horas: number
+  nivel: NivelPlazo
+}
+
+/** Alertas de la tarjeta «Plazo de incidencias sencillas», de la más reciente a la más antigua (Figma 388-7027). */
+export function alertasPlazo(incidencias: IncidenciaResumen[], ahora: number): AlertaPlazo[] {
+  return incidencias
+    .map((incidencia) => {
+      const horas = horasAbierta(incidencia, ahora)
+      const nivel = nivelPlazo(incidencia, horas)
+      return nivel ? { incidencia, horas, nivel } : null
+    })
+    .filter((alerta): alerta is AlertaPlazo => alerta !== null)
+    .sort((a, b) => a.horas - b.horas)
+}
+
+/** «Hojarasca en exceso · Patio de Letras · 31 h · Luis P.» */
+export function textoAlertaPlazo(alerta: AlertaPlazo): string {
+  const { incidencia, horas } = alerta
+  return [incidencia.tipo, incidencia.espacio, `${horas} h`, incidencia.responsable].filter(Boolean).join(' · ')
+}

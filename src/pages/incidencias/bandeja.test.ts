@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { incidenciasSimuladas } from '@/services/simulados/incidencias'
-import { contadoresBandeja, horasAbierta, incidenciasDePestana, superaObjetivo, textoTiempoAbierta } from './bandeja'
+import { alertasPlazo, contadoresBandeja, horasAbierta, incidenciasDePestana, nivelPlazo, superaObjetivo, textoAlertaPlazo, textoTiempoAbierta } from './bandeja'
 
 const ahora = Date.parse('2026-11-04T12:00:00-05:00')
 const incidencias = incidenciasSimuladas(ahora)
@@ -27,5 +27,16 @@ describe('bandeja de incidencias', () => {
       return incidencia ? superaObjetivo(incidencia, horasAbierta(incidencia, ahora)) : null
     })
     expect(casos).toEqual([true, false, false, false])
+  })
+
+  it('da el nivel de plazo: objetivo a las 24 h, cerca del máximo desde las 40 y vencida pasadas las 48 (AV-280)', () => {
+    const alertas = alertasPlazo(incidencias, ahora)
+    expect(alertas.map((a) => [a.incidencia.codigo, a.nivel])).toEqual([
+      ['INC-2026-038', 'SuperaObjetivo'],
+      ['INC-2026-036', 'CercaMaximo'],
+    ])
+    expect(textoAlertaPlazo(alertas[0])).toBe('Hojarasca en exceso · Patio de Letras · 31 h · Luis P.')
+    const sencilla = incidencias.find((i) => i.id === 38)
+    expect(sencilla && nivelPlazo(sencilla, 49)).toBe('Vencida')
   })
 })
