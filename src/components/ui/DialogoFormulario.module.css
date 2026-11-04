@@ -15,6 +15,33 @@
   --dialogo-ancho: 56rem;
 }
 
+/* Panel lateral: a la derecha y a toda la altura, con las acciones siempre abajo. */
+.lateral {
+  --dialogo-ancho: 24rem;
+  height: calc(100vh - 2 * var(--space-2));
+  max-height: none;
+  margin: var(--space-2) var(--space-2) var(--space-2) auto;
+}
+
+.lateral .formulario {
+  height: 100%;
+  max-height: none;
+}
+
+.lateral .cuerpo {
+  flex: 1;
+}
+
+@media (max-width: 40rem) {
+  .lateral {
+    --dialogo-ancho: 100vw;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
 .dialogo::backdrop {
   background: var(--web-scrim);
 }
