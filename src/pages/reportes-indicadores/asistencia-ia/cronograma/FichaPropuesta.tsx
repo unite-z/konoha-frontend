@@ -5,13 +5,13 @@
  * Si coincide con una prohibición y no se descarta, exige la confirmación expresa de RI-25.
  */
 import type { ReactNode } from 'react'
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Boton from '../../../../components/ui/Boton'
-import Icono from '../../../../components/ui/Icono'
-import type { AccionDecision } from '../../../../types/ia'
-import type { DecisionPropuestaCronograma, PropuestaCronograma, ValoresCronograma } from '../../../../types/cronogramaIa'
-import { insigniaAccion } from '../../../../utils/estados'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import Icono from '@/components/ui/Icono'
+import type { AccionDecision } from '@/types/ia'
+import type { DecisionPropuestaCronograma, PropuestaCronograma, ValoresCronograma } from '@/types/cronogramaIa'
+import { insigniaAccion } from '@/utils/estados'
 import {
   idConfirmaRestriccion,
   MENSAJES_CRONOGRAMA,
@@ -19,14 +19,14 @@ import {
   textoPeriodoCorto,
   textoRecursos,
   type DecisionEnCursoCronograma,
-} from '../../../../utils/cronogramaIa'
+} from '@/utils/cronogramaIa'
 import estilos from '../extraccion/FichaCampo.module.css'
 import { ACCIONES } from '../extraccion/valoresCampo'
 import estilosCronograma from './Cronograma.module.css'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import Casilla from '../../../../components/ui/Casilla'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Casilla from '@/components/ui/Casilla'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 const ETIQUETA_ACCION: Record<AccionDecision, string> = { aceptar: 'Aceptar', corregir: 'Modificar', descartar: 'Descartar' }
 

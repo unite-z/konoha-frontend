@@ -4,21 +4,21 @@
  */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import { rutaDetalleAtencion } from '../../../router/rutasApp'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
 import type {
   ClaveIndicadorPanel,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
-} from '../../../types/reportesGestion'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../utils/formato'
-import { insigniaEstadoAtencion, numeroDeDecimal } from '../../../utils/reportesGestion'
+} from '@/types/reportesGestion'
+import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
+import { insigniaEstadoAtencion, numeroDeDecimal } from '@/utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
 import { MAXIMO_REGISTROS } from './registros'
-import Estado from '../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 /** Código de la atención con enlace a su ficha de MOD-05 (misma sesión; Guía Web 5.8: «abre la atención»). */
 function enlaceAtencion(fila: { atencion_id: number; codigo: string }): ReactNode {

@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ErrorApi } from '../../services/api/cliente'
+import { ErrorApi } from '@/services/api/cliente'
 import ExportarExcel from './ExportarExcel'
 
 const dobles = vi.hoisted(() => ({
@@ -11,9 +11,9 @@ const dobles = vi.hoisted(() => ({
   guardarArchivo: vi.fn(),
 }))
 
-vi.mock('../../sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: dobles.permisos }) }))
-vi.mock('../../services/api/core', () => ({ exportarListado: dobles.exportarListado }))
-vi.mock('../../services/api/clienteReportesGestion', () => ({ guardarArchivo: dobles.guardarArchivo }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: dobles.permisos }) }))
+vi.mock('@/services/api/core', () => ({ exportarListado: dobles.exportarListado }))
+vi.mock('@/services/api/clienteReportesGestion', () => ({ guardarArchivo: dobles.guardarArchivo }))
 
 beforeEach(() => {
   dobles.permisos = ['INV.INVENTARIO.CONSULTAR']

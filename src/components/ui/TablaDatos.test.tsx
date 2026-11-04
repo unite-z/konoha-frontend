@@ -2,7 +2,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SIN_VALOR as V } from '../../utils/formato'
+import { SIN_VALOR as V } from '@/utils/formato'
 import TablaDatos, { type ColumnaTabla } from './TablaDatos'
 
 afterEach(cleanup)

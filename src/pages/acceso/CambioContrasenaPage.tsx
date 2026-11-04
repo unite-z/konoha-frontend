@@ -8,14 +8,14 @@
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
-import Tarjeta from '../../components/ui/Tarjeta'
-import Boton from '../../components/ui/Boton'
-import CampoFormulario, { LeyendaObligatorio } from '../../components/ui/CampoFormulario'
-import { aErrorApi } from '../../services/api/cliente'
-import { cambiarContrasena } from '../../services/api/core'
-import { useSesion, useSesionActiva } from '../../sesion/ContextoSesion'
-import { LONGITUD_MINIMA_CONTRASENA, validarCambioContrasena, type ErroresCambioContrasena } from '../../utils/validacionCore'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Tarjeta from '@/components/ui/Tarjeta'
+import Boton from '@/components/ui/Boton'
+import CampoFormulario, { LeyendaObligatorio } from '@/components/ui/CampoFormulario'
+import { aErrorApi } from '@/services/api/cliente'
+import { cambiarContrasena } from '@/services/api/core'
+import { useSesion, useSesionActiva } from '@/sesion/ContextoSesion'
+import { LONGITUD_MINIMA_CONTRASENA, validarCambioContrasena, type ErroresCambioContrasena } from '@/utils/validacionCore'
 import estilos from './Acceso.module.css'
 
 const IDS: Record<keyof ErroresCambioContrasena, string> = {

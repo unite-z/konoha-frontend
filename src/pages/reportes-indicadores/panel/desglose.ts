@@ -14,8 +14,8 @@ import type {
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
-} from '../../../types/reportesGestion'
-import { ESTADOS_FILTRO_PANEL, numeroDeDecimal } from '../../../utils/reportesGestion'
+} from '@/types/reportesGestion'
+import { ESTADOS_FILTRO_PANEL, numeroDeDecimal } from '@/utils/reportesGestion'
 
 /** Texto del espacio de los registros sin espacio (como «Sin espacio» del back-end). */
 export const TEXTO_SIN_ESPACIO = 'Sin espacio'

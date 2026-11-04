@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
-import { SIN_VALOR } from '../../utils/formato'
+import { SIN_VALOR } from '@/utils/formato'
 import { CeldaDobleLinea, CeldaTexto } from './CeldasTabla'
 
 afterEach(cleanup)

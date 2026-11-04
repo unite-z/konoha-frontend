@@ -4,8 +4,8 @@
  *
  * Cada reporte es una tarjeta de enlace con su descripción y los filtros que admite.
  */
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS } from '../../../router/rutasApp'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, RUTAS } from '@/router/rutasApp'
 import ListaEnlaces from '../ListaEnlaces'
 
 const FILTROS = 'Filtros'

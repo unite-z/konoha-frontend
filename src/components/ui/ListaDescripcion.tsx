@@ -3,7 +3,7 @@
  * Los valores vacíos se muestran con «—».
  */
 import type { ReactNode } from 'react'
-import { SIN_VALOR } from '../../utils/formato'
+import { SIN_VALOR } from '@/utils/formato'
 import estilos from './ListaDescripcion.module.css'
 
 export interface ElementoDescripcion {

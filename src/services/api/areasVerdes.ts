@@ -1,5 +1,5 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { AreaVerde, PaginaAreasVerdes } from '../../types/areasVerdes'
+import type { AreaVerde, PaginaAreasVerdes } from '@/types/areasVerdes'
 
 const BASE = '/api/v1/inventario'
 

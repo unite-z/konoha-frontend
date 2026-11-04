@@ -5,14 +5,14 @@
  * Cada registro enlaza con su módulo cuando hay pantalla (`rutaRegistro`).
  */
 // Excepción al sistema (AV-351): tabla de comparación campo a campo entre registros; TablaDatos es para listados.
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import { BotonEnlace } from '../../../../components/ui/Boton'
-import ListaDescripcion from '../../../../components/ui/ListaDescripcion'
-import type { RegistroImplicado } from '../../../../types/inconsistenciasIa'
-import { SIN_VALOR } from '../../../../utils/formato'
-import { filasComparacion, rutaRegistro } from '../../../../utils/inconsistenciasIa'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import { BotonEnlace } from '@/components/ui/Boton'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import type { RegistroImplicado } from '@/types/inconsistenciasIa'
+import { SIN_VALOR } from '@/utils/formato'
+import { filasComparacion, rutaRegistro } from '@/utils/inconsistenciasIa'
 import estilos from './Inconsistencias.module.css'
-import Estado from '../../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 function Encabezado({ registro, conservar }: { registro: RegistroImplicado; conservar: boolean }) {
   const enlace = rutaRegistro(registro)

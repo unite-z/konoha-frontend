@@ -1,8 +1,8 @@
 /**
  * Mensajes del back-end sobre el periodo (400 de validación de DRF), para mostrarlos junto a su campo.
  */
-import type { ErroresPeriodo } from '../../../components/ui/validacionPeriodo'
-import type { ErrorApi } from '../../../services/api/cliente'
+import type { ErroresPeriodo } from '@/components/ui/validacionPeriodo'
+import type { ErrorApi } from '@/services/api/cliente'
 
 export function erroresDePeriodo(error: ErrorApi | null): ErroresPeriodo | undefined {
   if (!error || error.estado !== 400) return undefined

@@ -10,9 +10,9 @@
  *   sus propios mensajes en español (el back-end puede responderlos en inglés).
  */
 import { useCallback, useRef, useState } from 'react'
-import { aErrorApi } from '../../../services/api/cliente'
-import { obtenerAtencion } from '../../../services/api/tercerizados'
-import type { Atencion } from '../../../types/tercerizados'
+import { aErrorApi } from '@/services/api/cliente'
+import { obtenerAtencion } from '@/services/api/tercerizados'
+import type { Atencion } from '@/types/tercerizados'
 
 export interface ErrorOperacion {
   titulo: string

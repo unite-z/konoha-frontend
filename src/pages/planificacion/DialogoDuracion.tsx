@@ -1,12 +1,12 @@
 /** HU-MOD03-002: edición de la duración máxima de un servicio (solo jefe de sección). */
 import { useRef, useState } from 'react'
-import CampoFormulario from '../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../components/ui/DialogoFormulario'
-import { aErrorApi } from '../../services/api/cliente'
-import { actualizarDuracion } from '../../services/api/planificacion'
-import type { ServicioPeriodico } from '../../types/planificacion'
-import { horaCorta } from '../../utils/planificacion'
-import { validarDuracion, type BorradorDuracion, type ErroresDuracion } from '../../utils/validacionPlanificacion'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { aErrorApi } from '@/services/api/cliente'
+import { actualizarDuracion } from '@/services/api/planificacion'
+import type { ServicioPeriodico } from '@/types/planificacion'
+import { horaCorta } from '@/utils/planificacion'
+import { validarDuracion, type BorradorDuracion, type ErroresDuracion } from '@/utils/validacionPlanificacion'
 
 export interface DialogoDuracionProps {
   servicio: ServicioPeriodico

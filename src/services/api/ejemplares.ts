@@ -1,5 +1,5 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { EjemplarInventario, EspecieVegetal } from '../../types/ejemplares'
+import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 
 const BASE = '/api/v1/inventario'
 

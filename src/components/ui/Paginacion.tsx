@@ -7,7 +7,7 @@
  */
 import type { ReactNode } from 'react'
 import Boton from './Boton'
-import { formatearNumero } from '../../utils/formato'
+import { formatearNumero } from '@/utils/formato'
 import estilos from './Paginacion.module.css'
 
 export interface PaginacionProps {

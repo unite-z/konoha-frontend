@@ -5,15 +5,15 @@
  * SUPUESTO (pendiente de confirmar con el backend): aceptar no modifica el registro oficial desde MOD-06. El
  * hallazgo pasa a `Validada` con la decisión; la corrección la hace el módulo dueño del registro.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
-import type { Paginado } from '../../types/comun'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
+import type { Paginado } from '@/types/comun'
 import type {
   CuerpoAceptarInconsistencia,
   FiltrosInconsistencias,
   ResultadoAnalisisInconsistencias,
   SolicitudAnalisisInconsistencias,
   SugerenciaInconsistencia,
-} from '../../types/inconsistenciasIa'
+} from '@/types/inconsistenciasIa'
 import { solicitar } from './cliente'
 
 /** `POST ia/inconsistencias/analisis/`: la IA analiza un conjunto de datos. Puede tardar. */

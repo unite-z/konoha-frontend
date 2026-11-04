@@ -1,5 +1,5 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { AsignacionCapataz, CuartelInventario, ElementoInventario, PersonaInventario, SectorInventario } from '../../types/catalogosInventario'
+import type { AsignacionCapataz, CuartelInventario, ElementoInventario, PersonaInventario, SectorInventario } from '@/types/catalogosInventario'
 
 const BASE = '/api/v1/inventario'
 

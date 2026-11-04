@@ -3,12 +3,12 @@
  * alguno), con desviación y ejecuciones sin programar. Las tres últimas son también filtros de toda la página
  * (`TarjetaFiltro`): al pulsarlas se ven solo esos trabajos; al pulsar otra vez, se quita el filtro.
  */
-import TarjetaFiltro from '../../../../components/reportes-indicadores/TarjetaFiltro'
-import TarjetaIndicador from '../../../../components/ui/TarjetaIndicador'
-import type { ResultadoProgramadoEjecutado } from '../../../../types/reportesGestion'
-import { formatearNumero } from '../../../../utils/formato'
-import { promedioDesviacion, type FiltroTarjeta } from '../../../../utils/programadoEjecutado'
-import { numeroDeDecimal } from '../../../../utils/reportesGestion'
+import TarjetaFiltro from '@/components/reportes-indicadores/TarjetaFiltro'
+import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
+import type { ResultadoProgramadoEjecutado } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
+import { promedioDesviacion, type FiltroTarjeta } from '@/utils/programadoEjecutado'
+import { numeroDeDecimal } from '@/utils/reportesGestion'
 import estilos from './ProgramadoEjecutado.module.css'
 
 const plural = (n: number, uno: string, varios: string) => `${formatearNumero(n)} ${n === 1 ? uno : varios}`

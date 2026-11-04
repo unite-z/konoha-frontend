@@ -4,14 +4,14 @@
  * «Ver detalles» abre sus trabajos en una tabla (la versión accesible del gráfico).
  */
 import { useState } from 'react'
-import BarrasHorizontales from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import { escalaRedonda, marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
-import type { ComparacionPorServicio, FilaProgramadoEjecutado } from '../../../../types/reportesGestion'
-import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
-import { barrasPorServicio, filasDeBarra } from '../../../../utils/programadoEjecutado'
-import Tarjeta from '../../../../components/ui/Tarjeta'
+import BarrasHorizontales from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
+import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
+import type { ComparacionPorServicio, FilaProgramadoEjecutado } from '@/types/reportesGestion'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
+import { barrasPorServicio, filasDeBarra } from '@/utils/programadoEjecutado'
+import Tarjeta from '@/components/ui/Tarjeta'
 
 export interface GraficoPorServicioProps {
   servicios: ComparacionPorServicio[]

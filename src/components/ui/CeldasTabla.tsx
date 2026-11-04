@@ -5,7 +5,7 @@
  * Estado → `Estado`; Acción → `Boton variante="fantasma" compacto`; Avance → `BarraAvance`.
  */
 import type { ReactNode } from 'react'
-import { SIN_VALOR } from '../../utils/formato'
+import { SIN_VALOR } from '@/utils/formato'
 import estilos from './CeldasTabla.module.css'
 
 export interface CeldaTextoProps {

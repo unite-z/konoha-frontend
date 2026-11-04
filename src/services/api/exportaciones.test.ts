@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { ReporteGenerado } from '../../types/exportaciones'
+import type { ReporteGenerado } from '@/types/exportaciones'
 import { descargarExportacion, generarExportacion, listarExportaciones, listarTiposExportables } from './exportaciones'
 
-vi.mock('../../config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
+vi.mock('@/config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
 
 afterEach(() => {
   vi.unstubAllGlobals()

@@ -3,20 +3,20 @@
  * Inicios de sesión correctos y fallidos, bloqueos, accesos denegados y rechazos por falta de permiso.
  * Solo se consulta: la base no admite modificarlo ni borrarlo (RI-35).
  */
-import Selector, { OPCION_TODOS } from '../../components/ui/Selector'
-import Tarjeta from '../../components/ui/Tarjeta'
-import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
-import { useConsulta } from '../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
-import { usePaginaActual } from '../../hooks/usePaginaActual'
-import { MIGAS_CORE } from '../../router/rutasApp'
-import { listarAccesos } from '../../services/api/core'
-import type { Acceso, ResultadoAcceso } from '../../types/core'
-import { RESULTADO_ACCESO } from '../../utils/etiquetasCore'
-import { formatearFechaHora } from '../../utils/formato'
+import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_CORE } from '@/router/rutasApp'
+import { listarAccesos } from '@/services/api/core'
+import type { Acceso, ResultadoAcceso } from '@/types/core'
+import { RESULTADO_ACCESO } from '@/utils/etiquetasCore'
+import { formatearFechaHora } from '@/utils/formato'
 import estilos from './UsuariosRoles.module.css'
-import Estado from '../../components/ui/Estado'
-import { TONO_ESTADO } from '../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { TONO_ESTADO } from '@/components/ui/tonos'
 
 const TITULO = 'Registro de accesos'
 

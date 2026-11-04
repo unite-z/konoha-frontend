@@ -3,18 +3,18 @@
  * atención con su total, filtro por tipo de uso y resumen de la atención seleccionada (CU-MOD06-003, paso 6),
  * con acceso a la atención y al historial del espacio (paso 7). Presentacional.
  */
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import Casilla from '../../../components/ui/Casilla'
-import ListaDescripcion from '../../../components/ui/ListaDescripcion'
-import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
-import { rutaDetalleAtencion } from '../../../router/rutasApp'
-import type { TipoAtencion, TotalTipoAtencion } from '../../../types/reportesGestion'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../utils/formato'
-import type { FilaMapa } from '../../../utils/mapaAtenciones'
-import { insigniaEstadoAtencion, TIPOS_ATENCION } from '../../../utils/reportesGestion'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import Casilla from '@/components/ui/Casilla'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
+import type { TipoAtencion, TotalTipoAtencion } from '@/types/reportesGestion'
+import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
+import type { FilaMapa } from '@/utils/mapaAtenciones'
+import { insigniaEstadoAtencion, TIPOS_ATENCION } from '@/utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
-import Estado from '../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 export interface PanelCapasProps {
   totales: TotalTipoAtencion[]

@@ -24,7 +24,7 @@ import {
   type GeoJSONSourceSpecification,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { claveFilaMapa, limitesDeElementos, puntoRepresentativo, textoMarcador, type ElementoDibujable, type Limites } from '../../../utils/mapaAtenciones'
+import { claveFilaMapa, limitesDeElementos, puntoRepresentativo, textoMarcador, type ElementoDibujable, type Limites } from '@/utils/mapaAtenciones'
 import estilos from './LienzoMapaAtenciones.module.css'
 
 export interface LienzoMapaAtencionesProps {

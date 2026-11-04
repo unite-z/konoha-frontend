@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { FilaAtencionEspacio, FilaMovimientoMaterial } from '../../../types/reportesGestion'
+import type { FilaAtencionEspacio, FilaMovimientoMaterial } from '@/types/reportesGestion'
 import { filtroDeBarra, gruposDesglose, separarUnidad } from './desglose'
 import { AGRUPACIONES_ATENCIONES_ESPACIO, AGRUPACIONES_CONSUMO, agruparRegistros, unidadesDe } from './registros'
 

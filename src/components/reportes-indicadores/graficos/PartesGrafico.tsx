@@ -2,7 +2,7 @@
  * Piezas comunes de los gráficos del MOD-06: cabecera con el título y el total, y aviso de la parte elegida con
  * «Ver detalles» (se habilita al elegir una barra, columna o celda).
  */
-import Boton from '../../ui/Boton'
+import Boton from '@/components/ui/Boton'
 import estilos from './Graficos.module.css'
 
 /** Título del gráfico y total del conjunto mostrado. */

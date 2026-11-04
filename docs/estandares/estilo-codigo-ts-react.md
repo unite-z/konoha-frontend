@@ -24,6 +24,7 @@ Qué va en cada carpeta, qué puede importar a qué y cómo se comunican los mó
 - Nada de `!` (non-null assertion) salvo con un comentario que explique por qué es seguro.
 - Los tipos de la API viven en `types/` y reflejan el contrato de OpenAPI, con sus claves en snake_case (ADR 0005). Es la única excepción a camelCase. Si el backend cambia el contrato, se cambian aquí en el mismo ticket.
 - `import type` para lo que solo es tipo (`verbatimModuleSyntax` lo exige).
+- Imports de otra carpeta con el alias `@/`, que apunta a `src/`: `import Boton from '@/components/ui/Boton'`. Los relativos solo para la misma carpeta o la de al lado (`./`, `../`), nunca `../../`.
 
 ## React
 

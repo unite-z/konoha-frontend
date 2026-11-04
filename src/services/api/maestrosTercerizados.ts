@@ -13,8 +13,8 @@ import type {
   ProveedorEntrada,
   ProveedorMaestro,
   TipoVinculo,
-} from '../../types/maestrosTercerizados'
-import type { Paginado } from '../../types/tercerizados'
+} from '@/types/maestrosTercerizados'
+import type { Paginado } from '@/types/tercerizados'
 import { solicitarTercerizados } from './clienteTercerizados'
 
 // --- Proveedores (RF-SER-001) ---------------------------------------------------------------------------

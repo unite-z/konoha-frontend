@@ -3,12 +3,12 @@
  * espacios (atenciones frente al más atendido del sector, modalidad y tipos).
  * HU-MOD06-014: el grupo «Sin sector» se identifica y se explica.
  */
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import { SIN_SECTOR, type EspacioAtenciones, type SectorAtenciones } from '../../../../types/reportes'
-import { formatearNumero } from '../../../../utils/formato'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { SIN_SECTOR, type EspacioAtenciones, type SectorAtenciones } from '@/types/reportes'
+import { formatearNumero } from '@/utils/formato'
 import estilos from './Atenciones.module.css'
 import { AtencionesFrenteAlMaximo, BarraModalidad, TiposAtencion } from './PiezasAtenciones'
-import Estado from '../../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 /** Texto del grupo sin sector (el mismo que la opción del filtro). */
 const TEXTO_SIN_SECTOR = 'Sin sector'

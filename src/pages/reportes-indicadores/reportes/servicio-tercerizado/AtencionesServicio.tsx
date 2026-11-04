@@ -5,17 +5,17 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import Boton, { BotonEnlace } from '../../../../components/ui/Boton'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import { rutaDetalleAtencion } from '../../../../router/rutasApp'
-import type { FilaAtencionServicio } from '../../../../types/reportesGestion'
-import { formatearFechaHora, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
-import { insigniaEstadoAtencion, numeroDeDecimal } from '../../../../utils/reportesGestion'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
+import type { FilaAtencionServicio } from '@/types/reportesGestion'
+import { formatearFechaHora, formatearNumero, SIN_VALOR } from '@/utils/formato'
+import { insigniaEstadoAtencion, numeroDeDecimal } from '@/utils/reportesGestion'
 import estilos from './ServicioTercerizado.module.css'
-import Estado from '../../../../components/ui/Estado'
-import { TONO_ESTADO, insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { TONO_ESTADO, insigniaAEstado } from '@/components/ui/tonos'
 
 const POR_TANDA = 25
 

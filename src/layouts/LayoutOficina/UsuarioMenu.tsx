@@ -7,10 +7,10 @@
  * Esc y al pulsar fuera.
  */
 import { useEffect, useId, useRef, useState } from 'react'
-import { RUTAS_CORE } from '../../router/rutasApp'
-import Boton, { BotonEnlace } from '../../components/ui/Boton'
-import Icono from '../../components/ui/Icono'
-import { useSesion } from '../../sesion/ContextoSesion'
+import { RUTAS_CORE } from '@/router/rutasApp'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import Icono from '@/components/ui/Icono'
+import { useSesion } from '@/sesion/ContextoSesion'
 import estilos from './UsuarioMenu.module.css'
 
 /** Iniciales para el avatar del usuario («Robert G.» → «RG»). */

@@ -1,18 +1,18 @@
 /** HU-MOD03-003: alta de una restricción (solo jefe de sección). */
 import { useRef, useState } from 'react'
-import CampoFormulario, { AreaTexto } from '../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../components/ui/DialogoFormulario'
-import Selector from '../../components/ui/Selector'
-import { useConsulta } from '../../hooks/useConsulta'
-import { aErrorApi } from '../../services/api/cliente'
-import { crearRestriccion, listarTiposRestriccion } from '../../services/api/planificacion'
-import type { Restriccion } from '../../types/planificacion'
-import { PRESENTACION_EFECTO } from '../../utils/calendarioRestricciones'
+import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import Selector from '@/components/ui/Selector'
+import { useConsulta } from '@/hooks/useConsulta'
+import { aErrorApi } from '@/services/api/cliente'
+import { crearRestriccion, listarTiposRestriccion } from '@/services/api/planificacion'
+import type { Restriccion } from '@/types/planificacion'
+import { PRESENTACION_EFECTO } from '@/utils/calendarioRestricciones'
 import {
   validarRestriccion,
   type BorradorRestriccion,
   type ErroresRestriccion,
-} from '../../utils/validacionPlanificacion'
+} from '@/utils/validacionPlanificacion'
 
 export interface DialogoRestriccionProps {
   /** Fecha sugerida para el inicio y el fin (`AAAA-MM-DD`). */

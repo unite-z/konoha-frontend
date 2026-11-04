@@ -9,9 +9,9 @@
  * - Estados: buscando, sin resultados, error con «Reintentar» y aviso si hay más resultados que los mostrados.
  */
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { useConsulta } from '../../hooks/useConsulta'
-import { useDemora } from '../../hooks/useDemora'
-import { formatearNumero } from '../../utils/formato'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useDemora } from '@/hooks/useDemora'
+import { formatearNumero } from '@/utils/formato'
 import Boton from './Boton'
 import { MarcoCampo } from './CampoFormulario'
 import { clasesDeControl, idsDescripcion, type PropsMarcoCampo } from './campoFormularioUtil'

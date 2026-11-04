@@ -1,6 +1,6 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { PoligonoMapaAsignado, UsoFuenteMapa } from '../../types/mapaInventario'
-import type { AreaVerde, PaginaAreasVerdes } from '../../types/areasVerdes'
+import type { PoligonoMapaAsignado, UsoFuenteMapa } from '@/types/mapaInventario'
+import type { AreaVerde, PaginaAreasVerdes } from '@/types/areasVerdes'
 
 const BASE = '/api/v1/inventario'
 

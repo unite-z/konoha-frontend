@@ -4,12 +4,12 @@
  * la derecha, «Tu decisión» (aceptar, corregir la prioridad o descartar) o, ya validada, la decisión final.
  */
 import type { ReactNode } from 'react'
-import Icono from '../../../../components/ui/Icono'
-import Selector from '../../../../components/ui/Selector'
-import type { AccionDecision } from '../../../../types/ia'
-import type { DecisionElementoPrioridad, ElementoPriorizado, PrioridadAtencion, SustentoPrioridad } from '../../../../types/priorizacionIa'
-import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '../../../../utils/estados'
-import { formatearNumero } from '../../../../utils/formato'
+import Icono from '@/components/ui/Icono'
+import Selector from '@/components/ui/Selector'
+import type { AccionDecision } from '@/types/ia'
+import type { DecisionElementoPrioridad, ElementoPriorizado, PrioridadAtencion, SustentoPrioridad } from '@/types/priorizacionIa'
+import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '@/utils/estados'
+import { formatearNumero } from '@/utils/formato'
 import {
   idPrioridadFinal,
   insigniaPrioridad,
@@ -17,13 +17,13 @@ import {
   PRIORIDADES,
   textoDecisionFinal,
   type DecisionEnCurso,
-} from '../../../../utils/priorizacionIa'
+} from '@/utils/priorizacionIa'
 import estilos from '../extraccion/FichaCampo.module.css'
 import { ACCIONES } from '../extraccion/valoresCampo'
 import estilosElemento from './FichaElemento.module.css'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 const NO_DISPONIBLE = 'No disponible'
 

@@ -6,9 +6,9 @@
  * SUPUESTO (pendiente de confirmar con el backend): recurso único `exportaciones/` con `tipos/`, el historial
  * paginado (25) y `{id}/archivo/`; errores 422 `volumen-excedido` y `sin-datos`.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
-import type { Paginado } from '../../types/comun'
-import type { ConsultaExportaciones, ReporteGenerado, SolicitudExportacion, TipoExportable } from '../../types/exportaciones'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
+import type { Paginado } from '@/types/comun'
+import type { ConsultaExportaciones, ReporteGenerado, SolicitudExportacion, TipoExportable } from '@/types/exportaciones'
 import { descargarReportesGestion, solicitarReportesGestion } from './clienteReportesGestion'
 
 /** `GET exportaciones/tipos/`: tipos exportables con sus formatos y filtros. */

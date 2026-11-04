@@ -25,7 +25,7 @@ import type {
   TipoRepositorio,
   UsuarioConContrasena,
   UsuarioResumen,
-} from '../../types/core'
+} from '@/types/core'
 import { descargarCore, solicitarCore } from './clienteCore'
 
 // --- Sesión (RF-T-001) ------------------------------------------------------------------------------------

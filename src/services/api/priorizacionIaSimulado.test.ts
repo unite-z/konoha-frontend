@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { listarPriorizaciones } from './priorizacionIa'
 
-vi.mock('../../config/datosSimulados', () => ({ DATOS_SIMULADOS: true }))
+vi.mock('@/config/datosSimulados', () => ({ DATOS_SIMULADOS: true }))
 
 afterEach(() => {
   vi.unstubAllGlobals()

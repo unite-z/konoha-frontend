@@ -11,24 +11,24 @@
  * - Solo consulta (GET).
  */
 import { useMemo, useState } from 'react'
-import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
-import DialogoDetalle from '../../../components/ui/DialogoDetalle'
-import SelectoresFiltroGestion, { type CampoFiltroGestion } from '../../../components/reportes-indicadores/SelectoresFiltroGestion'
-import { AYUDA_CATALOGO_INCOMPLETO, MOTIVO_CATALOGO_NO_DISPONIBLE, type CatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import { ChipsFiltrosActivos, GrupoChips } from '../../../components/ui/ChipsFiltro'
-import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
-import Pestanas from '../../../components/ui/Pestanas'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS } from '../../../router/rutasApp'
-import { obtenerCatalogoComparacion, obtenerProgramadoEjecutado } from '../../../services/api/reportesGestion'
-import type { FilaProgramadoEjecutado, ResultadoProgramadoEjecutado } from '../../../types/reportesGestion'
-import { textoModalidad } from '../../../utils/estados'
-import { formatearFecha, formatearNumero } from '../../../utils/formato'
-import { hoyLima } from '../../../utils/instanteLima'
+import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import DialogoDetalle from '@/components/ui/DialogoDetalle'
+import SelectoresFiltroGestion, { type CampoFiltroGestion } from '@/components/reportes-indicadores/SelectoresFiltroGestion'
+import { AYUDA_CATALOGO_INCOMPLETO, MOTIVO_CATALOGO_NO_DISPONIBLE, type CatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import { ChipsFiltrosActivos, GrupoChips } from '@/components/ui/ChipsFiltro'
+import FiltroPeriodo from '@/components/ui/FiltroPeriodo'
+import Pestanas from '@/components/ui/Pestanas'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS } from '@/router/rutasApp'
+import { obtenerCatalogoComparacion, obtenerProgramadoEjecutado } from '@/services/api/reportesGestion'
+import type { FilaProgramadoEjecutado, ResultadoProgramadoEjecutado } from '@/types/reportesGestion'
+import { textoModalidad } from '@/utils/estados'
+import { formatearFecha, formatearNumero } from '@/utils/formato'
+import { hoyLima } from '@/utils/instanteLima'
 import {
   consultaProgramado,
   contarPorSituacion,
@@ -37,7 +37,7 @@ import {
   porServicioDe,
   SITUACIONES,
   type FiltroTarjeta,
-} from '../../../utils/programadoEjecutado'
+} from '@/utils/programadoEjecutado'
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import GraficoPorServicio from './programado-ejecutado/GraficoPorServicio'

@@ -2,9 +2,9 @@
  * Piezas de los gráficos de RF-REP-004 propias de sus medidas: selector de medida y mensaje sin datos.
  * La cabecera y «Ver detalles» son las comunes del MOD-06 (`components/reportes-indicadores/graficos`).
  */
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import EstadoVacio from '@/components/ui/EstadoVacio'
 import { MEDIDAS, MEDIDAS_CON_TIEMPO, type Medida } from './agregacion'
 
 export function ControlMedida({ medida, onCambiar }: { medida: Medida; onCambiar: (medida: Medida) => void }) {

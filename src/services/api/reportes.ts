@@ -2,14 +2,14 @@
  * Servicios de los reportes del MOD-06 (solo lectura, GET).
  * Rutas relativas a API_BASE_URL (`backend/reportes_indicadores/api/urls.py`).
  */
-import type { Periodo } from '../../types/comun'
+import type { Periodo } from '@/types/comun'
 import type {
   FiltrosAtenciones,
   FiltrosDistribucion,
   ResultadoAtencionesEspacioSector,
   ResultadoCumplimientoCorte,
   ResultadoDistribucionPersonal,
-} from '../../types/reportes'
+} from '@/types/reportes'
 import { solicitar } from './cliente'
 
 /** RF-REP-002: `GET reportes/cumplimiento-corte/`. */

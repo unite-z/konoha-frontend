@@ -1,13 +1,13 @@
 // RF-SER-003 y RF-SER-011 · Paso 3: revisión antes de registrar
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import Estado from '../../../components/ui/Estado'
-import ListaDescripcion from '../../../components/ui/ListaDescripcion'
-import Tarjeta from '../../../components/ui/Tarjeta'
-import type { TipoServicio, UnidadMedida } from '../../../types/tercerizados'
-import { textoOrigen } from '../../../utils/estadosTercerizados'
-import { formatearFecha, formatearNumero } from '../../../utils/formato'
-import { normalizarMetrado, type BorradorAtencion } from '../../../utils/nuevaAtencion'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import Estado from '@/components/ui/Estado'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import Tarjeta from '@/components/ui/Tarjeta'
+import type { TipoServicio, UnidadMedida } from '@/types/tercerizados'
+import { textoOrigen } from '@/utils/estadosTercerizados'
+import { formatearFecha, formatearNumero } from '@/utils/formato'
+import { normalizarMetrado, type BorradorAtencion } from '@/utils/nuevaAtencion'
 import estilos from './NuevaAtencion.module.css'
 
 export interface PasoRevisionProps {

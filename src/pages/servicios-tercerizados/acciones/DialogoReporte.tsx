@@ -12,19 +12,19 @@
  * - El tamaño máximo lo define el servidor (configurable); su mensaje se muestra tal cual.
  */
 import { useRef, useState } from 'react'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import CampoFormulario, { AreaTexto } from '../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import Icono from '../../../components/ui/Icono'
-import Selector from '../../../components/ui/Selector'
-import ZonaCarga from '../../../components/ui/ZonaCarga'
-import { aErrorApi, esCancelacion } from '../../../services/api/cliente'
-import { adjuntarReporte, listarReportes, obtenerAtencion } from '../../../services/api/tercerizados'
-import type { Atencion, CategoriaDocumento, ReporteProveedor } from '../../../types/tercerizados'
-import { OPCIONES_CATEGORIA, textoAlcance } from '../../../utils/estadosTercerizados'
-import { formatearFecha, formatearNumero, formatearTamanoArchivo } from '../../../utils/formato'
-import { fechaLimaDeInstante, hoyLima } from '../../../utils/instanteLima'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import Icono from '@/components/ui/Icono'
+import Selector from '@/components/ui/Selector'
+import ZonaCarga from '@/components/ui/ZonaCarga'
+import { aErrorApi, esCancelacion } from '@/services/api/cliente'
+import { adjuntarReporte, listarReportes, obtenerAtencion } from '@/services/api/tercerizados'
+import type { Atencion, CategoriaDocumento, ReporteProveedor } from '@/types/tercerizados'
+import { OPCIONES_CATEGORIA, textoAlcance } from '@/utils/estadosTercerizados'
+import { formatearFecha, formatearNumero, formatearTamanoArchivo } from '@/utils/formato'
+import { fechaLimaDeInstante, hoyLima } from '@/utils/instanteLima'
 import {
   ACEPTA_DOCUMENTOS,
   LARGO_MAXIMO_DESCRIPCION_DOCUMENTO,
@@ -33,7 +33,7 @@ import {
   validarReporte,
   type DocumentoBorrador,
   type ErroresReporte,
-} from '../../../utils/validacionTercerizados'
+} from '@/utils/validacionTercerizados'
 import estilos from './Acciones.module.css'
 
 const ID_FECHA = 'reporte-fecha'

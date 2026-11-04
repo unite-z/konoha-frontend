@@ -10,7 +10,7 @@
  * - `datos-insuficientes`: el personal propio sin datos (como hoy con backend) y sin sus filas;
  * - `error`, `sin-permiso` y `sin-sesion`: los genéricos de `simulacion.ts`.
  */
-import type { Modalidad } from '../../types/reportes'
+import type { Modalidad } from '@/types/reportes'
 import type {
   CatalogoComparacion,
   ComparacionPorServicio,
@@ -18,9 +18,9 @@ import type {
   EjecucionVinculada,
   FilaProgramadoEjecutado,
   ResultadoProgramadoEjecutado,
-} from '../../types/reportesGestion'
-import { hoyLima } from '../../utils/instanteLima'
-import { insigniaSituacion, situacionDe } from '../../utils/programadoEjecutado'
+} from '@/types/reportesGestion'
+import { hoyLima } from '@/utils/instanteLima'
+import { insigniaSituacion, situacionDe } from '@/utils/programadoEjecutado'
 import { escenarioSimulado, responderSimulado } from './simulacion'
 
 const SERVICIOS: { id: number; nombre: string; modalidad: Modalidad; responsables: string[] }[] = [

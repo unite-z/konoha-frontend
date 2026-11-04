@@ -3,16 +3,16 @@
  * la tabla completa. Al elegir una barra, «Ver detalles» abre las atenciones en las que se atendió.
  */
 import { useState } from 'react'
-import BarrasHorizontales from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import { escalaRedonda, marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { ElementoAtendido, EspeciesPlagasServicio, FilaAtencionServicio } from '../../../../types/reportesGestion'
-import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
-import { atencionesDeElemento } from '../../../../utils/reporteServicio'
+import BarrasHorizontales from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
+import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { ElementoAtendido, EspeciesPlagasServicio, FilaAtencionServicio } from '@/types/reportesGestion'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
+import { atencionesDeElemento } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
-import Tarjeta from '../../../../components/ui/Tarjeta'
+import Tarjeta from '@/components/ui/Tarjeta'
 
 const BARRAS_VISIBLES = 10
 

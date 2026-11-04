@@ -9,7 +9,7 @@ import {
   solicitarCronograma,
 } from './cronogramaIa'
 
-vi.mock('../../config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
+vi.mock('@/config/datosSimulados', () => ({ DATOS_SIMULADOS: false }))
 
 afterEach(() => {
   vi.unstubAllGlobals()

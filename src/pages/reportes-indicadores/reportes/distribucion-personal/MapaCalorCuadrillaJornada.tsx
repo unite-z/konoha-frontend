@@ -5,11 +5,11 @@
  */
 // Excepción al sistema (AV-351): mapa de calor: <table> de datos con celdas pulsables que filtran el detalle.
 import { useMemo, useState } from 'react'
-import type { FilaDistribucion } from '../../../../types/reportes'
-import { formatearFecha, SIN_VALOR } from '../../../../utils/formato'
-import { fechaCorta } from '../../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
+import type { FilaDistribucion } from '@/types/reportes'
+import { formatearFecha, SIN_VALOR } from '@/utils/formato'
+import { fechaCorta } from '@/components/reportes-indicadores/graficos/escala'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
 import {
   claveCelda,
   formatearMedida,

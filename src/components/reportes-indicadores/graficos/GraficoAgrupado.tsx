@@ -11,9 +11,9 @@ import { agruparRegistros, type Agrupacion } from './agrupar'
 import { escalaRedonda, marcasEje } from './escala'
 import comunes from './Graficos.module.css'
 import { BarraSeleccion, CabeceraGrafico } from './PartesGrafico'
-import Boton from '../../ui/Boton'
-import { GrupoChips } from '../../ui/ChipsFiltro'
-import { formatearNumero, SIN_VALOR } from '../../../utils/formato'
+import Boton from '@/components/ui/Boton'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 
 const BARRAS_INICIALES = 10
 

@@ -11,20 +11,20 @@
  * Supuesto: periodo predeterminado a confirmar con la contraparte (CU-MOD06-001). Aquí, la semana actual.
  */
 import { useMemo, useState } from 'react'
-import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
-import TarjetaFiltro from '../../../components/reportes-indicadores/TarjetaFiltro'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
-import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS } from '../../../router/rutasApp'
-import { obtenerAtencionesEspacioSector } from '../../../services/api/reportes'
+import AyudaEmergente from '@/components/reportes-indicadores/AyudaEmergente'
+import TarjetaFiltro from '@/components/reportes-indicadores/TarjetaFiltro'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
+import FiltroPeriodo from '@/components/ui/FiltroPeriodo'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS } from '@/router/rutasApp'
+import { obtenerAtencionesEspacioSector } from '@/services/api/reportes'
 import {
   SIN_SECTOR,
   type CuartelAtenciones,
@@ -32,9 +32,9 @@ import {
   type Modalidad,
   type OrdenAtenciones,
   type ResultadoAtencionesEspacioSector,
-} from '../../../types/reportes'
-import { OPCIONES_MODALIDAD, textoModalidad } from '../../../utils/estados'
-import { formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
+} from '@/types/reportes'
+import { OPCIONES_MODALIDAD, textoModalidad } from '@/utils/estados'
+import { formatearNumero, semanaActual, SIN_VALOR } from '@/utils/formato'
 import BloqueSector from './atenciones-espacio-sector/BloqueSector'
 import {
   AtencionesFrenteAlMaximo,

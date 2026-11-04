@@ -10,7 +10,7 @@
  */
 import Selector, { OPCION_TODOS } from '../ui/Selector'
 import AyudaEmergente from './AyudaEmergente'
-import { OPCIONES_MODALIDAD } from '../../utils/estados'
+import { OPCIONES_MODALIDAD } from '@/utils/estados'
 import estilos from './SelectoresFiltroGestion.module.css'
 import type { CatalogosFiltros } from './useCatalogosFiltros'
 

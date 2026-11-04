@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { CampoSolicitado, SugerenciaIA } from '../../../../types/ia'
+import type { CampoSolicitado, SugerenciaIA } from '@/types/ia'
 import {
   coberturaSugerencia,
   convertirCorreccion,

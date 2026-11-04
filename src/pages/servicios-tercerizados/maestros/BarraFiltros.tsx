@@ -4,9 +4,9 @@
  * servidor, nunca solo en la página cargada. Va dentro de una `Tarjeta`.
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
-import Boton from '../../../components/ui/Boton'
-import CampoFormulario from '../../../components/ui/CampoFormulario'
-import Tarjeta from '../../../components/ui/Tarjeta'
+import Boton from '@/components/ui/Boton'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import Tarjeta from '@/components/ui/Tarjeta'
 import estilos from './Maestros.module.css'
 
 const LARGO_MAXIMO_BUSQUEDA = 100

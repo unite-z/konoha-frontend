@@ -4,15 +4,15 @@
  * muestra «Sin movimientos» (nunca un cero). Al elegir un mes, «Ver detalles» abre sus totales por material.
  */
 import { useMemo, useState } from 'react'
-import ColumnasFecha from '../../../../components/reportes-indicadores/graficos/ColumnasFecha'
-import { escalaRedonda, marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
-import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import Selector, { OPCION_TODOS } from '../../../../components/ui/Selector'
-import type { TotalMes } from '../../../../types/reportesGestion'
-import { formatearNumero } from '../../../../utils/formato'
+import ColumnasFecha from '@/components/reportes-indicadores/graficos/ColumnasFecha'
+import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import type { TotalMes } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
 import {
   materialesComparacion,
   MOVIMIENTOS,
@@ -21,7 +21,7 @@ import {
   type MesComparacion,
   type Movimiento,
 } from './materialVegetal'
-import Tarjeta from '../../../../components/ui/Tarjeta'
+import Tarjeta from '@/components/ui/Tarjeta'
 
 const SIN_MOVIMIENTOS = 'Sin movimientos'
 

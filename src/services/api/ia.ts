@@ -2,8 +2,8 @@
  * Servicios de RF-IA-001: extracción de informes de proveedores con IA.
  * Rutas relativas a API_BASE_URL (`backend/reportes_indicadores/api/urls.py`).
  */
-import type { Paginado } from '../../types/comun'
-import type { CuerpoValidacion, EstadoSugerencia, SugerenciaIA } from '../../types/ia'
+import type { Paginado } from '@/types/comun'
+import type { CuerpoValidacion, EstadoSugerencia, SugerenciaIA } from '@/types/ia'
 import { solicitar } from './cliente'
 
 export interface FiltrosExtracciones {

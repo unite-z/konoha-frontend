@@ -3,18 +3,18 @@
  * confirmada (criterio 2), el periodo, el contexto de la IA (A3), los criterios y las restricciones (criterio 5), y los
  * avisos de estado: confirmada (con las programaciones creadas, criterio 7), descartada o sin permiso para decidir.
  */
-import BloqueContextoIA from '../../../../components/reportes-indicadores/BloqueContextoIA'
-import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import { BotonEnlace } from '../../../../components/ui/Boton'
-import { RUTAS_PLANIFICACION } from '../../../../router/rutasApp'
-import type { SugerenciaCronograma } from '../../../../types/cronogramaIa'
-import { textoPeriodoCorto } from '../../../../utils/cronogramaIa'
-import { insigniaSugerencia } from '../../../../utils/estados'
-import { formatearFechaHora, formatearNumero } from '../../../../utils/formato'
+import BloqueContextoIA from '@/components/reportes-indicadores/BloqueContextoIA'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { BotonEnlace } from '@/components/ui/Boton'
+import { RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import type { SugerenciaCronograma } from '@/types/cronogramaIa'
+import { textoPeriodoCorto } from '@/utils/cronogramaIa'
+import { insigniaSugerencia } from '@/utils/estados'
+import { formatearFechaHora, formatearNumero } from '@/utils/formato'
 import estilos from './Cronograma.module.css'
 import RestriccionesConsideradas from './RestriccionesConsideradas'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 export default function CabeceraCronograma({ propuesta, puedeConfirmar }: { propuesta: SugerenciaCronograma; puedeConfirmar: boolean }) {
   const { contenido } = propuesta

@@ -7,18 +7,18 @@
  * se conservan siempre.
  */
 import { useState, type FormEvent } from 'react'
-import SelectorFormato from '../../../components/reportes-indicadores/SelectorFormato'
-import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
-import { useGenerarExportacion } from '../../../components/reportes-indicadores/useGenerarExportacion'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import CampoFormulario from '../../../components/ui/CampoFormulario'
-import GrupoOpciones from '../../../components/ui/GrupoOpciones'
-import Selector, { OPCION_TODOS } from '../../../components/ui/Selector'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { obtenerCatalogoServicios } from '../../../services/api/reportesGestion'
-import type { FormatoSalida, ReporteGenerado, TipoExportable } from '../../../types/exportaciones'
-import { OPCIONES_MODALIDAD } from '../../../utils/estados'
+import SelectorFormato from '@/components/reportes-indicadores/SelectorFormato'
+import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
+import { useGenerarExportacion } from '@/components/reportes-indicadores/useGenerarExportacion'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import { useConsulta } from '@/hooks/useConsulta'
+import { obtenerCatalogoServicios } from '@/services/api/reportesGestion'
+import type { FormatoSalida, ReporteGenerado, TipoExportable } from '@/types/exportaciones'
+import { OPCIONES_MODALIDAD } from '@/utils/estados'
 import {
   clasificarErrorExportacion,
   formatoAlternativo,
@@ -29,7 +29,7 @@ import {
   validarExportacion,
   type CampoExportacion,
   type FiltrosExportacion,
-} from '../../../utils/exportaciones'
+} from '@/utils/exportaciones'
 import estilos from './Exportaciones.module.css'
 
 const ID = (campo: CampoExportacion) => `exportacion-${campo}`

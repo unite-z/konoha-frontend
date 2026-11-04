@@ -11,27 +11,27 @@
  */
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import CampoFormulario, {
   AreaTexto,
   LeyendaObligatorio,
   ResumenErrores,
   type ErrorResumen,
-} from '../../../components/ui/CampoFormulario'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Selector from '../../../components/ui/Selector'
-import Tarjeta from '../../../components/ui/Tarjeta'
-import SelectorBuscable from '../../../components/ui/SelectorBuscable'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMaestros'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
-import { listarProveedoresMaestro, registrarContrato } from '../../../services/api/maestrosTercerizados'
-import { listarTiposServicio, listarTodo } from '../../../services/api/tercerizados'
-import { useRolTercerizados } from '../../../sesion/ContextoSesion'
-import type { ProveedorMaestro } from '../../../types/maestrosTercerizados'
-import { hoyLima } from '../../../utils/instanteLima'
+} from '@/components/ui/CampoFormulario'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Selector from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
+import SelectorBuscable from '@/components/ui/SelectorBuscable'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { listarProveedoresMaestro, registrarContrato } from '@/services/api/maestrosTercerizados'
+import { listarTiposServicio, listarTodo } from '@/services/api/tercerizados'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import type { ProveedorMaestro } from '@/types/maestrosTercerizados'
+import { hoyLima } from '@/utils/instanteLima'
 import {
   BORRADOR_CONTRATO_VACIO,
   construirContrato,
@@ -39,7 +39,7 @@ import {
   validarContrato,
   type BorradorContrato,
   type ErroresContrato,
-} from '../../../utils/validacionMaestros'
+} from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import { enfocar, interpretarFallo, type FalloRegistro } from './fallosRegistro'
 import type { EstadoNavegacionMaestros } from './filtrosMaestros'

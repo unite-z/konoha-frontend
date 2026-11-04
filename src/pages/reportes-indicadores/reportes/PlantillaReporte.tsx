@@ -13,14 +13,14 @@
  * Ningún reporte modifica datos: solo consultan (GET).
  */
 import type { ReactNode } from 'react'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import EstadoCarga from '../../../components/ui/EstadoCarga'
-import EstadoError from '../../../components/ui/EstadoError'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import IndicadorActualizacion from '../../../components/ui/IndicadorActualizacion'
-import type { ResultadoConsulta } from '../../../hooks/useConsulta'
-import type { ReporteBase } from '../../../types/comun'
-import { formatearFechaHora } from '../../../utils/formato'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import IndicadorActualizacion from '@/components/ui/IndicadorActualizacion'
+import type { ResultadoConsulta } from '@/hooks/useConsulta'
+import type { ReporteBase } from '@/types/comun'
+import { formatearFechaHora } from '@/utils/formato'
 import { erroresDePeriodo } from './erroresPeriodo'
 import estilos from './Reportes.module.css'
 

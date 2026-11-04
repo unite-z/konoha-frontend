@@ -5,9 +5,9 @@
  * entradas de segundo nivel. El activo se calcula en un solo sitio: gana la coincidencia de prefijo más larga,
  * primero entre módulos y después entre las entradas del módulo activo. Así nunca hay dos marcados a la vez.
  */
-import type { NombreIconoFigma } from '../../components/ui/Icono'
-import type { EntradaMenu } from '../../config/permisosCore'
-import { RUTAS_CAMPO, BASE_CAMPO } from '../../router/rutasCampo'
+import type { NombreIconoFigma } from '@/components/ui/Icono'
+import type { EntradaMenu } from '@/config/permisosCore'
+import { RUTAS_CAMPO, BASE_CAMPO } from '@/router/rutasCampo'
 import {
   PREFIJO_MODULO,
   PREFIJO_PLANIFICACION,
@@ -18,7 +18,7 @@ import {
   RUTAS_INVENTARIO,
   RUTAS_PLANIFICACION,
   RUTAS_TERCERIZADOS,
-} from '../../router/rutasApp'
+} from '@/router/rutasApp'
 
 export interface EntradaSegundoNivel {
   texto: string

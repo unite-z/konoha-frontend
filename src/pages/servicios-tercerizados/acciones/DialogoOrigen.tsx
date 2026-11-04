@@ -5,12 +5,12 @@
  * correcciones con su motivo cuando la API exponga la auditoría.
  */
 import { useState } from 'react'
-import { AreaTexto } from '../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import { corregirOrigen } from '../../../services/api/tercerizados'
-import type { Atencion, CorregirOrigenEntrada, UnidadInstitucional } from '../../../types/tercerizados'
-import { textoOrigen } from '../../../utils/estadosTercerizados'
-import { validarOrigen, type ErroresOrigen } from '../../../utils/validacionTercerizados'
+import { AreaTexto } from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { corregirOrigen } from '@/services/api/tercerizados'
+import type { Atencion, CorregirOrigenEntrada, UnidadInstitucional } from '@/types/tercerizados'
+import { textoOrigen } from '@/utils/estadosTercerizados'
+import { validarOrigen, type ErroresOrigen } from '@/utils/validacionTercerizados'
 import CamposOrigen, { type ValorCamposOrigen } from '../CamposOrigen'
 import { useOperacionAtencion } from './useOperacionAtencion'
 

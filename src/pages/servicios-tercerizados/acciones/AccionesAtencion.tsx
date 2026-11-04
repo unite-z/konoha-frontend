@@ -7,9 +7,9 @@
  * Corregir origen y registrar el acuerdo de la unidad son exclusivos del jefe de sección.
  */
 import { useId, useState } from 'react'
-import Boton from '../../../components/ui/Boton'
-import { disponibilidad } from '../../../config/permisosTercerizados'
-import type { Atencion, ReporteProveedor, RolTercerizados } from '../../../types/tercerizados'
+import Boton from '@/components/ui/Boton'
+import { disponibilidad } from '@/config/permisosTercerizados'
+import type { Atencion, ReporteProveedor, RolTercerizados } from '@/types/tercerizados'
 import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'

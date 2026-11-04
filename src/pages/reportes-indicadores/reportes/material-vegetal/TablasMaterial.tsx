@@ -2,10 +2,10 @@
  * Tablas de RF-REP-005 que se abren en los diálogos «Ver detalles»: movimientos del mes (consumido, propagado o
  * trasladado) y totales de un mes de la comparación. Paginan en el cliente (25, 50 o 100 por página).
  */
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { TotalMaterial, TotalMes, TotalTraslado } from '../../../../types/reportesGestion'
-import { formatearNumero } from '../../../../utils/formato'
-import { numeroDeDecimal } from '../../../../utils/reportesGestion'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { TotalMaterial, TotalMes, TotalTraslado } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
+import { numeroDeDecimal } from '@/utils/reportesGestion'
 
 function columnaCantidad<F extends { cantidad: string }>(): ColumnaTabla<F> {
   return {

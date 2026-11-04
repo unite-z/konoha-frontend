@@ -4,12 +4,12 @@
  * La corrección (ya hay OC) exige motivo y solo se permite antes del inicio (lo valida el back-end).
  */
 import { useState } from 'react'
-import { AreaTexto } from '../../../components/ui/CampoFormulario'
-import CampoFormulario from '../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import { registrarOrdenCompra } from '../../../services/api/tercerizados'
-import type { Atencion } from '../../../types/tercerizados'
-import { LARGO_MAXIMO_OC, validarOrdenCompra, type ErroresOrdenCompra } from '../../../utils/validacionTercerizados'
+import { AreaTexto } from '@/components/ui/CampoFormulario'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { registrarOrdenCompra } from '@/services/api/tercerizados'
+import type { Atencion } from '@/types/tercerizados'
+import { LARGO_MAXIMO_OC, validarOrdenCompra, type ErroresOrdenCompra } from '@/utils/validacionTercerizados'
 import { useOperacionAtencion } from './useOperacionAtencion'
 
 const ID_NUMERO = 'oc-numero'

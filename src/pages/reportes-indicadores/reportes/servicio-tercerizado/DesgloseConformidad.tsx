@@ -2,14 +2,14 @@
  * Pestaña «Conformidad» del reporte por servicio (RF-REP-008): cada situación con su insignia (conforme en verde,
  * observada en ámbar) y su número. «Ver atenciones» abre las atenciones de esa situación.
  */
-import Boton from '../../../../components/ui/Boton'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import type { ConformidadServicio, FilaAtencionServicio } from '../../../../types/reportesGestion'
-import { formatearNumero } from '../../../../utils/formato'
-import { atencionesDeConformidad, PARTES_CONFORMIDAD } from '../../../../utils/reporteServicio'
+import Boton from '@/components/ui/Boton'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import type { ConformidadServicio, FilaAtencionServicio } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
+import { atencionesDeConformidad, PARTES_CONFORMIDAD } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
-import Estado from '../../../../components/ui/Estado'
-import { TONO_ESTADO } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { TONO_ESTADO } from '@/components/ui/tonos'
 
 export interface DesgloseConformidadProps {
   conformidad: ConformidadServicio

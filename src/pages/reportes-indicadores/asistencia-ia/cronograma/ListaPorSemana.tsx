@@ -3,8 +3,8 @@
  * En móvil es la única vista, a modo de agenda.
  */
 import type { ReactNode } from 'react'
-import type { PropuestaCronograma } from '../../../../types/cronogramaIa'
-import { agruparPorSemana } from '../../../../utils/cronogramaIa'
+import type { PropuestaCronograma } from '@/types/cronogramaIa'
+import { agruparPorSemana } from '@/utils/cronogramaIa'
 import estilosIa from '../AsistenciaIa.module.css'
 import estilos from './Cronograma.module.css'
 

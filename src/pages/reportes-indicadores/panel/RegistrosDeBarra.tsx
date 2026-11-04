@@ -2,11 +2,11 @@
  * Registros de una barra del desglose del panel (contenido del diálogo «Ver detalles»): descarga los registros
  * del indicador con los filtros del panel (hasta el tope) y se queda con los de la barra elegida.
  */
-import EstadoCarga from '../../../components/ui/EstadoCarga'
-import EstadoError from '../../../components/ui/EstadoError'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import { useConsulta } from '../../../hooks/useConsulta'
-import type { ClaveIndicadorPanel, ConsultaGestion } from '../../../types/reportesGestion'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import { useConsulta } from '@/hooks/useConsulta'
+import type { ClaveIndicadorPanel, ConsultaGestion } from '@/types/reportesGestion'
 import { filtroDeBarra } from './desglose'
 import { cargarRegistros } from './registros'
 import TablaRegistros from './TablaRegistros'

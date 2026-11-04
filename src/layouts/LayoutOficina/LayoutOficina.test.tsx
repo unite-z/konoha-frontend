@@ -3,8 +3,8 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { usePaginaActual } from '../../hooks/usePaginaActual'
-import type { SesionCore } from '../../types/core'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import type { SesionCore } from '@/types/core'
 import AccionesPagina from './AccionesPagina'
 import LayoutOficina from './LayoutOficina'
 
@@ -16,7 +16,7 @@ const sesion: SesionCore = {
   expira: null,
 }
 
-vi.mock('../../sesion/ContextoSesion', () => ({
+vi.mock('@/sesion/ContextoSesion', () => ({
   useSesion: () => ({ estado: { tipo: 'activa', sesion }, cerrarSesion: async () => {} }),
   useSesionActiva: () => sesion,
 }))

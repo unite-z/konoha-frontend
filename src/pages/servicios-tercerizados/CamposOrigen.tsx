@@ -6,13 +6,13 @@
  * `${prefijo}-unidad-provisional`.
  */
 import type { ReactNode } from 'react'
-import CampoFormulario from '../../components/ui/CampoFormulario'
-import GrupoOpciones from '../../components/ui/GrupoOpciones'
-import SelectorBuscable from '../../components/ui/SelectorBuscable'
-import { listarUnidadesInstitucionales } from '../../services/api/tercerizados'
-import type { OrigenAtencion, UnidadInstitucional } from '../../types/tercerizados'
-import { OPCIONES_ORIGEN } from '../../utils/estadosTercerizados'
-import { LARGO_MAXIMO_UNIDAD_PROVISIONAL } from '../../utils/validacionTercerizados'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import SelectorBuscable from '@/components/ui/SelectorBuscable'
+import { listarUnidadesInstitucionales } from '@/services/api/tercerizados'
+import type { OrigenAtencion, UnidadInstitucional } from '@/types/tercerizados'
+import { OPCIONES_ORIGEN } from '@/utils/estadosTercerizados'
+import { LARGO_MAXIMO_UNIDAD_PROVISIONAL } from '@/utils/validacionTercerizados'
 import estilos from './nueva/NuevaAtencion.module.css'
 
 export interface ValorCamposOrigen {
