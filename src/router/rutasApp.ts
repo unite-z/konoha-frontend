@@ -18,6 +18,7 @@ export const RUTAS = {
   cronogramaIa: `${BASE}/asistencia-ia/cronograma`, // RF-IA-003
   estimacionRecursos: `${BASE}/asistencia-ia/estimacion-recursos`, // RF-IA-004
   clasificacionIncidencias: `${BASE}/asistencia-ia/clasificacion-incidencias`, // RF-IA-005
+  evidenciaFitosanitaria: `${BASE}/asistencia-ia/evidencia-fitosanitaria`, // RF-IA-006
   panel: `${BASE}/panel`, // RF-REP-001
   mapaAtenciones: `${BASE}/mapa-atenciones`, // RF-REP-007
   materialVegetal: `${BASE}/reportes/material-vegetal`, // RF-REP-005
@@ -64,6 +65,11 @@ export function rutaRevisionClasificacion(id: number | string): string {
   return `${RUTAS.clasificacionIncidencias}/${id}`
 }
 
+/** Ruta de la revisión de un análisis de evidencia fitosanitaria (RF-IA-006). */
+export function rutaRevisionEvidencia(id: number | string): string {
+  return `${RUTAS.evidenciaFitosanitaria}/${id}`
+}
+
 /** Niveles de migas reutilizados por las páginas (Guía Web 4.2). */
 export const MIGAS = {
   reportesIndicadores: { texto: 'Reportes e indicadores', ruta: RUTAS.reportes },
@@ -75,6 +81,7 @@ export const MIGAS = {
   cronogramaIa: { texto: 'Planificación asistida', ruta: RUTAS.cronogramaIa },
   estimacionRecursos: { texto: 'Estimación de recursos', ruta: RUTAS.estimacionRecursos },
   clasificacionIncidencias: { texto: 'Clasificación de incidencias', ruta: RUTAS.clasificacionIncidencias },
+  evidenciaFitosanitaria: { texto: 'Evidencia fitosanitaria', ruta: RUTAS.evidenciaFitosanitaria },
   panel: { texto: 'Panel', ruta: RUTAS.panel },
   mapaAtenciones: { texto: 'Mapa de atenciones', ruta: RUTAS.mapaAtenciones },
 } satisfies Record<string, Miga>
