@@ -99,3 +99,25 @@ export interface NuevoEncargo {
   incluye: string[]
   avisar_capataz: boolean
 }
+
+/** Proveedor que puede atender una incidencia, con sus contratos (`GET incidencias/{id}/proveedores/`, AV-278). */
+export interface ProveedorIncidencia {
+  id: number
+  razon_social: string
+  contratos: { id: number; codigo: string; vigente: boolean; servicios: string[] }[]
+}
+
+export type TipoAtencion = 'Programada' | 'Extraordinaria'
+
+/**
+ * Cuerpo de `POST incidencias/{id}/requerimiento/` (AV-278): requerimiento al proveedor por la vía tercerizada. Sin
+ * contrato aplicable, va como extraordinaria con orden de servicio (`contrato_id` nulo).
+ */
+export interface NuevoRequerimiento {
+  proveedor_id: number
+  contrato_id: number | null
+  servicio: string | null
+  tipo_atencion: TipoAtencion
+  /** Crear también la poda del ejemplar (si lo hay). */
+  crear_poda: boolean
+}
