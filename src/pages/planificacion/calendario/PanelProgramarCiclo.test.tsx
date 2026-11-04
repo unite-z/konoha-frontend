@@ -11,12 +11,14 @@ const api = vi.hoisted(() => ({
   propuesta: { estacion: 'Primavera', fecha_inicio: '2026-11-11', fecha_fin: '2026-11-14', conflictos: [], ventana_libre_inicio: '2026-11-16' as string | null },
   crear: vi.fn(async () => ({ id: 9, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-11', fecha_fin_prevista: '2026-11-14' })),
   cancelar: vi.fn(async () => ({})),
+  reprogramar: vi.fn(async () => ({ id: 5, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-23', fecha_fin_prevista: '2026-11-25' })),
 }))
 vi.mock('@/services/api/planificacion', () => ({
   obtenerPropuesta: async () => api.propuesta,
   listarRestricciones: async () => api.restricciones,
   crearProgramacion: api.crear,
   cambiarEstadoCiclo: api.cancelar,
+  reprogramarProgramacion: api.reprogramar,
 }))
 vi.mock('@/services/api/corte', () => ({
   obtenerRutaCorte: async () => ({
@@ -46,6 +48,8 @@ beforeAll(() => {
 afterEach(() => {
   cleanup()
   api.crear.mockClear()
+  api.cancelar.mockClear()
+  api.reprogramar.mockClear()
 })
 
 const corte: ServicioPeriodico = {
@@ -134,7 +138,7 @@ describe('PanelProgramarCiclo', () => {
     expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-11-19')
   })
 
-  it('al reprogramar entra con las fechas del ciclo, crea el nuevo y cancela el anterior', async () => {
+  it('al reprogramar entra con las fechas del ciclo y solo las cambia (AV-362)', async () => {
     const onProgramada = vi.fn()
     const ciclo = {
       id: 5,
@@ -154,8 +158,9 @@ describe('PanelProgramarCiclo', () => {
     await waitFor(() => expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).value).toBe('2026-11-16'))
 
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Reprogramar' }))
-    await waitFor(() => expect(api.cancelar).toHaveBeenCalledWith(5, 'cancelacion'))
-    expect(api.crear).toHaveBeenCalledWith(expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', proveedor_id: 4 }))
+    await waitFor(() => expect(api.reprogramar).toHaveBeenCalledWith(5, expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-18' })))
+    expect(api.crear).not.toHaveBeenCalled()
+    expect(api.cancelar).not.toHaveBeenCalled()
     expect(onProgramada).toHaveBeenCalled()
   })
 

@@ -97,6 +97,21 @@ export function crearProgramacion(cuerpo: NuevaProgramacion) {
   return solicitarPlanificacion<Programacion>('programaciones/', { metodo: 'POST', cuerpo })
 }
 
+/** Cuerpo de `PATCH programaciones/{id}/` (AV-362): nuevas fechas y, si coincide con un aviso, la justificación. */
+export interface Reprogramacion {
+  fecha_inicio_prevista: FechaIso
+  fecha_fin_prevista: FechaIso
+  justificacion?: string
+}
+
+/**
+ * `PATCH programaciones/{id}/` (AV-362, solo jefe): cambia las fechas de un ciclo Programado con las reglas del alta
+ * (prohibición, duración, ventana y justificación). Queda en el historial y avisa al proveedor del traslado.
+ */
+export function reprogramarProgramacion(id: number, cuerpo: Reprogramacion) {
+  return solicitarPlanificacion<Programacion>(`programaciones/${id}/`, { metodo: 'PATCH', cuerpo })
+}
+
 export type CambioEstadoCiclo = 'inicio' | 'fin' | 'cancelacion'
 
 /**
