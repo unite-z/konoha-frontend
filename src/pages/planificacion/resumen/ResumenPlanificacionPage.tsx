@@ -6,11 +6,13 @@ import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Tarjeta from '@/components/ui/Tarjeta'
 import TarjetaIndicador, { FilaTarjetas } from '@/components/ui/TarjetaIndicador'
+import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarAlertas, listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import { hoyLima } from '@/utils/instanteLima'
 import NecesitaAtencion from './NecesitaAtencion'
 import {
@@ -40,6 +42,8 @@ function detalleCiclo(proveedor: string | null, servicio: ServicioPeriodico | un
 
 export default function ResumenPlanificacionPage() {
   const hoy = hoyLima()
+  // Ingeniería y practicantes ven el Resumen en solo lectura, como en Figma 374-7476.
+  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   usePaginaActual('Planificación', [MIGAS_PLANIFICACION.planificacion, { texto: 'Resumen' }], nombreMes(hoy))
   const mes = limitesMes(hoy)
   // Seis meses atrás y adelante (la misma consulta que Ciclos): da el mes, los próximos 14 días y el último ciclo.
@@ -72,9 +76,11 @@ export default function ResumenPlanificacionPage() {
         <BotonEnlace to={RUTAS_PLANIFICACION.calendario} variante="secundario" icono="calendar">
           Ver calendario
         </BotonEnlace>
-        <BotonEnlace to={`${RUTAS_PLANIFICACION.calendario}?programar=`} variante="primario" icono="plus-circle">
-          Programar ciclo
-        </BotonEnlace>
+        {puedeEditar && (
+          <BotonEnlace to={`${RUTAS_PLANIFICACION.calendario}?programar=`} variante="primario" icono="plus-circle">
+            Programar ciclo
+          </BotonEnlace>
+        )}
       </AccionesPagina>
 
       <FilaTarjetas etiqueta="Indicadores del mes">
@@ -91,7 +97,7 @@ export default function ResumenPlanificacionPage() {
 
       <div className={estilos.columnas}>
         <div className={estilos.principal}>
-          <NecesitaAtencion alertas={alertas.datos} servicios={servicios.datos} programaciones={programaciones.datos} />
+          <NecesitaAtencion alertas={alertas.datos} servicios={servicios.datos} programaciones={programaciones.datos} soloLectura={!puedeEditar} />
 
           <Tarjeta titulo={`Próximos ${DIAS_PROXIMOS} días`} relleno="amplio">
             {ciclos.length === 0 ? (

@@ -26,10 +26,10 @@ const alertas: AlertaPlanificacion[] = [
 ]
 const sinDuracion: ServicioPeriodico[] = [{ id: 9, nombre: 'Control fitosanitario', es_ruidoso: false, frecuencias: [], duracion: null }]
 
-function pintar(a: AlertaPlanificacion[], s: ServicioPeriodico[]) {
+function pintar(a: AlertaPlanificacion[], s: ServicioPeriodico[], soloLectura = false) {
   render(
     <MemoryRouter>
-      <NecesitaAtencion alertas={a} servicios={s} />
+      <NecesitaAtencion alertas={a} servicios={s} soloLectura={soloLectura} />
     </MemoryRouter>,
   )
   return screen.getByRole('region', { name: 'Necesita atención' })
@@ -69,6 +69,17 @@ describe('NecesitaAtencion', () => {
     expect(motivo).toHaveBeenCalledWith(40, 'Lluvia el 27/10; el proveedor termina mañana.')
     expect(await screen.findByText('Motivo registrado')).toBeTruthy()
     expect(within(bandeja).queryByText('Poda mayor · 1 día de exceso')).toBeNull()
+  })
+
+  it('en solo lectura cada alerta lleva «Ver ciclo» (Figma 374-7476)', () => {
+    const bandeja = pintar([alertas[0], { ...alertas[1], id: 40 }], [], true)
+
+    expect(within(bandeja).getAllByRole('link', { name: 'Ver ciclo' }).map((enlace) => enlace.getAttribute('href'))).toEqual([
+      `${RUTAS_PLANIFICACION.ciclos}/40`,
+      RUTAS_PLANIFICACION.ciclos,
+    ])
+    expect(within(bandeja).queryByRole('link', { name: 'Programar' })).toBeNull()
+    expect(within(bandeja).queryByRole('button', { name: 'Registrar motivo' })).toBeNull()
   })
 
   it('sin nada pendiente muestra el estado vacío', () => {

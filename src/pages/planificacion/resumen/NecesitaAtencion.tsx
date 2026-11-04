@@ -2,7 +2,8 @@
  * Bandeja «Necesita atención» del Resumen (AV-265): sustituye a la pantalla de alertas. Cada elemento lleva la
  * acción de su tipo: Programar (frecuencia), Registrar motivo (duración excedida, con el contrato de AV-255; antes,
  * Ver ciclo), Ver ciclo (duración próxima) o Configurar (servicio sin duración). Al registrar el motivo, la alerta
- * queda atendida y sale de la bandeja (Figma 373-5370 y 373-5658).
+ * queda atendida y sale de la bandeja (Figma 373-5370 y 373-5658). En solo lectura (ingeniería y practicantes,
+ * 374-7476), cada alerta lleva «Ver ciclo».
  *
  * Programar abre el panel «Programar ciclo» del Calendario con el servicio elegido (`?programar=`, AV-267) y Ver
  * ciclo, el detalle del ciclo (AV-269). Como en Figma, «Programar» es primario y las demás acciones, secundarias.
@@ -30,9 +31,11 @@ export interface NecesitaAtencionProps {
   alertas: AlertaPlanificacion[]
   servicios: ServicioPeriodico[]
   programaciones?: Programacion[]
+  /** Sin permiso de edición: todas las alertas abren el ciclo (o la lista de ciclos). */
+  soloLectura?: boolean
 }
 
-export default function NecesitaAtencion({ alertas, servicios, programaciones = [] }: NecesitaAtencionProps) {
+export default function NecesitaAtencion({ alertas, servicios, programaciones = [], soloLectura = false }: NecesitaAtencionProps) {
   const [atendidas, setAtendidas] = useState<string[]>([])
   const [motivo, setMotivo] = useState<ElementoAtencion | null>(null)
   const [registrado, setRegistrado] = useState<string | null>(null)
@@ -48,7 +51,8 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones = 
       ) : (
         <ul className={estilos.lista}>
           {elementos.map((elemento) => {
-            const accion = elemento.accion === 'registrarMotivo' ? null : ACCIONES[elemento.accion]
+            const tipo = soloLectura && elemento.accion !== 'configurar' ? 'verCiclo' : elemento.accion
+            const accion = tipo === 'registrarMotivo' ? null : ACCIONES[tipo]
             return (
               <li key={elemento.clave} className={estilos.fila}>
                 <span className={`${estilos.icono} ${estilos[elemento.tono]}`} aria-hidden="true">
@@ -59,7 +63,7 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones = 
                   <span className={estilos.detalle}>{elemento.detalle}</span>
                 </span>
                 {accion ? (
-                  <BotonEnlace to={accion.ruta(elemento)} variante={elemento.accion === 'programar' ? 'primario' : 'secundario'}>
+                  <BotonEnlace to={accion.ruta(elemento)} variante={tipo === 'programar' ? 'primario' : 'secundario'}>
                     {accion.texto}
                   </BotonEnlace>
                 ) : (

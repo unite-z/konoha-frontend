@@ -16,6 +16,8 @@ export interface DatosPagina {
   migas: Miga[]
   /** Línea bajo el título (por ejemplo, el mes del Resumen de planificación). */
   subtitulo?: string
+  /** El h1 queda solo para lectores de pantalla (por ejemplo, «Acceso denegado», donde manda el estado centrado). */
+  tituloOculto?: boolean
 }
 
 export interface ValorContextoPagina {
