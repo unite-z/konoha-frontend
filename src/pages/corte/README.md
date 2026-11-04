@@ -10,16 +10,17 @@ Lo que el capataz usa en el móvil (AV-271, RF-COR-002, HU-011 y CU-011). La Pla
   - «Actualizar» va en la barra superior.
 
   Lógica en `rutaDeHoy.ts`, con prueba.
+- **Calendario** (`CalendarioCuadrillaPage.tsx`, `/corte/calendario`, Figma 380-8307, RF-PLA-007): la semana de su cuadrilla en solo lectura («Cuadrilla B · solo lectura»), con la `VistaMovil` del calendario de Planificación (tira de días y agenda). Datos de `GET calendario-cuadrilla/` (contrato de AV-254); con datos simulados, las programaciones y restricciones de siempre a nombre de «Cuadrilla B».
 
 **Datos simulados (D9):** el backend (AV-260) aún no existe. Con `VITE_DATOS_SIMULADOS=true`, `services/api/corte.ts` responde con `services/simulados/corte.ts` y la pantalla muestra `AvisoDatosSimulados`. Con `?simular=vacio`, hoy no hay corte.
 
 | Qué | Dónde |
 |---|---|
-| Servicios | `services/api/corte.ts`: `obtenerRutaDeHoy`, `marcarJardin` y `registrarObservacionJardin` (contrato de AV-260) |
-| Tipos | `types/corte.ts` (`RespuestaRutaDeHoy`, `NuevaMarca`) |
+| Servicios | `services/api/corte.ts`: `obtenerRutaDeHoy`, `marcarJardin` y `registrarObservacionJardin` (contrato de AV-260) y `obtenerCalendarioCuadrilla` (AV-254) |
+| Tipos | `types/corte.ts` (`RespuestaRutaDeHoy`, `NuevaMarca`, `CalendarioCuadrilla`) |
 | Permisos | `PLA.CORTE.MARCAR` (AV-260 y AV-252). Con datos simulados, también el rol capataz |
 | Rutas | `RUTAS_CORTE` (prefijo `/corte`). El capataz entra aquí desde `/` |
 
-Pendiente en AV-271: sin conexión, jardín fuera de ruta y el calendario de la cuadrilla.
+La barra inferior lleva «Ruta de hoy» y «Calendario». Pendiente en AV-271: sin conexión y jardín fuera de ruta.
 
 **Destino:** `modulos/planificacion/paginas/corte/`.

@@ -35,6 +35,7 @@ import AtencionDetallePage from '../pages/servicios-tercerizados/AtencionDetalle
 import AtencionesPage from '../pages/servicios-tercerizados/AtencionesPage'
 import NuevaAtencionPage from '../pages/servicios-tercerizados/nueva/NuevaAtencionPage'
 import BandejaIncidenciasPage from '../pages/incidencias/BandejaIncidenciasPage'
+import CalendarioCuadrillaPage from '../pages/corte/CalendarioCuadrillaPage'
 import RutaDeHoyPage from '../pages/corte/RutaDeHoyPage'
 import CalendarioPage from '../pages/planificacion/calendario/CalendarioPage'
 import CicloDetallePage from '../pages/planificacion/ciclos/CicloDetallePage'
@@ -184,13 +185,14 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
             ],
           },
-          // MOD-03 · el capataz en el móvil (AV-271): su ruta del día.
+          // MOD-03 · el capataz en el móvil (AV-271): su ruta del día y el calendario de su cuadrilla.
           {
             path: PREFIJO_CORTE,
             element: <RutaConEntrada entrada="corte" seccion="Corte de césped" />,
             children: [
               { index: true, element: <Navigate to={RUTAS_CORTE.rutaDeHoy} replace /> },
               { path: RUTAS_CORTE.rutaDeHoy, element: <RutaDeHoyPage /> }, // RF-COR-002, HU-011 y CU-011
+              { path: RUTAS_CORTE.calendario, element: <CalendarioCuadrillaPage /> }, // RF-PLA-007 (solo lectura)
             ],
           },
           // MOD-03 «Incidencias»: hasta AV-281, con el permiso de Planificación (el jefe).
