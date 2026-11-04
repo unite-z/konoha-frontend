@@ -159,6 +159,15 @@
   line-height: var(--type-leyenda-line);
 }
 
+/* «5 días seleccionados» bajo la franja cuando el periodo pasa del máximo. */
+.diasExcedidos {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--type-leyenda-size);
+  font-weight: var(--type-pequeno-medio-weight);
+  line-height: var(--type-leyenda-line);
+}
+
 .listaAgenda {
   display: flex;
   flex-direction: column;
@@ -363,6 +372,13 @@
 .fechasPanel {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* «Proveedor» y «Ventana» en la misma fila, el proveedor más ancho, como en Figma. */
+.proveedorVentana {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: var(--space-3);
 }
 

@@ -83,7 +83,26 @@ describe('PanelProgramarCiclo', () => {
       fecha_inicio_prevista: '2026-11-11',
       fecha_fin_prevista: '2026-11-14',
       justificacion: 'Solo hay cuadrilla esa semana',
+      ventana_mes: '2026-11',
     })
+  })
+
+  it('con un tercerizado pide la ventana y avisa bajo «Fin» si el periodo pasa del máximo', async () => {
+    api.restricciones = []
+    const usuario = userEvent.setup()
+    render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={1} onCerrar={vi.fn()} onProgramada={vi.fn()} />)
+
+    await waitFor(() => expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).value).toBe('2026-11-11'))
+    expect(screen.queryByLabelText(/^Ventana/)).toBeNull()
+    await usuario.selectOptions(screen.getByLabelText(/^Proveedor/), '4')
+    expect((screen.getByLabelText(/^Ventana/) as HTMLSelectElement).value).toBe('2026-11')
+
+    const fin = screen.getByLabelText(/^Fin/)
+    await usuario.clear(fin)
+    await usuario.type(fin, '2026-11-15')
+    expect(screen.getByText('5 días: máximo 3 + 1 de limpieza')).toBeTruthy()
+    expect(screen.getByText('5 días seleccionados')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Programar ciclo' }).getAttribute('aria-disabled')).toBe('true')
   })
 
   it('con una prohibición no deja programar y «Usar» aplica la ventana libre', async () => {

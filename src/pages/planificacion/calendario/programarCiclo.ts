@@ -6,7 +6,7 @@
  */
 import type { FechaIso } from '@/types/comun'
 import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
-import { fechaCorta, sumarDias } from '../resumen/resumenPlanificacion'
+import { fechaNumerica, sumarDias } from '../resumen/resumenPlanificacion'
 
 /** Máximo de la justificación (`@Size(max = 300)` en el backend). */
 export const MAXIMO_JUSTIFICACION = 300
@@ -39,8 +39,12 @@ export function conflictosDelPeriodo(restricciones: Restriccion[], inicio: Fecha
 }
 
 export interface ValidacionProgramacion {
-  /** Error del periodo (fechas vacías, fin antes del inicio o más días de los permitidos). */
+  /** Error del periodo bajo el campo «Fin» (fechas vacías, fin antes del inicio o más días de los permitidos). */
   errorPeriodo: string | null
+  /** «5 días seleccionados», bajo la franja, cuando el periodo pasa del máximo. */
+  diasExcedidos: string | null
+  /** Las fechas no caen en la ventana mensual elegida (solo tercerizados, AV-253). */
+  errorVentana: string | null
   prohibiciones: Restriccion[]
   avisos: Restriccion[]
   /** Con avisos hay que justificar la fecha. */
@@ -56,18 +60,26 @@ export function validarProgramacion(
   fin: string,
   conflictos: Restriccion[],
   justificacion: string,
+  /** Mes `AAAA-MM` de la ventana, si el servicio es tercerizado. */
+  ventana: string | null = null,
 ): ValidacionProgramacion {
   let errorPeriodo: string | null = null
+  let diasExcedidos: string | null = null
   if (!FECHA_VALIDA.test(inicio) || !FECHA_VALIDA.test(fin)) errorPeriodo = 'Indica el inicio y el fin.'
-  else if (fin < inicio) errorPeriodo = 'El fin tiene que ser igual o posterior al inicio.'
+  else if (fin < inicio) errorPeriodo = 'Debe ser posterior al inicio'
   else if (servicio?.duracion) {
     const { duracion_maxima_dias: maxima, dias_limpieza: limpieza } = servicio.duracion
     const dias = diasDelPeriodo(inicio, fin)
     const permitidos = maxima + (limpieza ?? 0)
     if (dias > permitidos) {
-      errorPeriodo = `Dura ${dias} días y el máximo es ${maxima} de servicio${limpieza ? ` más ${limpieza} de limpieza` : ''}.`
+      errorPeriodo = `${dias} días: máximo ${maxima}${limpieza ? ` + ${limpieza} de limpieza` : ''}`
+      diasExcedidos = `${dias} días seleccionados`
     }
   }
+  const errorVentana =
+    ventana && FECHA_VALIDA.test(inicio) && FECHA_VALIDA.test(fin) && (inicio.slice(0, 7) !== ventana || fin.slice(0, 7) !== ventana)
+      ? 'Las fechas tienen que caer en el mes de la ventana'
+      : null
   const prohibiciones = conflictos.filter((r) => r.efecto === 'Prohibicion')
   const avisos = conflictos.filter((r) => r.efecto === 'Advertencia')
   const requiereJustificacion = avisos.length > 0
@@ -78,20 +90,33 @@ export function validarProgramacion(
     : null
   return {
     errorPeriodo,
+    diasExcedidos,
+    errorVentana,
     prohibiciones,
     avisos,
     requiereJustificacion,
     errorJustificacion,
-    puedeGuardar: Boolean(servicio?.duracion) && !errorPeriodo && prohibiciones.length === 0 && !errorJustificacion,
+    puedeGuardar: Boolean(servicio?.duracion) && !errorPeriodo && !errorVentana && prohibiciones.length === 0 && !errorJustificacion,
   }
 }
 
-/** «4 días: 3 de servicio y 1 de limpieza». */
+/** «4 días: 3 de corte + 1 de limpieza», como en Figma («de corte» en el corte de césped; si no, «de servicio»). */
 export function textoDuracion(servicio: ServicioPeriodico | undefined): string | null {
   if (!servicio?.duracion) return null
   const { duracion_maxima_dias: maxima, dias_limpieza: limpieza } = servicio.duracion
   const total = maxima + (limpieza ?? 0)
-  return limpieza ? `${total} días: ${maxima} de servicio y ${limpieza} de limpieza` : `${total} ${total === 1 ? 'día' : 'días'} de servicio`
+  const de = servicio.nombre.toLowerCase().startsWith('corte') ? 'de corte' : 'de servicio'
+  return limpieza ? `${total} días: ${maxima} ${de} + ${limpieza} de limpieza` : `${total} ${total === 1 ? 'día' : 'días'} ${de}`
+}
+
+/** Meses que se ofrecen como ventana de un tercerizado: el del inicio propuesto y los dos siguientes. */
+export function mesesVentana(desde: FechaIso): { valor: string; texto: string }[] {
+  const nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  const [anio, mes] = desde.split('-').map(Number)
+  return [0, 1, 2].map((desplazamiento) => {
+    const fecha = new Date(Date.UTC(anio, mes - 1 + desplazamiento, 1))
+    return { valor: fecha.toISOString().slice(0, 7), texto: `${nombres[fecha.getUTCMonth()]} ${fecha.getUTCFullYear()}` }
+  })
 }
 
 export interface DiaFranja {
@@ -126,7 +151,7 @@ export function ventanaLibre(inicioLibre: FechaIso | null, servicio: ServicioPer
   return { inicio: inicioLibre, fin: sumarDias(inicioLibre, total - 1) }
 }
 
-/** «16 al 19 nov.» o «16 nov.» para el texto de la ventana libre. */
+/** «16 al 19/11» o «16/11» para el texto de la ventana libre, como en Figma. */
 export function textoVentana({ inicio, fin }: { inicio: FechaIso; fin: FechaIso }): string {
-  return inicio === fin ? fechaCorta(inicio) : `${Number(inicio.slice(8, 10))} al ${fechaCorta(fin)}`
+  return inicio === fin ? fechaNumerica(inicio) : `${inicio.slice(8, 10)} al ${fechaNumerica(fin)}`
 }
