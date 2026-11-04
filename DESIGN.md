@@ -143,6 +143,7 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 | Tabla · celda | `CeldaTexto` (`tono`: `principal`, `secundario`, `deshabilitado`, `aviso`; `destacado`), `CeldaDobleLinea` (`codigo`) en el `render` de cada columna; Estado → `Estado`, Acción → `Boton` fantasma compacto, Avance → `BarraAvance`, Entrada → Campo compacto (AV-338) | los 11 tipos de Figma | cada celda de una tabla, eligiendo el tipo por el dato | maquetar contenido que no es tabular |
 | Tabla · fila resaltada | `TablaDatos` con `filaResaltada` | borde fuerte alrededor de la fila | la actividad en conflicto del Calendario · Lista | marcar la fila seleccionada (usa `onFilaClick`) |
 | Tabla · sin marco | `TablaDatos` con `sinMarco` | sin borde ni radio propios | dentro de otro marco, como la ruta en `Pestanas enCaja` del corte | una tabla suelta en la página (lleva su marco) |
+| Tabla · columna sin título | columna con `tituloOculto` | el título solo para lectores de pantalla | la columna de acciones («Editar», «Configurar»), como en Configuración (348-1743) | ocultar el título de una columna con datos |
 | Tabla · celda de cabecera | dentro de `TablaDatos` | Cabecera tabla (11 px, mayúsculas) · `ordenable` | cabecera de columna en Cabecera tabla (mayúsculas) | títulos de sección |
 | Paginación | `Paginacion` (también dentro de `TablaDatos`) | «Mostrando 11 a 20 de 128» · Anterior, tres números y Siguiente · `aria-current` en la actual | listas de más de 25 filas | listas cortas |
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ServicioPeriodico } from '@/types/planificacion'
-import { borradorInicial, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia, validarServicio } from './configuracionServicios'
+import { borradorInicial, detalleServicio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia, validarServicio } from './configuracionServicios'
 
 const modificacion = { fecha_modificacion: '2026-10-28T09:12:00-05:00', modificado_por: 'Robert G.' }
 const servicio: ServicioPeriodico = {
@@ -23,6 +23,13 @@ describe('configuracionServicios', () => {
   it('resume frecuencia, duración y estado', () => {
     expect(textoFrecuencia(servicio.frecuencias[0])).toBe('Cada 30 días · máx. 45')
     expect(textoFrecuencia(undefined)).toBe('Sin configurar')
+    expect(textoFrecuencia({ ...servicio.frecuencias[0], frecuencia_teorica_dias: 365, frecuencia_practica_dias: 365, frecuencia_maxima_dias: 365 })).toBe('Anual')
+    expect([
+      detalleServicio({ ...servicio, via: 'Tercerizado', es_ruidoso: true }),
+      detalleServicio({ ...servicio, via: 'PersonalPropio', es_ruidoso: false }),
+      detalleServicio({ ...servicio, via: undefined, es_ruidoso: true }),
+      detalleServicio({ ...servicio, via: null, es_ruidoso: false }),
+    ]).toEqual(['Tercerizado · ruidoso', 'Personal propio', 'Ruidoso', null])
     expect(textoDuracionServicio(servicio.duracion)).toBe('3 días + 1 de limpieza')
     expect(estadoServicio(servicio).texto).toBe('Incompleto')
   })

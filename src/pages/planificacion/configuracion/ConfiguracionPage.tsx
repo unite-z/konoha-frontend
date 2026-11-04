@@ -22,7 +22,7 @@ import type { ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import PanelEditarServicio from './PanelEditarServicio'
 import SeriesRestricciones from './SeriesRestricciones'
-import { SIN_CONFIGURAR, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia } from './configuracionServicios'
+import { SIN_CONFIGURAR, detalleServicio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia } from './configuracionServicios'
 import { agruparSeries, rangoSeries } from './series'
 
 type PestanaConfiguracion = 'servicios' | 'series'
@@ -48,7 +48,10 @@ export default function ConfiguracionPage() {
       clave: 'servicio',
       titulo: 'Servicio',
       multilinea: true,
-      render: (s) => (s.es_ruidoso ? <CeldaDobleLinea principal={s.nombre} detalle="Ruidoso" /> : <CeldaTexto texto={s.nombre} />),
+      render: (s) => {
+        const detalle = detalleServicio(s)
+        return detalle ? <CeldaDobleLinea principal={s.nombre} detalle={detalle} /> : <CeldaTexto texto={s.nombre} />
+      },
     },
     {
       clave: 'frecuencia',
@@ -79,6 +82,7 @@ export default function ConfiguracionPage() {
     columnas.push({
       clave: 'acciones',
       titulo: 'Acciones',
+      tituloOculto: true,
       render: (s) => {
         const completo = estadoServicio(s).texto === 'Configurado'
         return (

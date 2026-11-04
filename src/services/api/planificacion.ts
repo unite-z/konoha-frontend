@@ -17,8 +17,11 @@ import type {
 } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
-export function listarServiciosPeriodicos(signal?: AbortSignal) {
-  return solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
+export async function listarServiciosPeriodicos(signal?: AbortSignal) {
+  const servicios = await solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
+  if (!DATOS_SIMULADOS) return servicios
+  // Hasta AV-363, la vía del servicio se simula (D9).
+  return servicios.map((s) => ({ ...s, via: s.via ?? 'Tercerizado' }))
 }
 
 /** `PUT servicios/{id}/frecuencias/{estacion}/` (solo jefe). Devuelve el servicio actualizado. */
