@@ -14,11 +14,11 @@ import { useLocation, useParams } from 'react-router'
 import BloqueContextoIA from '../../../components/reportes-indicadores/BloqueContextoIA'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
 import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
+import Pestanas from '../../../components/ui/Pestanas'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
 import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
@@ -61,6 +61,9 @@ interface Revision {
   errores: Record<string, string>
   mostrarResumen: boolean
 }
+
+/** Pestaña de prioridad sin filtro. */
+const TODAS = 'todas'
 
 const claveRevision = (s: SugerenciaPriorizacion) => `${s.id}|${s.estado}|${s.fecha_modificacion ?? ''}`
 
@@ -284,36 +287,37 @@ export default function RevisionPriorizacionPage() {
           </div>
         )}
 
-        <GrupoChips
+        <Pestanas
           etiqueta="Prioridad sugerida"
-          opciones={[
-            { valor: '', texto: `Todas (${formatearNumero(elementos.length)})` },
-            ...PRIORIDADES.map((p) => ({ valor: p, texto: `${p} (${formatearNumero(cuenta[p])})` })),
+          pestanas={[
+            { valor: TODAS, texto: 'Todas', contador: elementos.length },
+            ...PRIORIDADES.map((p) => ({ valor: p, texto: p, contador: cuenta[p] })),
           ]}
-          valor={filtro}
+          valor={filtro || TODAS}
           onCambiar={(v) => setFiltro(PRIORIDADES.find((p) => p === v) ?? '')}
-        />
+        >
 
-        <ResumenErrores titulo={MENSAJES_PRIORIZACION.sinDecision} errores={erroresResumen} />
+          <ResumenErrores titulo={MENSAJES_PRIORIZACION.sinDecision} errores={erroresResumen} />
 
-        {visibles.length === 0 ? (
-          <EstadoVacio nivel={3} titulo="Ningún elemento con esta prioridad" descripcion="Elige «Todas» para ver todos los elementos." />
-        ) : (
-          <ul className={estilosIa.fichasCampo} aria-label="Elementos priorizados">
-            {visibles.map((e) => (
-              <FichaElemento
-                key={e.clave}
-                elemento={e}
-                modo={modo}
-                decision={revision.decisiones[e.clave]}
-                error={revision.errores[e.clave]}
-                final={contenido.decision?.por_elemento[e.clave]}
-                onAccion={(accion) => actualizar(e.clave, { accion })}
-                onPrioridad={(prioridad) => actualizar(e.clave, { prioridad })}
-              />
-            ))}
-          </ul>
-        )}
+          {visibles.length === 0 ? (
+            <EstadoVacio nivel={3} titulo="Ningún elemento con esta prioridad" descripcion="Elige «Todas» para ver todos los elementos." />
+          ) : (
+            <ul className={estilosIa.fichasCampo} aria-label="Elementos priorizados">
+              {visibles.map((e) => (
+                <FichaElemento
+                  key={e.clave}
+                  elemento={e}
+                  modo={modo}
+                  decision={revision.decisiones[e.clave]}
+                  error={revision.errores[e.clave]}
+                  final={contenido.decision?.por_elemento[e.clave]}
+                  onAccion={(accion) => actualizar(e.clave, { accion })}
+                  onPrioridad={(prioridad) => actualizar(e.clave, { prioridad })}
+                />
+              ))}
+            </ul>
+          )}
+        </Pestanas>
       </section>
 
       {editable && (

@@ -304,9 +304,9 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
           {atencion ? pasoInforme : pasoAtencion}
           <p className={estilos.alternativa}>
             ¿Conoces el número del reporte?{' '}
-            <button type="button" className={estilos.enlace} onClick={() => setModo('manual')}>
+            <Boton variante="fantasma" compacto onClick={() => setModo('manual')}>
               Escríbelo directamente
-            </button>
+            </Boton>
           </p>
         </>
       ) : (
@@ -333,9 +333,9 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
             </div>
           </div>
           <p className={estilos.alternativa}>
-            <button type="button" className={estilos.enlace} onClick={() => setModo('buscar')}>
+            <Boton variante="fantasma" compacto onClick={() => setModo('buscar')}>
               Buscar la atención en su lugar
-            </button>
+            </Boton>
           </p>
         </form>
       )}

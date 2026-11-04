@@ -15,11 +15,11 @@
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
 import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
+import Pestanas from '../../../components/ui/Pestanas'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
 import BarraAvance from '../../../components/ui/BarraAvance'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
 import EstadoCarga from '../../../components/ui/EstadoCarga'
 import EstadoError from '../../../components/ui/EstadoError'
@@ -368,38 +368,39 @@ export default function RevisionExtraccionPage() {
           </div>
         )}
 
-        <GrupoChips
+        <Pestanas
           etiqueta="Mostrar datos"
-          opciones={opcionesFiltro}
+          pestanas={opcionesFiltro}
           valor={filtro}
           onCambiar={(v) => setFiltro(v as FiltroCampos)}
-        />
+        >
 
-        <ResumenErrores titulo={hayPendientes ? MENSAJES.sinDecision : MENSAJES.correcciones} errores={erroresResumen} />
+          <ResumenErrores titulo={hayPendientes ? MENSAJES.sinDecision : MENSAJES.correcciones} errores={erroresResumen} />
 
-        {visibles.length === 0 ? (
-          <EstadoVacio nivel={3} titulo="Ningún dato con este filtro" descripcion="Elige «Todos» para ver todos los datos." />
-        ) : (
-          <ul className={estilosIa.fichasCampo} aria-label="Datos de la propuesta">
-            {visibles.map((c) => {
-              const clave = claveCampo(c.campo_id)
-              return (
-                <FichaCampo
-                  key={clave}
-                  campo={c}
-                  sugerido={valorSugerido(sugerencia, c)}
-                  modo={modo}
-                  decision={revision.decisiones[clave]}
-                  error={revision.errores[clave]}
-                  final={contenido.decision?.por_campo[clave]}
-                  onAccion={(accion) => actualizarDecision(clave, { accion })}
-                  onTexto={(texto) => actualizarDecision(clave, { texto })}
-                  onSalir={() => validarAlSalir(c)}
-                />
-              )
-            })}
-          </ul>
-        )}
+          {visibles.length === 0 ? (
+            <EstadoVacio nivel={3} titulo="Ningún dato con este filtro" descripcion="Elige «Todos» para ver todos los datos." />
+          ) : (
+            <ul className={estilosIa.fichasCampo} aria-label="Datos de la propuesta">
+              {visibles.map((c) => {
+                const clave = claveCampo(c.campo_id)
+                return (
+                  <FichaCampo
+                    key={clave}
+                    campo={c}
+                    sugerido={valorSugerido(sugerencia, c)}
+                    modo={modo}
+                    decision={revision.decisiones[clave]}
+                    error={revision.errores[clave]}
+                    final={contenido.decision?.por_campo[clave]}
+                    onAccion={(accion) => actualizarDecision(clave, { accion })}
+                    onTexto={(texto) => actualizarDecision(clave, { texto })}
+                    onSalir={() => validarAlSalir(c)}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </Pestanas>
       </section>
 
       {editable && (
