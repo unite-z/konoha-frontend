@@ -18,9 +18,15 @@ const actualizarFrecuencia = vi.fn(async (_id: number, estacion: string, entrada
   ...servicio,
   frecuencias: [...servicio.frecuencias, { estacion, frecuencia_teorica_dias: entrada.frecuencia_teorica_dias, frecuencia_practica_dias: null, frecuencia_maxima_dias: null, ...modificacion }],
 }))
+const darDeBajaRestriccion = vi.fn(async (_id: number, _serie: boolean) => undefined)
 vi.mock('@/services/api/planificacion', () => ({
   listarServiciosPeriodicos: async () => [servicio],
   listarProgramaciones: async () => [],
+  listarRestricciones: async () => [
+    { id: 8, tipo_restriccion_id: 1, tipo: 'Clases', efecto: 'Advertencia', aplica_servicios_ruidosos: true, fecha_inicio: '2026-11-09', fecha_fin: '2026-11-09', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null, serie: 'a' },
+    { id: 9, tipo_restriccion_id: 1, tipo: 'Clases', efecto: 'Advertencia', aplica_servicios_ruidosos: true, fecha_inicio: '2026-11-16', fecha_fin: '2026-11-16', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null, serie: 'a' },
+  ],
+  darDeBajaRestriccion: (id: number, serie: boolean) => darDeBajaRestriccion(id, serie),
   actualizarFrecuencia: (id: number, estacion: string, entrada: { frecuencia_teorica_dias: number }) => actualizarFrecuencia(id, estacion, entrada),
   actualizarDuracion: vi.fn(),
 }))
@@ -67,5 +73,23 @@ describe('ConfiguracionPage', () => {
 
     expect(actualizarFrecuencia).toHaveBeenCalledExactlyOnceWith(1, 'Verano', { frecuencia_teorica_dias: 20 })
     expect(await screen.findByText('Configuración de Corte de césped guardada.')).toBeTruthy()
+  })
+
+  it('la pestaña de series lista cada serie y la da de baja entera', async () => {
+    render(
+      <MemoryRouter>
+        <ConfiguracionPage />
+      </MemoryRouter>,
+    )
+    const usuario = userEvent.setup()
+    await usuario.click(await screen.findByRole('tab', { name: 'Series de restricciones 1' }))
+    const tabla = screen.getByRole('table')
+    expect(within(tabla).getByText('2 fechas')).toBeTruthy()
+    expect(within(tabla).getByText('Todo el campus')).toBeTruthy()
+
+    await usuario.click(within(tabla).getByRole('button', { name: 'Dar de baja la serie Clases' }))
+    await usuario.click(screen.getByRole('button', { name: 'Dar de baja la serie' }))
+    expect(darDeBajaRestriccion).toHaveBeenCalledWith(8, true)
+    expect(await screen.findByText('No hay series de restricciones')).toBeTruthy()
   })
 })
