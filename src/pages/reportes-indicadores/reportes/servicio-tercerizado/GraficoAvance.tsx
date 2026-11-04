@@ -13,6 +13,7 @@ import type { AvanceServicio, FilaAtencionServicio } from '../../../../types/rep
 import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import { atencionesDeParte, metradoAvance, PARTES_AVANCE, type ParteAvance } from '../../../../utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
+import Tarjeta from '../../../../components/ui/Tarjeta'
 
 export interface GraficoAvanceProps {
   avance: AvanceServicio
@@ -32,7 +33,7 @@ export default function GraficoAvance({ avance, filas, onVerDetalle }: GraficoAv
 
   return (
     <div className={estilos.columna}>
-      <section className={comunes.superficie} aria-label="Atenciones por clase y situación">
+      <Tarjeta etiqueta="Atenciones por clase y situación">
         <CabeceraGrafico titulo="Atenciones por clase y situación" total={formatearNumero(filas.length)} />
         <BarraSeleccion
           seleccionado={parte?.texto ?? null}
@@ -48,9 +49,9 @@ export default function GraficoAvance({ avance, filas, onVerDetalle }: GraficoAv
           claveElegida={elegida}
           onAlternar={(clave) => setElegida((actual) => (actual === clave ? null : (clave as ParteAvance)))}
         />
-      </section>
+      </Tarjeta>
 
-      <section className={comunes.superficie} aria-labelledby="titulo-metrado">
+      <Tarjeta etiquetadaPor="titulo-metrado">
         <h3 id="titulo-metrado" className={comunes.tituloGrafico}>
           Metrado ejecutado frente al previsto
         </h3>
@@ -69,7 +70,7 @@ export default function GraficoAvance({ avance, filas, onVerDetalle }: GraficoAv
         ) : (
           <p className={estilos.secundario}>Sin datos: el metrado previsto o el ejecutado no están registrados</p>
         )}
-      </section>
+      </Tarjeta>
     </div>
   )
 }

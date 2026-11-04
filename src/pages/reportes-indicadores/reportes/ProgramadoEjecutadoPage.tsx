@@ -47,6 +47,9 @@ import TablaComparacion from './programado-ejecutado/TablaComparacion'
 import TarjetasProgramado from './programado-ejecutado/TarjetasProgramado'
 import estilos from './Reportes.module.css'
 
+/** Pestaña de situación sin filtro. */
+const TODAS = 'todas'
+
 const TITULO = 'Programado frente a ejecutado'
 
 type Vista = 'comparacion' | 'pendientes' | 'sin-programar'
@@ -125,27 +128,22 @@ function Comparacion({
           onCambiar={onVista}
           pestanas={[
             { valor: 'comparacion', texto: 'Comparación' },
-            { valor: 'pendientes', texto: 'Pendientes', extra: <span className="cifra"> ({formatearNumero(pendientes.length)})</span> },
-            {
-              valor: 'sin-programar',
-              texto: 'Ejecuciones sin programar',
-              extra: <span className="cifra"> ({formatearNumero(datos.sin_programacion.length)})</span>,
-            },
+            { valor: 'pendientes', texto: 'Pendientes', contador: pendientes.length },
+            { valor: 'sin-programar', texto: 'Ejecuciones sin programar', contador: datos.sin_programacion.length },
           ]}
         >
           {vista === 'comparacion' && (
-            <div className={estilosPagina.columna}>
-              <GrupoChips
-                etiqueta="Situación"
-                opciones={[
-                  { valor: '', texto: `Todas (${formatearNumero(datos.filas.length)})` },
-                  ...SITUACIONES.map((s) => ({ valor: s.valor, texto: `${s.texto} (${formatearNumero(cuenta[s.valor])})` })),
-                ]}
-                valor={situacionValida ?? ''}
-                onCambiar={onSituacion}
-              />
+            <Pestanas
+              etiqueta="Situación"
+              pestanas={[
+                { valor: TODAS, texto: 'Todas', contador: datos.filas.length },
+                ...SITUACIONES.map((s) => ({ valor: s.valor, texto: s.texto, contador: cuenta[s.valor] })),
+              ]}
+              valor={situacionValida ?? TODAS}
+              onCambiar={(valor) => onSituacion(valor === TODAS ? '' : valor)}
+            >
               <TablaComparacion titulo="Comparación de lo programado con lo ejecutado" filas={filasVista} />
-            </div>
+            </Pestanas>
           )}
           {vista === 'pendientes' && <TablaComparacion titulo="Trabajos pendientes" filas={pendientes} hoy={hoy} sinOrdenInicial />}
           {vista === 'sin-programar' && <SinProgramar ejecuciones={datos.sin_programacion} />}

@@ -5,7 +5,6 @@
 import { useState } from 'react'
 import BarrasHorizontales from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
 import { escalaRedonda, marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
 import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
 import EstadoVacio from '../../../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
@@ -13,6 +12,7 @@ import type { ElementoAtendido, EspeciesPlagasServicio, FilaAtencionServicio } f
 import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import { atencionesDeElemento } from '../../../../utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
+import Tarjeta from '../../../../components/ui/Tarjeta'
 
 const BARRAS_VISIBLES = 10
 
@@ -39,7 +39,7 @@ export default function GraficoEspecies({ especies, filas, onVerDetalle }: Grafi
 
   return (
     <div className={estilos.columna}>
-      <section className={comunes.superficie} aria-label="Especies y plagas más atendidas">
+      <Tarjeta etiqueta="Especies y plagas más atendidas">
         <CabeceraGrafico
           titulo={especies.elementos.length > BARRAS_VISIBLES ? `Las ${BARRAS_VISIBLES} más atendidas` : 'Atenciones por especie o plaga'}
           total={formatearNumero(especies.elementos.length)}
@@ -58,7 +58,7 @@ export default function GraficoEspecies({ especies, filas, onVerDetalle }: Grafi
           claveElegida={elegida}
           onAlternar={(clave) => setElegida((actual) => (actual === clave ? null : clave))}
         />
-      </section>
+      </Tarjeta>
       <TablaDatos
         titulo="Especies y plagas atendidas"
         columnas={COLUMNAS}

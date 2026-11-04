@@ -2,13 +2,13 @@
  * Detalle de la parte del gráfico elegida (contenido del diálogo «Ver detalles»): totales y tabla de filas.
  * RNF-008: solo se muestra el nombre de cada operario.
  */
-import Badge from '../../../../components/ui/Badge'
 import ListaDescripcion from '../../../../components/ui/ListaDescripcion'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
 import type { FilaDistribucion } from '../../../../types/reportes'
 import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import estilos from '../Reportes.module.css'
 import { formatearMedida, MEDIDAS, totalizar } from './agregacion'
+import Estado from '../../../../components/ui/Estado'
 
 /** Parte del gráfico elegida. */
 export interface Seleccion {
@@ -28,7 +28,7 @@ function celdaOperarios(fila: FilaDistribucion) {
           <li key={o.operario_id} className={estilos.enLinea}>
             <span>{o.nombre_completo ?? SIN_VALOR}</span>
             {o.es_apoyo && (
-              <Badge tono="info" texto="Apoyo" ayuda="Operario de otra cuadrilla que apoyó en esta actividad" />
+              <Estado tono="info" texto="Apoyo" ayuda="Operario de otra cuadrilla que apoyó en esta actividad" />
             )}
           </li>
         ))}

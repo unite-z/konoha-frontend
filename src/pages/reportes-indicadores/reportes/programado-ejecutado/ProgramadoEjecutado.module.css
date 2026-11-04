@@ -18,10 +18,10 @@
 }
 
 .etiquetaMeses {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 /* Tarjetas de indicador: 4 en escritorio, 2 en tablet y 1 en móvil. */
@@ -59,8 +59,8 @@
 }
 
 .atenuado {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
@@ -88,7 +88,7 @@
   padding: var(--space-4);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--web-elev-1);
 }
 
@@ -101,12 +101,12 @@
 }
 
 .tituloFicha {
-  font-weight: var(--type-heading-sm-weight);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .metaFicha {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }

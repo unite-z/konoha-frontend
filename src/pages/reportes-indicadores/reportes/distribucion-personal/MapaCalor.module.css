@@ -4,14 +4,14 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: var(--space-1);
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
 }
 
 .mapa th {
   padding: var(--space-2);
-  color: var(--neutral-700);
-  font-weight: var(--type-label-md-weight);
+  color: var(--color-text-muted);
+  font-weight: var(--type-cuerpo-medio-weight);
   white-space: nowrap;
 }
 .mapa thead th {
@@ -53,15 +53,15 @@
 .celda {
   border: 1px solid transparent;
   font: inherit;
-  font-weight: var(--type-label-md-weight);
+  font-weight: var(--type-cuerpo-medio-weight);
   cursor: pointer;
 }
 .celda:hover {
-  border-color: var(--neutral-950);
+  border-color: var(--color-text-primary);
 }
 
 .celdaActiva {
-  outline: 2px solid var(--neutral-950);
+  outline: 2px solid var(--color-text-primary);
   outline-offset: 1px;
 }
 
@@ -76,19 +76,19 @@
   color: var(--color-text-muted);
 }
 .nivel1 {
-  background: var(--green-100);
+  background: var(--color-action-subtle);
   color: var(--color-text-primary);
 }
 .nivel2 {
-  background: var(--green-500);
+  background: var(--color-action-primary);
   color: var(--color-text-primary);
 }
 .nivel3 {
-  background: var(--green-700);
+  background: var(--color-action-primary);
   color: var(--color-bg-surface);
 }
 .nivel4 {
-  background: var(--green-900);
+  background: var(--color-action-primary-hover);
   color: var(--color-bg-surface);
 }
 

@@ -11,6 +11,7 @@ import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes
 import type { ComparacionPorServicio, FilaProgramadoEjecutado } from '../../../../types/reportesGestion'
 import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import { barrasPorServicio, filasDeBarra } from '../../../../utils/programadoEjecutado'
+import Tarjeta from '../../../../components/ui/Tarjeta'
 
 export interface GraficoPorServicioProps {
   servicios: ComparacionPorServicio[]
@@ -25,7 +26,7 @@ export default function GraficoPorServicio({ servicios, filas, onVerDetalle }: G
   const seleccion = elegida ? filasDeBarra(filas, servicios, elegida) : null
 
   return (
-    <section className={comunes.superficie} aria-label="Programado frente a ejecutado por servicio">
+    <Tarjeta etiqueta="Programado frente a ejecutado por servicio">
       <CabeceraGrafico titulo="Programado frente a ejecutado por servicio" total={formatearNumero(filas.length)} />
       <p className={comunes.etiquetaControl}>Cada servicio muestra sus trabajos programados y, debajo, los ejecutados y los pendientes.</p>
       <BarraSeleccion
@@ -42,6 +43,6 @@ export default function GraficoPorServicio({ servicios, filas, onVerDetalle }: G
         claveElegida={elegida}
         onAlternar={(clave) => setElegida((actual) => (actual === clave ? null : clave))}
       />
-    </section>
+    </Tarjeta>
   )
 }

@@ -5,7 +5,6 @@
  */
 import { fechaCorta } from '../../../../components/reportes-indicadores/graficos/escala'
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import Badge from '../../../../components/ui/Badge'
 import EstadoVacio from '../../../../components/ui/EstadoVacio'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
 import type { FilaProgramadoEjecutado } from '../../../../types/reportesGestion'
@@ -14,6 +13,8 @@ import { formatearFecha, formatearFechaHora, SIN_VALOR } from '../../../../utils
 import { esVencido, insigniaSituacion, textoDesviacion } from '../../../../utils/programadoEjecutado'
 import CodigoEjecucion from './CodigoEjecucion'
 import estilos from './ProgramadoEjecutado.module.css'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 function Ejecuciones({ fila }: { fila: FilaProgramadoEjecutado }) {
   if (fila.ejecuciones.length === 0) return <span className={estilos.atenuado}>Sin ejecución</span>
@@ -36,8 +37,8 @@ function reales(fila: FilaProgramadoEjecutado): { inicio: string | null; fin: st
 function Situacion({ fila, hoy }: { fila: FilaProgramadoEjecutado; hoy?: string }) {
   return (
     <span className={estilos.codigos}>
-      <Badge {...insigniaSituacion(fila.situacion)} />
-      {hoy && fila.situacion === 'Pendiente' && esVencido(fila, hoy) && <Badge tono="error" texto="Vencido" />}
+      <Estado {...insigniaAEstado(insigniaSituacion(fila.situacion))} />
+      {hoy && fila.situacion === 'Pendiente' && esVencido(fila, hoy) && <Estado tono="error" texto="Vencido" />}
     </span>
   )
 }

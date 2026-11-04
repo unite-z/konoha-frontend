@@ -3,12 +3,12 @@
  * espacios (atenciones frente al más atendido del sector, modalidad y tipos).
  * HU-MOD06-014: el grupo «Sin sector» se identifica y se explica.
  */
-import Badge from '../../../../components/ui/Badge'
 import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
 import { SIN_SECTOR, type EspacioAtenciones, type SectorAtenciones } from '../../../../types/reportes'
 import { formatearNumero } from '../../../../utils/formato'
 import estilos from './Atenciones.module.css'
 import { AtencionesFrenteAlMaximo, BarraModalidad, TiposAtencion } from './PiezasAtenciones'
+import Estado from '../../../../components/ui/Estado'
 
 /** Texto del grupo sin sector (el mismo que la opción del filtro). */
 const TEXTO_SIN_SECTOR = 'Sin sector'
@@ -57,7 +57,7 @@ export default function BloqueSector({ sector }: { sector: SectorAtenciones }) {
             <h2 id={idTitulo} className={estilos.tituloSector}>
               {nombre}
             </h2>
-            {sector.atencion_a_demanda && <Badge tono="neutral" texto="Atención a demanda" />}
+            {sector.atencion_a_demanda && <Estado tono="neutro" texto="Atención a demanda" />}
           </div>
           {sector.capataz_vigente?.nombre && <p className={estilos.ayuda}>Capataz: {sector.capataz_vigente.nombre}</p>}
           {esSinSector && <p className={estilos.ayuda}>Espacios sin sector asignado; se atienden a demanda</p>}
