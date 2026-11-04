@@ -27,6 +27,8 @@ export interface ColumnaTabla<F> {
   titulo: string
   /** Segunda línea del encabezado (texto pequeño). */
   subtitulo?: string
+  /** El título solo para lectores de pantalla (Figma: la columna de acciones sin título). */
+  tituloOculto?: boolean
   alineacion?: 'izquierda' | 'derecha'
   /** Permite texto en varias líneas (por defecto las celdas no se parten y la tabla se desplaza). */
   multilinea?: boolean
@@ -213,7 +215,7 @@ export default function TablaDatos<F>({
                       </button>
                     ) : (
                       <>
-                        {columna.titulo}
+                        {columna.tituloOculto ? <span className="sr-only">{columna.titulo}</span> : columna.titulo}
                         {columna.subtitulo && <span className={estilos.subtitulo}>{columna.subtitulo}</span>}
                       </>
                     )}

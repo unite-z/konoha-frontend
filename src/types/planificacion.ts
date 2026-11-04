@@ -32,6 +32,8 @@ export interface ServicioPeriodico {
   es_ruidoso: boolean
   frecuencias: FrecuenciaEstacion[]
   duracion: DuracionServicio | null
+  /** Contrato de AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
+  via?: 'Tercerizado' | 'PersonalPropio' | null
 }
 
 export interface FrecuenciaEntrada {

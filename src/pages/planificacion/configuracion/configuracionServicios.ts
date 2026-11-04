@@ -30,6 +30,8 @@ export function textoFrecuencia(frecuencia: FrecuenciaEstacion | undefined): str
   if (!frecuencia) return SIN_CONFIGURAR
   const habitual = frecuencia.frecuencia_practica_dias ?? frecuencia.frecuencia_teorica_dias
   const maxima = frecuencia.frecuencia_maxima_dias
+  // Un servicio de una vez al año dice «Anual», como la poda mayor de Figma (348-1743).
+  if (habitual >= 365 && (!maxima || maxima <= 366)) return 'Anual'
   return maxima ? `Cada ${habitual} días · máx. ${maxima}` : `Cada ${habitual} días`
 }
 
@@ -127,4 +129,11 @@ export function validarServicio(borrador: BorradorServicio, inicial: BorradorSer
   }
   resultado.valido = Object.keys(resultado.erroresFrecuencia).length === 0 && Object.keys(resultado.erroresDuracion).length === 0
   return resultado
+}
+
+/** «Tercerizado · ruidoso», «Personal propio» o «Ruidoso» bajo el nombre del servicio (Figma 348-1743, AV-363). */
+export function detalleServicio(servicio: ServicioPeriodico): string | null {
+  const via = servicio.via === 'Tercerizado' ? 'Tercerizado' : servicio.via === 'PersonalPropio' ? 'Personal propio' : null
+  if (via) return servicio.es_ruidoso ? `${via} · ruidoso` : via
+  return servicio.es_ruidoso ? 'Ruidoso' : null
 }
