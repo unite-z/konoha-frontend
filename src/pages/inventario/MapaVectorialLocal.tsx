@@ -1,3 +1,4 @@
+// Excepción al sistema (AV-351): barra de herramientas del lienzo SVG del mapa (seleccionar, mover y zoom), como los controles de maplibre; no son acciones de página.
 import { useMemo, useState, type MouseEvent, type WheelEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { UsoFuenteMapa } from '@/types/mapaInventario'

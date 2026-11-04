@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Map as MapaMapLibre, NavigationControl, Popup, ScaleControl, type FilterSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { BotonEnlace } from '@/components/ui/Boton'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
+import Selector from '@/components/ui/Selector'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
@@ -284,21 +286,19 @@ export default function MapaAreasVerdesPage() {
   }
 
   return (
-    <main className={estilos.pagina}>
+    <div className={estilos.pagina}>
+      <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>
       <div className={estilos.encabezado}>
-        <div>
-          <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes}>Volver al inventario</BotonEnlace>
-          <h1>Mapa del campus PUCP</h1>
-          <p>Las categorías originales se conservan; sus equivalencias y vínculos con el inventario se administran aquí.</p>
-        </div>
+        <p>Las categorías originales se conservan; sus equivalencias y vínculos con el inventario se administran aquí.</p>
         <div className={estilos.filtrosMapa}>
-          <label className={estilos.filtro}>
-            <span>Filtrar por uso</span>
-            <select value={usoSeleccionado} onChange={(evento) => setUsoSeleccionado(evento.target.value)}>
-              <option value="">Todos los usos</option>
-              {usos.map((uso) => <option key={uso.nombre} value={uso.nombre}>{uso.nombre}</option>)}
-            </select>
-          </label>
+          <Selector
+            id="filtro-uso-mapa"
+            etiqueta="Filtrar por uso"
+            valor={usoSeleccionado}
+            onCambiar={setUsoSeleccionado}
+            opcionTodos="Todos los usos"
+            opciones={usos.map((uso) => ({ valor: uso.nombre, texto: uso.nombre }))}
+          />
         </div>
       </div>
 
@@ -345,47 +345,45 @@ export default function MapaAreasVerdesPage() {
               <p>Uso original: <strong>{seleccion.usoFuente}</strong></p>
               {puedeEditar ? (
                 <>
-                  <label className={estilos.controlEdicion}>
-                    <span>Tipo del catálogo</span>
-                    <select
-                      value={seleccion.tipoUsoId === null ? '' : String(seleccion.tipoUsoId)}
-                      disabled={guardando !== null}
-                      onChange={(evento) => setSeleccion({ ...seleccion, tipoUsoId: evento.target.value ? Number(evento.target.value) : null })}
-                    >
-                      <option value="">Sin clasificar</option>
-                      {catalogoTipos.map((tipo) => <option key={tipo.id} value={String(tipo.id)}>{tipo.nombre}</option>)}
-                    </select>
-                  </label>
-                  <button type="button" disabled={guardando !== null} onClick={() => void guardarClasificacion()}>
-                    {guardando === 'uso' ? 'Guardando…' : 'Guardar clasificación'}
-                  </button>
+                  <Selector
+                    id="tipo-uso-poligono"
+                    etiqueta="Tipo del catálogo"
+                    compacto
+                    valor={seleccion.tipoUsoId === null ? '' : String(seleccion.tipoUsoId)}
+                    disabled={guardando !== null}
+                    onCambiar={(valor) => setSeleccion({ ...seleccion, tipoUsoId: valor ? Number(valor) : null })}
+                    opcionTodos="Sin clasificar"
+                    opciones={catalogoTipos.map((tipo) => ({ valor: String(tipo.id), texto: tipo.nombre }))}
+                  />
+                  <Boton variante="secundario" compacto cargando={guardando === 'uso'} deshabilitado={guardando !== null} onClick={() => void guardarClasificacion()}>
+                    Guardar clasificación
+                  </Boton>
                   <p className={estilos.ayuda}>Aplica a los {usos.find((uso) => uso.nombre === seleccion.usoFuente)?.cantidad ?? 0} polígonos con esta categoría original.</p>
-                  <label className={estilos.controlEdicion}>
-                    <span>Área del inventario vinculada</span>
-                    <select
-                      value={seleccion.areaVerdeId === null ? '' : String(seleccion.areaVerdeId)}
-                      disabled={guardando !== null}
-                      onChange={(evento) => setSeleccion({ ...seleccion, areaVerdeId: evento.target.value ? Number(evento.target.value) : null })}
-                    >
-                      <option value="">Sin vincular</option>
-                      {inventarioAreas.map((area) => <option key={area.id} value={String(area.id)}>{area.nombre} · {area.lugar}</option>)}
-                    </select>
-                  </label>
-                  <button type="button" disabled={guardando !== null} onClick={() => void guardarVinculo()}>
-                    {guardando === 'area' ? 'Guardando…' : 'Guardar vínculo'}
-                  </button>
+                  <Selector
+                    id="area-poligono"
+                    etiqueta="Área del inventario vinculada"
+                    compacto
+                    valor={seleccion.areaVerdeId === null ? '' : String(seleccion.areaVerdeId)}
+                    disabled={guardando !== null}
+                    onCambiar={(valor) => setSeleccion({ ...seleccion, areaVerdeId: valor ? Number(valor) : null })}
+                    opcionTodos="Sin vincular"
+                    opciones={inventarioAreas.map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))}
+                  />
+                  <Boton variante="secundario" compacto cargando={guardando === 'area'} deshabilitado={guardando !== null} onClick={() => void guardarVinculo()}>
+                    Guardar vínculo
+                  </Boton>
                 </>
               ) : (
                 <p>Solo el jefe de sección puede editar la clasificación y el vínculo con el inventario.</p>
               )}
-              {errorAccion && <p role="alert">{errorAccion}</p>}
-              {mensajeAccion && <p role="status">{mensajeAccion}</p>}
+              {errorAccion && <AvisoEnLinea tono="error">{errorAccion}</AvisoEnLinea>}
+              {mensajeAccion && <AvisoEnLinea tono="exito">{mensajeAccion}</AvisoEnLinea>}
             </div>
           )}
         </div>
       </section>
       <p className={estilos.fuente}>Fuente: geometrías del mapa proporcionado por el cliente; equivalencias y vínculos gestionados en el inventario. Fondo cartográfico estático local basado en OpenStreetMap © OpenStreetMap contributors.</p>
-    </main>
+    </div>
   )
 }
 
