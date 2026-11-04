@@ -5,7 +5,9 @@
  */
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import Boton from './Boton'
+import animacion from './AnimacionDialogo.module.css'
 import estilos from './DialogoDetalle.module.css'
+import { useCierreAnimado } from './useCierreAnimado'
 
 export interface DialogoDetalleProps {
   abierto: boolean
@@ -21,6 +23,7 @@ export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar,
   const origenFoco = useRef<HTMLElement | null>(null)
   const idTitulo = useId()
   const idDescripcion = useId()
+  const { saliendo, cerrar } = useCierreAnimado(referencia, abierto, onCerrar)
 
   useEffect(() => {
     const dialogo = referencia.current
@@ -57,12 +60,12 @@ export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar,
   return (
     <dialog
       ref={referencia}
-      className={estilos.dialogo}
+      className={[estilos.dialogo, animacion.centrado, saliendo ? animacion.saliendo : ''].filter(Boolean).join(' ')}
       aria-labelledby={idTitulo}
       aria-describedby={descripcion ? idDescripcion : undefined}
       onCancel={(evento) => {
         evento.preventDefault()
-        onCerrar()
+        cerrar()
       }}
     >
       <div className={estilos.marco}>
@@ -78,7 +81,7 @@ export default function DialogoDetalle({ abierto, titulo, descripcion, onCerrar,
         </div>
         <div className={estilos.cuerpo}>{abierto && children}</div>
         <div className={estilos.acciones}>
-          <Boton variante="secundario" onClick={onCerrar}>
+          <Boton variante="secundario" onClick={cerrar}>
             Cerrar
           </Boton>
         </div>

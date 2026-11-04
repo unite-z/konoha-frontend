@@ -1,0 +1,70 @@
+/*
+ * Entrada y salida de los diálogos (Guía Web 4.1), compartidas por DialogoFormulario, DialogoConfirmacion y
+ * DialogoDetalle. Centrado: fundido con un ligero zoom; lateral: desde la derecha. El velo, en fundido.
+ * La salida la activa `useCierreAnimado` con `.saliendo`. Con «reducir movimiento», sin animación.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .centrado[open] {
+    animation: aparecer-centro var(--duracion-transicion) ease-out;
+  }
+
+  .lateral[open] {
+    animation: entrar-derecha var(--duracion-panel) ease-out;
+  }
+
+  .centrado[open]::backdrop,
+  .lateral[open]::backdrop {
+    animation: aparecer-velo var(--duracion-transicion) ease-out;
+  }
+
+  /* Después de las de entrada: misma especificidad, gana la última. */
+  .centrado.saliendo {
+    animation: desaparecer-centro var(--duracion-transicion) ease-in forwards;
+  }
+
+  .lateral.saliendo {
+    animation: salir-derecha var(--duracion-panel) ease-in forwards;
+  }
+
+  .saliendo::backdrop {
+    animation: desaparecer-velo var(--duracion-transicion) ease-in forwards;
+  }
+}
+
+@keyframes aparecer-centro {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes desaparecer-centro {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes entrar-derecha {
+  from {
+    transform: translateX(calc(100% + var(--space-2)));
+  }
+}
+
+@keyframes salir-derecha {
+  to {
+    transform: translateX(calc(100% + var(--space-2)));
+  }
+}
+
+@keyframes aparecer-velo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes desaparecer-velo {
+  to {
+    opacity: 0;
+  }
+}

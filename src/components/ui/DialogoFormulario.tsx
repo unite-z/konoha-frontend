@@ -14,7 +14,9 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import AvisoEnLinea from './AvisoEnLinea'
 import Boton from './Boton'
 import { LeyendaObligatorio } from './CampoFormulario'
+import animacion from './AnimacionDialogo.module.css'
 import estilos from './DialogoFormulario.module.css'
+import { useCierreAnimado } from './useCierreAnimado'
 
 export interface DialogoFormularioProps {
   abierto: boolean
@@ -38,11 +40,6 @@ export interface DialogoFormularioProps {
   children: ReactNode
 }
 
-/** `false` en navegadores sin `matchMedia` (pruebas) o con «reducir movimiento». */
-function hayMovimiento(): boolean {
-  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: no-preference)').matches
-}
-
 export default function DialogoFormulario({
   abierto,
   titulo,
@@ -63,14 +60,13 @@ export default function DialogoFormulario({
   const idTitulo = useId()
   const idDescripcion = useId()
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
-  const [saliendo, setSaliendo] = useState(false)
+  const { saliendo, cerrar } = useCierreAnimado(referencia, abierto, onCerrar)
 
   // Al cerrarse el diálogo se olvida la confirmación pendiente (ajuste durante el render).
   const [abiertoPrevio, setAbiertoPrevio] = useState(abierto)
   if (abiertoPrevio !== abierto) {
     setAbiertoPrevio(abierto)
     if (!abierto) setConfirmandoDescarte(false)
-    setSaliendo(false)
   }
 
   useEffect(() => {
@@ -109,24 +105,6 @@ export default function DialogoFormulario({
     }
   }, [])
 
-  // Al terminar la salida del panel (la del propio diálogo, no la del velo), se avisa al padre.
-  useEffect(() => {
-    const dialogo = referencia.current
-    if (!saliendo || !dialogo) return
-    const alTerminar = (evento: Event) => {
-      if (evento.target === dialogo && !(evento as AnimationEvent).pseudoElement) onCerrar()
-    }
-    dialogo.addEventListener('animationend', alTerminar)
-    return () => dialogo.removeEventListener('animationend', alTerminar)
-  }, [saliendo, onCerrar])
-
-  // El panel lateral sale hacia la derecha y avisa al terminar la animación; sin movimiento, se cierra al momento.
-  function cerrar() {
-    if (saliendo) return
-    if (ancho === 'lateral' && hayMovimiento()) setSaliendo(true)
-    else onCerrar()
-  }
-
   function pedirCierre() {
     if (enviando) return
     if (hayCambios && !confirmandoDescarte) setConfirmandoDescarte(true)
@@ -143,7 +121,14 @@ export default function DialogoFormulario({
   return (
     <dialog
       ref={referencia}
-      className={[estilos.dialogo, ancho === 'normal' ? '' : estilos[ancho], saliendo ? estilos.saliendo : ''].filter(Boolean).join(' ')}
+      className={[
+        estilos.dialogo,
+        ancho === 'normal' ? '' : estilos[ancho],
+        ancho === 'lateral' ? animacion.lateral : animacion.centrado,
+        saliendo ? animacion.saliendo : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-labelledby={idTitulo}
       aria-describedby={descripcion ? idDescripcion : undefined}
       onCancel={(evento) => {
