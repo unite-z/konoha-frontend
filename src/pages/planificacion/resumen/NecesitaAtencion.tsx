@@ -22,7 +22,7 @@ import { elementosAtencion, type ElementoAtencion } from './resumenPlanificacion
 import estilos from './ResumenPlanificacion.module.css'
 
 const ACCIONES: Record<Exclude<ElementoAtencion['accion'], 'registrarMotivo'>, { texto: string; ruta: (e: ElementoAtencion) => string }> = {
-  programar: { texto: 'Programar', ruta: (e) => `${RUTAS_PLANIFICACION.calendario}?programar=${e.servicioId}` },
+  programar: { texto: 'Programar', ruta: (e) => `${RUTAS_PLANIFICACION.calendario}?programar=${e.servicioId}&atiende=1` },
   verCiclo: { texto: 'Ver ciclo', ruta: (e) => (e.programacionId ? rutaCiclo(e.programacionId) : RUTAS_PLANIFICACION.ciclos) },
   configurar: { texto: 'Configurar', ruta: () => RUTAS_PLANIFICACION.configuracion },
 }

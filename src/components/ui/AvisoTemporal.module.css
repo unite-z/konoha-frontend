@@ -1,9 +1,10 @@
-/* Toast: sistema de diseño de Figma (DESIGN.md, 4.1). */
+/* Toast: sistema de diseño de Figma (DESIGN.md, 4.1). Arriba a la derecha, sobre la cabecera, como en 373-5779. */
 .region {
   position: fixed;
+  top: var(--space-4);
   right: var(--space-6);
-  bottom: var(--space-6);
   z-index: 10;
+  max-width: min(22.5rem, calc(100vw - 2 * var(--space-6)));
 }
 
 .aviso {

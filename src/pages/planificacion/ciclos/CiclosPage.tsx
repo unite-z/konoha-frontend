@@ -1,6 +1,7 @@
 // RF-PLA-004 y CU-007 · Ciclos (AV-269, Figma «Ciclos» 346-1032)
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
+import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import BarraAvance from '@/components/ui/BarraAvance'
 import { BotonEnlace } from '@/components/ui/Boton'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
@@ -20,7 +21,7 @@ import { SIN_VALOR } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
 import { ESTADO_PROGRAMACION } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
-import { PESTANAS_CICLOS, avanceCiclo, ciclosDePestana, contadoresCiclos, fechasCiclo, ordenarCiclos, rangoCiclos, type PestanaCiclos } from './ciclos'
+import { PESTANAS_CICLOS, avanceCiclo, avisoDeEstado, ciclosDePestana, contadoresCiclos, fechasCiclo, ordenarCiclos, rangoCiclos, type PestanaCiclos } from './ciclos'
 
 export default function CiclosPage() {
   usePaginaActual('Ciclos', [MIGAS_PLANIFICACION.planificacion, { texto: 'Ciclos' }])
@@ -28,6 +29,9 @@ export default function CiclosPage() {
   const hoy = hoyLima()
   const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
   const [pestana, setPestana] = useState<PestanaCiclos>('todos')
+  // «Ciclo programado · alerta atendida» (Figma 373-5779): el aviso llega del panel «Programar ciclo».
+  const { state } = useLocation()
+  const [aviso, setAviso] = useState(() => avisoDeEstado(state))
   const { desde, hasta } = rangoCiclos(hoy)
   const consulta = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
 
@@ -101,6 +105,7 @@ export default function CiclosPage() {
           vacio={{ titulo: 'Sin ciclos en esta pestaña', descripcion: 'Los ciclos que se programen aparecerán aquí.' }}
         />
       </Pestanas>
+      <AvisoTemporal mensaje={aviso?.mensaje ?? null} detalle={aviso?.detalle} onCerrar={() => setAviso(null)} />
     </>
   )
 }

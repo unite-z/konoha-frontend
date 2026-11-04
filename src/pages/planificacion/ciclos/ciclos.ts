@@ -71,3 +71,18 @@ export function avanceCiclo(ciclo: Programacion, hoy: FechaIso): number | null {
 export function fechasCiclo(inicio: FechaIso, fin: FechaIso): string {
   return inicio === fin ? fechaNumerica(inicio) : `${fechaNumerica(inicio)} al ${fechaNumerica(fin)}`
 }
+
+/** Aviso que otra pantalla deja a Ciclos al llegar (`state.aviso`), como «Ciclo programado» de Figma 373-5779. */
+export interface AvisoCiclos {
+  mensaje: string
+  detalle?: string
+}
+
+/** Lee el aviso del `state` de la navegación; `null` si no hay o no tiene la forma esperada. */
+export function avisoDeEstado(estado: unknown): AvisoCiclos | null {
+  if (typeof estado !== 'object' || estado === null || !('aviso' in estado)) return null
+  const aviso = (estado as { aviso: unknown }).aviso
+  if (typeof aviso !== 'object' || aviso === null || typeof (aviso as AvisoCiclos).mensaje !== 'string') return null
+  const { mensaje, detalle } = aviso as AvisoCiclos
+  return { mensaje, detalle: typeof detalle === 'string' ? detalle : undefined }
+}

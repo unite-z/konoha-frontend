@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Programacion } from '@/types/planificacion'
-import { avanceCiclo, ciclosDePestana, contadoresCiclos, fechasCiclo, ordenarCiclos, rangoCiclos } from './ciclos'
+import { avanceCiclo, avisoDeEstado, ciclosDePestana, contadoresCiclos, fechasCiclo, ordenarCiclos, rangoCiclos } from './ciclos'
 
 function ciclo(parcial: Partial<Programacion>): Programacion {
   return {
@@ -54,5 +54,12 @@ describe('lista de ciclos', () => {
 describe('fechasCiclo', () => {
   it('escribe las fechas como en Figma, sin raya', () => {
     expect([fechasCiclo('2026-11-16', '2026-11-19'), fechasCiclo('2026-11-30', '2026-11-30')]).toEqual(['16/11 al 19/11', '30/11'])
+  })
+})
+
+describe('avisoDeEstado', () => {
+  it('lee el aviso del state y descarta lo que no tiene su forma', () => {
+    expect(avisoDeEstado({ aviso: { mensaje: 'Ciclo programado', detalle: 'Alerta atendida.' } })).toEqual({ mensaje: 'Ciclo programado', detalle: 'Alerta atendida.' })
+    expect([avisoDeEstado(null), avisoDeEstado({ aviso: 3 }), avisoDeEstado('x')]).toEqual([null, null, null])
   })
 })

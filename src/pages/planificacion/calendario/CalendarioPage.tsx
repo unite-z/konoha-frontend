@@ -1,6 +1,6 @@
 // RF-PLA-003 y RF-PLA-007 · Calendario con capas, vistas Mes, Semana y Lista (AV-266, Figma 344-436, 361-2252 y 361-2782)
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
 import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
@@ -13,13 +13,14 @@ import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
+import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { Programacion, Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
+import type { AvisoCiclos } from '../ciclos/ciclos'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
 import {
@@ -66,8 +67,10 @@ export default function CalendarioPage() {
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
   const [registrando, setRegistrando] = useState(false)
   const [baja, setBaja] = useState<Restriccion | null>(null)
-  // `?programar=<servicio>` (desde el Resumen) abre el panel con ese servicio; `?programar=` lo abre vacío.
+  // `?programar=<servicio>` (desde el Resumen) abre el panel con ese servicio; `?programar=` lo abre vacío. Con
+  // `&atiende=1` (la alerta de frecuencia del Resumen), al programar se va a Ciclos con «Alerta atendida» (373-5779).
   const [parametros, setParametros] = useSearchParams()
+  const navegar = useNavigate()
   const programar = parametros.get('programar')
   const servicioAProgramar = programar && /^\d+$/.test(programar) ? Number(programar) : null
 
@@ -75,6 +78,7 @@ export default function CalendarioPage() {
     const siguientes = new URLSearchParams(parametros)
     siguientes.delete('programar')
     siguientes.delete('dia')
+    siguientes.delete('atiende')
     setParametros(siguientes, { replace: true })
   }
   const [aviso, setAviso] = useState<string | null>(null)
@@ -278,6 +282,11 @@ export default function CalendarioPage() {
           fechaInicial={parametros.get('dia')}
           onCerrar={cerrarPanel}
           onProgramada={(programada) => {
+            if (parametros.get('atiende') === '1') {
+              const avisoCiclos: AvisoCiclos = { mensaje: 'Ciclo programado', detalle: `${programada.servicio}: alerta atendida.` }
+              void navegar(RUTAS_PLANIFICACION.ciclos, { state: { aviso: avisoCiclos } })
+              return
+            }
             cerrarPanel()
             setAviso(`${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}.`)
             programaciones.reintentar()
