@@ -98,6 +98,10 @@ export type CambioEstadoCiclo = 'inicio' | 'fin' | 'cancelacion'
  * `POST programaciones/{id}/{inicio|fin|cancelacion}/` (solo jefe): Programada a En curso, En curso a Completada o
  * Programada a Cancelada, con la fecha real (hoy si no se indica). 409 si el estado actual no lo permite.
  */
-export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?: FechaIso) {
-  return solicitarPlanificacion<Programacion>(`programaciones/${id}/${cambio}/`, { metodo: 'POST', cuerpo: fecha ? { fecha } : {} })
+/** `motivo`: obligatorio al cancelar con el contrato de AV-253; hasta entonces el backend lo ignora. */
+export function cambiarEstadoCiclo(id: number, cambio: CambioEstadoCiclo, fecha?: FechaIso, motivo?: string) {
+  return solicitarPlanificacion<Programacion>(`programaciones/${id}/${cambio}/`, {
+    metodo: 'POST',
+    cuerpo: { ...(fecha ? { fecha } : {}), ...(motivo ? { motivo } : {}) },
+  })
 }
