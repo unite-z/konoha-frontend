@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import Boton from '../../components/ui/Boton'
+import Casilla from '../../components/ui/Casilla'
 import CampoFormulario from '../../components/ui/CampoFormulario'
 import EstadoCarga from '../../components/ui/EstadoCarga'
 import EstadoError from '../../components/ui/EstadoError'
@@ -39,10 +40,15 @@ export function SeleccionOperarios({opciones,seleccion,onCambiar,bloqueados=[],s
     <legend>Operarios <span className={estilos.cantidad}>{seleccion.length} seleccionados</span></legend>
     <CampoFormulario id="buscar-operarios" etiqueta="Buscar operario" type="search" value={buscar} onChange={e=>setBuscar(e.target.value)}/>
     <div className={estilos.listaOperarios}>
-      {visibles.map(p=><label key={p.id} className={estilos.operario}>
-        <input type="checkbox" checked={seleccion.includes(p.id)} disabled={bloqueados.includes(p.id)} onChange={e=>onCambiar(e.target.checked?[...seleccion,p.id]:seleccion.filter(id=>id!==p.id))}/>
-        <span>{p.nombres} {p.apellidos}{bloqueados.includes(p.id)&&<small>Asignado a otra cuadrilla</small>}</span>
-      </label>)}
+      {visibles.map(p=><div key={p.id} className={estilos.operario}>
+        <Casilla
+          etiqueta={`${p.nombres} ${p.apellidos}`}
+          ayuda={bloqueados.includes(p.id)?'Asignado a otra cuadrilla':undefined}
+          marcada={seleccion.includes(p.id)}
+          disabled={bloqueados.includes(p.id)}
+          onCambiar={(marcada)=>onCambiar(marcada?[...seleccion,p.id]:seleccion.filter(id=>id!==p.id))}
+        />
+      </div>)}
       {!visibles.length&&<p className={estilos.ayuda}>No hay operarios con esta búsqueda.</p>}
     </div>
   </fieldset>
