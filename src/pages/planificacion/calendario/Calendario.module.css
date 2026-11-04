@@ -708,3 +708,147 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* Calendario móvil (Figma 352-2192): solo en móvil; en escritorio, las pestañas Mes, Semana y Lista. */
+.soloMovil {
+  display: none;
+}
+
+.accionesEscritorio {
+  display: contents;
+}
+
+@media (max-width: 767px) {
+  .soloEscritorio,
+  .accionesEscritorio {
+    display: none;
+  }
+
+  .soloMovil {
+    display: block;
+  }
+}
+
+.movil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cabeceraMovil {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.navegacionMovil {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tiraSemana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tiraSemana .diaTira {
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: 0;
+  padding: var(--space-1) 0;
+}
+
+.tiraSemana .diaTira > span {
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.letraTira {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.numeroTira {
+  display: grid;
+  place-items: center;
+  width: calc(var(--space-8) + var(--space-1));
+  height: calc(var(--space-8) + var(--space-1));
+  border-radius: 50%;
+  font-size: var(--type-pequeno-size);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.numeroElegido {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.puntoTira {
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: 50%;
+}
+
+.punto_actividad {
+  background: var(--color-action-primary);
+}
+
+.punto_aviso {
+  background: var(--color-warning);
+}
+
+.punto_prohibicion {
+  background: var(--color-error);
+}
+
+.punto_favorable {
+  background: var(--color-success);
+}
+
+.agendaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.diaAgendaMovil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rotuloDiaMovil {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.rotuloElegido {
+  color: var(--color-action-text);
+}
+
+/* Las restricciones de la agenda móvil, como cajas a todo el ancho. */
+.restriccionMovil > * {
+  display: flex;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.diaAgendaMovil > span:not(.restriccionMovil) > * {
+  display: flex;
+  width: 100%;
+}

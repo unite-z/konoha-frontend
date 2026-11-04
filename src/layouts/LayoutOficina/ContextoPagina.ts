@@ -27,6 +27,8 @@ export interface ValorContextoPagina {
   nodoAcciones?: HTMLElement | null
   /** Hueco pegado al título donde `JuntoTitulo` pinta, por ejemplo, el estado del registro («Programada»). */
   nodoJunto?: HTMLElement | null
+  /** Hueco a la derecha de la barra superior móvil donde `AccionMovil` pinta la acción de la página. */
+  nodoAccionMovil?: HTMLElement | null
 }
 
 export const ContextoPagina = createContext<ValorContextoPagina | null>(null)

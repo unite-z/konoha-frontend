@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Programacion, Restriccion } from '@/types/planificacion'
-import { distribuirSemana, etiquetaDia, eventosDeCapas, eventosDelDia, semanasDelMes, tituloDia, type EventoCapa } from './calendarioCapas'
+import { agendaSemana, diasDeSemana, distribuirSemana, etiquetaDia, eventosDeCapas, eventosDelDia, puntoDelDia, semanasDelMes, tituloDia, type EventoCapa } from './calendarioCapas'
 
 function restriccion(parcial: Partial<Restriccion>): Restriccion {
   return {
@@ -160,6 +160,29 @@ describe('filtros del calendario', () => {
     expect(chipsFiltros({ tipos: ['1'], proveedor: '5' }, [{ valor: '1', texto: 'Corte de césped' }], proveedores).map((c) => c.texto)).toEqual([
       'Tipo: Corte de césped',
       'Proveedor: Podas Altura Demo',
+    ])
+  })
+})
+
+describe('vista móvil (Figma 352-2192)', () => {
+  const eventos = eventosDeCapas(
+    [
+      restriccion({ id: 1, efecto: 'Advertencia', tipo: 'Feria', fecha_inicio: '2026-11-10', fecha_fin: '2026-11-10' }),
+      restriccion({ id: 2, efecto: 'Prohibicion', tipo: 'Examen', fecha_inicio: '2026-11-15', fecha_fin: '2026-11-15' }),
+      restriccion({ id: 3, efecto: 'Advertencia', tipo: 'Clases', fecha_inicio: '2026-11-15', fecha_fin: '2026-11-15' }),
+    ],
+    [programacion({ id: 9, servicio: 'Poda', fecha_inicio_prevista: '2026-11-09', fecha_fin_prevista: '2026-11-09' })],
+  )
+
+  it('pone bajo cada día el punto del evento más fuerte', () => {
+    expect(diasDeSemana('2026-11-12').map((dia) => puntoDelDia(dia, eventos))).toEqual(['actividad', 'aviso', null, null, null, null, 'prohibicion'])
+  })
+
+  it('agrupa la agenda por día, solo con los días que tienen eventos', () => {
+    expect(agendaSemana(diasDeSemana('2026-11-12'), eventos).map((d) => [d.texto, d.eventos.map((e) => e.texto)])).toEqual([
+      ['Lun 9', ['Poda']],
+      ['Mar 10', ['Feria']],
+      ['Dom 15', ['Examen', 'Clases']],
     ])
   })
 })

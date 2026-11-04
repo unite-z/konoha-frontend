@@ -255,3 +255,25 @@ export function chipsFiltros(
   }
   return chips
 }
+
+// --- Vista móvil ---------------------------------------------------------------------------------------------
+
+export type PuntoDia = 'prohibicion' | 'aviso' | 'favorable' | 'actividad'
+
+/** Punto bajo el día de la tira semanal (Figma 352-2192): el evento más fuerte del día, o `null` si no hay. */
+export function puntoDelDia(dia: FechaIso, eventos: EventoCapa[]): PuntoDia | null {
+  const { restricciones, actividades } = eventosDelDia(dia, eventos)
+  for (const tipo of ['prohibicion', 'aviso'] as const) if (restricciones.some((r) => r.tipo === tipo)) return tipo
+  if (actividades.length > 0) return 'actividad'
+  return restricciones.length > 0 ? 'favorable' : null
+}
+
+/** Días de la semana con algún evento, en orden, con «Lun 9» y sus eventos (restricciones y actividades). */
+export function agendaSemana(dias: FechaIso[], eventos: EventoCapa[]): { dia: FechaIso; texto: string; eventos: EventoCapa[] }[] {
+  return dias
+    .map((dia, indice) => {
+      const { restricciones, actividades } = eventosDelDia(dia, eventos)
+      return { dia, texto: `${DIAS_SEMANA_CORTOS[indice]} ${Number(dia.slice(8, 10))}`, eventos: [...actividades, ...restricciones] }
+    })
+    .filter((d) => d.eventos.length > 0)
+}

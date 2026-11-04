@@ -42,7 +42,11 @@ export default function LayoutOficina() {
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const [nodoAcciones, setNodoAcciones] = useState<HTMLElement | null>(null)
   const [nodoJunto, setNodoJunto] = useState<HTMLElement | null>(null)
-  const valor = useMemo(() => ({ pagina, establecerPagina, nodoAcciones, nodoJunto }), [pagina, nodoAcciones, nodoJunto])
+  const [nodoAccionMovil, setNodoAccionMovil] = useState<HTMLElement | null>(null)
+  const valor = useMemo(
+    () => ({ pagina, establecerPagina, nodoAcciones, nodoJunto, nodoAccionMovil }),
+    [pagina, nodoAcciones, nodoJunto, nodoAccionMovil],
+  )
   const [comprimido, setComprimido] = useState(leerComprimido)
   const alternarComprimido = useCallback(() => {
     setComprimido((actual) => {
@@ -84,7 +88,7 @@ export default function LayoutOficina() {
         />
         {menuAbierto && <div className={estilos.velo} aria-hidden="true" onClick={() => setMenuAbierto(false)} />}
         <div className={estilos.columna} inert={menuAbierto}>
-          <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} />
+          <BarraSuperiorMovil titulo={pagina.titulo} onAbrirMenu={() => setMenuAbierto(true)} refAccion={setNodoAccionMovil} />
           <Cabecera migas={pagina.migas} />
           <main id="contenido" tabIndex={-1} className={estilos.contenido}>
             {pagina.titulo && pagina.tituloOculto && <h1 className="sr-only">{pagina.titulo}</h1>}
