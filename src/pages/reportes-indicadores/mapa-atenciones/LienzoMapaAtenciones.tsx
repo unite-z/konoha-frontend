@@ -155,12 +155,12 @@ export default function LienzoMapaAtenciones({
     instancia.once('load', () => {
       cargado.current = true
       instancia.addSource(ID_FUENTE, { type: 'geojson', data: coleccionAreas([]) })
-      instancia.addLayer({ id: `${ID_FUENTE}-relleno`, type: 'fill', source: ID_FUENTE, paint: { 'fill-color': leerToken('--green-100') } })
+      instancia.addLayer({ id: `${ID_FUENTE}-relleno`, type: 'fill', source: ID_FUENTE, paint: { 'fill-color': leerToken('--map-area-fill') } })
       instancia.addLayer({
         id: `${ID_FUENTE}-borde`,
         type: 'line',
         source: ID_FUENTE,
-        paint: { 'line-color': leerToken('--green-500'), 'line-width': 2 },
+        paint: { 'line-color': leerToken('--map-area-line'), 'line-width': 2 },
       })
       pintar(instancia)
     })
