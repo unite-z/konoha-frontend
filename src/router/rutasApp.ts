@@ -170,7 +170,7 @@ export const RUTAS_INCIDENCIAS = {
 /** MOD-03 · incidencias de quien las reporta, en el móvil (AV-282): cualquier usuario con sesión. */
 export const RUTAS_MIS_INCIDENCIAS = {
   lista: '/mis-incidencias', // HU-024 (seguimiento propio)
-  reportar: '/mis-incidencias/reportar', // HU-020 y CU-020
+  reportar: '/mis-incidencias?reportar=', // HU-020 y CU-020: el formulario se abre sobre la lista
 } as const
 
 /** Seguimiento de una incidencia propia (AV-282). */

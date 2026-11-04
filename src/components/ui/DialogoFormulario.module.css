@@ -249,3 +249,14 @@
     flex: 1 1 0;
   }
 }
+
+/* Acciones apiladas (Figma 391-8469): una debajo de otra a todo el ancho y la principal arriba. */
+.formulario > .acciones.apiladas {
+  flex-direction: column-reverse;
+  flex-wrap: nowrap;
+}
+
+.formulario > .acciones.apiladas > * {
+  flex: none;
+  width: 100%;
+}
