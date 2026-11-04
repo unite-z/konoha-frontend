@@ -28,6 +28,8 @@ import CronogramaIaPage from '../pages/reportes-indicadores/asistencia-ia/Cronog
 import RevisionCronogramaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionCronogramaPage'
 import EstimacionRecursosPage from '../pages/reportes-indicadores/asistencia-ia/EstimacionRecursosPage'
 import RevisionEstimacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionEstimacionPage'
+import ClasificacionIncidenciasIaPage from '../pages/reportes-indicadores/asistencia-ia/ClasificacionIncidenciasIaPage'
+import RevisionClasificacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionClasificacionPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
@@ -110,6 +112,8 @@ export const router = createBrowserRouter([
               { path: `${RUTAS.cronogramaIa}/:id`, element: <RevisionCronogramaPage /> }, // RF-IA-003
               { path: RUTAS.estimacionRecursos, element: <EstimacionRecursosPage /> }, // RF-IA-004
               { path: `${RUTAS.estimacionRecursos}/:id`, element: <RevisionEstimacionPage /> }, // RF-IA-004
+              { path: RUTAS.clasificacionIncidencias, element: <ClasificacionIncidenciasIaPage /> }, // RF-IA-005
+              { path: `${RUTAS.clasificacionIncidencias}/:id`, element: <RevisionClasificacionPage /> }, // RF-IA-005
               { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
               { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
