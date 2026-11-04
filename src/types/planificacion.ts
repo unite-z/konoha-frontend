@@ -166,4 +166,6 @@ export interface NuevaProgramacion {
   justificacion?: string
   /** Mes `AAAA-MM` de la ventana del tercerizado (AV-253); el personal propio no lo manda. */
   ventana_mes?: string
+  /** Zonas de la ruta que entran en el corte (AV-259); solo para el corte de césped. */
+  zonas?: string[]
 }

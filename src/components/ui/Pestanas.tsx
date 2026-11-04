@@ -26,10 +26,12 @@ export interface PestanasProps {
   derecha?: ReactNode
   /** En un marco con borde: las pestañas en una cabecera con línea inferior y el panel sin relleno (Figma 346-1334). */
   enCaja?: boolean
+  /** `completo`: la lista ocupa todo el ancho y las pestañas se reparten (pasos de «Programar ciclo», 372-5523). */
+  ancho?: 'contenido' | 'completo'
   children: ReactNode
 }
 
-export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, derecha, enCaja = false, children }: PestanasProps) {
+export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, derecha, enCaja = false, ancho = 'contenido', children }: PestanasProps) {
   const base = useId()
   const botones = useRef<(HTMLButtonElement | null)[]>([])
 
@@ -48,7 +50,7 @@ export default function Pestanas({ etiqueta, pestanas, valor, onCambiar, barra, 
   }
 
   const lista = (
-    <div role="tablist" aria-label={etiqueta} className={estilos.lista}>
+    <div role="tablist" aria-label={etiqueta} className={`${estilos.lista} ${ancho === 'completo' ? estilos.completo : ''}`}>
       {pestanas.map((pestana, indice) => {
         const activa = pestana.valor === valor
         return (

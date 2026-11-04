@@ -4,7 +4,7 @@
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
-import type { CicloCorte, InterrupcionCorte, LimpiezaCorte, NuevaInterrupcion, ZonaAlternativa } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, LimpiezaCorte, NuevaInterrupcion, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
@@ -42,4 +42,13 @@ export async function registrarInterrupcion(programacionId: number, cuerpo: Nuev
     return simularRegistrarInterrupcion(cuerpo)
   }
   return solicitarPlanificacion<InterrupcionCorte>(`programaciones/${programacionId}/interrupciones/`, { metodo: 'POST', cuerpo })
+}
+
+/** `GET servicios/{id}/ruta/` (AV-259): zonas de la ruta de MOD-02 para el corte y si va fuera de frecuencia. */
+export async function obtenerRutaCorte(servicioId: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularRutaCorte } = await import('../simulados/corte')
+    return simularRutaCorte(signal)
+  }
+  return solicitarPlanificacion<RutaCorte>(`servicios/${servicioId}/ruta/`, { signal })
 }

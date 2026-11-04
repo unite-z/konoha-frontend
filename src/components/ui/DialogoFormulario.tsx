@@ -26,6 +26,8 @@ export interface DialogoFormularioProps {
   titulo: string
   /** Contexto breve bajo el título. */
   descripcion?: ReactNode
+  /** Junto al título, por ejemplo un `Estado` («Fuera de frecuencia» en «Programar ciclo», Figma 372-5523). */
+  junto?: ReactNode
   /** Nombre de la acción (botón primario). */
   textoConfirmar: string
   /** Texto del botón secundario: «Cancelar» por defecto o «Volver» cuando el diálogo es una acción sobre el registro. */
@@ -53,6 +55,7 @@ export default function DialogoFormulario({
   abierto,
   titulo,
   descripcion,
+  junto,
   textoConfirmar,
   enviando = false,
   hayCambios = false,
@@ -151,9 +154,12 @@ export default function DialogoFormulario({
       <form className={estilos.formulario} onSubmit={enviar} noValidate aria-busy={enviando || undefined}>
         <div className={estilos.cabecera}>
           <div className={estilos.textosCabecera}>
-            <h2 id={idTitulo} className={estilos.titulo}>
-              {titulo}
-            </h2>
+            <div className={estilos.lineaTitulo}>
+              <h2 id={idTitulo} className={estilos.titulo}>
+                {titulo}
+              </h2>
+              {junto}
+            </div>
             {descripcion && (
               <div id={idDescripcion} className={estilos.descripcion}>
                 {descripcion}

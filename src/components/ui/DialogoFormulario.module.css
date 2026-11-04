@@ -78,6 +78,13 @@
   max-height: calc(100vh - 2 * var(--space-6) - 2px);
 }
 
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .cabecera {
   display: flex;
   align-items: flex-start;
