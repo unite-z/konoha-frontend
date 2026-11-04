@@ -4,6 +4,7 @@
  */
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import FichaDecisionIA from '@/components/reportes-indicadores/FichaDecisionIA'
 import type { EstimacionRecursos } from '@/types/estimacionIa'
 import type { AccionDecision } from '@/types/ia'
 import {
@@ -18,7 +19,6 @@ import {
 import estilos from '@/pages/reportes-indicadores/reportes/Reportes.module.css'
 import EditorInsumos from './EditorInsumos'
 import estilosEstimacion from './Estimacion.module.css'
-import FichaRecurso from './FichaRecurso'
 
 export type BloqueRecurso = 'operarios' | 'duracion' | 'insumos'
 
@@ -44,7 +44,7 @@ export default function FichasRecursos({ estimacion: est, modo, acciones, correg
         Recursos estimados
       </h2>
       <div id="ficha-operarios">
-        <FichaRecurso
+        <FichaDecisionIA
           titulo="Operarios"
           sugerencia={textoOperarios(est)}
           modo={modo}
@@ -65,7 +65,7 @@ export default function FichasRecursos({ estimacion: est, modo, acciones, correg
         />
       </div>
       <div id="ficha-duracion">
-        <FichaRecurso
+        <FichaDecisionIA
           titulo="Duración"
           sugerencia={textoDuracion(est.duracion, est.unidad_duracion)}
           modo={modo}
@@ -94,7 +94,7 @@ export default function FichasRecursos({ estimacion: est, modo, acciones, correg
         />
       </div>
       <div id="ficha-insumos">
-        <FichaRecurso
+        <FichaDecisionIA
           titulo="Insumos"
           sugerencia={
             est.insumos.length === 0 ? (
