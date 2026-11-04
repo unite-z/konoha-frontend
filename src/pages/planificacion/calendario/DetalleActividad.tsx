@@ -52,7 +52,7 @@ export default function DetalleActividad({ actividad, eventos, onCerrar }: Detal
               <ul className={estilos.listaAgenda}>
                 {coinciden.map((restriccion) => (
                   <li key={restriccion.clave}>
-                    <EventoCalendario tipo={restriccion.tipo} texto={`${fechaCorta(restriccion.inicio)} · ${restriccion.texto}`} />
+                    <EventoCalendario tipo={restriccion.tipo} texto={`${fechaCorta(restriccion.inicio)} · ${restriccion.texto}`} ajustar />
                   </li>
                 ))}
               </ul>

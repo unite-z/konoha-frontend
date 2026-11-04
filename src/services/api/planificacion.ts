@@ -53,3 +53,8 @@ export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: 
 export function listarAlertas(signal?: AbortSignal) {
   return solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
 }
+
+/** `DELETE restricciones/{id}/?serie=` (solo jefe): da de baja la restricción o, con `serie`, toda su serie. */
+export function darDeBajaRestriccion(id: number, serie: boolean) {
+  return solicitarPlanificacion<void>(`restricciones/${id}/`, { metodo: 'DELETE', parametros: { serie } })
+}
