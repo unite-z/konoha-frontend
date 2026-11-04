@@ -14,6 +14,7 @@ export interface CuadrillaCampo {
 }
 export interface EntradaCuadrilla { nombre: string; capataz_id: number; activa: boolean; operarios: number[] }
 export interface CatalogoCampo { id: number; nombre: string; activo: boolean }
+export interface UnidadMedidaCampo { id: number; nombre: string; simbolo: string }
 export interface TipoActividadCampo extends CatalogoCampo { clase_id: number }
 export interface EntradaTipoActividadCampo { nombre: string; clase_id: number; activo: boolean }
 export interface EntradaEncargo {
@@ -31,9 +32,11 @@ export interface ActividadCampo {
   id: number; parte_id: number; cuadrilla_id: number; capataz_id: number; fecha: string; estado: 'Abierto' | 'Cerrado'
   tipo_actividad_id: number; area_verde_id: number; fecha_hora_actividad: string; encargo_id: number | null; observaciones: string | null
   clase_actividad_id: number | null; fecha_solicitud: string | null; incidencia_id: number | null
+  superficie_m2: number | null; cantidad_solicitada: number | null; cantidad_ejecutada: number | null; unidad_medida_id: number | null; tiempo_minutos: number | null
   cuadrilla_nombre: string; tipo_actividad_nombre: string; area_verde_nombre: string; participantes: ParticipantesCampo
 }
 export interface EntradaActividad {
   parte_id: number; tipo_actividad_id: number; area_verde_id: number; fecha_hora_actividad: string; encargo_id: number | null; observaciones: string
   clase_actividad_id: number | null; fecha_solicitud: string | null; incidencia_id: number | null
+  superficie_m2: number | null; cantidad_solicitada: number | null; cantidad_ejecutada: number | null; unidad_medida_id: number | null; tiempo_minutos: number | null
 }
