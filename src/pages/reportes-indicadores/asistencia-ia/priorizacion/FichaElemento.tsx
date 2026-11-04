@@ -4,7 +4,6 @@
  * la derecha, «Tu decisión» (aceptar, corregir la prioridad o descartar) o, ya validada, la decisión final.
  */
 import type { ReactNode } from 'react'
-import Badge from '../../../../components/ui/Badge'
 import Icono from '../../../../components/ui/Icono'
 import Selector from '../../../../components/ui/Selector'
 import type { AccionDecision } from '../../../../types/ia'
@@ -22,6 +21,8 @@ import {
 import estilos from '../extraccion/FichaCampo.module.css'
 import { ACCIONES, idDecision } from '../extraccion/valoresCampo'
 import estilosElemento from './FichaElemento.module.css'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 const NO_DISPONIBLE = 'No disponible'
 
@@ -60,16 +61,16 @@ export default function FichaElemento({ elemento: e, modo, decision, error, fina
   const sinDecision = error === MENSAJES_PRIORIZACION.sinDecision
 
   let estado = estilos.pendiente
-  let insignia: ReactNode = modo === 'editar' ? <Badge tono="neutral" texto="Pendiente" /> : null
+  let insignia: ReactNode = modo === 'editar' ? <Estado tono="neutro" texto="Pendiente" /> : null
   if (error) {
     estado = estilos.conError
-    insignia = <Badge tono="error" texto={sinDecision ? 'Falta decidir' : 'Falta la prioridad'} />
+    insignia = <Estado tono="error" texto={sinDecision ? 'Falta decidir' : 'Falta la prioridad'} />
   } else if (modo === 'editar' && decision?.accion) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(decision.accion)} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(decision.accion))} />
   } else if (modo === 'final' && final) {
     estado = estilos.decidido
-    insignia = <Badge {...insigniaAccion(final.accion)} />
+    insignia = <Estado {...insigniaAEstado(insigniaAccion(final.accion))} />
   }
 
   return (
@@ -90,7 +91,7 @@ export default function FichaElemento({ elemento: e, modo, decision, error, fina
               <Icono nombre="destello" tamano="sm" /> Sugerencia de la IA
             </span>
             <div className={estilosElemento.prioridad}>
-              <Badge {...insigniaPrioridad(e.prioridad_sugerida)} texto={`Prioridad ${e.prioridad_sugerida.toLowerCase()}`} />
+              <Estado {...insigniaAEstado(insigniaPrioridad(e.prioridad_sugerida))} texto={`Prioridad ${e.prioridad_sugerida.toLowerCase()}`} />
               <span className={`${estilosElemento.puntuacion} cifra`}>{formatearNumero(e.puntuacion)} de 100 puntos</span>
             </div>
             <ul className={estilos.lineas}>

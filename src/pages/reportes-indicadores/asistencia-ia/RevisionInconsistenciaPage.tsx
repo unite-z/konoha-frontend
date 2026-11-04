@@ -15,7 +15,6 @@ import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoD
 import BloqueContextoIA from '../../../components/reportes-indicadores/BloqueContextoIA'
 import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
 import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import Badge from '../../../components/ui/Badge'
 import Boton, { BotonEnlace } from '../../../components/ui/Boton'
 import CampoFormulario, { AreaTexto } from '../../../components/ui/CampoFormulario'
 import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
@@ -44,6 +43,8 @@ import estilos from '../reportes/Reportes.module.css'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
 import estilosHallazgo from './inconsistencias/Inconsistencias.module.css'
 import RegistrosImplicados from './inconsistencias/RegistrosImplicados'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 /** SUPUESTO (pendiente de confirmar con el backend): aceptar no modifica el registro oficial desde MOD-06. */
 const EFECTO_ACEPTAR =
@@ -81,7 +82,7 @@ export default function RevisionInconsistenciaPage() {
   const cerrarAvisoTemporal = useCallback(() => setAvisoTemporal(null), [])
 
   const volver = (
-    <BotonEnlace to={rutaBandeja} variante="terciario">
+    <BotonEnlace to={rutaBandeja} variante="fantasma">
       Volver a la bandeja
     </BotonEnlace>
   )
@@ -146,9 +147,9 @@ export default function RevisionInconsistenciaPage() {
           <Icono nombre="destello" tamano="sm" /> Sugerencia de la IA
         </span>
         <span className={estilosHallazgo.insignias}>
-          <Badge {...insigniaTipoHallazgo(contenido.tipo_hallazgo)} />
-          <Badge {...insigniaConfianza(contenido.confianza)} />
-          <Badge {...insigniaEstadoHallazgo(hallazgo.estado)} />
+          <Estado {...insigniaAEstado(insigniaTipoHallazgo(contenido.tipo_hallazgo))} />
+          <Estado {...insigniaAEstado(insigniaConfianza(contenido.confianza))} />
+          <Estado {...insigniaAEstado(insigniaEstadoHallazgo(hallazgo.estado))} />
         </span>
         <ListaDescripcion
           elementos={[
@@ -183,7 +184,7 @@ export default function RevisionInconsistenciaPage() {
         )}
         {conservar && (
           <p className={estilosHallazgo.cambio}>
-            <Badge tono="exito" texto={`Conservar ${conservar.codigo ?? conservar.etiqueta}`} />
+            <Estado tono="exito" texto={`Conservar ${conservar.codigo ?? conservar.etiqueta}`} />
           </p>
         )}
       </section>

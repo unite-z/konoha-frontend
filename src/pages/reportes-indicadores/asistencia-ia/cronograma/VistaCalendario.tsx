@@ -63,7 +63,7 @@ export default function VistaCalendario({
           <>
             <div className={estilos.cabeceraPanel}>
               <h3 className={estilos.tituloPanel}>Propuesta seleccionada</h3>
-              <Boton variante="terciario" compacto onClick={() => onElegir(null)}>
+              <Boton variante="fantasma" compacto onClick={() => onElegir(null)}>
                 Cerrar
               </Boton>
             </div>

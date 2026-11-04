@@ -14,7 +14,6 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
@@ -34,6 +33,8 @@ import estilosIa from './AsistenciaIa.module.css'
 import { cargarAtenciones } from './extraccion/consultasApoyo'
 import SolicitudAnalisis from './extraccion/SolicitudAnalisis'
 import { coberturaSugerencia } from './extraccion/valoresCampo'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 const TITULO = 'Extracción de informes de proveedores'
 const POR_PAGINA = 25 // Paginación del back-end (Guía Web 5.5).
@@ -76,7 +77,7 @@ function CeldaDatos({ sugerencia }: { sugerencia: SugerenciaIA }) {
         {formatearNumero(conValor)} de {formatearNumero(total)}
       </span>
       {faltan > 0 && (
-        <Badge tono="advertencia" texto={faltan === 1 ? '1 obligatorio sin valor' : `${faltan} obligatorios sin valor`} />
+        <Estado tono="aviso" texto={faltan === 1 ? '1 obligatorio sin valor' : `${faltan} obligatorios sin valor`} />
       )}
     </span>
   )
@@ -103,7 +104,7 @@ function columnas(atenciones: Map<number, Atencion>): ColumnaTabla<SugerenciaIA>
       ),
     },
     { clave: 'registro_id', titulo: 'Reporte', render: (s) => <span className="cifra">n.º {s.registro_id}</span> },
-    { clave: 'estado', titulo: 'Estado', render: (s) => <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} /> },
+    { clave: 'estado', titulo: 'Estado', render: (s) => <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} /> },
     { clave: 'datos', titulo: 'Datos encontrados', render: (s) => <CeldaDatos sugerencia={s} /> },
     {
       clave: 'fecha_validacion',
@@ -128,7 +129,7 @@ function FichaPropuesta({
       <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
         <span className={estilosIa.cabeceraFicha}>
           <span className={estilosIa.codigoAtencion}>{atencion?.codigo ?? `Atención n.º ${s.contenido.entrada.atencion_id}`}</span>
-          <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} />
+          <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} />
         </span>
         {atencion && (
           <span className={estilosIa.metaAtencion}>

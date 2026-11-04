@@ -5,22 +5,22 @@
  * Cada registro enlaza con su módulo cuando hay pantalla (`rutaRegistro`).
  */
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import Badge from '../../../../components/ui/Badge'
 import { BotonEnlace } from '../../../../components/ui/Boton'
 import ListaDescripcion from '../../../../components/ui/ListaDescripcion'
 import type { RegistroImplicado } from '../../../../types/inconsistenciasIa'
 import { SIN_VALOR } from '../../../../utils/formato'
 import { filasComparacion, rutaRegistro } from '../../../../utils/inconsistenciasIa'
 import estilos from './Inconsistencias.module.css'
+import Estado from '../../../../components/ui/Estado'
 
 function Encabezado({ registro, conservar }: { registro: RegistroImplicado; conservar: boolean }) {
   const enlace = rutaRegistro(registro)
   return (
     <span className={estilos.encabezadoRegistro}>
       <span className={estilos.nombreRegistro}>{registro.codigo ?? registro.etiqueta}</span>
-      {conservar && <Badge tono="exito" texto="Se propone conservar" />}
+      {conservar && <Estado tono="exito" texto="Se propone conservar" />}
       {enlace && (
-        <BotonEnlace to={enlace.ruta} variante="terciario">
+        <BotonEnlace to={enlace.ruta} variante="fantasma">
           {enlace.texto}
         </BotonEnlace>
       )}
@@ -63,7 +63,7 @@ export default function RegistrosImplicados({ registros, conservarId }: Registro
             <li key={f.campo} className={`${estilos.bloqueCampo} ${f.distinto ? estilos.distinto : ''}`}>
               <span className={estilos.nombreCampo}>
                 {f.campo}
-                {f.distinto && <Badge tono="advertencia" texto="Distinto" />}
+                {f.distinto && <Estado tono="aviso" texto="Distinto" />}
               </span>
               <dl className={estilos.valoresCampo}>
                 {registros.map((r, i) => (
@@ -100,7 +100,7 @@ export default function RegistrosImplicados({ registros, conservarId }: Registro
               <th scope="row">
                 <span className={estilos.nombreCampo}>
                   {f.campo}
-                  {f.distinto && <Badge tono="advertencia" texto="Distinto" />}
+                  {f.distinto && <Estado tono="aviso" texto="Distinto" />}
                 </span>
               </th>
               {f.valores.map((valor, i) => (

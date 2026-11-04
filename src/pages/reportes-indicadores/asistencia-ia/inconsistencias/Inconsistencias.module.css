@@ -61,16 +61,16 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 .valorDestacado {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
   overflow-wrap: anywhere;
 }
 
@@ -83,8 +83,8 @@
 }
 
 .secundario {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
@@ -103,7 +103,7 @@
 }
 
 .nombreRegistro {
-  font-weight: var(--type-heading-sm-weight);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .contenedorTabla {
@@ -113,8 +113,8 @@
 .comparacion {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
 }
 .comparacion th,
 .comparacion td {
@@ -138,7 +138,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  font-weight: var(--type-label-md-weight);
+  font-weight: var(--type-cuerpo-medio-weight);
 }
 
 .bloquesComparacion {
@@ -176,8 +176,8 @@
   flex-direction: column;
   gap: var(--space-1);
   margin: 0;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
 }
 .valoresCampo dt {
   color: var(--color-text-secondary);

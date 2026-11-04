@@ -13,13 +13,13 @@
 }
 
 .codigoAtencion {
-  font-weight: var(--type-heading-sm-weight);
+  font-weight: var(--type-titulo-tarjeta-weight);
   color: var(--color-text-primary);
 }
 
 .metaAtencion {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
   white-space: normal;
 }
@@ -51,7 +51,7 @@
   transition: border-color var(--duracion-transicion);
 }
 .ficha:hover {
-  border-color: var(--green-700);
+  border-color: var(--color-action-primary);
 }
 
 .cabeceraFicha {
@@ -66,8 +66,8 @@
 .datosFicha {
   display: flex;
   flex-direction: column;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 

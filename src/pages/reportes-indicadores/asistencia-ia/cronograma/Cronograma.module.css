@@ -17,14 +17,14 @@
 }
 
 .tituloPanel {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .secundario {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 
@@ -69,23 +69,23 @@
 }
 
 .tituloSemana {
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 /* Ficha de propuesta. */
 .fechas {
-  font-size: var(--type-heading-sm-size);
-  line-height: var(--type-heading-sm-line);
-  font-weight: var(--type-heading-sm-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
 }
 
 .motivo summary {
   cursor: pointer;
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 .motivo p {
@@ -96,12 +96,12 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
 }
 .casilla input {
   margin-top: var(--space-1);
-  accent-color: var(--green-700);
+  accent-color: var(--color-action-primary);
 }
 
 /* Calendario con el panel lateral de la propuesta elegida (escritorio). */

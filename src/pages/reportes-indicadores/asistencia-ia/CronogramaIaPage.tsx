@@ -12,7 +12,6 @@ import { useLocation, useNavigate } from 'react-router'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Badge from '../../../components/ui/Badge'
 import Boton from '../../../components/ui/Boton'
 import { GrupoChips } from '../../../components/ui/ChipsFiltro'
 import EstadoSinAcceso from '../../../components/ui/EstadoSinAcceso'
@@ -33,6 +32,8 @@ import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
 import DialogoGenerarCronograma from './cronograma/DialogoGenerarCronograma'
 import type { EstadoNavegacionRevision } from './ExtraccionReporteProveedorPage'
+import Estado from '../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../components/ui/tonos'
 
 const TITULO = 'Planificación asistida'
 const POR_PAGINA = 25
@@ -66,8 +67,8 @@ const COLUMNAS: ColumnaTabla<SugerenciaCronograma>[] = [
   },
   { clave: 'propuestas', titulo: 'Propuestas', alineacion: 'derecha', render: (s) => formatearNumero(s.contenido.propuestas.length) },
   { clave: 'decision', titulo: 'Decisión', multilinea: true, render: textoDecision },
-  { clave: 'suficiencia', titulo: 'Datos', render: (s) => <Badge {...insigniaSuficiencia(s.contenido.suficiencia)} /> },
-  { clave: 'estado', titulo: 'Estado', render: (s) => <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} /> },
+  { clave: 'suficiencia', titulo: 'Datos', render: (s) => <Estado {...insigniaAEstado(insigniaSuficiencia(s.contenido.suficiencia))} /> },
+  { clave: 'estado', titulo: 'Estado', render: (s) => <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} /> },
 ]
 
 function FichaPropuestaBandeja({ propuesta: s, onAbrir }: { propuesta: SugerenciaCronograma; onAbrir: () => void }) {
@@ -76,13 +77,13 @@ function FichaPropuestaBandeja({ propuesta: s, onAbrir }: { propuesta: Sugerenci
       <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
         <span className={estilosIa.cabeceraFicha}>
           <span className={`${estilosIa.codigoAtencion} cifra`}>{periodoDe(s)}</span>
-          <Badge {...insigniaSugerencia(s.estado, s.etiqueta_estado)} />
+          <Estado {...insigniaAEstado(insigniaSugerencia(s.estado, s.etiqueta_estado))} />
         </span>
         <span className={estilosIa.metaAtencion}>
           {formatearNumero(s.contenido.propuestas.length)} propuestas · generada el {formatearFechaHora(s.fecha_creacion)}
         </span>
         <span className={estilosIa.pieFicha}>
-          <Badge {...insigniaSuficiencia(s.contenido.suficiencia)} />
+          <Estado {...insigniaAEstado(insigniaSuficiencia(s.contenido.suficiencia))} />
         </span>
         <span className={estilosIa.datosFicha}>{s.estado === 'Propuesta' ? 'Revisar' : 'Ver'} propuesta n.º {s.id}</span>
       </button>

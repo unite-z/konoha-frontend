@@ -10,7 +10,6 @@
 import { useState, type FormEvent } from 'react'
 import AsistentePasos from '../../../../components/ui/AsistentePasos'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Badge from '../../../../components/ui/Badge'
 import Boton from '../../../../components/ui/Boton'
 import CampoFormulario, { LeyendaObligatorio } from '../../../../components/ui/CampoFormulario'
 import EstadoCarga from '../../../../components/ui/EstadoCarga'
@@ -25,6 +24,7 @@ import type { Atencion } from '../../../../types/tercerizados'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
 import { cargarReportes, propuestasPorReporte, tieneInformeFinal } from './consultasApoyo'
 import estilos from './SolicitudAnalisis.module.css'
+import Estado from '../../../../components/ui/Estado'
 
 const POR_PAGINA = 25 // Paginación de MOD-05.
 const ID_CAMPO_REPORTE = 'reporte-proveedor'
@@ -218,7 +218,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
           Atención <strong>{atencion.codigo}</strong> · {atencion.proveedor_nombre ?? SIN_VALOR} ·{' '}
           {atencion.tipo_servicio_nombre ?? SIN_VALOR}
         </span>
-        <Boton variante="terciario" onClick={volverABuscar}>
+        <Boton variante="fantasma" onClick={volverABuscar}>
           Cambiar atención
         </Boton>
       </div>
@@ -251,9 +251,9 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
                     <span className={estilos.textoOpcion}>
                       <span className={estilos.lineaInsignias}>
                         <span className={estilos.tituloOpcion}>Revisión {r.revision}</span>
-                        {i === 0 && <Badge tono="info" texto="Más reciente" />}
-                        {propuestas.length > 0 && <Badge tono="advertencia" texto="Ya tiene propuesta" />}
-                        {!tieneInformeFinal(r) && <Badge tono="advertencia" texto="Sin informe final" />}
+                        {i === 0 && <Estado tono="info" texto="Más reciente" />}
+                        {propuestas.length > 0 && <Estado tono="aviso" texto="Ya tiene propuesta" />}
+                        {!tieneInformeFinal(r) && <Estado tono="aviso" texto="Sin informe final" />}
                       </span>
                       <span className={estilos.metaOpcion}>
                         Recibido el {formatearFecha(r.fecha_recepcion)} ·{' '}
@@ -265,7 +265,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
                   </label>
                   {propuestas.length > 0 && (
                     <div className={estilos.verPropuesta}>
-                      <Boton variante="terciario" onClick={() => onAbrirPropuesta(propuestas[0])}>
+                      <Boton variante="fantasma" onClick={() => onAbrirPropuesta(propuestas[0])}>
                         Ver propuesta n.º {propuestas[0].id}
                       </Boton>
                     </div>
@@ -293,7 +293,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
         <h2 id="titulo-analizar" className={estilos.titulo}>
           Analizar un informe
         </h2>
-        <Boton variante="terciario" deshabilitado={analizando} onClick={onCancelar}>
+        <Boton variante="fantasma" deshabilitado={analizando} onClick={onCancelar}>
           Cancelar
         </Boton>
       </div>

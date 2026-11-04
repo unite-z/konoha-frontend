@@ -9,10 +9,10 @@
 
 .leyenda {
   margin-bottom: var(--space-2);
-  font-size: var(--type-label-md-size);
-  line-height: var(--type-label-md-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--neutral-700);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-text-muted);
 }
 
 .resumenPrioridades {
@@ -40,8 +40,8 @@
 }
 
 .aviso {
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
   color: var(--color-text-secondary);
 }
 

@@ -5,7 +5,6 @@
  */
 import BloqueContextoIA from '../../../../components/reportes-indicadores/BloqueContextoIA'
 import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Badge from '../../../../components/ui/Badge'
 import { BotonEnlace } from '../../../../components/ui/Boton'
 import { RUTAS_PLANIFICACION } from '../../../../router/rutasApp'
 import type { SugerenciaCronograma } from '../../../../types/cronogramaIa'
@@ -14,6 +13,8 @@ import { insigniaSugerencia } from '../../../../utils/estados'
 import { formatearFechaHora, formatearNumero } from '../../../../utils/formato'
 import estilos from './Cronograma.module.css'
 import RestriccionesConsideradas from './RestriccionesConsideradas'
+import Estado from '../../../../components/ui/Estado'
+import { insigniaAEstado } from '../../../../components/ui/tonos'
 
 export default function CabeceraCronograma({ propuesta, puedeConfirmar }: { propuesta: SugerenciaCronograma; puedeConfirmar: boolean }) {
   const { contenido } = propuesta
@@ -22,8 +23,8 @@ export default function CabeceraCronograma({ propuesta, puedeConfirmar }: { prop
     <>
       <section className={`${estilos.panel} ${estilos.cabecera}`} aria-label="Identificación de la propuesta">
         <div className={estilos.lineaTitulo}>
-          <Badge {...insigniaSugerencia(propuesta.estado, propuesta.etiqueta_estado)} />
-          {propuesta.estado === 'Propuesta' && <Badge tono="advertencia" texto="Propuesta: no es una programación confirmada" />}
+          <Estado {...insigniaAEstado(insigniaSugerencia(propuesta.estado, propuesta.etiqueta_estado))} />
+          {propuesta.estado === 'Propuesta' && <Estado tono="aviso" texto="Propuesta: no es una programación confirmada" />}
         </div>
         <p className="cifra">
           Periodo: {textoPeriodoCorto(contenido.entrada.desde, contenido.entrada.hasta)} · {formatearNumero(contenido.propuestas.length)}{' '}
@@ -53,7 +54,7 @@ export default function CabeceraCronograma({ propuesta, puedeConfirmar }: { prop
             {decision?.resumen.aceptados ?? 0} aceptadas, {decision?.resumen.corregidos ?? 0} modificadas y {decision?.resumen.descartados ?? 0}{' '}
             descartadas. Programaciones creadas: {formatearNumero(decision?.programaciones_creadas.length ?? 0)}.
           </p>
-          <BotonEnlace to={RUTAS_PLANIFICACION.servicios} variante="terciario">
+          <BotonEnlace to={RUTAS_PLANIFICACION.servicios} variante="fantasma">
             Ver en Planificación
           </BotonEnlace>
         </AvisoEnLinea>
