@@ -3,11 +3,11 @@
  * Antes de confirmar es una vista previa que cambia al corregir; ya confirmada, la conserva para compararla con lo real.
  * La diferencia se dice con texto («+1 operario», «−2 h»), nunca solo con color.
  */
-import { CeldaTexto } from '../../../../components/ui/CeldasTabla'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { DiferenciaEstimacion, EstimacionRecursos, RecursosConfirmados } from '../../../../types/estimacionIa'
-import { textoDiferencia, textoDuracion } from '../../../../utils/estimacionIa'
-import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import { CeldaTexto } from '@/components/ui/CeldasTabla'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { DiferenciaEstimacion, EstimacionRecursos, RecursosConfirmados } from '@/types/estimacionIa'
+import { textoDiferencia, textoDuracion } from '@/utils/estimacionIa'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 
 interface Fila {
   concepto: string

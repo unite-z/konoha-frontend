@@ -5,10 +5,11 @@
 #      matchMedia) y font-size o border-radius que no usen var(--type-*) y var(--radius-*);
 #   3. solo en las líneas añadidas del PR: medidas en px (también en planificacion) y style={...} (salvo valores
 #      calculados marcados con el comentario estilo-calculado);
-#   4. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
+#   4. en todo src/: imports con más de un ../ (usa el alias @/, AV-333);
+#   5. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
 #      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
-# planificacion (MOD-03) queda fuera de 2 y 4 hasta que la sustituya el rediseño (AV-265 y siguientes).
+# planificacion (MOD-03) queda fuera de 2 y 5 hasta que la sustituya el rediseño (AV-265 y siguientes).
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -44,6 +45,12 @@ while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "border-radius sin token: usa var(--radius-*) (DESIGN.md, 3.3)."
 done < <(git grep -nE 'border-radius:' -- 'src/*.css' "${excluidas[@]}" | sin_comentarios \
   | grep -vE 'border-radius:[[:space:]]*((var\(--radius-[a-z0-9-]+\)|0|50%|inherit)[[:space:]]*)+(;|$)' || true)
+
+# --- Imports con el alias @/ (AV-333) ----------------------------------------------------------------------
+while IFS=: read -r fichero linea _; do
+  falla "$fichero" "$linea" "Import con más de un ../: usa el alias @/ (docs/estandares/estilo-codigo-ts-react.md)."
+done < <(git grep -nE "(from|import|import\(|vi\.mock\(|importActual[^(]*\()[[:space:]]*['\"](\.\./){2,}" -- 'src/*.ts' 'src/*.tsx' \
+  | sin_comentarios)
 
 # --- Sistema de diseño en las carpetas migradas (AV-351) --------------------------------------------------
 migradas=(src/components/ui src/components/core src/components/reportes-indicadores src/components/tercerizados

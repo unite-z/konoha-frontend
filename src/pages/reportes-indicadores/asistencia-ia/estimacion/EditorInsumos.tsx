@@ -2,9 +2,9 @@
  * Editor de insumos (RF-IA-004): una fila por insumo con nombre, cantidad y unidad, más «Añadir insumo» y «Quitar».
  * En móvil cada fila es un bloque. La unidad es texto libre con sugerencias (las de la estimación y las habituales).
  */
-import Boton from '../../../../components/ui/Boton'
-import CampoFormulario from '../../../../components/ui/CampoFormulario'
-import type { InsumoEnEdicion } from '../../../../utils/estimacionIa'
+import Boton from '@/components/ui/Boton'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import type { InsumoEnEdicion } from '@/utils/estimacionIa'
 import estilos from './Estimacion.module.css'
 
 export interface EditorInsumosProps {

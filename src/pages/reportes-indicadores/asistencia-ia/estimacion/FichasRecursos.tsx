@@ -2,10 +2,10 @@
  * Las tres fichas de decisión de una estimación (RF-IA-004): operarios, duración e insumos, cada una con su
  * recomendación con unidades, «Tu decisión» y los campos para corregir. Ya confirmada, muestra lo confirmado.
  */
-import CampoFormulario from '../../../../components/ui/CampoFormulario'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import type { EstimacionRecursos } from '../../../../types/estimacionIa'
-import type { AccionDecision } from '../../../../types/ia'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import type { EstimacionRecursos } from '@/types/estimacionIa'
+import type { AccionDecision } from '@/types/ia'
 import {
   OPCIONES_UNIDAD,
   textoDuracion,
@@ -14,8 +14,8 @@ import {
   unidadesSugeridas,
   type ErroresConfirmados,
   type RecursosEnEdicion,
-} from '../../../../utils/estimacionIa'
-import estilos from '../../reportes/Reportes.module.css'
+} from '@/utils/estimacionIa'
+import estilos from '@/pages/reportes-indicadores/reportes/Reportes.module.css'
 import EditorInsumos from './EditorInsumos'
 import estilosEstimacion from './Estimacion.module.css'
 import FichaRecurso from './FichaRecurso'
