@@ -118,3 +118,22 @@ export interface CalendarioCuadrilla {
   programaciones: Programacion[]
   restricciones: Restriccion[]
 }
+
+/** Un jardín del maestro de MOD-02 que no está en la ruta de hoy (`GET ruta-de-hoy/fuera-de-ruta/?q=`, AV-260). */
+export interface JardinMaestro {
+  id: number
+  /** «J-061». */
+  codigo: string
+  nombre: string
+  zona: string
+}
+
+/**
+ * Cuerpo de `POST ciclos/{programacion}/fuera-de-ruta/` (AV-260, CU-011 2b), con `Idempotency-Key`: el capataz cortó
+ * un jardín que no está en la ruta; queda pendiente de que el jefe de sección lo incorpore.
+ */
+export interface NuevaMarcaFueraDeRuta {
+  jardin_id: number
+  marcado_en: string
+  nota: string
+}

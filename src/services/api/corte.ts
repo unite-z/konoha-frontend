@@ -4,7 +4,7 @@
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { FechaIso } from '@/types/comun'
-import type { CalendarioCuadrilla, CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import type { CalendarioCuadrilla, CicloCorte, InterrupcionCorte, JardinMaestro, JardinRuta, NuevaMarcaFueraDeRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 import { listarProgramaciones, listarRestricciones } from './planificacion'
@@ -101,4 +101,26 @@ export async function obtenerCalendarioCuadrilla(desde: FechaIso, hasta: FechaIs
     return { cuadrilla: 'Cuadrilla B', programaciones, restricciones }
   }
   return solicitarPlanificacion<CalendarioCuadrilla>('calendario-cuadrilla/', { parametros: { desde, hasta }, signal })
+}
+
+/** `GET ruta-de-hoy/fuera-de-ruta/?q=` (AV-260): jardines del maestro que no están en la ruta de hoy, por código o nombre. */
+export async function buscarJardinesFueraDeRuta(q: string, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularJardinesFueraDeRuta } = await import('../simulados/corte')
+    return simularJardinesFueraDeRuta(q, signal)
+  }
+  return solicitarPlanificacion<{ count: number; results: JardinMaestro[] }>('ruta-de-hoy/fuera-de-ruta/', { parametros: { q }, signal })
+}
+
+/** `POST ciclos/{programacion}/fuera-de-ruta/` (AV-260): marca con nota obligatoria un jardín que no está en la ruta. */
+export async function marcarFueraDeRuta(programacionId: number, cuerpo: NuevaMarcaFueraDeRuta, clave: string) {
+  if (DATOS_SIMULADOS) {
+    const { simularMarcarFueraDeRuta } = await import('../simulados/corte')
+    return simularMarcarFueraDeRuta(cuerpo)
+  }
+  return solicitarPlanificacion<{ id: number; jardin: JardinMaestro; nota: string; marcado_en: string }>(`ciclos/${programacionId}/fuera-de-ruta/`, {
+    metodo: 'POST',
+    cuerpo,
+    cabeceras: { 'Idempotency-Key': clave },
+  })
 }

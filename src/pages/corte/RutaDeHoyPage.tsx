@@ -32,6 +32,7 @@ import { MIGAS_CORTE } from '@/router/rutasApp'
 import { ErrorApi } from '@/services/api/cliente'
 import { marcarJardin, obtenerRutaDeHoy, registrarObservacionJardin } from '@/services/api/corte'
 import type { JardinRuta, RutaDeHoy } from '@/types/corte'
+import HojaFueraDeRuta from './HojaFueraDeRuta'
 import { detalleMarcado, detallePendiente, marcados, porCortar, textoSinConexion, textoYaEstabaMarcado, textoYaMarcado, tituloJardin, type MarcaPendiente } from './rutaDeHoy'
 import { useEnLinea } from './useEnLinea'
 import estilos from './RutaDeHoy.module.css'
@@ -47,6 +48,7 @@ function ListaRuta({
   enviando,
   sinSincronizar,
   sinConexion,
+  onFueraDeRuta,
 }: {
   ruta: RutaDeHoy
   onMarcar: (jardin: JardinRuta) => void
@@ -56,6 +58,8 @@ function ListaRuta({
   sinSincronizar: Record<number, MarcaPendiente>
   /** Sin conexión o con marcas por enviar: la banda y una sola lista, como en Figma 353-2396. */
   sinConexion: boolean
+  /** «Añadir jardín fuera de ruta» (con conexión). */
+  onFueraDeRuta: () => void
 }) {
   const [pestana, setPestana] = useState('por-cortar')
   const enEspera = ruta.jardines.filter((j) => sinSincronizar[j.id])
@@ -106,17 +110,23 @@ function ListaRuta({
         ]}
       >
         {pestana === 'por-cortar' ? (
-          pendientes.length === 0 ? (
-            <EstadoVacio titulo="Ruta completa" descripcion="Todos los jardines de hoy están marcados." nivel={3} />
-          ) : (
-            <ul className={estilos.lista}>
-              {pendientes.map((jardin) => (
-                <li key={jardin.id}>
-                  <FilaChecklist titulo={tituloJardin(jardin)} detalle={jardin.zona} estado="Pendiente" deshabilitada={enviando === jardin.id} onPulsar={() => onMarcar(jardin)} />
-                </li>
-              ))}
-            </ul>
-          )
+          <>
+            {pendientes.length === 0 ? (
+              <EstadoVacio titulo="Ruta completa" descripcion="Todos los jardines de hoy están marcados." nivel={3} />
+            ) : (
+              <ul className={estilos.lista}>
+                {pendientes.map((jardin) => (
+                  <li key={jardin.id}>
+                    <FilaChecklist titulo={tituloJardin(jardin)} detalle={jardin.zona} estado="Pendiente" deshabilitada={enviando === jardin.id} onPulsar={() => onMarcar(jardin)} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {/* Supuesto de CU-011 2b (por validar): el acceso a «Jardín fuera de ruta», Figma 375-6772. */}
+            <Boton variante="fantasma" icono="plus" onClick={onFueraDeRuta}>
+              Añadir jardín fuera de ruta
+            </Boton>
+          </>
         ) : hechos.length === 0 ? (
           <EstadoVacio titulo="Sin marcas todavía" descripcion="Los jardines que marques aparecerán aquí." nivel={3} />
         ) : (
@@ -182,6 +192,8 @@ export default function RutaDeHoyPage() {
   const enLinea = useEnLinea()
   const [sinSincronizar, setSinSincronizar] = useState<Record<number, MarcaPendiente>>({})
   const enviandoCola = useRef(false)
+  // Clave de idempotencia de la marca fuera de ruta en curso (`null`: hoja cerrada).
+  const [fueraDeRuta, setFueraDeRuta] = useState<string | null>(null)
 
   const servidor = consulta.datos?.ruta ?? null
   const ruta = servidor && { ...servidor, jardines: servidor.jardines.map((j) => locales[j.id] ?? j) }
@@ -269,6 +281,7 @@ export default function RutaDeHoyPage() {
           sinConexion={!enLinea || enCola > 0}
           onMarcar={(jardin) => void marcar(jardin)}
           onAbrirMarcado={setAbierto}
+          onFueraDeRuta={() => setFueraDeRuta(nuevaClave())}
         />
       </>
     )
@@ -291,6 +304,17 @@ export default function RutaDeHoyPage() {
           onAnadida={() => {
             setAviso({ mensaje: `Observación añadida a ${abierto.codigo}`, tono: 'exito' })
             setAbierto(null)
+          }}
+        />
+      )}
+      {ruta && fueraDeRuta && (
+        <HojaFueraDeRuta
+          programacionId={ruta.programacion_id}
+          clave={fueraDeRuta}
+          onCerrar={() => setFueraDeRuta(null)}
+          onMarcado={(jardin) => {
+            setFueraDeRuta(null)
+            setAviso({ mensaje: `${jardin.codigo} marcado fuera de ruta`, tono: 'exito' })
           }}
         />
       )}
