@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Reglas de docs/estandares/estilo-codigo-ts-react.md y del sistema de diseño (DESIGN.md) que oxlint no cubre:
 #   1. en todo src/: colores escritos a mano fuera de tokens.css y fetch fuera de services/api/;
-#   2. en todo src/ salvo tokens.css y planificacion (AV-351): medidas en px (salvo 1-2 px, @media y consultas de
+#   2. en todo src/ salvo tokens.css (AV-351): medidas en px (salvo 1-2 px, @media y consultas de
 #      matchMedia) y font-size o border-radius que no usen var(--type-*) y var(--radius-*);
-#   3. solo en las líneas añadidas del PR: medidas en px (también en planificacion) y style={...} (salvo valores
+#   3. solo en las líneas añadidas del PR: medidas en px y style={...} (salvo valores
 #      calculados marcados con el comentario estilo-calculado);
 #   4. en todo src/: imports con más de un ../ (usa el alias @/, AV-333);
 #   5. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
 #      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
-# planificacion (MOD-03) queda fuera de 2 y 5 hasta que la sustituya el rediseño (AV-265 y siguientes).
+# Desde AV-268 todas las carpetas de pages/ están migradas, también planificacion (MOD-03).
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -29,7 +29,7 @@ done < <(git grep -nE '(^|[^a-zA-Z0-9_])fetch\(' -- 'src/*.ts' 'src/*.tsx' ':!sr
   | sin_comentarios)
 
 # --- Medidas y tipografía con tokens en todo src/ (AV-351) ------------------------------------------------
-excluidas=(':!src/styles/tokens.css' ':!src/pages/planificacion' ':!*.test.ts' ':!*.test.tsx')
+excluidas=(':!src/styles/tokens.css' ':!*.test.ts' ':!*.test.tsx')
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Medida en px: usa un token (--space-*, --radius-*...) o rem. Se admiten 1-2 px en bordes y px en @media."
@@ -55,7 +55,7 @@ done < <(git grep -nE "(from|import|import\(|vi\.mock\(|importActual[^(]*\()[[:s
 # --- Sistema de diseño en las carpetas migradas (AV-351) --------------------------------------------------
 migradas=(src/components/ui src/components/core src/components/reportes-indicadores src/components/tercerizados
   src/layouts src/pages/servicios-tercerizados src/pages/reportes-indicadores src/pages/acceso
-  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo src/pages/inventario)
+  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo src/pages/inventario src/pages/planificacion)
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/styles/tokens.css (DESIGN.md, 3.1)."
