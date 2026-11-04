@@ -186,3 +186,74 @@
   color: var(--color-text-muted);
   font-size: var(--type-leyenda-size);
 }
+
+/* Avance del requerimiento (Figma 394-9194): pasos con un punto unido por una línea, el nombre y la fecha. */
+.subtituloAccion {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.pasos {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--space-6) + var(--space-1) / 2);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* La línea entre puntos, salvo en el último paso. */
+.paso:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  bottom: -50%;
+  left: calc(var(--space-1) - 1px);
+  width: 2px;
+  background: var(--color-border-default);
+  content: '';
+}
+
+.puntoPaso {
+  z-index: 1;
+  flex-shrink: 0;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+}
+
+.nombrePaso {
+  flex: 1;
+  color: var(--color-text-primary);
+}
+
+.fechaPaso {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.pasoHecho .puntoPaso {
+  background: var(--color-success);
+}
+
+.pasoEnCurso .puntoPaso {
+  background: var(--color-action-primary);
+}
+
+.pasoEnCurso .nombrePaso {
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.pasoPendiente .nombrePaso {
+  color: var(--color-text-muted);
+}

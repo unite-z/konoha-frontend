@@ -4,7 +4,7 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -25,6 +25,7 @@ const SEMILLAS: Semilla[] = [
   { id: 36, codigo: 'INC-2026-036', tipo: 'Poda de ramas', tipo_sencilla: true, espacio: 'Pabellón Z', severidad: 'Media', via: 'PersonalPropio', estado: 'DerivadaInterna', canal: 'App', responsable: 'Marta R.', horas: 46 },
   { id: 35, codigo: 'INC-2026-035', tipo: 'Rama caída', tipo_sencilla: true, espacio: 'Jardín de Ciencias', severidad: 'Media', via: 'PersonalPropio', estado: 'Atendida', canal: 'App', responsable: 'Luis P.', horas: 50 },
   { id: 34, codigo: 'INC-2026-034', tipo: 'Césped dañado', tipo_sencilla: true, espacio: 'Explanada central', severidad: 'Baja', via: 'PersonalPropio', estado: 'Cerrada', canal: 'Correo', responsable: 'Marta R.', horas: 120, cerradaTras: 20 },
+  { id: 32, codigo: 'INC-2026-032', tipo: 'Rama colgante', tipo_sencilla: false, espacio: 'Jardín de la Biblioteca', severidad: 'Media', via: 'PersonalPropio', estado: 'Clasificada', canal: 'Web', responsable: null, horas: 20 },
   { id: 33, codigo: 'INC-2026-033', tipo: 'Basura en jardín', tipo_sencilla: true, espacio: 'Jardín de Sociales', severidad: null, via: null, estado: 'Descartada', canal: 'Presencial', responsable: null, horas: 170, cerradaTras: 3 },
 ]
 
@@ -72,7 +73,7 @@ export function simularActividades(signal?: AbortSignal): Promise<string[]> {
 export function simularEncargo(id: number, cuerpo: NuevoEncargo): Promise<IncidenciaDetalle> {
   return responderSimulado(() => {
     const capataz = CAPATACES.find((c) => c.id === cuerpo.capataz_id)
-    cambios.set(id, { ...cambios.get(id), estado: 'DerivadaInterna', via: 'PersonalPropio', responsable: capataz?.nombre ?? null })
+    cambios.set(id, { ...cambios.get(id), estado: 'DerivadaInterna', via: 'PersonalPropio', responsable: capataz?.nombre ?? null, encargo_cancelado: null })
     const incidencia = incidenciaSimulada(id)
     if (!incidencia) throw errorNoEncontrado()
     return incidencia
@@ -92,7 +93,29 @@ export function simularReasignar(incidenciaId: number, capatazId: number): Promi
 const DETALLES: Record<number, Pick<IncidenciaDetalle, 'zona' | 'descripcion' | 'ejemplar' | 'reportado_por' | 'impacto'>> = {
   41: { zona: 'Ciencias', descripcion: 'Rama grande caída sobre el paso peatonal.', ejemplar: { codigo: 'T-0412', especie: 'Ficus', altura_m: 7 }, reportado_por: 'Ana Q.', impacto: null },
   40: { zona: 'Ciencias', descripcion: 'El aspersor del sector norte no se apaga.', ejemplar: null, reportado_por: 'Mesa de partes', impacto: null },
+  37: { zona: 'Estacionamientos', descripcion: 'Árbol inclinado hacia la vía de salida.', ejemplar: { codigo: 'T-0907', especie: 'Eucalipto', altura_m: 12 }, reportado_por: 'Vigilancia', impacto: 'Alto' },
+  32: { zona: 'Ciencias', descripcion: 'Rama colgando a 6 m sobre la banca.', ejemplar: { codigo: 'T-0415', especie: 'Ficus', altura_m: 8 }, reportado_por: 'Ana Q.', impacto: 'Medio' },
   39: { zona: 'Sociales', descripcion: 'Rama colgando sobre la entrada del pabellón.', ejemplar: { codigo: 'T-0218', especie: 'Molle', altura_m: 4 }, reportado_por: 'Luis P.', impacto: 'Medio' },
+}
+
+/** Requerimientos de las derivadas a tercerizado (Figma 394-9194). */
+const REQUERIMIENTOS: Record<number, RequerimientoIncidencia> = {
+  37: {
+    codigo: 'REQ-2026-044',
+    proveedor: 'Podas Altura Demo E.I.R.L.',
+    tipo_atencion: 'Extraordinaria',
+    pasos: [
+      { nombre: 'Requerimiento', estado: 'Hecho', fecha: '2026-10-31' },
+      { nombre: 'Orden de compra', estado: 'Hecho', fecha: '2026-10-31' },
+      { nombre: 'Informe del proveedor', estado: 'EnCurso', fecha: null },
+      { nombre: 'Conformidad', estado: 'Pendiente', fecha: null },
+    ],
+  },
+}
+
+/** Encargos cancelados que obligan a derivar de nuevo (Figma 390-8582). */
+const CANCELADOS: Record<number, { codigo: string; motivo: string }> = {
+  32: { codigo: 'ENC-2026-118', motivo: 'la cuadrilla B no tiene escalera.' },
 }
 
 const INSPECTORES: Inspector[] = [
@@ -108,7 +131,7 @@ export function incidenciaSimulada(id: number, ahora: number = Date.now()): Inci
   const resumen = incidenciasSimuladas(ahora).find((i) => i.id === id)
   if (!resumen) return null
   const detalle = DETALLES[id] ?? { zona: null, descripcion: `${resumen.tipo} en ${resumen.espacio}.`, ejemplar: null, reportado_por: 'Personal de campo', impacto: null }
-  return { ...resumen, ...detalle, foto_url: null, ...cambios.get(id) }
+  return { ...resumen, ...detalle, foto_url: null, requerimiento: REQUERIMIENTOS[id] ?? null, encargo_cancelado: CANCELADOS[id] ?? null, ...cambios.get(id) }
 }
 
 export function simularObtenerIncidencia(id: number, signal?: AbortSignal): Promise<IncidenciaDetalle> {
@@ -153,7 +176,24 @@ export function simularProveedores(signal?: AbortSignal): Promise<ProveedorIncid
 export function simularRequerimiento(id: number, cuerpo: NuevoRequerimiento): Promise<IncidenciaDetalle> {
   return responderSimulado(() => {
     const proveedor = PROVEEDORES.find((p) => p.id === cuerpo.proveedor_id)
-    cambios.set(id, { ...cambios.get(id), estado: 'DerivadaTercerizada', via: 'Tercerizada', responsable: proveedor?.razon_social ?? null })
+    cambios.set(id, {
+      ...cambios.get(id),
+      estado: 'DerivadaTercerizada',
+      via: 'Tercerizada',
+      responsable: proveedor?.razon_social ?? null,
+      encargo_cancelado: null,
+      requerimiento: {
+        codigo: 'REQ-2026-045',
+        proveedor: proveedor?.razon_social ?? '',
+        tipo_atencion: cuerpo.tipo_atencion,
+        pasos: [
+          { nombre: 'Requerimiento', estado: 'Hecho', fecha: new Date().toISOString().slice(0, 10) },
+          { nombre: 'Orden de compra', estado: 'EnCurso', fecha: null },
+          { nombre: 'Informe del proveedor', estado: 'Pendiente', fecha: null },
+          { nombre: 'Conformidad', estado: 'Pendiente', fecha: null },
+        ],
+      },
+    })
     const incidencia = incidenciaSimulada(id)
     if (!incidencia) throw errorNoEncontrado()
     return incidencia
