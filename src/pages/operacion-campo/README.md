@@ -68,3 +68,20 @@ lectura/escritura y compatibilidad con la API anterior. No demuestra persistenci
 conservación histórica en la base de datos ni aceptación integrada. Antes de cerrar
 AV-62, ejecutar esos flujos contra el backend real, consultar un parte anterior
 después de desactivar/renombrar su tipo y adjuntar evidencia integrada en Linear.
+
+## AV-56: registro ágil de actividades
+
+`POST /api/v1/operacion-campo/actividades/` conserva los campos existentes
+`parte_id`, `tipo_actividad_id`, `area_verde_id`, `fecha_hora_actividad`,
+`encargo_id` y `observaciones`. Añade `clase_actividad_id`,
+`fecha_solicitud` (YYYY-MM-DD) e `incidencia_id`, los tres opcionales para
+mantener las altas anteriores. El servidor comprueba que el tipo pertenece
+a la clase indicada, que la solicitud no es posterior al parte y que la
+incidencia existe. La clase se guarda como dato histórico de la actividad.
+
+Ejemplo: `{parte_id: 10, clase_actividad_id: 3, tipo_actividad_id: 14,
+area_verde_id: 2, fecha_hora_actividad: "2026-10-21T08:00:00-05:00",
+fecha_solicitud: "2026-10-20", incidencia_id: null, encargo_id: null}`.
+El capataz solo puede registrar en su cuadrilla; un parte cerrado responde
+409 y los datos de origen inválidos responden 400. La integración con la
+base de datos y el servicio real sigue pendiente de prueba.

@@ -16,6 +16,7 @@ import estilos from './OperacionCampo.module.css'
 export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()=>void;onGuardado:(a:ActividadCampo)=>void}) {
   const [cuadrilla,setCuadrilla]=useState(''),[tipo,setTipo]=useState(''),[area,setArea]=useState('')
   const [clase,setClase]=useState('')
+  const [fechaSolicitud,setFechaSolicitud]=useState(''),[incidencia,setIncidencia]=useState('')
   const [fecha,setFecha]=useState(hoyLima()),[hora,setHora]=useState('08:00'),[encargo,setEncargo]=useState(''),[observaciones,setObservaciones]=useState('')
   const [cambios,setCambios]=useState(false),[errores,setErrores]=useState<Record<string,string>>({})
   const mutacion=useMutacionCampo()
@@ -43,6 +44,9 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
     if(catalogos.datos?.clases.length&&!clase) errors.clase='Selecciona una clase'
     if(!area) errors.area='Selecciona un espacio'
     if(!fecha||fecha>hoyLima()) errors.fecha='Selecciona una fecha válida que no sea futura'
+    if(fechaSolicitud && fechaSolicitud > fecha) errors.fechaSolicitud='La solicitud no puede ser posterior a la actividad'
+    if(incidencia && (!Number.isSafeInteger(Number(incidencia)) || Number(incidencia) <= 0)) errors.incidencia='Indica un identificador de incidencia válido'
+    if(incidencia && encargo) errors.incidencia='Selecciona una incidencia o un encargo de origen'
     if(!/^\d{2}:\d{2}$/.test(hora)) errors.hora='Indica la hora de la actividad'
     if(fecha&&hora&&new Date(`${fecha}T${hora}:00-05:00`).getTime()>Date.now()) errors.hora='La actividad no puede estar en el futuro'
     setErrores(errors)
@@ -51,7 +55,7 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
     void mutacion.enviar(async()=>{
       const parte=await asegurarParte()
       if(parte.estado==='Cerrado') throw new ErrorApi(409,'ParteCerrado','El parte de esa cuadrilla está cerrado para la fecha seleccionada. No se pueden agregar actividades')
-      const cuerpo={parte_id:parte.id,tipo_actividad_id:Number(tipo),area_verde_id:Number(area),fecha_hora_actividad:`${fecha}T${hora}:00-05:00`,encargo_id:encargo?Number(encargo):null,observaciones}
+      const cuerpo={parte_id:parte.id,clase_actividad_id:clase?Number(clase):null,tipo_actividad_id:Number(tipo),area_verde_id:Number(area),fecha_hora_actividad:`${fecha}T${hora}:00-05:00`,fecha_solicitud:fechaSolicitud||null,incidencia_id:incidencia?Number(incidencia):null,encargo_id:encargo?Number(encargo):null,observaciones}
       const firma=JSON.stringify(cuerpo)
       if(!intento.current||intento.current.cuerpo!==firma) intento.current={cuerpo:firma,clave:crypto.randomUUID()}
       const actividad=await campoApi<ActividadCampo>('actividades/',{metodo:'POST',cuerpo,claveIdempotencia:intento.current.clave})
@@ -68,6 +72,8 @@ export default function DialogoNuevaActividad({onCerrar,onGuardado}:{onCerrar:()
         <Selector id="nueva-actividad-area" etiqueta="Espacio" obligatorio valor={area} opcionTodos="Selecciona un espacio" opciones={datos.areas.map(a=>({valor:String(a.id),texto:a.nombre}))} onCambiar={v=>cambiar(()=>{setArea(v);setEncargo('')})} error={errores.area}/>
         <CampoFormulario id="nueva-actividad-hora" etiqueta="Hora de la actividad" type="time" obligatorio value={hora} onChange={e=>cambiar(()=>setHora(e.target.value))} error={errores.hora}/>
         <Selector id="nueva-actividad-encargo" etiqueta="Encargo de origen" valor={encargo} opcionTodos="Sin encargo asociado" opciones={(encargos.datos??[]).filter(e=>e.tipo_actividad_id===Number(tipo)&&e.area_verde_id===Number(area)).map(e=>({valor:String(e.id),texto:e.descripcion}))} onCambiar={v=>cambiar(()=>setEncargo(v))} ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio." disabled={encargos.estado==='cargando'}/>
+        <CampoFormulario id="nueva-actividad-fechaSolicitud" etiqueta="Fecha de solicitud" type="date" max={fecha||hoyLima()} value={fechaSolicitud} onChange={e=>cambiar(()=>setFechaSolicitud(e.target.value))} error={errores.fechaSolicitud}/>
+        <CampoFormulario id="nueva-actividad-incidencia" etiqueta="Identificador de incidencia de origen" type="number" min="1" step="1" value={incidencia} onChange={e=>cambiar(()=>setIncidencia(e.target.value))} error={errores.incidencia}/>
       </div>
       {encargos.estado==='error'&&<AvisoEnLinea tono="advertencia" accion={{texto:'Reintentar',onClick:encargos.reintentar}}>No se pudieron cargar los encargos. Puedes reintentar o registrar una actividad sin encargo asociado.</AvisoEnLinea>}
       <AreaTexto id="nueva-actividad-observaciones" etiqueta="Observaciones" maxLength={1000} value={observaciones} onChange={e=>cambiar(()=>setObservaciones(e.target.value))}/>
