@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
+import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import ExportarExcel from '@/components/core/ExportarExcel'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
@@ -13,7 +16,7 @@ import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { cambiarEspecie, crearEjemplar, crearEspecie, listarEjemplares, listarEspecies, quitarPlacaAntigua } from '@/services/api/ejemplares'
-import estilos from './Ejemplares.module.css'
+import estilos from './Catalogos.module.css'
 
 export default function EjemplaresPage() {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
@@ -66,71 +69,83 @@ export default function EjemplaresPage() {
       <AccionesPagina>
         <ExportarExcel listado="ejemplares" />
       </AccionesPagina>
-      <p>Registro de ejemplares del campus con código interno, referencia del catastro y placa antigua independiente.</p>
+      <p className={estilos.descripcion}>Registro de ejemplares del campus con código interno, referencia del catastro y placa antigua independiente.</p>
       {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       {aviso && <AvisoEnLinea tono="exito">{aviso}</AvisoEnLinea>}
 
-      {puedeRegistrar && <section className={estilos.superficie} aria-labelledby="titulo-alta-ejemplar">
-        <h2 id="titulo-alta-ejemplar">Registrar ejemplar</h2>
-        {especies.estado === 'error' && <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} />}
-        <form className={estilos.formulario} onSubmit={(evento) => enviar(evento, () => crearEjemplar({
-          codigo_placa_antigua: codigoPlaca.trim() || null,
-          especie_id: especieId ? Number(especieId) : null,
-          tipo_vegetacion: vegetacion.trim() || null,
-          ubicacion: ubicacion.trim() || null,
-          latitud: latitud || null,
-          longitud: longitud || null,
-          cantidad: Number(cantidad),
-        }), 'Ejemplar registrado con código nuevo.') }>
-          <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
-          {especies.datos && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especies.datos.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
-          <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
-          <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
-          <div className={estilos.filtros}>
-            <CampoFormulario id="latitud-ejemplar" etiqueta="Latitud" type="number" min="-90" max="90" step="any" value={latitud} onChange={(evento) => setLatitud(evento.target.value)} />
-            <CampoFormulario id="longitud-ejemplar" etiqueta="Longitud" type="number" min="-180" max="180" step="any" value={longitud} onChange={(evento) => setLongitud(evento.target.value)} />
-            <CampoFormulario id="cantidad-ejemplar" etiqueta="Cantidad" type="number" min="1" step="1" value={cantidad} onChange={(evento) => setCantidad(evento.target.value)} required />
-          </div>
-          <div className={estilos.accionesFormulario}>
-            <span>El código interno único se genera al guardar.</span>
-            <button className={estilos.guardar} type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Registrar ejemplar'}</button>
-          </div>
-        </form>
-      </section>}
-
-      {puedeGestionar && <section className={estilos.superficie} aria-labelledby="titulo-nueva-especie">
-        <h2 id="titulo-nueva-especie">Añadir especie</h2>
-        <form className={estilos.filaCobertura} onSubmit={(evento) => enviar(evento, () => crearEspecie({
-          nombre_comun: nombreComun.trim(),
-          nombre_cientifico: nombreCientifico.trim() || undefined,
-          forma_biologica: formaBiologica.trim(),
-        }), 'Especie añadida al catálogo.') }>
-          <CampoFormulario id="nombre-comun-especie" etiqueta="Nombre común" value={nombreComun} onChange={(evento) => setNombreComun(evento.target.value)} maxLength={150} required />
-          <CampoFormulario id="nombre-cientifico-especie" etiqueta="Nombre científico (opcional)" value={nombreCientifico} onChange={(evento) => setNombreCientifico(evento.target.value)} maxLength={200} />
-          <CampoFormulario id="forma-biologica-especie" etiqueta="Forma biológica" value={formaBiologica} onChange={(evento) => setFormaBiologica(evento.target.value)} maxLength={80} required />
-          <button className={estilos.guardar} type="submit" disabled={guardando}>Añadir especie</button>
-        </form>
-        <ul className={estilos.listaCoberturas}>{especies.datos?.map((especie) => <li className={estilos.filaCobertura} key={especie.id}>
-          <span>{especie.nombre_comun ?? especie.nombre_cientifico} · {especie.nombre_cientifico ?? 'Sin nombre científico'} · {especie.forma_biologica ?? 'Sin forma'}{especie.activo ? '' : ' · inactiva'}</span>
-          {especie.activo && <button className={estilos.botonTabla} type="button" disabled={guardando} onClick={() => void ejecutar(() => cambiarEspecie(especie.id, { activo: false }), 'Especie desactivada.')}>Desactivar</button>}
-        </li>)}</ul>
-      </section>}
-
-      <section className={estilos.superficie} aria-labelledby="titulo-lista-ejemplares">
-        <h2 id="titulo-lista-ejemplares">Ejemplares</h2>
-        {consulta.datos.length === 0 ? <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." /> : (
-          <ul className={estilos.listaCoberturas}>{consulta.datos.map((ejemplar) => <li className={estilos.filaCobertura} key={ejemplar.id}>
-            <div>
-              <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
-              <div>{ejemplar.especie_nombre_cientifico ?? 'Sin nombre científico'} · {ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion ?? 'Sin forma biológica'}</div>
-              <div>Referencia: {ejemplar.referencia_catastro ?? '—'} · Código de catastro: {ejemplar.codigo_catastro ?? '—'} · Placa antigua: {ejemplar.codigo_placa_antigua ?? '—'}</div>
-              <div>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
-              {ejemplar.advertencia_placa_repetida && <p role="status">Aviso: esta placa antigua también figura en otro ejemplar.</p>}
+      {puedeRegistrar && (
+        <Tarjeta titulo="Registrar ejemplar" relleno="amplio">
+          {especies.estado === 'error' && <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} nivel={3} />}
+          <form className={estilos.formulario} onSubmit={(evento) => enviar(evento, () => crearEjemplar({
+            codigo_placa_antigua: codigoPlaca.trim() || null,
+            especie_id: especieId ? Number(especieId) : null,
+            tipo_vegetacion: vegetacion.trim() || null,
+            ubicacion: ubicacion.trim() || null,
+            latitud: latitud || null,
+            longitud: longitud || null,
+            cantidad: Number(cantidad),
+          }), 'Ejemplar registrado con código nuevo.')}>
+            <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
+            {especies.datos && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especies.datos.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
+            <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
+            <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
+            <div className={estilos.coordenadas}>
+              <CampoFormulario id="latitud-ejemplar" etiqueta="Latitud" type="number" min="-90" max="90" step="any" value={latitud} onChange={(evento) => setLatitud(evento.target.value)} />
+              <CampoFormulario id="longitud-ejemplar" etiqueta="Longitud" type="number" min="-180" max="180" step="any" value={longitud} onChange={(evento) => setLongitud(evento.target.value)} />
+              <CampoFormulario id="cantidad-ejemplar" etiqueta="Cantidad" type="number" min="1" step="1" value={cantidad} onChange={(evento) => setCantidad(evento.target.value)} required />
             </div>
-            {puedeRegistrar && ejemplar.codigo_placa_antigua && <button className={estilos.botonTabla} type="button" disabled={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</button>}
-          </li>)}</ul>
+            <div className={estilos.pieFormulario}>
+              <span className={estilos.descripcion}>El código interno único se genera al guardar.</span>
+              <Boton type="submit" variante="primario" cargando={guardando}>Registrar ejemplar</Boton>
+            </div>
+          </form>
+        </Tarjeta>
+      )}
+
+      {puedeGestionar && (
+        <Tarjeta titulo="Añadir especie" relleno="amplio">
+          <form className={estilos.alta} onSubmit={(evento) => enviar(evento, () => crearEspecie({
+            nombre_comun: nombreComun.trim(),
+            nombre_cientifico: nombreCientifico.trim() || undefined,
+            forma_biologica: formaBiologica.trim(),
+          }), 'Especie añadida al catálogo.')}>
+            <CampoFormulario id="nombre-comun-especie" etiqueta="Nombre común" value={nombreComun} onChange={(evento) => setNombreComun(evento.target.value)} maxLength={150} required />
+            <CampoFormulario id="nombre-cientifico-especie" etiqueta="Nombre científico (opcional)" value={nombreCientifico} onChange={(evento) => setNombreCientifico(evento.target.value)} maxLength={200} />
+            <CampoFormulario id="forma-biologica-especie" etiqueta="Forma biológica" value={formaBiologica} onChange={(evento) => setFormaBiologica(evento.target.value)} maxLength={80} required />
+            <Boton type="submit" variante="secundario" deshabilitado={guardando}>Añadir especie</Boton>
+          </form>
+          <ul className={estilos.lista}>
+            {especies.datos?.map((especie) => (
+              <li className={estilos.fila} key={especie.id}>
+                <span className={estilos.dato}>
+                  {especie.nombre_comun ?? especie.nombre_cientifico} · {especie.nombre_cientifico ?? 'Sin nombre científico'} · {especie.forma_biologica ?? 'Sin forma'}
+                  {!especie.activo && <Estado tono="neutro" texto="Inactiva" />}
+                </span>
+                {especie.activo && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarEspecie(especie.id, { activo: false }), 'Especie desactivada.')}>Desactivar</Boton>}
+              </li>
+            ))}
+          </ul>
+        </Tarjeta>
+      )}
+
+      <Tarjeta titulo="Ejemplares" relleno="amplio">
+        {consulta.datos.length === 0 ? <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." nivel={3} /> : (
+          <ul className={estilos.lista}>
+            {consulta.datos.map((ejemplar) => (
+              <li className={estilos.fila} key={ejemplar.id}>
+                <div>
+                  <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
+                  <div className={estilos.detalle}>{ejemplar.especie_nombre_cientifico ?? 'Sin nombre científico'} · {ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion ?? 'Sin forma biológica'}</div>
+                  <div className={estilos.detalle}>Referencia: {ejemplar.referencia_catastro ?? '—'} · Código de catastro: {ejemplar.codigo_catastro ?? '—'} · Placa antigua: {ejemplar.codigo_placa_antigua ?? '—'}</div>
+                  <div className={estilos.detalle}>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
+                  {ejemplar.advertencia_placa_repetida && <div className={estilos.avisoFila}><AvisoEnLinea tono="advertencia">Aviso: esta placa antigua también figura en otro ejemplar.</AvisoEnLinea></div>}
+                </div>
+                {puedeRegistrar && ejemplar.codigo_placa_antigua && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</Boton>}
+              </li>
+            ))}
+          </ul>
         )}
-      </section>
+      </Tarjeta>
     </div>
   )
 }
