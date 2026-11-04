@@ -63,6 +63,21 @@ export interface IncidenciaDetalle extends IncidenciaResumen {
   impacto: ImpactoIncidencia | null
   /** Foto de la evidencia; `null` sin foto. */
   foto_url: string | null
+  /** Derivada a tercerizado: el requerimiento de MOD-05 y su avance (AV-278, Figma 394-9194). */
+  requerimiento?: RequerimientoIncidencia | null
+  /** El último encargo interno se canceló y hay que derivarla de nuevo (AV-277, Figma 390-8582). */
+  encargo_cancelado?: { codigo: string; motivo: string } | null
+}
+
+export type EstadoPaso = 'Hecho' | 'EnCurso' | 'Pendiente'
+
+export interface RequerimientoIncidencia {
+  /** «REQ-2026-044». */
+  codigo: string
+  proveedor: string
+  tipo_atencion: 'Programada' | 'Extraordinaria'
+  /** Requerimiento, orden de compra, informe del proveedor y conformidad, con su fecha si ya se hizo. */
+  pasos: { nombre: string; estado: EstadoPaso; fecha: string | null }[]
 }
 
 /**

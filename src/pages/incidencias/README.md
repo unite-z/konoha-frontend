@@ -10,6 +10,8 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
   - **Descartar** pide el motivo (394-8700) y **«Solicitar inspección en campo»** abre su tarjeta, con el responsable y qué verificar (394-8782).
   - **Clasificada por personal propio:** «Encargo a un capataz» (`TarjetaEncargo.tsx`, 389-7502, AV-277). Lleva el capataz libre ese día, el espacio, la actividad, el plazo (por defecto mañana, RN-019), lo que se incluye y «Avisar al capataz». Si ninguna cuadrilla tiene hueco, el capataz queda en error con la carga de cada cuadrilla y «Reprogramar plazo» (394-8975).
   - **Clasificada por la vía tercerizada:** «Requerimiento a un proveedor» (`TarjetaRequerimiento.tsx`, 389-7706, AV-278). Lleva el proveedor, el contrato vigente, el servicio, el tipo de atención (por defecto extraordinaria) y, con ejemplar, «Crear también la poda del ejemplar». Si el proveedor no tiene contrato, avisa de que va como extraordinaria con orden de servicio (389-7903).
+  - **Encargo cancelado:** un aviso con el encargo y el motivo, y «Derivar de nuevo» (`TarjetaDerivarDeNuevo.tsx`, 390-8582), que abre el encargo o el requerimiento.
+  - **Derivada a tercerizado:** el avance del requerimiento de MOD-05 (`TarjetaSeguimientoRequerimiento.tsx`, 394-9194). Muestra los pasos requerimiento, orden de compra, informe del proveedor y conformidad, con su fecha o «pendiente».
 
   Lógica en `detalleIncidencia.ts`, con prueba.
 
