@@ -105,3 +105,24 @@ describe('agenda del día', () => {
     expect(etiquetaDia('2026-11-20', eventos)).toBe('viernes 20')
   })
 })
+
+describe('vista Semana', () => {
+  it('da los días y el título de la semana, también si cruza de mes', async () => {
+    const { diasDeSemana, tituloSemana } = await import('./calendarioCapas')
+    expect(diasDeSemana('2026-11-19')).toEqual(SEMANA_16)
+    expect(tituloSemana(SEMANA_16)).toBe('16 al 22 nov. 2026')
+    expect(tituloSemana(diasDeSemana('2026-12-02'))).toBe('30 nov. al 6 dic. 2026')
+  })
+
+  it('separa la fila de todo el día de las actividades de un día y busca las coincidencias', async () => {
+    const { actividadesDeUnDia, coincidencias, filaTodoElDia } = await import('./calendarioCapas')
+    const eventos = eventosDeCapas(
+      [restriccion({ id: 9, fecha_inicio: '2026-11-19', fecha_fin: '2026-11-19' })],
+      [programacion({ id: 1 }), programacion({ id: 2, fecha_inicio_prevista: '2026-11-18', fecha_fin_prevista: '2026-11-18' })],
+    )
+    expect(filaTodoElDia(SEMANA_16, eventos).segmentos.map((s) => s.evento.clave)).toEqual(['r-9', 'p-1'])
+    expect(actividadesDeUnDia('2026-11-18', eventos).map((e) => e.clave)).toEqual(['p-2'])
+    const corte = eventos.find((e) => e.clave === 'p-1')
+    expect(corte && coincidencias(corte, eventos).map((e) => e.clave)).toEqual(['r-9'])
+  })
+})
