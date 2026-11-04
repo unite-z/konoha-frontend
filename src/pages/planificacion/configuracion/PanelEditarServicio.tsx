@@ -1,15 +1,20 @@
 /**
  * Panel «Editar servicio» (AV-268, Figma 348-1997): une en un panel lateral la frecuencia de las cuatro estaciones
- * (teórica, práctica y máxima) y la duración (días de servicio, de limpieza y franja horaria, RN-017).
+ * (tabla con teórica, práctica y máxima) y la duración del ciclo (días de servicio, de limpieza y franja horaria,
+ * RN-017). Valida en línea, con los errores de la tabla debajo de ella, y «Guardar cambios» se desactiva si hay
+ * errores o nada cambia.
  *
  * Solo envía lo que cambia: un `PUT servicios/{id}/frecuencias/{estacion}/` por estación y `PUT servicios/{id}/duracion/`.
  * Avisa de que la frecuencia nueva solo afecta a los ciclos que se programen y de si un ciclo en curso ya supera la
- * duración nueva. «Ver historial» llega con AV-256; «Usar valores iniciales», cuando el backend los exponga.
+ * duración nueva. «Usar valores iniciales» espera a que el backend los exponga; «Ver historial», a AV-256. El
+ * subtítulo de Figma con la vía y el proveedor no llega en `GET servicios/`.
  */
 import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
 import { actualizarDuracion, actualizarFrecuencia, listarProgramaciones } from '@/services/api/planificacion'
@@ -21,7 +26,7 @@ import { diasDelPeriodo } from '../calendario/programarCiclo'
 import { rangoCiclos } from '../ciclos/ciclos'
 import { fechaCorta } from '../resumen/resumenPlanificacion'
 import estilos from './Configuracion.module.css'
-import { borradorInicial, ultimaModificacion, validarServicio, type ValidacionServicio } from './configuracionServicios'
+import { borradorInicial, estadoServicio, ultimaModificacion, validarServicio } from './configuracionServicios'
 
 export interface PanelEditarServicioProps {
   servicio: ServicioPeriodico
@@ -31,12 +36,16 @@ export interface PanelEditarServicioProps {
   onGuardado: (servicio: ServicioPeriodico) => void
 }
 
-const ETIQUETAS_FRECUENCIA: Record<keyof BorradorFrecuencia, string> = { teorica: 'Teórica', practica: 'Práctica', maxima: 'Máxima' }
+const CAMPOS: { clave: keyof BorradorFrecuencia; titulo: string; nombre: string }[] = [
+  { clave: 'teorica', titulo: 'Teórica *', nombre: 'teórica' },
+  { clave: 'practica', titulo: 'Práctica', nombre: 'práctica' },
+  { clave: 'maxima', titulo: 'Máxima', nombre: 'máxima' },
+]
+const ID_ERRORES_TABLA = 'frecuencias-errores'
 
 export default function PanelEditarServicio({ servicio, onCerrar, onActualizado, onGuardado }: PanelEditarServicioProps) {
   const [inicial] = useState(() => borradorInicial(servicio))
   const [borrador, setBorrador] = useState(inicial)
-  const [validacion, setValidacion] = useState<ValidacionServicio | null>(null)
   const [error, setError] = useState<{ titulo: string; detalle: string } | null>(null)
   const [enviando, setEnviando] = useState(false)
   const enCurso = useRef(false)
@@ -44,34 +53,35 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   const { desde, hasta } = rangoCiclos(hoy)
   const ciclos = useConsulta(`ciclos:${desde}`, (signal) => listarProgramaciones(desde, hasta, signal))
 
-  const previa = validarServicio(borrador, inicial)
-  const nuevaDuracion = previa.duracion?.duracion_maxima_dias
+  // Validación en línea: solo de lo que cambia (una estación sin configurar puede quedarse vacía).
+  const validacion = validarServicio(borrador, inicial)
+  const hayCambios = JSON.stringify(borrador) !== JSON.stringify(inicial)
+  const nuevaDuracion = validacion.duracion?.duracion_maxima_dias
   const cicloExcedido = nuevaDuracion
     ? (ciclos.datos ?? []).find(
         (c) => c.tipo_servicio_id === servicio.id && c.estado === 'EnCurso' && diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > nuevaDuracion,
       )
     : undefined
   const modificado = ultimaModificacion(servicio)
+  const sinConfigurar = estadoServicio(servicio).texto !== 'Configurado'
+  const erroresTabla = ESTACIONES.flatMap((estacion) => Object.values(validacion.erroresFrecuencia[estacion] ?? {}))
 
   async function guardar() {
-    if (enCurso.current) return
-    const resultado = validarServicio(borrador, inicial)
-    setValidacion(resultado)
-    setError(null)
-    if (!resultado.valido) return
-    if (resultado.frecuencias.length === 0 && !resultado.duracion) {
+    if (enCurso.current || !validacion.valido) return
+    if (validacion.frecuencias.length === 0 && !validacion.duracion) {
       onCerrar()
       return
     }
     enCurso.current = true
     setEnviando(true)
+    setError(null)
     let actualizado = servicio
     try {
-      for (const { estacion, entrada } of resultado.frecuencias) {
+      for (const { estacion, entrada } of validacion.frecuencias) {
         actualizado = await actualizarFrecuencia(servicio.id, estacion, entrada)
         onActualizado(actualizado)
       }
-      if (resultado.duracion) actualizado = await actualizarDuracion(servicio.id, resultado.duracion)
+      if (validacion.duracion) actualizado = await actualizarDuracion(servicio.id, validacion.duracion)
       onGuardado(actualizado)
     } catch (causa) {
       const fallo = aErrorApi(causa)
@@ -85,7 +95,32 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   const cambiarFrecuencia = (estacion: Estacion, clave: keyof BorradorFrecuencia, valor: string) =>
     setBorrador((b) => ({ ...b, frecuencias: { ...b.frecuencias, [estacion]: { ...b.frecuencias[estacion], [clave]: valor } } }))
   const cambiarDuracion = (clave: keyof BorradorDuracion, valor: string) => setBorrador((b) => ({ ...b, duracion: { ...b.duracion, [clave]: valor } }))
-  const errorDuracion = (clave: keyof BorradorDuracion) => validacion?.erroresDuracion[clave]
+  const errorDuracion = (clave: keyof BorradorDuracion) => validacion.erroresDuracion[clave]
+
+  const columnas: ColumnaTabla<Estacion>[] = [
+    { clave: 'estacion', titulo: 'Estación', render: (estacion) => estacion },
+    ...CAMPOS.map(
+      ({ clave, titulo, nombre }): ColumnaTabla<Estacion> => ({
+        clave,
+        titulo,
+        render: (estacion) => (
+          <CampoFormulario
+            id={`frecuencia-${estacion}-${clave}`}
+            etiqueta={`Frecuencia ${nombre} en ${estacion} (días)`}
+            etiquetaOculta
+            obligatorio={clave === 'teorica'}
+            formato="entero"
+            compacto
+            value={borrador.frecuencias[estacion][clave]}
+            onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
+            error={validacion.erroresFrecuencia[estacion]?.[clave]}
+            idErrorExterno={ID_ERRORES_TABLA}
+            disabled={enviando}
+          />
+        ),
+      }),
+    ),
+  ]
 
   return (
     <DialogoFormulario
@@ -95,41 +130,49 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       descripcion={servicio.es_ruidoso ? 'Servicio ruidoso' : undefined}
       textoConfirmar="Guardar cambios"
       enviando={enviando}
-      hayCambios={JSON.stringify(borrador) !== JSON.stringify(inicial)}
+      hayCambios={hayCambios}
+      envioDeshabilitado={!hayCambios || !validacion.valido}
       error={error}
+      conObligatorios={false}
       onEnviar={() => void guardar()}
       onCerrar={onCerrar}
     >
-      <h3 className={estilos.apartado}>Frecuencia por estación (días)</h3>
-      {ESTACIONES.map((estacion) => (
-        <fieldset key={estacion} className={estilos.estacion}>
-          <legend className={estilos.leyenda}>{estacion}</legend>
-          {(Object.keys(ETIQUETAS_FRECUENCIA) as (keyof BorradorFrecuencia)[]).map((clave) => (
-            <CampoFormulario
-              key={clave}
-              id={`frecuencia-${estacion}-${clave}`}
-              etiqueta={ETIQUETAS_FRECUENCIA[clave]}
-              obligatorio={clave === 'teorica'}
-              formato="entero"
-              compacto
-              value={borrador.frecuencias[estacion][clave]}
-              onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
-              error={validacion?.erroresFrecuencia[estacion]?.[clave]}
-              disabled={enviando}
-            />
-          ))}
-        </fieldset>
-      ))}
-      {previa.frecuencias.length > 0 && (
+      {sinConfigurar && (
+        <>
+          <AvisoEnLinea tono="info" titulo="Sin configurar">
+            Puedes partir de los valores iniciales de la sección.
+          </AvisoEnLinea>
+          <div>
+            <Boton variante="fantasma" compacto deshabilitado ayudaDeshabilitado="Aún no disponible.">
+              Usar valores iniciales
+            </Boton>
+          </div>
+        </>
+      )}
+
+      <div className={estilos.bloque}>
+        <p className={estilos.apartado}>Frecuencia por estación (días)</p>
+        <TablaDatos titulo="Frecuencia por estación (días)" columnas={columnas} filas={[...ESTACIONES]} claveFila={(e) => e} compacta />
+        {erroresTabla.length > 0 && (
+          <ul id={ID_ERRORES_TABLA} className={estilos.erroresTabla}>
+            {erroresTabla.map((mensaje) => (
+              <li key={mensaje}>{mensaje}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {validacion.frecuencias.length > 0 && (
         <AvisoEnLinea tono="info">La nueva frecuencia solo afecta a los ciclos que se programen a partir de ahora.</AvisoEnLinea>
       )}
 
-      <h3 className={estilos.apartado}>Duración del ciclo</h3>
-      <div className={estilos.pareja}>
-        <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
-        <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" formato="entero" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
-        <CampoFormulario id="duracion-inicio" etiqueta="Hora de inicio" type="time" value={borrador.duracion.inicio} onChange={(e) => cambiarDuracion('inicio', e.target.value)} error={errorDuracion('inicio')} disabled={enviando} />
-        <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />
+      <div className={estilos.bloque}>
+        <p className={estilos.apartado}>Duración del ciclo</p>
+        <div className={estilos.pareja}>
+          <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
+          <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" formato="entero" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
+          <CampoFormulario id="duracion-inicio" etiqueta="Hora de inicio" type="time" value={borrador.duracion.inicio} onChange={(e) => cambiarDuracion('inicio', e.target.value)} error={errorDuracion('inicio')} disabled={enviando} />
+          <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />
+        </div>
       </div>
       {cicloExcedido && (
         <AvisoEnLinea tono="advertencia" titulo="Un ciclo en curso ya supera la nueva duración">

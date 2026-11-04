@@ -58,4 +58,19 @@ describe('DialogoFormulario', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(onCerrar).toHaveBeenCalledOnce()
   })
+
+  it('el panel lateral se cierra con la X y, con el envío deshabilitado, no envía', () => {
+    const onCerrar = vi.fn()
+    const onEnviar = vi.fn()
+    render(
+      <DialogoFormulario abierto titulo="Editar servicio" textoConfirmar="Guardar cambios" ancho="lateral" envioDeshabilitado onEnviar={onEnviar} onCerrar={onCerrar}>
+        <p>Campos</p>
+      </DialogoFormulario>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(onEnviar).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(onCerrar).toHaveBeenCalledOnce()
+  })
 })

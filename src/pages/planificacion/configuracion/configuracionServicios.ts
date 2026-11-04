@@ -90,14 +90,17 @@ export interface ValidacionServicio {
   valido: boolean
 }
 
-/** Mensajes breves para los campos estrechos del panel: tres por fila. */
-function erroresCortos(errores: ErroresFrecuencia, borrador: BorradorFrecuencia): ErroresFrecuencia {
-  const cortos: ErroresFrecuencia = {}
+const NOMBRES: Record<keyof BorradorFrecuencia, string> = { teorica: 'teórica', practica: 'práctica', maxima: 'máxima' }
+
+/** Mensajes de la tabla de frecuencias, como en Figma: «Verano: la máxima no puede ser menor que la práctica». */
+function erroresDeEstacion(estacion: Estacion, errores: ErroresFrecuencia, borrador: BorradorFrecuencia): ErroresFrecuencia {
+  const mensajes: ErroresFrecuencia = {}
   for (const clave of Object.keys(errores) as (keyof BorradorFrecuencia)[]) {
-    const habitual = borrador.practica.trim() || borrador.teorica.trim()
-    cortos[clave] = errores[clave]?.includes('habitual') ? `Mínimo ${habitual}, la habitual` : 'Días, mayor que 0'
+    mensajes[clave] = errores[clave]?.includes('habitual')
+      ? `${estacion}: la máxima no puede ser menor que la ${borrador.practica.trim() ? 'práctica' : 'teórica'}`
+      : `${estacion}: la ${NOMBRES[clave]} debe ser un número entero de días mayor que 0`
   }
-  return cortos
+  return mensajes
 }
 
 const vacio = (b: BorradorFrecuencia | BorradorDuracion) => Object.values(b).every((v) => !v.trim())
@@ -115,7 +118,7 @@ export function validarServicio(borrador: BorradorServicio, inicial: BorradorSer
     if (igual(actual, antes) || (vacio(actual) && vacio(antes))) continue
     const { errores, entrada } = validarFrecuencia(actual)
     if (entrada) resultado.frecuencias.push({ estacion, entrada })
-    else resultado.erroresFrecuencia[estacion] = erroresCortos(errores, actual)
+    else resultado.erroresFrecuencia[estacion] = erroresDeEstacion(estacion, errores, actual)
   }
   if (!igual(borrador.duracion, inicial.duracion) && !(vacio(borrador.duracion) && vacio(inicial.duracion))) {
     const { errores, entrada } = validarDuracion(borrador.duracion)

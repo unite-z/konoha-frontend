@@ -11,6 +11,11 @@ export interface PropsMarcoCampo {
   ayuda?: string
   /** Mensaje de error que dice qué hacer. */
   error?: string
+  /**
+   * Id de un mensaje de error que se pinta fuera del campo (por ejemplo, bajo una tabla de campos, como en Figma):
+   * el campo se marca en error y lo enlaza, pero no repite el mensaje.
+   */
+  idErrorExterno?: string
   /** Si se indica, el campo está bloqueado y se muestra este motivo. */
   bloqueadoMotivo?: string
   /** Oculta la etiqueta visualmente (sigue disponible para lectores de pantalla). */
@@ -20,8 +25,8 @@ export interface PropsMarcoCampo {
 }
 
 /** Ids de la ayuda, del motivo de bloqueo y del error, para `aria-describedby`. */
-export function idsDescripcion({ id, ayuda, error, bloqueadoMotivo }: PropsMarcoCampo): string | undefined {
-  const ids = [ayuda && `${id}-ayuda`, bloqueadoMotivo && `${id}-bloqueo`, error && `${id}-error`].filter(Boolean)
+export function idsDescripcion({ id, ayuda, error, bloqueadoMotivo, idErrorExterno }: PropsMarcoCampo): string | undefined {
+  const ids = [ayuda && `${id}-ayuda`, bloqueadoMotivo && `${id}-bloqueo`, error && (idErrorExterno ?? `${id}-error`)].filter(Boolean)
   return ids.length > 0 ? ids.join(' ') : undefined
 }
 

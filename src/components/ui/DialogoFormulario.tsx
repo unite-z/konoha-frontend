@@ -33,6 +33,8 @@ export interface DialogoFormularioProps {
   ancho?: 'normal' | 'amplio' | 'lateral'
   /** Muestra la leyenda «* Campo obligatorio». */
   conObligatorios?: boolean
+  /** Botón principal deshabilitado (por ejemplo, sin cambios o con errores a la vista, como en Figma). */
+  envioDeshabilitado?: boolean
   onEnviar: () => void
   onCerrar: () => void
   /** Si se indica, mientras envía se ofrece interrumpir el envío (por ejemplo, una subida larga). */
@@ -50,6 +52,7 @@ export default function DialogoFormulario({
   error,
   ancho = 'normal',
   conObligatorios = true,
+  envioDeshabilitado = false,
   onEnviar,
   onCerrar,
   onCancelarEnvio,
@@ -113,7 +116,7 @@ export default function DialogoFormulario({
 
   function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    if (enviando) return
+    if (enviando || envioDeshabilitado) return
     setConfirmandoDescarte(false)
     onEnviar()
   }
@@ -138,13 +141,20 @@ export default function DialogoFormulario({
     >
       <form className={estilos.formulario} onSubmit={enviar} noValidate aria-busy={enviando || undefined}>
         <div className={estilos.cabecera}>
-          <h2 id={idTitulo} className={estilos.titulo}>
-            {titulo}
-          </h2>
-          {descripcion && (
-            <div id={idDescripcion} className={estilos.descripcion}>
-              {descripcion}
-            </div>
+          <div className={estilos.textosCabecera}>
+            <h2 id={idTitulo} className={estilos.titulo}>
+              {titulo}
+            </h2>
+            {descripcion && (
+              <div id={idDescripcion} className={estilos.descripcion}>
+                {descripcion}
+              </div>
+            )}
+          </div>
+          {ancho === 'lateral' && (
+            <Boton variante="fantasma" compacto icono="x" onClick={pedirCierre} deshabilitado={enviando}>
+              <span className="sr-only">Cerrar</span>
+            </Boton>
           )}
         </div>
 
@@ -181,7 +191,7 @@ export default function DialogoFormulario({
                 Cancelar
               </Boton>
             )}
-            <Boton type="submit" cargando={enviando}>
+            <Boton type="submit" cargando={enviando} deshabilitado={envioDeshabilitado}>
               {textoConfirmar}
             </Boton>
           </div>
