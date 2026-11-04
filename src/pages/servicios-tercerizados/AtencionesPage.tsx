@@ -11,26 +11,26 @@
  */
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import Boton, { BotonEnlace } from '../../components/ui/Boton'
-import CampoFormulario from '../../components/ui/CampoFormulario'
-import { ChipsFiltrosActivos, type FiltroActivo } from '../../components/ui/ChipsFiltro'
-import Estado from '../../components/ui/Estado'
-import EstadoVacio from '../../components/ui/EstadoVacio'
-import Pestanas from '../../components/ui/Pestanas'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
-import Tarjeta from '../../components/ui/Tarjeta'
-import { insigniaAEstado } from '../../components/ui/tonos'
-import { useConsulta } from '../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../hooks/useFiltrosUrl'
-import ExportarExcel from '../../components/core/ExportarExcel'
-import { usePaginaActual } from '../../hooks/usePaginaActual'
-import AccionesPagina from '../../layouts/LayoutOficina/AccionesPagina'
-import { puedeRegistrarAtencion } from '../../config/permisosTercerizados'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '../../router/rutasApp'
-import { useRolTercerizados } from '../../sesion/ContextoSesion'
-import { listarAtenciones, listarTodosLosContratos } from '../../services/api/tercerizados'
-import type { Atencion, Contrato } from '../../types/tercerizados'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFiltro'
+import Estado from '@/components/ui/Estado'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Pestanas from '@/components/ui/Pestanas'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import Tarjeta from '@/components/ui/Tarjeta'
+import { insigniaAEstado } from '@/components/ui/tonos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import ExportarExcel from '@/components/core/ExportarExcel'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
+import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { listarAtenciones, listarTodosLosContratos } from '@/services/api/tercerizados'
+import type { Atencion, Contrato } from '@/types/tercerizados'
 import {
   ESTADOS_ATENCION,
   OPCIONES_ORIGEN,
@@ -38,15 +38,15 @@ import {
   insigniaEstado,
   resumenAlcances,
   textoOrigen,
-} from '../../utils/estadosTercerizados'
+} from '@/utils/estadosTercerizados'
 import {
   FILTROS_BANDEJA_VACIOS,
   LARGO_MAXIMO_BUSQUEDA,
   hayFiltros,
   leerFiltrosBandeja,
   type ClaveFiltroBandeja,
-} from '../../utils/filtrosBandeja'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../utils/formato'
+} from '@/utils/filtrosBandeja'
+import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from './Tercerizados.module.css'
 
 const TITULO = 'Atenciones tercerizadas'

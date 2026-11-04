@@ -3,18 +3,18 @@
  * el cliente; en móvil, una ficha por trabajo. Con `hoy`, marca «Vencido» los pendientes fuera de plazo.
  * Se usa en las pestañas «Comparación» y «Pendientes» y en el diálogo «Ver detalles» del gráfico.
  */
-import { fechaCorta } from '../../../../components/reportes-indicadores/graficos/escala'
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { FilaProgramadoEjecutado } from '../../../../types/reportesGestion'
-import { textoModalidad } from '../../../../utils/estados'
-import { formatearFecha, formatearFechaHora, SIN_VALOR } from '../../../../utils/formato'
-import { esVencido, insigniaSituacion, textoDesviacion } from '../../../../utils/programadoEjecutado'
+import { fechaCorta } from '@/components/reportes-indicadores/graficos/escala'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { FilaProgramadoEjecutado } from '@/types/reportesGestion'
+import { textoModalidad } from '@/utils/estados'
+import { formatearFecha, formatearFechaHora, SIN_VALOR } from '@/utils/formato'
+import { esVencido, insigniaSituacion, textoDesviacion } from '@/utils/programadoEjecutado'
 import CodigoEjecucion from './CodigoEjecucion'
 import estilos from './ProgramadoEjecutado.module.css'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 function Ejecuciones({ fila }: { fila: FilaProgramadoEjecutado }) {
   if (fila.ejecuciones.length === 0) return <span className={estilos.atenuado}>Sin ejecución</span>

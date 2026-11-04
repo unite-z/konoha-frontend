@@ -2,7 +2,7 @@
  * Escala y marcas de los gráficos del MOD-06: eje con cifras redondas, largo de las barras y fechas cortas.
  * Lógica pura, sin interfaz.
  */
-import { formatearFecha } from '../../../utils/formato'
+import { formatearFecha } from '@/utils/formato'
 
 /** Marcas del eje: 0 y cuartos de la escala. */
 export const DIVISIONES_EJE = 4

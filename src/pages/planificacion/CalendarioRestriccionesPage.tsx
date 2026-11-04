@@ -3,20 +3,20 @@
  * Todos los roles consultan. El efecto se distingue con texto e icono, no solo con color.
  */
 import { useState } from 'react'
-import AvisoTemporal from '../../components/ui/AvisoTemporal'
-import Badge from '../../components/ui/Badge'
-import Boton from '../../components/ui/Boton'
-import EstadoCarga from '../../components/ui/EstadoCarga'
-import EstadoError from '../../components/ui/EstadoError'
-import EstadoVacio from '../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
-import { puedeEditarPlanificacion } from '../../config/permisosPlanificacion'
-import { useConsulta } from '../../hooks/useConsulta'
-import { usePaginaActual } from '../../hooks/usePaginaActual'
-import { MIGAS_PLANIFICACION } from '../../router/rutasApp'
-import { useRolTercerizados } from '../../sesion/ContextoSesion'
-import { listarRestricciones } from '../../services/api/planificacion'
-import type { Restriccion } from '../../types/planificacion'
+import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import Badge from '@/components/ui/Badge'
+import Boton from '@/components/ui/Boton'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { listarRestricciones } from '@/services/api/planificacion'
+import type { Restriccion } from '@/types/planificacion'
 import {
   PRESENTACION_EFECTO,
   desplazarMes,
@@ -24,10 +24,10 @@ import {
   nombreMes,
   ordenarRestricciones,
   rangoDelMes,
-} from '../../utils/calendarioRestricciones'
-import { formatearFecha } from '../../utils/formato'
-import { hoyLima } from '../../utils/instanteLima'
-import { textoHorario } from '../../utils/planificacion'
+} from '@/utils/calendarioRestricciones'
+import { formatearFecha } from '@/utils/formato'
+import { hoyLima } from '@/utils/instanteLima'
+import { textoHorario } from '@/utils/planificacion'
 import DialogoRestriccion from './DialogoRestriccion'
 import estilos from './Planificacion.module.css'
 

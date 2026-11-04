@@ -3,10 +3,10 @@
  * para identificar las propuestas, y propuestas ya creadas de cada informe para no duplicarlas.
  * Si MOD-05 no responde (sin permiso o sin conexión), la pantalla sigue con los números de siempre.
  */
-import { listarExtracciones } from '../../../../services/api/ia'
-import { listarReportes, obtenerAtencion } from '../../../../services/api/tercerizados'
-import type { SugerenciaIA } from '../../../../types/ia'
-import type { Atencion, DocumentoReporte, ReporteProveedor } from '../../../../types/tercerizados'
+import { listarExtracciones } from '@/services/api/ia'
+import { listarReportes, obtenerAtencion } from '@/services/api/tercerizados'
+import type { SugerenciaIA } from '@/types/ia'
+import type { Atencion, DocumentoReporte, ReporteProveedor } from '@/types/tercerizados'
 
 /** Atenciones de MOD-05 por id (las que fallan no se incluyen). */
 export async function cargarAtenciones(ids: number[], signal: AbortSignal): Promise<Map<number, Atencion>> {

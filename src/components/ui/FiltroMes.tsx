@@ -12,7 +12,7 @@
  * formato. Con `ayudaEmergente`, esa ayuda va en un icono junto a la etiqueta en lugar de debajo del campo.
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { validarMes } from '../../utils/reportesGestion'
+import { validarMes } from '@/utils/reportesGestion'
 import Boton from './Boton'
 import CampoFormulario from './CampoFormulario'
 import estilos from './FiltroMes.module.css'

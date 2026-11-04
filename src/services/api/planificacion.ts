@@ -1,6 +1,6 @@
 /** Servicios de MOD-03 «Planificación». Las páginas no llaman a `fetch`: usan estas funciones. */
-import type { FechaIso } from '../../types/comun'
-import type { DuracionEntrada, Estacion, FrecuenciaEntrada, Restriccion, RestriccionEntrada, ServicioPeriodico, TipoRestriccion } from '../../types/planificacion'
+import type { FechaIso } from '@/types/comun'
+import type { DuracionEntrada, Estacion, FrecuenciaEntrada, Restriccion, RestriccionEntrada, ServicioPeriodico, TipoRestriccion } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 export function listarServiciosPeriodicos(signal?: AbortSignal) {

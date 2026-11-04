@@ -4,7 +4,7 @@
  * y sin enlace.
  */
 import { Link } from 'react-router'
-import Icono from '../../components/ui/Icono'
+import Icono from '@/components/ui/Icono'
 import type { Miga } from './ContextoPagina'
 import estilos from './Cabecera.module.css'
 

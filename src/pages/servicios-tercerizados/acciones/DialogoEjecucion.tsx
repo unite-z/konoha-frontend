@@ -8,14 +8,14 @@
  * - Una fecha futura se advierte, pero no se bloquea (el back-end la admite).
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import CampoFormulario from '../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import { registrarFin, registrarInicio } from '../../../services/api/tercerizados'
-import type { Atencion } from '../../../types/tercerizados'
-import { formatearFechaHora } from '../../../utils/formato'
-import { aInstanteLima, ahoraLimaLocal, milisegundos } from '../../../utils/instanteLima'
-import { validarEjecucion, type ModoEjecucion } from '../../../utils/validacionTercerizados'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { registrarFin, registrarInicio } from '@/services/api/tercerizados'
+import type { Atencion } from '@/types/tercerizados'
+import { formatearFechaHora } from '@/utils/formato'
+import { aInstanteLima, ahoraLimaLocal, milisegundos } from '@/utils/instanteLima'
+import { validarEjecucion, type ModoEjecucion } from '@/utils/validacionTercerizados'
 import { useOperacionAtencion } from './useOperacionAtencion'
 
 const ID_FECHA = 'ejecucion-fecha'

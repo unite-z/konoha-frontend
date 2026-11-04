@@ -7,18 +7,18 @@
  * - al elegir una barra, «Ver detalles» abre sus registros (si el indicador ya tiene detalle).
  */
 import { useMemo, useState } from 'react'
-import BarrasHorizontales from '../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import { escalaRedonda, marcasEje } from '../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../components/reportes-indicadores/graficos/PartesGrafico'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
-import type { ResultadoIndicador } from '../../../types/reportesGestion'
-import { formatearNumero } from '../../../utils/formato'
-import { valorTarjeta } from '../../../utils/reportesGestion'
+import BarrasHorizontales from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
+import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import type { ResultadoIndicador } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
+import { valorTarjeta } from '@/utils/reportesGestion'
 import { esConteo, gruposDesglose, tieneRegistros } from './desglose'
-import Tarjeta from '../../../components/ui/Tarjeta'
+import Tarjeta from '@/components/ui/Tarjeta'
 
 /** Barras visibles antes de «Ver todas». */
 const BARRAS_INICIALES = 10

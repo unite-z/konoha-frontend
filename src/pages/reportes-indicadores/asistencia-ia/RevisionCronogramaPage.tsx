@@ -13,34 +13,34 @@
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
-import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'
-import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
-import AvisoEnLinea, { type TonoAviso } from '../../../components/ui/AvisoEnLinea'
-import AvisoTemporal from '../../../components/ui/AvisoTemporal'
-import BarraAvance from '../../../components/ui/BarraAvance'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import { AreaTexto, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
-import EstadoCarga from '../../../components/ui/EstadoCarga'
-import EstadoError from '../../../components/ui/EstadoError'
-import EstadoSinAcceso from '../../../components/ui/EstadoSinAcceso'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Pestanas from '../../../components/ui/Pestanas'
-import { puede, ROLES_VALIDAR_IA } from '../../../config/permisos'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS, RUTAS_PLANIFICACION } from '../../../router/rutasApp'
-import { aErrorApi } from '../../../services/api/cliente'
+import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import AvisoEnLinea, { type TonoAviso } from '@/components/ui/AvisoEnLinea'
+import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import BarraAvance from '@/components/ui/BarraAvance'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { AreaTexto, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Pestanas from '@/components/ui/Pestanas'
+import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, RUTAS, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { aErrorApi } from '@/services/api/cliente'
 import {
   confirmarCronograma,
   listarProgramacionExistente,
   obtenerCronograma,
   programacionExistenteDisponible,
   rechazarCronograma,
-} from '../../../services/api/cronogramaIa'
-import { obtenerCatalogoComparacion } from '../../../services/api/reportesGestion'
-import { useRolActual } from '../../../sesion/ContextoSesion'
-import type { SugerenciaCronograma, ValoresCronograma } from '../../../types/cronogramaIa'
+} from '@/services/api/cronogramaIa'
+import { obtenerCatalogoComparacion } from '@/services/api/reportesGestion'
+import { useRolActual } from '@/sesion/ContextoSesion'
+import type { SugerenciaCronograma, ValoresCronograma } from '@/types/cronogramaIa'
 import {
   cuerpoConfirmacion,
   idConfirmaRestriccion,
@@ -52,8 +52,8 @@ import {
   validarDecisiones,
   valoresDePropuesta,
   type DecisionEnCursoCronograma,
-} from '../../../utils/cronogramaIa'
-import { formatearNumero } from '../../../utils/formato'
+} from '@/utils/cronogramaIa'
+import { formatearNumero } from '@/utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
 import CabeceraCronograma from './cronograma/CabeceraCronograma'

@@ -8,15 +8,15 @@
  * - Clic en una barra: queda elegida y se habilita «Ver detalles».
  */
 import { useMemo, useState } from 'react'
-import Boton from '../../../../components/ui/Boton'
-import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
-import type { FilaDistribucion } from '../../../../types/reportes'
-import { formatearNumero } from '../../../../utils/formato'
-import BarrasHorizontales, { type BarraGrafico } from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import ColumnasFecha from '../../../../components/reportes-indicadores/graficos/ColumnasFecha'
-import { marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import estilos from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
+import Boton from '@/components/ui/Boton'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import type { FilaDistribucion } from '@/types/reportes'
+import { formatearNumero } from '@/utils/formato'
+import BarrasHorizontales, { type BarraGrafico } from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
+import ColumnasFecha from '@/components/reportes-indicadores/graficos/ColumnasFecha'
+import { marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import estilos from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
 import {
   agrupar,
   DIMENSIONES,

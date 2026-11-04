@@ -7,7 +7,7 @@
  * - Barra inferior: las subentradas del módulo activo (como mucho 5), con icono y texto, y la actual marcada.
  */
 import { Link, useLocation } from 'react-router'
-import Icono from '../../components/ui/Icono'
+import Icono from '@/components/ui/Icono'
 import { activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
 import estilos from './BarrasMoviles.module.css'
 

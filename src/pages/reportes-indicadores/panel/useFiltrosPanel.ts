@@ -5,10 +5,10 @@
  * `page` solo la usa el detalle; cualquier cambio de filtros la quita (vuelve a la página 1).
  */
 import { useMemo } from 'react'
-import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
-import type { Periodo } from '../../../types/comun'
-import { semanaActual } from '../../../utils/formato'
-import { aConsultaGestion } from '../../../utils/reportesGestion'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import type { Periodo } from '@/types/comun'
+import { semanaActual } from '@/utils/formato'
+import { aConsultaGestion } from '@/utils/reportesGestion'
 
 /** Filtros opcionales, además del periodo. */
 export const CAMPOS_OPCIONALES = ['area_verde_id', 'tipo_servicio_id', 'estado', 'modalidad'] as const

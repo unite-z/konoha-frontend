@@ -3,11 +3,11 @@
  * El frontend no llama a la API de Planificación (MOD-03): al confirmar, el backend crea en MOD-03 solo las
  * programaciones aceptadas o modificadas.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
-import type { Paginado } from '../../types/comun'
-import type { FechaIso } from '../../types/comun'
-import type { CuerpoValidacionCronograma, ProgramacionExistente, SolicitudCronograma, SugerenciaCronograma } from '../../types/cronogramaIa'
-import type { EstadoSugerencia } from '../../types/ia'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
+import type { Paginado } from '@/types/comun'
+import type { FechaIso } from '@/types/comun'
+import type { CuerpoValidacionCronograma, ProgramacionExistente, SolicitudCronograma, SugerenciaCronograma } from '@/types/cronogramaIa'
+import type { EstadoSugerencia } from '@/types/ia'
 import { solicitar } from './cliente'
 import { solicitarPlanificacion } from './clientePlanificacion'
 

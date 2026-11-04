@@ -3,8 +3,8 @@
  * utilizados, las limitaciones y la explicación de los criterios. Siempre visible junto a la propuesta, para que la
  * persona sepa con qué trabajó la IA antes de decidir.
  */
-import type { MetadatosIA } from '../../types/ia'
-import { insigniaSuficiencia } from '../../utils/estados'
+import type { MetadatosIA } from '@/types/ia'
+import { insigniaSuficiencia } from '@/utils/estados'
 import AvisoEnLinea from '../ui/AvisoEnLinea'
 import Estado from '../ui/Estado'
 import Icono from '../ui/Icono'

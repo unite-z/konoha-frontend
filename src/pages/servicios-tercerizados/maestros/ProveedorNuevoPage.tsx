@@ -10,18 +10,18 @@
  */
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import CampoFormulario, { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Selector from '../../../components/ui/Selector'
-import Tarjeta from '../../../components/ui/Tarjeta'
-import SelectorBuscable from '../../../components/ui/SelectorBuscable'
-import { puedeRegistrarProveedoresYContratos } from '../../../config/permisosMaestros'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
-import { listarProveedoresMaestro, registrarProveedor } from '../../../services/api/maestrosTercerizados'
-import { useRolTercerizados } from '../../../sesion/ContextoSesion'
-import type { ProveedorMaestro, TipoVinculo } from '../../../types/maestrosTercerizados'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import CampoFormulario, { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Selector from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
+import SelectorBuscable from '@/components/ui/SelectorBuscable'
+import { puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { listarProveedoresMaestro, registrarProveedor } from '@/services/api/maestrosTercerizados'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import type { ProveedorMaestro, TipoVinculo } from '@/types/maestrosTercerizados'
 import {
   BORRADOR_PROVEEDOR_VACIO,
   OPCIONES_VINCULO,
@@ -31,7 +31,7 @@ import {
   validarProveedor,
   type BorradorProveedor,
   type ErroresProveedor,
-} from '../../../utils/validacionMaestros'
+} from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import { enfocar, interpretarFallo, type FalloRegistro } from './fallosRegistro'
 import type { EstadoNavegacionMaestros } from './filtrosMaestros'

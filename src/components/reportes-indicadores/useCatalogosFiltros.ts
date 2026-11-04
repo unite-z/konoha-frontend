@@ -8,8 +8,8 @@
  */
 import { useCallback } from 'react'
 import type { OpcionSelector } from '../ui/Selector'
-import { useConsulta } from '../../hooks/useConsulta'
-import { listarAreasVerdes, listarTiposServicio, listarTodo } from '../../services/api/tercerizados'
+import { useConsulta } from '@/hooks/useConsulta'
+import { listarAreasVerdes, listarTiposServicio, listarTodo } from '@/services/api/tercerizados'
 
 export interface CatalogosFiltros {
   espacios: OpcionSelector[]

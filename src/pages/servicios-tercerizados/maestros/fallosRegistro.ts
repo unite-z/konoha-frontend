@@ -1,5 +1,5 @@
 /** Errores al registrar proveedores, contratos y ejemplares con atención especial: cómo se interpretan. */
-import { aErrorApi } from '../../../services/api/cliente'
+import { aErrorApi } from '@/services/api/cliente'
 
 export type FalloRegistro =
   | { tipo: 'conexion' }

@@ -14,7 +14,7 @@
  */
 import { ErrorApi } from '../api/cliente'
 import { guardarArchivo } from '../api/clienteReportesGestion'
-import type { Paginado } from '../../types/comun'
+import type { Paginado } from '@/types/comun'
 import type {
   ConsultaExportaciones,
   FormatoSalida,
@@ -23,10 +23,10 @@ import type {
   SolicitudExportacion,
   TipoExportable,
   TipoReporte,
-} from '../../types/exportaciones'
-import { nombreArchivoSimulado, textoPeriodo } from '../../utils/exportaciones'
-import { formatearFechaHora } from '../../utils/formato'
-import { hoyLima } from '../../utils/instanteLima'
+} from '@/types/exportaciones'
+import { nombreArchivoSimulado, textoPeriodo } from '@/utils/exportaciones'
+import { formatearFechaHora } from '@/utils/formato'
+import { hoyLima } from '@/utils/instanteLima'
 import { crearAlmacenSimulado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const POR_PAGINA = 25

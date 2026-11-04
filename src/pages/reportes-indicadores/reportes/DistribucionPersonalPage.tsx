@@ -18,20 +18,20 @@
  */
 // Excepción al sistema (AV-351): la tarjeta indicadora conmutable es un <button> con aria-pressed que filtra el detalle.
 import { useMemo, useState } from 'react'
-import DialogoDetalle from '../../../components/ui/DialogoDetalle'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import { ChipsFiltrosActivos } from '../../../components/ui/ChipsFiltro'
-import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
-import TarjetaIndicador from '../../../components/ui/TarjetaIndicador'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS } from '../../../router/rutasApp'
-import { obtenerDistribucionPersonal } from '../../../services/api/reportes'
-import type { FiltrosDistribucion, ResultadoDistribucionPersonal } from '../../../types/reportes'
-import { formatearFecha, formatearNumero, semanaActual, SIN_VALOR } from '../../../utils/formato'
+import DialogoDetalle from '@/components/ui/DialogoDetalle'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import { ChipsFiltrosActivos } from '@/components/ui/ChipsFiltro'
+import FiltroPeriodo from '@/components/ui/FiltroPeriodo'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
+import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS } from '@/router/rutasApp'
+import { obtenerDistribucionPersonal } from '@/services/api/reportes'
+import type { FiltrosDistribucion, ResultadoDistribucionPersonal } from '@/types/reportes'
+import { formatearFecha, formatearNumero, semanaActual, SIN_VALOR } from '@/utils/formato'
 import {
   cuadrillasDistintas,
   filasSinTiempo,
@@ -45,7 +45,7 @@ import estilosPagina from './DistribucionPersonal.module.css'
 import { erroresDePeriodo } from './erroresPeriodo'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
-import Estado from '../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 const TITULO = 'Distribución del personal'
 

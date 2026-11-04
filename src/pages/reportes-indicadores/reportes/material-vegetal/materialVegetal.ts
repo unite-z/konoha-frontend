@@ -5,10 +5,10 @@
  * - Comparación: los 3 meses anteriores (del back-end) más el mes elegido (calculado con los totales del mes),
  *   por movimiento, unidad y material. Un mes sin movimientos queda sin valor (nunca se muestra como cero).
  */
-import type { Agrupacion } from '../../../../components/reportes-indicadores/graficos/agrupar'
-import type { ResultadoMaterialVegetal, TotalMaterial, TotalMes, TotalTraslado } from '../../../../types/reportesGestion'
-import { formatearMes } from '../../../../utils/formato'
-import { numeroDeDecimal } from '../../../../utils/reportesGestion'
+import type { Agrupacion } from '@/components/reportes-indicadores/graficos/agrupar'
+import type { ResultadoMaterialVegetal, TotalMaterial, TotalMes, TotalTraslado } from '@/types/reportesGestion'
+import { formatearMes } from '@/utils/formato'
+import { numeroDeDecimal } from '@/utils/reportesGestion'
 
 export type Movimiento = 'consumido' | 'propagado' | 'trasladado'
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { FilaDistribucion } from '../../../../types/reportes'
-import { formatearNumero } from '../../../../utils/formato'
+import type { FilaDistribucion } from '@/types/reportes'
+import { formatearNumero } from '@/utils/formato'
 import {
   agrupar,
   escalaEje,

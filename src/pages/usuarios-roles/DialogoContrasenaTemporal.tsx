@@ -4,10 +4,10 @@
  * que tendrá que cambiarla al entrar (HU-MOD01-003, «Primer acceso»).
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
-import Boton from '../../components/ui/Boton'
-import DialogoConfirmacion from '../../components/ui/DialogoConfirmacion'
-import type { UsuarioConContrasena } from '../../types/core'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
+import type { UsuarioConContrasena } from '@/types/core'
 import estilos from './UsuariosRoles.module.css'
 
 export default function DialogoContrasenaTemporal({

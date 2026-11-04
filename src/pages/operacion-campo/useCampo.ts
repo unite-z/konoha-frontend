@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { useConsulta } from '../../hooks/useConsulta'
-import { aErrorApi } from '../../services/api/cliente'
-import { campoApi, type ParametrosCampo } from '../../services/api/operacionCampo'
-import type { PaginaCampo } from '../../types/operacionCampo'
+import { useConsulta } from '@/hooks/useConsulta'
+import { aErrorApi } from '@/services/api/cliente'
+import { campoApi, type ParametrosCampo } from '@/services/api/operacionCampo'
+import type { PaginaCampo } from '@/types/operacionCampo'
 
 export function useListadoCampo<T>(recurso: string, filtros: string[]) {
   const [url,setUrl]=useSearchParams()

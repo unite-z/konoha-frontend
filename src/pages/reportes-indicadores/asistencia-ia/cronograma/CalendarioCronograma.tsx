@@ -8,10 +8,10 @@
  */
 // Excepción al sistema (AV-351): los bloques del calendario son <button> de datos y la casilla de la leyenda lleva una muestra de color.
 import { useState } from 'react'
-import Boton from '../../../../components/ui/Boton'
-import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
-import type { FechaIso } from '../../../../types/comun'
-import type { ProgramacionExistente, PropuestaCronograma, RestriccionConsiderada } from '../../../../types/cronogramaIa'
+import Boton from '@/components/ui/Boton'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import type { FechaIso } from '@/types/comun'
+import type { ProgramacionExistente, PropuestaCronograma, RestriccionConsiderada } from '@/types/cronogramaIa'
 import {
   colocarEnSemana,
   desplazarMes,
@@ -21,7 +21,7 @@ import {
   tituloSemana,
   type BloqueCalendario,
   type Mes,
-} from '../../../../utils/calendarioCronograma'
+} from '@/utils/calendarioCronograma'
 import {
   enIntervalo,
   fechasEfectivas,
@@ -29,12 +29,12 @@ import {
   PRESENTACION_RESTRICCION,
   sumarDias,
   type DecisionEnCursoCronograma,
-} from '../../../../utils/cronogramaIa'
-import { formatearFecha } from '../../../../utils/formato'
-import { hoyLima } from '../../../../utils/instanteLima'
+} from '@/utils/cronogramaIa'
+import { formatearFecha } from '@/utils/formato'
+import { hoyLima } from '@/utils/instanteLima'
 import estilos from './Calendario.module.css'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 const DIAS = ['lun.', 'mar.', 'mié.', 'jue.', 'vie.', 'sáb.', 'dom.']
 

@@ -3,17 +3,17 @@
  * metrado ejecutado frente al previsto. Al elegir una barra, «Ver detalles» abre sus atenciones.
  */
 import { useState } from 'react'
-import BarrasHorizontales from '../../../../components/reportes-indicadores/graficos/BarrasHorizontales'
-import { escalaRedonda, marcasEje } from '../../../../components/reportes-indicadores/graficos/escala'
-import comunes from '../../../../components/reportes-indicadores/graficos/Graficos.module.css'
-import { BarraSeleccion, CabeceraGrafico } from '../../../../components/reportes-indicadores/graficos/PartesGrafico'
-import BarraAvance from '../../../../components/ui/BarraAvance'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import type { AvanceServicio, FilaAtencionServicio } from '../../../../types/reportesGestion'
-import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
-import { atencionesDeParte, metradoAvance, PARTES_AVANCE, type ParteAvance } from '../../../../utils/reporteServicio'
+import BarrasHorizontales from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
+import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
+import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
+import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
+import BarraAvance from '@/components/ui/BarraAvance'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import type { AvanceServicio, FilaAtencionServicio } from '@/types/reportesGestion'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
+import { atencionesDeParte, metradoAvance, PARTES_AVANCE, type ParteAvance } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
-import Tarjeta from '../../../../components/ui/Tarjeta'
+import Tarjeta from '@/components/ui/Tarjeta'
 
 export interface GraficoAvanceProps {
   avance: AvanceServicio

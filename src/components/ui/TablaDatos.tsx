@@ -14,7 +14,7 @@
  * - Desplazamiento horizontal propio si no cabe, con la primera columna fija.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { SIN_VALOR } from '../../utils/formato'
+import { SIN_VALOR } from '@/utils/formato'
 import EstadoCarga from './EstadoCarga'
 import EstadoError, { type EstadoErrorProps } from './EstadoError'
 import EstadoVacio, { type EstadoVacioProps } from './EstadoVacio'

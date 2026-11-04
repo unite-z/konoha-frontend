@@ -5,16 +5,16 @@
  * historial con autor y fecha. El operario aparece deshabilitado («previsto para una fase posterior»).
  */
 import { useRef, useState } from 'react'
-import { AreaTexto } from '../../components/ui/CampoFormulario'
-import GrupoOpciones from '../../components/ui/GrupoOpciones'
-import DialogoFormulario from '../../components/ui/DialogoFormulario'
-import EstadoCarga from '../../components/ui/EstadoCarga'
-import EstadoError from '../../components/ui/EstadoError'
-import { useConsulta } from '../../hooks/useConsulta'
-import { aErrorApi } from '../../services/api/cliente'
-import { cambiarRol, listarRoles } from '../../services/api/core'
-import type { CodigoRol, RolUsuario, UsuarioResumen } from '../../types/core'
-import { validarMotivo } from '../../utils/validacionCore'
+import { AreaTexto } from '@/components/ui/CampoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import { useConsulta } from '@/hooks/useConsulta'
+import { aErrorApi } from '@/services/api/cliente'
+import { cambiarRol, listarRoles } from '@/services/api/core'
+import type { CodigoRol, RolUsuario, UsuarioResumen } from '@/types/core'
+import { validarMotivo } from '@/utils/validacionCore'
 
 export interface DialogoCambioRolProps {
   cuenta: UsuarioResumen

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { coincideConProhibicion } from '../../utils/cronogramaIa'
+import { coincideConProhibicion } from '@/utils/cronogramaIa'
 import { confirmarSimulado, programacionExistenteDe, propuestasDe, rechazarSimulado, solicitarSimulado } from './cronogramaIa'
 
 const NOVIEMBRE = { desde: '2026-11-01', hasta: '2026-11-30' }

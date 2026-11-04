@@ -5,11 +5,11 @@
  * Sin permiso, el servidor responde 403 y se dice así, sin datos.
  */
 import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
-import { useConsulta } from '../../hooks/useConsulta'
-import { historialRegistro } from '../../services/api/core'
-import type { EntidadRegistro, EntradaHistorial } from '../../types/core'
-import { resumenCambio, textoAccion } from '../../utils/etiquetasCore'
-import { formatearFechaHora } from '../../utils/formato'
+import { useConsulta } from '@/hooks/useConsulta'
+import { historialRegistro } from '@/services/api/core'
+import type { EntidadRegistro, EntradaHistorial } from '@/types/core'
+import { resumenCambio, textoAccion } from '@/utils/etiquetasCore'
+import { formatearFechaHora } from '@/utils/formato'
 
 const COLUMNAS: ColumnaTabla<EntradaHistorial>[] = [
   { clave: 'fecha', titulo: 'Fecha y hora', render: (e) => formatearFechaHora(e.fecha_hora) },

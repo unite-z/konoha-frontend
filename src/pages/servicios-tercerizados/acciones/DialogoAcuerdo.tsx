@@ -7,20 +7,20 @@
  * Un desacuerdo queda visible y auditado; no abre una subsanación (fuera de esta entrega).
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import CampoFormulario, { AreaTexto } from '../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../components/ui/DialogoFormulario'
-import GrupoOpciones from '../../../components/ui/GrupoOpciones'
-import { registrarAcuerdoUnidad } from '../../../services/api/tercerizados'
-import type { AcuerdoUnidadEntrada, Atencion } from '../../../types/tercerizados'
-import { formatearFecha } from '../../../utils/formato'
-import { fechaLimaDeInstante, hoyLima } from '../../../utils/instanteLima'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import { registrarAcuerdoUnidad } from '@/services/api/tercerizados'
+import type { AcuerdoUnidadEntrada, Atencion } from '@/types/tercerizados'
+import { formatearFecha } from '@/utils/formato'
+import { fechaLimaDeInstante, hoyLima } from '@/utils/instanteLima'
 import {
   respuestaDeAcuerdo,
   validarAcuerdo,
   type ErroresAcuerdo,
   type RespuestaUnidad,
-} from '../../../utils/validacionTercerizados'
+} from '@/utils/validacionTercerizados'
 import { useOperacionAtencion } from './useOperacionAtencion'
 
 const ID_RESPUESTA = 'acuerdo-respuesta-pendiente'

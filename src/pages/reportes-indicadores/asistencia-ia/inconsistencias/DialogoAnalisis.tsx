@@ -4,15 +4,15 @@
  * diálogo y deja la bandeja usable.
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import CampoFormulario from '../../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../../components/ui/DialogoFormulario'
-import Selector from '../../../../components/ui/Selector'
-import { validarPeriodo, type ErroresPeriodo } from '../../../../components/ui/validacionPeriodo'
-import { aErrorApi, type ErrorApi } from '../../../../services/api/cliente'
-import { analizarInconsistencias } from '../../../../services/api/inconsistenciasIa'
-import type { ConjuntoDatos, ResultadoAnalisisInconsistencias } from '../../../../types/inconsistenciasIa'
-import { CONJUNTOS, ETIQUETA_CONJUNTO } from '../../../../utils/inconsistenciasIa'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import Selector from '@/components/ui/Selector'
+import { validarPeriodo, type ErroresPeriodo } from '@/components/ui/validacionPeriodo'
+import { aErrorApi, type ErrorApi } from '@/services/api/cliente'
+import { analizarInconsistencias } from '@/services/api/inconsistenciasIa'
+import type { ConjuntoDatos, ResultadoAnalisisInconsistencias } from '@/types/inconsistenciasIa'
+import { CONJUNTOS, ETIQUETA_CONJUNTO } from '@/utils/inconsistenciasIa'
 import estilos from './Inconsistencias.module.css'
 
 export interface DialogoAnalisisProps {

@@ -4,20 +4,20 @@
  * «Descargar» vuelve a bajar el archivo ya generado (no crea nada).
  */
 import { useState } from 'react'
-import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton from '../../../components/ui/Boton'
-import { GrupoChips } from '../../../components/ui/ChipsFiltro'
-import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '../../../components/ui/TablaDatos'
-import type { ResultadoConsulta } from '../../../hooks/useConsulta'
-import { aErrorApi } from '../../../services/api/cliente'
-import { descargarExportacion } from '../../../services/api/exportaciones'
-import type { Paginado } from '../../../types/comun'
-import type { ReporteGenerado, TipoExportable } from '../../../types/exportaciones'
-import { TEXTO_FORMATO } from '../../../utils/exportaciones'
-import { formatearFechaHora, formatearNumero, formatearTamanoArchivo } from '../../../utils/formato'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import { GrupoChips } from '@/components/ui/ChipsFiltro'
+import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
+import type { ResultadoConsulta } from '@/hooks/useConsulta'
+import { aErrorApi } from '@/services/api/cliente'
+import { descargarExportacion } from '@/services/api/exportaciones'
+import type { Paginado } from '@/types/comun'
+import type { ReporteGenerado, TipoExportable } from '@/types/exportaciones'
+import { TEXTO_FORMATO } from '@/utils/exportaciones'
+import { formatearFechaHora, formatearNumero, formatearTamanoArchivo } from '@/utils/formato'
 import estilos from './Exportaciones.module.css'
-import Estado from '../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 const POR_PAGINA = 25
 

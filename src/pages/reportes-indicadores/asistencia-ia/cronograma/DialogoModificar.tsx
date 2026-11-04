@@ -4,13 +4,13 @@
  * Las cuadrillas y los proveedores son los que aparecen en la propuesta (sin llamar a otros módulos).
  */
 import { useState } from 'react'
-import CampoFormulario from '../../../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../../../components/ui/DialogoFormulario'
-import Selector from '../../../../components/ui/Selector'
-import { validarPeriodo, type ErroresPeriodo } from '../../../../components/ui/validacionPeriodo'
-import type { PropuestaCronograma, ValoresCronograma } from '../../../../types/cronogramaIa'
-import type { RecursoOpcion } from '../../../../utils/cronogramaIa'
-import { enteroPositivo } from '../../../../utils/reportesGestion'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import Selector from '@/components/ui/Selector'
+import { validarPeriodo, type ErroresPeriodo } from '@/components/ui/validacionPeriodo'
+import type { PropuestaCronograma, ValoresCronograma } from '@/types/cronogramaIa'
+import type { RecursoOpcion } from '@/utils/cronogramaIa'
+import { enteroPositivo } from '@/utils/reportesGestion'
 import estilos from './Cronograma.module.css'
 
 export interface DialogoModificarProps {

@@ -4,21 +4,21 @@
  * Si MOD-05 no responde, se muestran los números de la propuesta.
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Boton, { BotonEnlace } from '../../../../components/ui/Boton'
-import Icono from '../../../../components/ui/Icono'
-import { useConsulta } from '../../../../hooks/useConsulta'
-import { rutaDetalleAtencion } from '../../../../router/rutasApp'
-import { aErrorApi } from '../../../../services/api/cliente'
-import { descargarDocumento } from '../../../../services/api/tercerizados'
-import type { SugerenciaIA } from '../../../../types/ia'
-import { insigniaSugerencia } from '../../../../utils/estados'
-import { formatearFecha, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import Icono from '@/components/ui/Icono'
+import { useConsulta } from '@/hooks/useConsulta'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
+import { aErrorApi } from '@/services/api/cliente'
+import { descargarDocumento } from '@/services/api/tercerizados'
+import type { SugerenciaIA } from '@/types/ia'
+import { insigniaSugerencia } from '@/utils/estados'
+import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from './CabeceraPropuesta.module.css'
 import { cargarInforme } from './consultasApoyo'
 import { coberturaSugerencia } from './valoresCampo'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 export default function CabeceraPropuesta({ sugerencia }: { sugerencia: SugerenciaIA }) {
   const { entrada, ia } = sugerencia.contenido

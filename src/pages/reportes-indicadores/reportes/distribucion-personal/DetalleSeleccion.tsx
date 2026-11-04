@@ -2,13 +2,13 @@
  * Detalle de la parte del gráfico elegida (contenido del diálogo «Ver detalles»): totales y tabla de filas.
  * RNF-008: solo se muestra el nombre de cada operario.
  */
-import ListaDescripcion from '../../../../components/ui/ListaDescripcion'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { FilaDistribucion } from '../../../../types/reportes'
-import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { FilaDistribucion } from '@/types/reportes'
+import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from '../Reportes.module.css'
 import { formatearMedida, MEDIDAS, totalizar } from './agregacion'
-import Estado from '../../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 /** Parte del gráfico elegida. */
 export interface Seleccion {

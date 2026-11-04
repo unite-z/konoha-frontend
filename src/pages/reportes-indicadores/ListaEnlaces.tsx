@@ -3,7 +3,7 @@
  * adicional opcional (por ejemplo, los filtros que admite) y la acción al pie.
  */
 import { Link } from 'react-router'
-import Icono, { type NombreIcono } from '../../components/ui/Icono'
+import Icono, { type NombreIcono } from '@/components/ui/Icono'
 import estilos from './ListaEnlaces.module.css'
 
 export interface EnlaceIndice {

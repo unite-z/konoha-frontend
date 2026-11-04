@@ -5,30 +5,30 @@
  * elegir un área no incluye sus ejemplares. Metrado y unidad son opcionales y van juntos.
  */
 import { useState } from 'react'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Casilla from '../../../components/ui/Casilla'
-import Boton from '../../../components/ui/Boton'
-import Estado from '../../../components/ui/Estado'
-import CampoFormulario from '../../../components/ui/CampoFormulario'
-import EstadoCarga from '../../../components/ui/EstadoCarga'
-import EstadoError from '../../../components/ui/EstadoError'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Icono from '../../../components/ui/Icono'
-import Pestanas from '../../../components/ui/Pestanas'
-import Selector, { type OpcionSelector } from '../../../components/ui/Selector'
-import Tarjeta from '../../../components/ui/Tarjeta'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { useDemora } from '../../../hooks/useDemora'
-import { listarAreasVerdes, listarEjemplares } from '../../../services/api/tercerizados'
-import type { AreaVerde, UnidadMedida } from '../../../types/tercerizados'
-import { formatearNumero } from '../../../utils/formato'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Casilla from '@/components/ui/Casilla'
+import Boton from '@/components/ui/Boton'
+import Estado from '@/components/ui/Estado'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Icono from '@/components/ui/Icono'
+import Pestanas from '@/components/ui/Pestanas'
+import Selector, { type OpcionSelector } from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useDemora } from '@/hooks/useDemora'
+import { listarAreasVerdes, listarEjemplares } from '@/services/api/tercerizados'
+import type { AreaVerde, UnidadMedida } from '@/types/tercerizados'
+import { formatearNumero } from '@/utils/formato'
 import {
   alternarAlcance,
   claveAlcance,
   type AlcanceSeleccionado,
   type ErroresPaso2,
   type TipoAlcance,
-} from '../../../utils/nuevaAtencion'
+} from '@/utils/nuevaAtencion'
 import { ID_LISTA_SELECCIONADOS } from './idsCampos'
 import estilos from './NuevaAtencion.module.css'
 

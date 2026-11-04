@@ -1,5 +1,5 @@
 /** Ids de los campos del asistente, para llevar el foco al primer error y enlazar el resumen de errores. */
-import type { ErroresPaso1 } from '../../../utils/nuevaAtencion'
+import type { ErroresPaso1 } from '@/utils/nuevaAtencion'
 
 export const IDS_PASO1: Record<keyof ErroresPaso1, string> = {
   contrato: 'nueva-contrato',

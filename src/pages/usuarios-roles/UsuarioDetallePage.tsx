@@ -9,20 +9,20 @@
  */
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router'
-import AvisoEnLinea from '../../components/ui/AvisoEnLinea'
-import Tarjeta from '../../components/ui/Tarjeta'
-import AvisoTemporal from '../../components/ui/AvisoTemporal'
-import Boton from '../../components/ui/Boton'
-import { AreaTexto } from '../../components/ui/CampoFormulario'
-import DialogoConfirmacion from '../../components/ui/DialogoConfirmacion'
-import EstadoCarga from '../../components/ui/EstadoCarga'
-import EstadoError from '../../components/ui/EstadoError'
-import ListaDescripcion from '../../components/ui/ListaDescripcion'
-import TablaDatos, { type ColumnaTabla } from '../../components/ui/TablaDatos'
-import { useConsulta } from '../../hooks/useConsulta'
-import { usePaginaActual } from '../../hooks/usePaginaActual'
-import { MIGAS_CORE } from '../../router/rutasApp'
-import { aErrorApi } from '../../services/api/cliente'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Tarjeta from '@/components/ui/Tarjeta'
+import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import Boton from '@/components/ui/Boton'
+import { AreaTexto } from '@/components/ui/CampoFormulario'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_CORE } from '@/router/rutasApp'
+import { aErrorApi } from '@/services/api/cliente'
 import {
   activarUsuario,
   cerrarSesionesUsuario,
@@ -31,17 +31,17 @@ import {
   generarContrasenaTemporal,
   historialUsuario,
   obtenerUsuario,
-} from '../../services/api/core'
-import type { CambioCuenta, UsuarioConContrasena, UsuarioResumen } from '../../types/core'
-import { DESTACADO, ESTADO_CUENTA, resumenCambio, textoAccion } from '../../utils/etiquetasCore'
-import { formatearFecha, formatearFechaHora } from '../../utils/formato'
-import { validarMotivo } from '../../utils/validacionCore'
+} from '@/services/api/core'
+import type { CambioCuenta, UsuarioConContrasena, UsuarioResumen } from '@/types/core'
+import { DESTACADO, ESTADO_CUENTA, resumenCambio, textoAccion } from '@/utils/etiquetasCore'
+import { formatearFecha, formatearFechaHora } from '@/utils/formato'
+import { validarMotivo } from '@/utils/validacionCore'
 import DialogoCambioRol from './DialogoCambioRol'
 import DialogoContrasenaTemporal from './DialogoContrasenaTemporal'
 import DialogoCuenta from './DialogoCuenta'
 import estilos from './UsuariosRoles.module.css'
-import Estado from '../../components/ui/Estado'
-import { TONO_ESTADO } from '../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { TONO_ESTADO } from '@/components/ui/tonos'
 
 type Accion = 'editar' | 'rol' | 'desactivar' | 'cerrar-sesiones' | 'contrasena' | null
 

@@ -3,8 +3,8 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ErrorApi } from '../../services/api/cliente'
-import type { Importacion } from '../../types/core'
+import { ErrorApi } from '@/services/api/cliente'
+import type { Importacion } from '@/types/core'
 import ImportacionPage from './ImportacionPage'
 
 const api = vi.hoisted(() => ({
@@ -12,8 +12,8 @@ const api = vi.hoisted(() => ({
   confirmarImportacion: vi.fn(),
   listarFilasImportacion: vi.fn(),
 }))
-vi.mock('../../services/api/core', () => api)
-vi.mock('../../hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+vi.mock('@/services/api/core', () => api)
+vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 
 const VALIDADA: Importacion = {
   id: 7,

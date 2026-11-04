@@ -2,8 +2,8 @@
  * Valores de la revisión de RF-IA-001: presentación, conversión de las correcciones al tipo del dato y
  * cifras del avance. Lógica pura, sin interfaz.
  */
-import { claveCampo, type AccionDecision, type CampoSolicitado, type SugerenciaIA, type TipoDato, type ValorCampo } from '../../../../types/ia'
-import { esFechaIsoValida, formatearFecha, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import { claveCampo, type AccionDecision, type CampoSolicitado, type SugerenciaIA, type TipoDato, type ValorCampo } from '@/types/ia'
+import { esFechaIsoValida, formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 
 /** Mensajes de la revisión. */
 export const MENSAJES = {

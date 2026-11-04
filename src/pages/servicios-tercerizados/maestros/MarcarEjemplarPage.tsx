@@ -8,21 +8,21 @@
  */
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import Selector from '../../../components/ui/Selector'
-import Tarjeta from '../../../components/ui/Tarjeta'
-import SelectorBuscable from '../../../components/ui/SelectorBuscable'
-import { puedeMarcarAtencionEspecial } from '../../../config/permisosMaestros'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '../../../router/rutasApp'
-import { listarPlagas, marcarAtencionEspecial } from '../../../services/api/maestrosTercerizados'
-import { listarEjemplares, listarTodo } from '../../../services/api/tercerizados'
-import { useRolTercerizados } from '../../../sesion/ContextoSesion'
-import type { Ejemplar } from '../../../types/tercerizados'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import Selector from '@/components/ui/Selector'
+import Tarjeta from '@/components/ui/Tarjeta'
+import SelectorBuscable from '@/components/ui/SelectorBuscable'
+import { puedeMarcarAtencionEspecial } from '@/config/permisosMaestros'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { listarPlagas, marcarAtencionEspecial } from '@/services/api/maestrosTercerizados'
+import { listarEjemplares, listarTodo } from '@/services/api/tercerizados'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import type { Ejemplar } from '@/types/tercerizados'
 import {
   BORRADOR_ESPECIAL_VACIO,
   OPCIONES_APLICACIONES,
@@ -31,7 +31,7 @@ import {
   validarEspecial,
   type BorradorEspecial,
   type ErroresEspecial,
-} from '../../../utils/validacionMaestros'
+} from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import { enfocar, interpretarFallo, type FalloRegistro } from './fallosRegistro'
 import type { EstadoNavegacionMaestros } from './filtrosMaestros'

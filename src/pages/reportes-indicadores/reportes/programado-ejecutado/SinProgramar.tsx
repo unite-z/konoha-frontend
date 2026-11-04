@@ -2,14 +2,14 @@
  * Ejecuciones del periodo sin programación vinculada (RF-REP-010): atenciones o actividades que se hicieron sin
  * estar programadas. Tabla en escritorio y fichas en móvil.
  */
-import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
-import EstadoVacio from '../../../../components/ui/EstadoVacio'
-import TablaDatos, { type ColumnaTabla } from '../../../../components/ui/TablaDatos'
-import type { EjecucionVinculada } from '../../../../types/reportesGestion'
-import { formatearFechaHora } from '../../../../utils/formato'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import type { EjecucionVinculada } from '@/types/reportesGestion'
+import { formatearFechaHora } from '@/utils/formato'
 import CodigoEjecucion from './CodigoEjecucion'
 import estilos from './ProgramadoEjecutado.module.css'
-import Estado from '../../../../components/ui/Estado'
+import Estado from '@/components/ui/Estado'
 
 const ORIGEN: Record<EjecucionVinculada['origen'], string> = { Atencion: 'Atención tercerizada', Actividad: 'Actividad de personal propio' }
 

@@ -15,9 +15,9 @@ import type {
   ElementoAtendido,
   FilaAtencionServicio,
   ResultadoReporteServicio,
-} from '../../types/reportesGestion'
-import { hoyLima } from '../../utils/instanteLima'
-import { ESTADOS_EJECUTADOS as EJECUTADAS, ESTADOS_PENDIENTES as PENDIENTES } from '../../utils/reporteServicio'
+} from '@/types/reportesGestion'
+import { hoyLima } from '@/utils/instanteLima'
+import { ESTADOS_EJECUTADOS as EJECUTADAS, ESTADOS_PENDIENTES as PENDIENTES } from '@/utils/reporteServicio'
 import { escenarioSimulado, responderSimulado } from './simulacion'
 
 const CORTE = 1

@@ -1,6 +1,6 @@
 import { ErrorApi, interpretarError, esCancelacion, MENSAJE_SIN_CONEXION } from './cliente'
 import { avisarSesionPerdida, leerCookie } from './clienteCore'
-import type { PaginaCampo } from '../../types/operacionCampo'
+import type { PaginaCampo } from '@/types/operacionCampo'
 
 const BASE = '/api/v1/operacion-campo'
 export type ParametrosCampo = Record<string, string | number | boolean | null | undefined>

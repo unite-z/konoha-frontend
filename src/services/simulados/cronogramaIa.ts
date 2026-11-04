@@ -15,7 +15,7 @@
  * - `error`, `sin-permiso` y `sin-sesion`: los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { Paginado } from '../../types/comun'
+import type { Paginado } from '@/types/comun'
 import type {
   ContenidoCronograma,
   CuerpoValidacionCronograma,
@@ -26,10 +26,10 @@ import type {
   RestriccionConsiderada,
   SolicitudCronograma,
   SugerenciaCronograma,
-} from '../../types/cronogramaIa'
-import type { EstadoSugerencia } from '../../types/ia'
-import { coincideConProhibicion, enIntervalo, sumarDias } from '../../utils/cronogramaIa'
-import { hoyLima } from '../../utils/instanteLima'
+} from '@/types/cronogramaIa'
+import type { EstadoSugerencia } from '@/types/ia'
+import { coincideConProhibicion, enIntervalo, sumarDias } from '@/utils/cronogramaIa'
+import { hoyLima } from '@/utils/instanteLima'
 import { crearAlmacenSimulado, errorConflicto, errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const POR_PAGINA = 25

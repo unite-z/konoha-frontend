@@ -2,7 +2,7 @@
  * Validación del periodo de los filtros (Guía Web 5.3: el formulario dice qué hacer).
  * Los mensajes son los mismos que devuelve el back-end (`comun/periodo.py`).
  */
-import { esFechaIsoValida } from '../../utils/formato'
+import { esFechaIsoValida } from '@/utils/formato'
 
 export const MENSAJES_PERIODO = {
   faltaDesde: 'Indica la fecha de inicio del periodo (desde)',

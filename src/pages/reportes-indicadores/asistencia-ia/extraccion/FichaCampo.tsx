@@ -4,17 +4,17 @@
  * Los ids de las opciones y del campo de corrección son los que usa el resumen de errores para llevar el foco.
  */
 import type { ReactNode } from 'react'
-import CampoFormulario, { AreaTexto } from '../../../../components/ui/CampoFormulario'
-import Icono from '../../../../components/ui/Icono'
-import Selector from '../../../../components/ui/Selector'
-import { claveCampo, type AccionDecision, type CampoSolicitado, type DecisionFinalCampo, type TipoDato, type ValorCampo } from '../../../../types/ia'
-import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '../../../../utils/estados'
-import { SIN_VALOR } from '../../../../utils/formato'
+import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
+import Icono from '@/components/ui/Icono'
+import Selector from '@/components/ui/Selector'
+import { claveCampo, type AccionDecision, type CampoSolicitado, type DecisionFinalCampo, type TipoDato, type ValorCampo } from '@/types/ia'
+import { ETIQUETA_OPCION_ACCION, insigniaAccion } from '@/utils/estados'
+import { SIN_VALOR } from '@/utils/formato'
 import estilos from './FichaCampo.module.css'
 import { ACCIONES, idCorreccion, MENSAJES, partirEnLineas, textoValorSimple, tieneValor } from './valoresCampo'
-import GrupoOpciones from '../../../../components/ui/GrupoOpciones'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 /** Decisión en curso de un dato. */
 export interface DecisionCampo {

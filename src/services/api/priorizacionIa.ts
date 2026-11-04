@@ -3,10 +3,10 @@
  * Mismo cliente y misma base que RF-IA-001 (`ia.ts`): rutas relativas a API_BASE_URL.
  * SUPUESTO (pendiente de confirmar con el backend): `ia/priorizaciones/` con las mismas acciones que `ia/extracciones/`.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
-import type { Paginado } from '../../types/comun'
-import type { EstadoSugerencia } from '../../types/ia'
-import type { CuerpoValidacionPriorizacion, SolicitudPriorizacion, SugerenciaPriorizacion } from '../../types/priorizacionIa'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
+import type { Paginado } from '@/types/comun'
+import type { EstadoSugerencia } from '@/types/ia'
+import type { CuerpoValidacionPriorizacion, SolicitudPriorizacion, SugerenciaPriorizacion } from '@/types/priorizacionIa'
 import { solicitar } from './cliente'
 
 export interface FiltrosPriorizaciones {

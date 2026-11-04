@@ -11,26 +11,26 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router'
-import AsistentePasos from '../../../components/ui/AsistentePasos'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '../../../components/ui/CampoFormulario'
-import DialogoConfirmacion from '../../../components/ui/DialogoConfirmacion'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import { puedeRegistrarAtencion } from '../../../config/permisosTercerizados'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '../../../router/rutasApp'
-import { aErrorApi } from '../../../services/api/cliente'
+import AsistentePasos from '@/components/ui/AsistentePasos'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { aErrorApi } from '@/services/api/cliente'
 import {
   crearAtencion,
   listarAreasVerdes,
   listarTiposServicio,
   listarTodo,
   listarUnidadesMedida,
-} from '../../../services/api/tercerizados'
-import { useRolTercerizados } from '../../../sesion/ContextoSesion'
-import { hoyLima } from '../../../utils/instanteLima'
+} from '@/services/api/tercerizados'
+import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { hoyLima } from '@/utils/instanteLima'
 import {
   BORRADOR_VACIO,
   construirEntrada,
@@ -42,7 +42,7 @@ import {
   type BorradorAtencion,
   type ErroresPaso1,
   type ErroresPaso2,
-} from '../../../utils/nuevaAtencion'
+} from '@/utils/nuevaAtencion'
 import { ID_LISTA_SELECCIONADOS, IDS_PASO1 } from './idsCampos'
 import PasoAlcances from './PasoAlcances'
 import PasoContratoOrigen from './PasoContratoOrigen'

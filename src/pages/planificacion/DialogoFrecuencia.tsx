@@ -1,11 +1,11 @@
 /** HU-MOD03-001: edición de la frecuencia de un servicio en una estación (solo jefe de sección). */
 import { useRef, useState } from 'react'
-import CampoFormulario from '../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../components/ui/DialogoFormulario'
-import { aErrorApi } from '../../services/api/cliente'
-import { actualizarFrecuencia } from '../../services/api/planificacion'
-import type { Estacion, FrecuenciaEstacion, ServicioPeriodico } from '../../types/planificacion'
-import { validarFrecuencia, type BorradorFrecuencia, type ErroresFrecuencia } from '../../utils/validacionPlanificacion'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import { aErrorApi } from '@/services/api/cliente'
+import { actualizarFrecuencia } from '@/services/api/planificacion'
+import type { Estacion, FrecuenciaEstacion, ServicioPeriodico } from '@/types/planificacion'
+import { validarFrecuencia, type BorradorFrecuencia, type ErroresFrecuencia } from '@/utils/validacionPlanificacion'
 
 export interface DialogoFrecuenciaProps {
   servicio: ServicioPeriodico

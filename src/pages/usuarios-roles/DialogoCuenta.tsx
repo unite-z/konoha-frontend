@@ -7,16 +7,16 @@
  * reactivarla (HU-MOD01-004, «Correo duplicado»).
  */
 import { useRef, useState } from 'react'
-import CampoFormulario from '../../components/ui/CampoFormulario'
-import DialogoFormulario from '../../components/ui/DialogoFormulario'
-import Selector from '../../components/ui/Selector'
-import { aErrorApi } from '../../services/api/cliente'
-import { datosDeError } from '../../services/api/clienteCore'
-import { actualizarUsuario, crearUsuario } from '../../services/api/core'
-import type { CodigoRol, UsuarioConContrasena, UsuarioResumen } from '../../types/core'
-import { NOMBRE_ROL, ROLES_ASIGNABLES } from '../../utils/etiquetasCore'
-import { hoyLima } from '../../utils/instanteLima'
-import { validarCuenta, type ErroresCuenta } from '../../utils/validacionCore'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import Selector from '@/components/ui/Selector'
+import { aErrorApi } from '@/services/api/cliente'
+import { datosDeError } from '@/services/api/clienteCore'
+import { actualizarUsuario, crearUsuario } from '@/services/api/core'
+import type { CodigoRol, UsuarioConContrasena, UsuarioResumen } from '@/types/core'
+import { NOMBRE_ROL, ROLES_ASIGNABLES } from '@/utils/etiquetasCore'
+import { hoyLima } from '@/utils/instanteLima'
+import { validarCuenta, type ErroresCuenta } from '@/utils/validacionCore'
 
 const OPCIONES_ROL = [
   ...ROLES_ASIGNABLES.map((rol) => ({ valor: rol, texto: NOMBRE_ROL[rol] })),

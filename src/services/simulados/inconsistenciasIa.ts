@@ -13,7 +13,7 @@
  * - `ia-no-disponible`: al analizar, 503;
  * - `error`, `sin-permiso` y `sin-sesion`: los genéricos de `simulacion.ts`.
  */
-import type { Paginado } from '../../types/comun'
+import type { Paginado } from '@/types/comun'
 import type {
   ConjuntoDatos,
   ContenidoInconsistencia,
@@ -26,8 +26,8 @@ import type {
   SolicitudAnalisisInconsistencias,
   SugerenciaInconsistencia,
   TipoHallazgo,
-} from '../../types/inconsistenciasIa'
-import { hoyLima } from '../../utils/instanteLima'
+} from '@/types/inconsistenciasIa'
+import { hoyLima } from '@/utils/instanteLima'
 import { crearAlmacenSimulado, errorConflicto, errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const POR_PAGINA = 25

@@ -3,8 +3,8 @@
  * atenciones), chips de tipos de atención, barra de atenciones frente al máximo y leyenda de modalidad.
  * Ninguna comunica solo con color: siempre llevan cifras o texto.
  */
-import BarraAvance from '../../../../components/ui/BarraAvance'
-import { formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import BarraAvance from '@/components/ui/BarraAvance'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from './Atenciones.module.css'
 
 function porcentaje(parte: number, total: number): string {

@@ -23,8 +23,8 @@ import type {
   TipoServicio,
   UnidadInstitucional,
   UnidadMedida,
-} from '../../types/tercerizados'
-import type { InstanteIso } from '../../types/comun'
+} from '@/types/tercerizados'
+import type { InstanteIso } from '@/types/comun'
 import { descargarArchivoTercerizados, solicitarTercerizados } from './clienteTercerizados'
 
 // --- Sesión ---------------------------------------------------------------------------------------------

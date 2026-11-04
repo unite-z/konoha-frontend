@@ -18,28 +18,28 @@
  */
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import { ChipsFiltrosActivos, type FiltroActivo } from '../../../components/ui/ChipsFiltro'
-import EstadoCarga from '../../../components/ui/EstadoCarga'
-import EstadoError from '../../../components/ui/EstadoError'
-import FiltroPeriodo from '../../../components/ui/FiltroPeriodo'
-import IndicadorActualizacion from '../../../components/ui/IndicadorActualizacion'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '../../../components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '../../../components/ui/TablaDatos'
-import AyudaEmergente from '../../../components/reportes-indicadores/AyudaEmergente'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFiltro'
+import EstadoCarga from '@/components/ui/EstadoCarga'
+import EstadoError from '@/components/ui/EstadoError'
+import FiltroPeriodo from '@/components/ui/FiltroPeriodo'
+import IndicadorActualizacion from '@/components/ui/IndicadorActualizacion'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
+import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import AyudaEmergente from '@/components/reportes-indicadores/AyudaEmergente'
 import SelectoresFiltroGestion, {
   type CampoFiltroGestion,
-} from '../../../components/reportes-indicadores/SelectoresFiltroGestion'
-import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
-import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { useFiltrosUrl } from '../../../hooks/useFiltrosUrl'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, rutaDetalleAtencion } from '../../../router/rutasApp'
-import { obtenerMapaAtenciones } from '../../../services/api/reportesGestion'
-import type { ResultadoMapaAtenciones, TipoAtencion } from '../../../types/reportesGestion'
-import { OPCIONES_MODALIDAD } from '../../../utils/estados'
-import { formatearFecha, formatearFechaHora, semanaActual, SIN_VALOR } from '../../../utils/formato'
+} from '@/components/reportes-indicadores/SelectoresFiltroGestion'
+import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
+import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import { useConsulta } from '@/hooks/useConsulta'
+import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { obtenerMapaAtenciones } from '@/services/api/reportesGestion'
+import type { ResultadoMapaAtenciones, TipoAtencion } from '@/types/reportesGestion'
+import { OPCIONES_MODALIDAD } from '@/utils/estados'
+import { formatearFecha, formatearFechaHora, semanaActual, SIN_VALOR } from '@/utils/formato'
 import {
   aConsultaMapa,
   limitesDeElementos,
@@ -48,15 +48,15 @@ import {
   type ClaveFiltroMapa,
   type FilaMapa,
   type Limites,
-} from '../../../utils/mapaAtenciones'
-import { ESTADOS_FILTRO_MAPA, insigniaEstadoAtencion, TIPOS_ATENCION } from '../../../utils/reportesGestion'
+} from '@/utils/mapaAtenciones'
+import { ESTADOS_FILTRO_MAPA, insigniaEstadoAtencion, TIPOS_ATENCION } from '@/utils/reportesGestion'
 import { erroresDePeriodo } from '../reportes/erroresPeriodo'
 import estilosReportes from '../reportes/Reportes.module.css'
 import ListaAtencionesMovil from './ListaAtencionesMovil'
 import PanelCapas from './PanelCapas'
 import estilos from './MapaAtenciones.module.css'
-import Estado from '../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 // MapLibre solo se descarga cuando hay algo que dibujar (Guía Web 8.3).
 const LienzoMapaAtenciones = lazy(() => import('./LienzoMapaAtenciones'))

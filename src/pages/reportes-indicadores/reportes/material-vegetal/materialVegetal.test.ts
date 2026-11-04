@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { agruparRegistros } from '../../../../components/reportes-indicadores/graficos/agrupar'
-import type { ResultadoMaterialVegetal, TotalMaterial, TotalTraslado } from '../../../../types/reportesGestion'
+import { agruparRegistros } from '@/components/reportes-indicadores/graficos/agrupar'
+import type { ResultadoMaterialVegetal, TotalMaterial, TotalTraslado } from '@/types/reportesGestion'
 import {
   AGRUPACIONES_MATERIAL,
   AGRUPACIONES_TRASLADO,

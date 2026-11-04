@@ -5,9 +5,9 @@
  * (Guía Web 5.13). Cada paso muestra la fecha en que se alcanzó, según el historial.
  * La conformidad no aparece: está fuera de esta entrega.
  */
-import type { CambioEstado, EstadoAtencion } from '../../types/tercerizados'
-import { ESTADOS_ATENCION, fechasPorEstado, indiceEstado } from '../../utils/estadosTercerizados'
-import { formatearFechaHora } from '../../utils/formato'
+import type { CambioEstado, EstadoAtencion } from '@/types/tercerizados'
+import { ESTADOS_ATENCION, fechasPorEstado, indiceEstado } from '@/utils/estadosTercerizados'
+import { formatearFechaHora } from '@/utils/formato'
 import Icono from '../ui/Icono'
 import estilos from './LineaEstados.module.css'
 

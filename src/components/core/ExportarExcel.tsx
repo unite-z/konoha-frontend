@@ -6,11 +6,11 @@
 import { useState } from 'react'
 import Boton from '../ui/Boton'
 import AvisoTemporal from '../ui/AvisoTemporal'
-import { PERMISOS, puede } from '../../config/permisosCore'
-import { aErrorApi } from '../../services/api/cliente'
-import { guardarArchivo } from '../../services/api/clienteReportesGestion'
-import { exportarListado, type ListadoExportable } from '../../services/api/core'
-import { useSesionActiva } from '../../sesion/ContextoSesion'
+import { PERMISOS, puede } from '@/config/permisosCore'
+import { aErrorApi } from '@/services/api/cliente'
+import { guardarArchivo } from '@/services/api/clienteReportesGestion'
+import { exportarListado, type ListadoExportable } from '@/services/api/core'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
 
 const PERMISO_DE_LISTADO: Record<ListadoExportable, string> = {
   actividades: PERMISOS.consultarPartes,

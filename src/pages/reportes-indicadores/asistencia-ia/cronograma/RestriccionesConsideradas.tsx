@@ -2,11 +2,11 @@
  * «Restricciones consideradas» (RF-IA-003, criterio 5): las restricciones de calendario que usó la IA, con la misma
  * presentación que Planificación (prohibición en rojo y advertencia en ámbar, siempre con texto e icono).
  */
-import type { RestriccionConsiderada } from '../../../../types/cronogramaIa'
-import { PRESENTACION_RESTRICCION, textoPeriodoCorto } from '../../../../utils/cronogramaIa'
+import type { RestriccionConsiderada } from '@/types/cronogramaIa'
+import { PRESENTACION_RESTRICCION, textoPeriodoCorto } from '@/utils/cronogramaIa'
 import estilos from './Cronograma.module.css'
-import Estado from '../../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 export default function RestriccionesConsideradas({ restricciones }: { restricciones: RestriccionConsiderada[] }) {
   return (

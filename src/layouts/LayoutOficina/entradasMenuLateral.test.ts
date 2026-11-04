@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { RUTAS_CAMPO } from '../../router/rutasCampo'
+import { RUTAS_CAMPO } from '@/router/rutasCampo'
 import {
   RUTAS,
   RUTAS_CORE,
@@ -10,7 +10,7 @@ import {
   rutaDetalleIndicador,
   rutaDetalleUsuario,
   rutaRevisionExtraccion,
-} from '../../router/rutasApp'
+} from '@/router/rutasApp'
 import { MODULOS_MENU, activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
 
 /** Todas las rutas con menú de la aplicación, más ejemplos de rutas con parámetros. */

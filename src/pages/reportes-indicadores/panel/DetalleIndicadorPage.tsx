@@ -11,23 +11,23 @@
  */
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router'
-import DialogoDetalle from '../../../components/ui/DialogoDetalle'
-import GraficoAgrupado from '../../../components/reportes-indicadores/graficos/GraficoAgrupado'
-import { useCatalogosFiltros } from '../../../components/reportes-indicadores/useCatalogosFiltros'
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
-import Boton, { BotonEnlace } from '../../../components/ui/Boton'
-import EstadoVacio from '../../../components/ui/EstadoVacio'
-import { useConsulta } from '../../../hooks/useConsulta'
-import { usePaginaActual } from '../../../hooks/usePaginaActual'
-import { MIGAS, RUTAS } from '../../../router/rutasApp'
+import DialogoDetalle from '@/components/ui/DialogoDetalle'
+import GraficoAgrupado from '@/components/reportes-indicadores/graficos/GraficoAgrupado'
+import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import EstadoVacio from '@/components/ui/EstadoVacio'
+import { useConsulta } from '@/hooks/useConsulta'
+import { usePaginaActual } from '@/hooks/usePaginaActual'
+import { MIGAS, RUTAS } from '@/router/rutasApp'
 import type {
   ClaveIndicadorPanel,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
-} from '../../../types/reportesGestion'
-import { formatearFecha, formatearNumero } from '../../../utils/formato'
-import { esClaveIndicador, notasUnicas, rutaDetalleConFiltros } from '../../../utils/reportesGestion'
+} from '@/types/reportesGestion'
+import { formatearFecha, formatearNumero } from '@/utils/formato'
+import { esClaveIndicador, notasUnicas, rutaDetalleConFiltros } from '@/utils/reportesGestion'
 import PlantillaReporte from '../reportes/PlantillaReporte'
 import estilos from '../reportes/Reportes.module.css'
 import BarraFiltrosPanel from './BarraFiltrosPanel'

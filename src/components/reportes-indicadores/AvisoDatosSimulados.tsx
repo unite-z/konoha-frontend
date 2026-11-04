@@ -2,7 +2,7 @@
  * Aviso visible cuando las pantallas nuevas del MOD-06 usan datos simulados (`VITE_DATOS_SIMULADOS=true`).
  * Con el backend real no pinta nada.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import AvisoEnLinea from '../ui/AvisoEnLinea'
 
 export default function AvisoDatosSimulados() {

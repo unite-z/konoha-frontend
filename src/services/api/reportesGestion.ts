@@ -5,7 +5,7 @@
  * Los catálogos de los filtros (espacios y tipos de servicio) son los de MOD-05 (`tercerizados.ts`), con la
  * misma sesión: sus ids son los que el backend espera en `area_verde_id` y `tipo_servicio_id`.
  */
-import { DATOS_SIMULADOS } from '../../config/datosSimulados'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type {
   CatalogoComparacion,
   CatalogoServicios,
@@ -20,7 +20,7 @@ import type {
   ResultadoPanel,
   ResultadoProgramadoEjecutado,
   ResultadoReporteServicio,
-} from '../../types/reportesGestion'
+} from '@/types/reportesGestion'
 import { solicitarReportesGestion } from './clienteReportesGestion'
 import { listarAreasVerdes, listarProveedores, listarTiposServicio, listarTodo } from './tercerizados'
 

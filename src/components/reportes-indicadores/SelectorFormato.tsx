@@ -3,8 +3,8 @@
  * Solo muestra los formatos que admite el tipo de reporte.
  */
 import GrupoOpciones from '../ui/GrupoOpciones'
-import type { FormatoSalida } from '../../types/exportaciones'
-import { TEXTO_FORMATO } from '../../utils/exportaciones'
+import type { FormatoSalida } from '@/types/exportaciones'
+import { TEXTO_FORMATO } from '@/utils/exportaciones'
 
 export interface SelectorFormatoProps {
   /** Prefijo del `name` de los radios (único en la página). */

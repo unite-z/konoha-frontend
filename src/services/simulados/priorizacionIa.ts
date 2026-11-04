@@ -15,8 +15,8 @@
  * - `error`, `sin-permiso` y `sin-sesion`: los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { Paginado } from '../../types/comun'
-import type { EstadoSugerencia } from '../../types/ia'
+import type { Paginado } from '@/types/comun'
+import type { EstadoSugerencia } from '@/types/ia'
 import type {
   ContenidoPriorizacion,
   CuerpoValidacionPriorizacion,
@@ -25,8 +25,8 @@ import type {
   SolicitudPriorizacion,
   SugerenciaPriorizacion,
   SustentoPrioridad,
-} from '../../types/priorizacionIa'
-import { hoyLima } from '../../utils/instanteLima'
+} from '@/types/priorizacionIa'
+import { hoyLima } from '@/utils/instanteLima'
 import { crearAlmacenSimulado, errorConflicto, errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const POR_PAGINA = 25

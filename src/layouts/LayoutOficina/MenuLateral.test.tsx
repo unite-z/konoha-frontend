@@ -3,13 +3,13 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PERMISOS } from '../../config/permisosCore'
-import { RUTAS_INVENTARIO, RUTAS_PLANIFICACION } from '../../router/rutasApp'
-import type { SesionCore } from '../../types/core'
+import { PERMISOS } from '@/config/permisosCore'
+import { RUTAS_INVENTARIO, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import type { SesionCore } from '@/types/core'
 import MenuLateral from './MenuLateral'
 
 const sesion = vi.hoisted(() => ({ actual: null as SesionCore | null, cerrar: vi.fn(async () => {}) }))
-vi.mock('../../sesion/ContextoSesion', () => ({
+vi.mock('@/sesion/ContextoSesion', () => ({
   useSesionActiva: () => sesion.actual,
   useSesion: () => ({
     estado: { tipo: 'activa', sesion: sesion.actual },

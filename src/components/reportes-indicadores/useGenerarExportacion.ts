@@ -4,9 +4,9 @@
  * Nada cambia en los datos originales: solo se crea el registro del archivo.
  */
 import { useCallback, useState } from 'react'
-import { aErrorApi, esCancelacion, type ErrorApi } from '../../services/api/cliente'
-import { descargarExportacion, generarExportacion } from '../../services/api/exportaciones'
-import type { ReporteGenerado, SolicitudExportacion } from '../../types/exportaciones'
+import { aErrorApi, esCancelacion, type ErrorApi } from '@/services/api/cliente'
+import { descargarExportacion, generarExportacion } from '@/services/api/exportaciones'
+import type { ReporteGenerado, SolicitudExportacion } from '@/types/exportaciones'
 
 export interface GeneracionExportacion {
   enviando: boolean

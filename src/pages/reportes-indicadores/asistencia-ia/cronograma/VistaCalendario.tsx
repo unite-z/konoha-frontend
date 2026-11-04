@@ -4,11 +4,11 @@
  * propuesta se cruza con algo ya programado en el mismo espacio.
  */
 import type { ReactNode } from 'react'
-import AvisoEnLinea from '../../../../components/ui/AvisoEnLinea'
-import Boton from '../../../../components/ui/Boton'
-import type { ProgramacionExistente, PropuestaCronograma, RestriccionConsiderada } from '../../../../types/cronogramaIa'
-import { crucesConProgramado, fechasEfectivas, textoPeriodoCorto } from '../../../../utils/cronogramaIa'
-import { formatearNumero } from '../../../../utils/formato'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/components/ui/Boton'
+import type { ProgramacionExistente, PropuestaCronograma, RestriccionConsiderada } from '@/types/cronogramaIa'
+import { crucesConProgramado, fechasEfectivas, textoPeriodoCorto } from '@/utils/cronogramaIa'
+import { formatearNumero } from '@/utils/formato'
 import CalendarioCronograma, { type CalendarioCronogramaProps } from './CalendarioCronograma'
 import estilos from './Cronograma.module.css'
 

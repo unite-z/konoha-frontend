@@ -2,8 +2,8 @@
  * Registros del detalle de un indicador (RF-REP-001) para sus gráficos: se descargan todas las páginas del
  * back-end (25 por página) hasta un tope, y se agrupan según lo que elija la persona.
  */
-import { type Agrupacion } from '../../../components/reportes-indicadores/graficos/agrupar'
-import { obtenerDetalleIndicador } from '../../../services/api/reportesGestion'
+import { type Agrupacion } from '@/components/reportes-indicadores/graficos/agrupar'
+import { obtenerDetalleIndicador } from '@/services/api/reportesGestion'
 import type {
   ClaveIndicadorPanel,
   ConsultaGestion,
@@ -11,13 +11,13 @@ import type {
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
-} from '../../../types/reportesGestion'
-import { formatearFecha } from '../../../utils/formato'
-import { numeroDeDecimal } from '../../../utils/reportesGestion'
+} from '@/types/reportesGestion'
+import { formatearFecha } from '@/utils/formato'
+import { numeroDeDecimal } from '@/utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
 
 // La agrupación es común a los gráficos del MOD-06.
-export { agruparRegistros, type Agrupacion, type GrupoRegistros } from '../../../components/reportes-indicadores/graficos/agrupar'
+export { agruparRegistros, type Agrupacion, type GrupoRegistros } from '@/components/reportes-indicadores/graficos/agrupar'
 
 /** Tope de registros que se descargan para los gráficos (40 páginas de 25). */
 export const MAXIMO_REGISTROS = 1000

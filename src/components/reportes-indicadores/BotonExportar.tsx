@@ -8,12 +8,12 @@
  * - Volumen excedido (A1): aviso con «Cambiar a …»; otro error (E1): aviso y se puede reintentar.
  */
 import { useState } from 'react'
-import { puedeExportar } from '../../config/permisos'
-import { useConsulta } from '../../hooks/useConsulta'
-import { listarTiposExportables } from '../../services/api/exportaciones'
-import { useSesionActiva } from '../../sesion/ContextoSesion'
-import type { FormatoSalida, ParametrosExportacion, TipoReporte } from '../../types/exportaciones'
-import { clasificarErrorExportacion, formatoAlternativo, formatosPermitidos, TEXTO_FORMATO } from '../../utils/exportaciones'
+import { puedeExportar } from '@/config/permisos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { listarTiposExportables } from '@/services/api/exportaciones'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import type { FormatoSalida, ParametrosExportacion, TipoReporte } from '@/types/exportaciones'
+import { clasificarErrorExportacion, formatoAlternativo, formatosPermitidos, TEXTO_FORMATO } from '@/utils/exportaciones'
 import AvisoEnLinea from '../ui/AvisoEnLinea'
 import AvisoTemporal from '../ui/AvisoTemporal'
 import Boton from '../ui/Boton'

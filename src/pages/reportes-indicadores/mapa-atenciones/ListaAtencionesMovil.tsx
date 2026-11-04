@@ -4,14 +4,14 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router'
-import Boton from '../../../components/ui/Boton'
-import { rutaDetalleAtencion } from '../../../router/rutasApp'
-import { formatearFecha, formatearNumero } from '../../../utils/formato'
-import type { FilaMapa } from '../../../utils/mapaAtenciones'
-import { insigniaEstadoAtencion } from '../../../utils/reportesGestion'
+import Boton from '@/components/ui/Boton'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
+import { formatearFecha, formatearNumero } from '@/utils/formato'
+import type { FilaMapa } from '@/utils/mapaAtenciones'
+import { insigniaEstadoAtencion } from '@/utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
-import Estado from '../../../components/ui/Estado'
-import { insigniaAEstado } from '../../../components/ui/tonos'
+import Estado from '@/components/ui/Estado'
+import { insigniaAEstado } from '@/components/ui/tonos'
 
 const POR_TANDA = 25
 

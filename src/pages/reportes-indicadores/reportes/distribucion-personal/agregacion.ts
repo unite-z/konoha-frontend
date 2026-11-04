@@ -7,9 +7,9 @@
  * - Sin tiempo registrado: el back-end deja `tiempo_minutos` nulo solo si ninguna actividad de la fila tiene
  *   tiempo, así que el filtro trabaja con esas filas.
  */
-import type { FilaDistribucion } from '../../../../types/reportes'
-import { escalaRedonda } from '../../../../components/reportes-indicadores/graficos/escala'
-import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '../../../../utils/formato'
+import type { FilaDistribucion } from '@/types/reportes'
+import { escalaRedonda } from '@/components/reportes-indicadores/graficos/escala'
+import { formatearFecha, formatearMinutos, formatearNumero, SIN_VALOR } from '@/utils/formato'
 
 export type Dimension = 'cuadrilla' | 'actividad' | 'espacio' | 'jornada'
 

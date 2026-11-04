@@ -2,11 +2,11 @@
  * Las 4 tarjetas del reporte por servicio (RF-REP-008): avance, rendimiento, especies o plagas y conformidad.
  * Una sección sin datos muestra «Sin datos» con su motivo: nunca un cero (criterio 3).
  */
-import TarjetaIndicador from '../../../../components/ui/TarjetaIndicador'
-import type { ResultadoReporteServicio } from '../../../../types/reportesGestion'
-import { formatearNumero } from '../../../../utils/formato'
-import { numeroDeDecimal } from '../../../../utils/reportesGestion'
-import { resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '../../../../utils/reporteServicio'
+import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
+import type { ResultadoReporteServicio } from '@/types/reportesGestion'
+import { formatearNumero } from '@/utils/formato'
+import { numeroDeDecimal } from '@/utils/reportesGestion'
+import { resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
 
 function motivo(seccion: { mensaje_sin_datos: string | null }): string {

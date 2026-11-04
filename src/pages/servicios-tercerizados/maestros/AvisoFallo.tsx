@@ -1,5 +1,5 @@
 /** Aviso en línea de un registro que no se pudo guardar (proveedores, contratos y atención especial). */
-import AvisoEnLinea from '../../../components/ui/AvisoEnLinea'
+import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import type { FalloRegistro } from './fallosRegistro'
 
 export interface AvisoFalloProps {
