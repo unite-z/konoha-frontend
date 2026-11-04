@@ -25,6 +25,7 @@ import { PERMISOS, entradasMenu, puede } from '../../config/permisosCore'
 import Icono, { type NombreIconoFigma } from '../../components/ui/Icono'
 import { useSesionActiva } from '../../sesion/ContextoSesion'
 import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
+import UsuarioMenu from './UsuarioMenu'
 import estilos from './MenuLateral.module.css'
 
 /** Entrada que aún no está disponible: sin enlace y con «Próximamente» bajo el nombre. */
@@ -206,10 +207,8 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
             {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" icono="settings" />}
           </ul>
         </nav>
-
-        <p className={`${estilos.pie} ${estilos.seDesvanece}`}>Campus PUCP · 15,6 ha</p>
       </div>
-
+      <UsuarioMenu claseSeDesvanece={estilos.seDesvanece} />
     </aside>
   )
 }
