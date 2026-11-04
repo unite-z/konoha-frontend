@@ -23,49 +23,6 @@
   margin: var(--space-2) var(--space-2) var(--space-2) auto;
 }
 
-/* Entra desde la derecha y sale hacia ella, con el velo en fundido (Guía Web 4.1). Con «reducir movimiento», sin animación. */
-@media (prefers-reduced-motion: no-preference) {
-  .lateral[open] {
-    animation: entrar-derecha var(--duracion-panel) ease-out;
-  }
-
-  .lateral[open]::backdrop {
-    animation: aparecer var(--duracion-panel) ease-out;
-  }
-
-  .lateral.saliendo {
-    animation: salir-derecha var(--duracion-panel) ease-in forwards;
-  }
-
-  .lateral.saliendo::backdrop {
-    animation: desaparecer var(--duracion-panel) ease-in forwards;
-  }
-}
-
-@keyframes entrar-derecha {
-  from {
-    transform: translateX(calc(100% + var(--space-2)));
-  }
-}
-
-@keyframes salir-derecha {
-  to {
-    transform: translateX(calc(100% + var(--space-2)));
-  }
-}
-
-@keyframes aparecer {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes desaparecer {
-  to {
-    opacity: 0;
-  }
-}
-
 .lateral .formulario {
   height: 100%;
   max-height: none;

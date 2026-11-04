@@ -15,7 +15,10 @@ beforeAll(() => {
   }
 })
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 function abrir(props: Partial<Parameters<typeof DialogoConfirmacion>[0]> = {}) {
   const onConfirmar = vi.fn()
@@ -96,5 +99,17 @@ describe('DialogoConfirmacion', () => {
     )
     expect(document.activeElement).toBe(disparador)
     disparador.remove()
+  })
+
+  it('con movimiento, «Volver» anima la salida y avisa al terminar', async () => {
+    vi.stubGlobal('matchMedia', (consulta: string) => ({ matches: consulta.includes('no-preference') }))
+    const { onCancelar } = abrir()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Volver' }))
+    const dialogo = screen.getByRole('dialog')
+    expect(dialogo.className).toMatch(/saliendo/)
+    expect(onCancelar).not.toHaveBeenCalled()
+
+    fireEvent.animationEnd(dialogo)
+    expect(onCancelar).toHaveBeenCalledOnce()
   })
 })
