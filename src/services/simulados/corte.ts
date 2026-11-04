@@ -6,7 +6,7 @@
  * completado, todo cortado y una jornada de limpieza.
  */
 import { ErrorApi } from '../api/cliente'
-import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte, NuevaInterrupcion, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
+import type { CicloCorte, InterrupcionCorte, JardinMaestro, JardinRuta, LimpiezaCorte, NuevaInterrupcion, NuevaMarcaFueraDeRuta, RespuestaRutaDeHoy, RutaCorte, ZonaAlternativa } from '@/types/corte'
 import type { Programacion } from '@/types/planificacion'
 import { escenarioSimulado, responderSimulado } from './simulacion'
 
@@ -182,4 +182,30 @@ export function simularMarcarJardin(jardinId: number, marcadoEn: string): Promis
 
 export function simularObservacionJardin(texto: string): Promise<{ id: number; texto: string }> {
   return responderSimulado(() => ({ id: Date.now(), texto }))
+}
+
+/** Jardines del maestro fuera de la ruta simulada: Estacionamientos y el Rectorado. */
+const FUERA_DE_RUTA: JardinMaestro[] = [
+  { id: 101, codigo: 'J-061', nombre: 'Jardín del Rectorado', zona: 'Rectorado' },
+  { id: 102, codigo: 'J-062', nombre: 'Rotonda del Estacionamiento', zona: 'Estacionamientos' },
+  { id: 103, codigo: 'J-063', nombre: 'Berma de la Puerta 2', zona: 'Estacionamientos' },
+]
+
+export function simularJardinesFueraDeRuta(q: string, signal?: AbortSignal): Promise<{ count: number; results: JardinMaestro[] }> {
+  const texto = q.trim().toLowerCase()
+  return responderSimulado(
+    () => {
+      const results = FUERA_DE_RUTA.filter((j) => !texto || `${j.codigo} ${j.nombre}`.toLowerCase().includes(texto))
+      return { count: results.length, results }
+    },
+    { signal },
+  )
+}
+
+export function simularMarcarFueraDeRuta(cuerpo: NuevaMarcaFueraDeRuta): Promise<{ id: number; jardin: JardinMaestro; nota: string; marcado_en: string }> {
+  return responderSimulado(() => {
+    const jardin = FUERA_DE_RUTA.find((j) => j.id === cuerpo.jardin_id)
+    if (!jardin) throw new ErrorApi(404, 'no-encontrado', 'El jardín no está en el maestro')
+    return { id: Date.now(), jardin, nota: cuerpo.nota, marcado_en: cuerpo.marcado_en }
+  })
 }
