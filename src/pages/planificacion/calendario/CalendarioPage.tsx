@@ -13,6 +13,7 @@ import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
+import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
@@ -41,6 +42,7 @@ import PanelNuevaRestriccion from './PanelNuevaRestriccion'
 import PanelProgramarCiclo from './PanelProgramarCiclo'
 import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
+import VistaMovil from './VistaMovil'
 import VistaMes from './VistaMes'
 import VistaSemana from './VistaSemana'
 import estilos from './Calendario.module.css'
@@ -176,14 +178,41 @@ export default function CalendarioPage() {
     <div className={estilos.pagina}>
       {puedeEditar && (
         <AccionesPagina>
-          <Boton variante="secundario" icono="plus" onClick={() => setRegistrando(true)}>
-            Nueva restricción
-          </Boton>
-          <Boton icono="plus-circle" onClick={() => setParametros({ programar: '' })}>
-            Programar ciclo
-          </Boton>
+          <span className={estilos.accionesEscritorio}>
+            <Boton variante="secundario" icono="plus" onClick={() => setRegistrando(true)}>
+              Nueva restricción
+            </Boton>
+            <Boton icono="plus-circle" onClick={() => setParametros({ programar: '' })}>
+              Programar ciclo
+            </Boton>
+          </span>
         </AccionesPagina>
       )}
+      {/* Móvil (Figma 352-2192): «+» en la barra superior para programar, y la tira semanal con su agenda. */}
+      {puedeEditar && (
+        <AccionMovil>
+          <Boton variante="fantasma" compacto icono="plus" onClick={() => setParametros({ programar: '' })}>
+            <span className="sr-only">Programar ciclo</span>
+          </Boton>
+        </AccionMovil>
+      )}
+      <div className={estilos.soloMovil}>
+        {conError || !restricciones.datos || !programaciones.datos ? (
+          contenido
+        ) : (
+          <VistaMovil
+            fecha={fecha}
+            hoy={hoy}
+            eventos={filtrarEventos(todos, filtros)}
+            onCambiarFecha={(nueva) => {
+              setFecha(nueva)
+              setActividad(null)
+            }}
+          />
+        )}
+      </div>
+
+      <div className={`${estilos.soloEscritorio} ${estilos.pagina}`}>
 
       <Pestanas
         etiqueta="Vista del calendario"
@@ -261,6 +290,7 @@ export default function CalendarioPage() {
         <EventoCalendario tipo="prohibicion" texto="Prohibición" />
         <EventoCalendario tipo="aviso" texto="Aviso" />
         <EventoCalendario tipo="favorable" texto="Favorable" />
+      </div>
       </div>
 
       {registrando && (

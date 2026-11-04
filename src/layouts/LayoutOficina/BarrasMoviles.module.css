@@ -40,6 +40,15 @@
   cursor: pointer;
 }
 
+.accion {
+  display: flex;
+  margin-left: auto;
+}
+
+.accion:empty {
+  display: none;
+}
+
 .titulo {
   overflow: hidden;
   font-size: var(--type-cuerpo-size);

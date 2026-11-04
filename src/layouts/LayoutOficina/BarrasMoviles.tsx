@@ -11,13 +11,23 @@ import Icono from '@/components/ui/Icono'
 import { activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
 import estilos from './BarrasMoviles.module.css'
 
-export function BarraSuperiorMovil({ titulo, onAbrirMenu }: { titulo: string; onAbrirMenu: () => void }) {
+export function BarraSuperiorMovil({
+  titulo,
+  onAbrirMenu,
+  refAccion,
+}: {
+  titulo: string
+  onAbrirMenu: () => void
+  /** Hueco a la derecha donde `AccionMovil` pinta la acción de la página («+» del Calendario, Figma 352-2192). */
+  refAccion?: (nodo: HTMLElement | null) => void
+}) {
   return (
     <div className={estilos.superior}>
       <button type="button" className={estilos.botonMenu} aria-label="Abrir menú" onClick={onAbrirMenu}>
         <Icono nombre="menu" tamano="md" />
       </button>
       <span className={estilos.titulo}>{titulo}</span>
+      <span ref={refAccion} className={estilos.accion} />
     </div>
   )
 }
