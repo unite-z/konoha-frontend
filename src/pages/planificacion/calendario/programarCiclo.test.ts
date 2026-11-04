@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
-import { conflictosDelPeriodo, diasDelPeriodo, franjaDeDias, textoDuracion, textoVentana, validarProgramacion, ventanaLibre } from './programarCiclo'
+import { conflictosDelPeriodo, diasDelPeriodo, franjaDeDias, mesesVentana, textoDuracion, textoVentana, validarProgramacion, ventanaLibre } from './programarCiclo'
 
 const corte: ServicioPeriodico = {
   id: 1,
@@ -52,20 +52,33 @@ describe('validarProgramacion', () => {
   })
 
   it('bloquea el periodo inválido y la duración excedida (3 de servicio más 1 de limpieza)', () => {
-    expect(validarProgramacion(corte, '2026-11-14', '2026-11-11', [], '').errorPeriodo).toBe('El fin tiene que ser igual o posterior al inicio.')
-    expect(validarProgramacion(corte, '2026-11-11', '2026-11-15', [], '').errorPeriodo).toBe('Dura 5 días y el máximo es 3 de servicio más 1 de limpieza.')
+    expect(validarProgramacion(corte, '2026-11-14', '2026-11-11', [], '').errorPeriodo).toBe('Debe ser posterior al inicio')
+    const excedido = validarProgramacion(corte, '2026-11-11', '2026-11-15', [], '')
+    expect([excedido.errorPeriodo, excedido.diasExcedidos]).toEqual(['5 días: máximo 3 + 1 de limpieza', '5 días seleccionados'])
     expect(validarProgramacion(corte, '', '2026-11-15', [], '').puedeGuardar).toBe(false)
     expect(validarProgramacion(corte, '2026-11-11', '2026-11-11', [], 'x'.repeat(301)).errorJustificacion).toBe('Máximo 300 caracteres.')
+  })
+
+  it('con ventana de tercerizado, las fechas tienen que caer en ese mes', () => {
+    expect(validarProgramacion(corte, '2026-11-11', '2026-11-14', [], '', '2026-11').puedeGuardar).toBe(true)
+    const fuera = validarProgramacion(corte, '2026-11-30', '2026-12-02', [], '', '2026-11')
+    expect([fuera.errorVentana, fuera.puedeGuardar]).toEqual(['Las fechas tienen que caer en el mes de la ventana', false])
+    expect(mesesVentana('2026-11-16')).toEqual([
+      { valor: '2026-11', texto: 'Noviembre 2026' },
+      { valor: '2026-12', texto: 'Diciembre 2026' },
+      { valor: '2027-01', texto: 'Enero 2027' },
+    ])
   })
 })
 
 describe('textos y franja', () => {
   it('describe la duración, los días y la ventana libre', () => {
-    expect(textoDuracion(corte)).toBe('4 días: 3 de servicio y 1 de limpieza')
+    expect(textoDuracion(corte)).toBe('4 días: 3 de corte + 1 de limpieza')
+    expect(textoDuracion({ ...corte, nombre: 'Poda' })).toBe('4 días: 3 de servicio + 1 de limpieza')
     expect(diasDelPeriodo('2026-11-11', '2026-11-14')).toBe(4)
     const ventana = ventanaLibre('2026-11-16', corte)
     expect(ventana).toEqual({ inicio: '2026-11-16', fin: '2026-11-19' })
-    expect(ventana && textoVentana(ventana)).toBe('16 al 19 nov.')
+    expect(ventana && textoVentana(ventana)).toBe('16 al 19/11')
     expect(ventanaLibre(null, corte)).toBeNull()
   })
 

@@ -3,9 +3,10 @@
  * (`GET servicios/{id}/propuesta/`) y recalcula los conflictos al cambiar las fechas con `GET restricciones`:
  * - aviso: pide justificación (máximo 300) y el botón pasa a «Programar con constancia»;
  * - prohibición: no deja guardar y ofrece la ventana libre que calcula el backend («Usar»);
- * - periodo inválido o duración excedida (máximo de servicio más limpieza): no deja guardar.
+ * - periodo inválido o duración excedida (máximo de servicio más limpieza): no deja guardar y lo dice bajo «Fin»;
+ * - tercerizado: pide la ventana mensual («Ventana», contrato de AV-253) y las fechas tienen que caer en ese mes.
  *
- * La ventana mensual de los tercerizados llega con AV-253; el paso «Ruta» del corte, con AV-270.
+ * El paso «Ruta» del corte llega con AV-270.
  */
 import { useEffect, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -19,12 +20,13 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta } from '@/services/api/planificacion'
 import { listarProveedores, listarTodo } from '@/services/api/tercerizados'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { fechaCorta, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
+import { diaFigma, fechaCorta, fechaNumerica, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
 import {
   MAXIMO_JUSTIFICACION,
   conflictosDelPeriodo,
   diasDelPeriodo,
   franjaDeDias,
+  mesesVentana,
   textoDuracion,
   textoVentana,
   validarProgramacion,
@@ -54,6 +56,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
   const [proveedor, setProveedor] = useState(reprogramar ? (reprogramar.proveedor_id === null ? PERSONAL_PROPIO : String(reprogramar.proveedor_id)) : '')
   const [inicio, setInicio] = useState(reprogramar?.fecha_inicio_prevista ?? '')
   const [fin, setFin] = useState(reprogramar?.fecha_fin_prevista ?? '')
+  const [ventanaMes, setVentanaMes] = useState('')
   const [justificacion, setJustificacion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
@@ -82,7 +85,10 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
 
   const delPeriodo = restricciones.datos ?? []
   const conflictos = fechasValidas ? conflictosDelPeriodo(delPeriodo, inicio, fin, servicio?.es_ruidoso ?? true) : []
-  const validacion = validarProgramacion(servicio, inicio, fin, conflictos, justificacion)
+  const tercerizado = Boolean(proveedor) && proveedor !== PERSONAL_PROPIO
+  // La ventana por defecto es el mes del inicio; se elige entre ese mes y los dos siguientes.
+  const mesVentana = tercerizado ? ventanaMes || (fechasValidas ? inicio.slice(0, 7) : '') : ''
+  const validacion = validarProgramacion(servicio, inicio, fin, conflictos, justificacion, mesVentana || null)
   const ventana = ventanaLibre(propuesta.datos?.ventana_libre_inicio ?? null, servicio)
   const esPropuesta = propuesta.datos?.fecha_inicio === inicio && propuesta.datos?.fecha_fin === fin
   const errorServicio = mostrarErrores && !servicioId ? 'Elige el servicio.' : undefined
@@ -100,6 +106,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
         fecha_inicio_prevista: inicio,
         fecha_fin_prevista: fin,
         justificacion: justificacion.trim() || undefined,
+        ventana_mes: mesVentana || undefined,
       })
       if (reprogramar) {
         try {
@@ -130,7 +137,8 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
       enviando={enviando}
       hayCambios={Boolean(servicioId || justificacion)}
       error={errorEnvio}
-      conObligatorios
+      conObligatorios={false}
+      envioDeshabilitado={Boolean(servicio) && fechasValidas && Boolean(validacion.errorPeriodo || validacion.errorVentana || validacion.prohibiciones.length > 0)}
       onEnviar={() => void programar()}
       onCerrar={onCerrar}
     >
@@ -148,19 +156,33 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
         }}
         error={errorServicio}
       />
-      <Selector
-        id="programar-proveedor"
-        etiqueta="Proveedor"
-        obligatorio
-        valor={proveedor}
-        opcionTodos="Elige quién lo hace"
-        opciones={[
-          { valor: PERSONAL_PROPIO, texto: 'Personal propio' },
-          ...(proveedores.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.razon_social })),
-        ]}
-        onCambiar={setProveedor}
-        error={errorProveedor}
-      />
+      <div className={tercerizado ? estilos.proveedorVentana : undefined}>
+        <Selector
+          id="programar-proveedor"
+          etiqueta="Proveedor"
+          obligatorio
+          valor={proveedor}
+          opcionTodos="Elige quién lo hace"
+          opciones={[
+            { valor: PERSONAL_PROPIO, texto: 'Personal propio' },
+            ...(proveedores.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.razon_social })),
+          ]}
+          onCambiar={setProveedor}
+          error={errorProveedor}
+        />
+        {tercerizado && (
+          <Selector
+            id="programar-ventana"
+            etiqueta="Ventana"
+            obligatorio
+            valor={mesVentana}
+            opcionTodos="Elige el mes"
+            opciones={mesesVentana(fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)))}
+            onCambiar={setVentanaMes}
+            error={validacion.errorVentana ?? undefined}
+          />
+        )}
+      </div>
 
       {propuesta.estado === 'error' && (
         <AvisoEnLinea tono="error" titulo="No hay propuesta para este servicio">
@@ -172,11 +194,19 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
         <>
           <div className={estilos.fechasPanel}>
             <CampoFormulario id="programar-inicio" etiqueta="Inicio" obligatorio type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
-            <CampoFormulario id="programar-fin" etiqueta="Fin" obligatorio type="date" value={fin} onChange={(e) => setFin(e.target.value)} />
+            <CampoFormulario
+              id="programar-fin"
+              etiqueta="Fin"
+              obligatorio
+              type="date"
+              value={fin}
+              onChange={(e) => setFin(e.target.value)}
+              error={fechasValidas ? (validacion.errorPeriodo ?? undefined) : undefined}
+            />
           </div>
           {esPropuesta && <p className={estilos.detalle}>Fechas propuestas por el sistema</p>}
 
-          {fechasValidas && (
+          {fechasValidas && fin >= inicio && (
             <div className={estilos.bloqueAgenda}>
               <ul className={estilos.franja} aria-label="Días alrededor del periodo">
                 {franjaDeDias(inicio, fin, delPeriodo).map((dia) => (
@@ -192,27 +222,36 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
                   </li>
                 ))}
               </ul>
-              {textoDuracion(servicio) && <p className={estilos.detalle}>{textoDuracion(servicio)}</p>}
+              {validacion.diasExcedidos ? (
+                <p className={estilos.diasExcedidos}>{validacion.diasExcedidos}</p>
+              ) : (
+                textoDuracion(servicio) && <p className={estilos.detalle}>{textoDuracion(servicio)}</p>
+              )}
             </div>
           )}
-
-          {validacion.errorPeriodo && fechasValidas && <AvisoEnLinea tono="error">{validacion.errorPeriodo}</AvisoEnLinea>}
 
           {conflictos.length > 0 && (
             <div className={estilos.bloqueAgenda}>
               <p className={estilos.rotuloConflictos}>
-                Conflictos con restricciones <Estado tono={validacion.prohibiciones.length > 0 ? 'error' : 'aviso'} texto={String(conflictos.length)} />
+                Conflictos con restricciones <Estado tono={validacion.prohibiciones.length > 0 ? 'error' : 'aviso'} texto={String(conflictos.length)} punto={false} />
               </p>
-              {validacion.prohibiciones.map((r) => (
-                <AvisoEnLinea key={r.id} tono="error" titulo={`No se puede programar el ${periodoRestriccion(r.fecha_inicio, r.fecha_fin)}`}>
-                  {r.tipo} · prohibición
-                </AvisoEnLinea>
-              ))}
-              {validacion.avisos.map((r) => (
-                <AvisoEnLinea key={r.id} tono="advertencia" titulo={`${periodoRestriccion(r.fecha_inicio, r.fecha_fin)} · ${r.tipo}`}>
-                  {r.descripcion}
-                </AvisoEnLinea>
-              ))}
+              {[...validacion.avisos, ...validacion.prohibiciones]
+                .sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio) || a.id - b.id)
+                .map((r) =>
+                  r.efecto === 'Prohibicion' ? (
+                    <AvisoEnLinea key={r.id} tono="error" titulo={`No se puede programar el ${textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })}`}>
+                      {r.tipo} · prohibición
+                    </AvisoEnLinea>
+                  ) : (
+                    <AvisoEnLinea
+                      key={r.id}
+                      tono="advertencia"
+                      titulo={`${r.fecha_inicio === r.fecha_fin ? `${diaFigma(r.fecha_inicio).slice(0, 3)} ${fechaNumerica(r.fecha_inicio)}` : textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })} · ${r.tipo}`}
+                    >
+                      {r.descripcion || 'Todo el campus'}
+                    </AvisoEnLinea>
+                  ),
+                )}
               {ventana && !(ventana.inicio === inicio && ventana.fin === fin) && (
                 <div className={estilos.ventanaLibre}>
                   <Icono nombre="calendar" tamano="base" />
@@ -232,7 +271,7 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
             </div>
           )}
 
-          {validacion.requiereJustificacion && validacion.prohibiciones.length === 0 && (
+          {validacion.requiereJustificacion && (
             <AreaTexto
               id="programar-justificacion"
               etiqueta="Justificación"

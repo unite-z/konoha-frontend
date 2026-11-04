@@ -139,4 +139,6 @@ export interface NuevaProgramacion {
   fecha_inicio_prevista: FechaIso
   fecha_fin_prevista: FechaIso
   justificacion?: string
+  /** Mes `AAAA-MM` de la ventana del tercerizado (AV-253); el personal propio no lo manda. */
+  ventana_mes?: string
 }
