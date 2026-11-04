@@ -135,7 +135,8 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
         fecha_fin_prevista: fin,
         justificacion: justificacion.trim() || undefined,
         ventana_mes: mesVentana || undefined,
-        zonas: corte ? zonasRuta : undefined,
+        // Sin zonas en MOD-02, el corte se programa sin ruta (AV-369); con zonas, el backend exige al menos una.
+        zonas: corte && (ruta.datos?.zonas.length ?? 0) > 0 ? zonasRuta : undefined,
       })
       if (reprogramar) {
         try {
