@@ -26,6 +26,7 @@ import { ESTADO_INCIDENCIA } from './bandeja'
 import { textoEjemplar, textoReporto, textoUbicacion } from './detalleIncidencia'
 import TarjetaClasificar from './TarjetaClasificar'
 import TarjetaEncargo from './TarjetaEncargo'
+import TarjetaRequerimiento from './TarjetaRequerimiento'
 import estilos from './Incidencias.module.css'
 
 export default function IncidenciaDetallePage() {
@@ -82,6 +83,18 @@ export default function IncidenciaDetallePage() {
         {/* Clasificada por la vía de personal propio: el encargo a un capataz (Figma 389-7502 y 394-8975). */}
         {incidencia.estado === 'Clasificada' && incidencia.via === 'PersonalPropio' && (
           <TarjetaEncargo
+            key={incidencia.id}
+            incidencia={incidencia}
+            onVolver={() => navegar(RUTAS_INCIDENCIAS.bandeja)}
+            onCreado={(derivada, mensaje) => {
+              setLocal(derivada)
+              setAviso(mensaje)
+            }}
+          />
+        )}
+        {/* Clasificada por la vía tercerizada: el requerimiento a un proveedor (Figma 389-7706 y 389-7903). */}
+        {incidencia.estado === 'Clasificada' && incidencia.via === 'Tercerizada' && (
+          <TarjetaRequerimiento
             key={incidencia.id}
             incidencia={incidencia}
             onVolver={() => navegar(RUTAS_INCIDENCIAS.bandeja)}

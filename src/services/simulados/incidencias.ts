@@ -4,7 +4,7 @@
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -139,4 +139,23 @@ export function simularDescartar(id: number): Promise<IncidenciaDetalle> {
 
 export function simularInspectores(signal?: AbortSignal): Promise<Inspector[]> {
   return responderSimulado(() => INSPECTORES, { signal })
+}
+
+const PROVEEDORES: ProveedorIncidencia[] = [
+  { id: 7, razon_social: 'Podas Altura Demo E.I.R.L.', contratos: [{ id: 70, codigo: 'CT-DEMO-007', vigente: true, servicios: ['Poda en altura', 'Tala controlada'] }] },
+  { id: 8, razon_social: 'Arbolistas del Perú', contratos: [] },
+]
+
+export function simularProveedores(signal?: AbortSignal): Promise<ProveedorIncidencia[]> {
+  return responderSimulado(() => PROVEEDORES, { signal })
+}
+
+export function simularRequerimiento(id: number, cuerpo: NuevoRequerimiento): Promise<IncidenciaDetalle> {
+  return responderSimulado(() => {
+    const proveedor = PROVEEDORES.find((p) => p.id === cuerpo.proveedor_id)
+    cambios.set(id, { ...cambios.get(id), estado: 'DerivadaTercerizada', via: 'Tercerizada', responsable: proveedor?.razon_social ?? null })
+    const incidencia = incidenciaSimulada(id)
+    if (!incidencia) throw errorNoEncontrado()
+    return incidencia
+  })
 }

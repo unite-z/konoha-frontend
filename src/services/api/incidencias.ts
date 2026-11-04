@@ -3,7 +3,7 @@
  * El backend aún no existe: con `VITE_DATOS_SIMULADOS=true` responden los datos simulados (D9).
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, SolicitudInspeccion } from '@/types/incidencias'
+import type { CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
@@ -106,4 +106,22 @@ export async function solicitarInspeccion(id: number, cuerpo: SolicitudInspeccio
     return simularRespuestaVacia()
   }
   return solicitarPlanificacion<void>(`incidencias/${id}/inspeccion/`, { metodo: 'POST', cuerpo })
+}
+
+/** `GET incidencias/{id}/proveedores/` (AV-278): proveedores con sus contratos para la vía tercerizada. */
+export async function listarProveedoresIncidencia(incidenciaId: number, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularProveedores } = await import('../simulados/incidencias')
+    return simularProveedores(signal)
+  }
+  return solicitarPlanificacion<ProveedorIncidencia[]>(`incidencias/${incidenciaId}/proveedores/`, { signal })
+}
+
+/** `POST incidencias/{id}/requerimiento/` (AV-278): requerimiento al proveedor; devuelve la incidencia Derivada · tercerizada. */
+export async function crearRequerimiento(incidenciaId: number, cuerpo: NuevoRequerimiento) {
+  if (DATOS_SIMULADOS) {
+    const { simularRequerimiento } = await import('../simulados/incidencias')
+    return simularRequerimiento(incidenciaId, cuerpo)
+  }
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/requerimiento/`, { metodo: 'POST', cuerpo })
 }
