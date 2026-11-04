@@ -4,7 +4,7 @@
  */
 import type { TonoEstado } from '@/components/ui/Estado'
 import type { FechaIso } from '@/types/comun'
-import { ESTACIONES, type DuracionEntrada, type DuracionServicio, type Estacion, type FrecuenciaEntrada, type FrecuenciaEstacion, type ServicioPeriodico } from '@/types/planificacion'
+import { ESTACIONES, type DuracionEntrada, type DuracionServicio, type Estacion, type FrecuenciaEntrada, type FrecuenciaEstacion, type ServicioPeriodico, type ValoresIniciales } from '@/types/planificacion'
 import { horaCorta } from '@/utils/planificacion'
 import {
   validarDuracion,
@@ -49,6 +49,23 @@ export function estadoServicio(servicio: ServicioPeriodico): { texto: string; to
 }
 
 /** Autor y fecha del último cambio de frecuencia o duración. */
+/** «Tercerizado · Servicios Verdes Demo S.A.C. · ruidoso» bajo el título del panel (Figma 367-3617, AV-363). */
+export function subtituloServicio(servicio: ServicioPeriodico): string | undefined {
+  const via = servicio.via === 'Tercerizado' ? 'Tercerizado' : servicio.via === 'PersonalPropio' ? 'Personal propio' : null
+  if (!via) return servicio.es_ruidoso ? 'Servicio ruidoso' : undefined
+  return [via, servicio.proveedor, servicio.es_ruidoso ? 'ruidoso' : null].filter(Boolean).join(' · ')
+}
+
+/** Servicio con los valores iniciales de la sección, para el borrador del panel («Usar valores iniciales», AV-363). */
+export function conValoresIniciales(servicio: ServicioPeriodico, valores: ValoresIniciales): ServicioPeriodico {
+  const sello = { fecha_modificacion: '', modificado_por: '' }
+  return {
+    ...servicio,
+    frecuencias: valores.frecuencias.map((f) => ({ ...f, ...sello })),
+    duracion: { ...valores.duracion, ...sello },
+  }
+}
+
 export function ultimaModificacion(servicio: ServicioPeriodico): { fecha: string; autor: string } | null {
   const cambios = [...servicio.frecuencias, ...(servicio.duracion ? [servicio.duracion] : [])]
   const ultimo = cambios.sort((a, b) => b.fecha_modificacion.localeCompare(a.fecha_modificacion))[0]

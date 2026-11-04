@@ -38,3 +38,9 @@
   font-size: var(--type-leyenda-size);
   line-height: var(--type-leyenda-line);
 }
+
+/* «Usar valores iniciales» como enlace, alineado con el contenido (Figma 367-3334). */
+.enlace.enlace {
+  padding-inline: 0;
+  color: var(--color-action-text);
+}

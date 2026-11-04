@@ -34,6 +34,14 @@ export interface ServicioPeriodico {
   duracion: DuracionServicio | null
   /** Contrato de AV-363: quién lo hace («Tercerizado» o «PersonalPropio»). */
   via?: 'Tercerizado' | 'PersonalPropio' | null
+  /** Contrato de AV-363: proveedor habitual si es tercerizado. */
+  proveedor?: string | null
+}
+
+/** `GET servicios/{id}/valores-iniciales/` (AV-363): los valores de la sección para partir de ellos. */
+export interface ValoresIniciales {
+  frecuencias: Omit<FrecuenciaEstacion, 'fecha_modificacion' | 'modificado_por'>[]
+  duracion: Omit<DuracionServicio, 'fecha_modificacion' | 'modificado_por'>
 }
 
 export interface FrecuenciaEntrada {
