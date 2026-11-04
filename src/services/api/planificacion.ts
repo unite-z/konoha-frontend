@@ -72,23 +72,13 @@ export async function listarProgramaciones(desde: FechaIso, hasta: FechaIso, sig
   return simularCiclos(ciclos)
 }
 
-/** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, calculadas al consultar. */
-export async function listarAlertas(signal?: AbortSignal) {
-  const alertas = await solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
-  if (!DATOS_SIMULADOS) return alertas
-  const { simularIdsAlertas } = await import('../simulados/alertasPlanificacion')
-  return simularIdsAlertas(alertas)
+/** `GET alertas/`: frecuencias a punto de vencer y duraciones excedidas, guardadas con su id (AV-255). */
+export function listarAlertas(signal?: AbortSignal) {
+  return solicitarPlanificacion<AlertaPlanificacion[]>('alertas/', { signal })
 }
 
-/**
- * `POST alertas/{id}/motivo/` (AV-255): registra el motivo o la acción de una alerta y la deja atendida.
- * Hasta que exista el endpoint, con `VITE_DATOS_SIMULADOS=true` responde `services/simulados/` (D9).
- */
-export async function registrarMotivoAlerta(id: number, motivo: string) {
-  if (DATOS_SIMULADOS) {
-    const { simularRegistrarMotivo } = await import('../simulados/alertasPlanificacion')
-    return simularRegistrarMotivo(id, motivo)
-  }
+/** `POST alertas/{id}/motivo/` (AV-255): registra el motivo o la acción de una alerta y la deja atendida. */
+export function registrarMotivoAlerta(id: number, motivo: string) {
   return solicitarPlanificacion<AlertaAtendida>(`alertas/${id}/motivo/`, { metodo: 'POST', cuerpo: { motivo } })
 }
 
