@@ -141,4 +141,17 @@ describe('BotonEnlace', () => {
       screen.getByRole('button', { name: 'Comparar' }).className,
     )
   })
+
+  it('la variante enlace es un botón con aspecto de enlace (Figma 388-7305)', async () => {
+    const onClick = vi.fn()
+    render(
+      <Boton variante="enlace" onClick={onClick}>
+        Solicitar inspección en campo
+      </Boton>,
+    )
+    const boton = screen.getByRole('button', { name: 'Solicitar inspección en campo' })
+    expect(boton.className).toMatch(/enlace/)
+    await userEvent.setup().click(boton)
+    expect(onClick).toHaveBeenCalled()
+  })
 })

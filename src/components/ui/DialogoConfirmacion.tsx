@@ -18,8 +18,8 @@ import { useCierreAnimado } from './useCierreAnimado'
 export interface DialogoConfirmacionProps {
   abierto: boolean
   titulo: string
-  /** Consecuencia de la acción, en una frase. */
-  consecuencia: string
+  /** Consecuencia de la acción, en una frase (sin ella, solo el título y el campo, como «Descartar», 394-8700). */
+  consecuencia?: string
   /** Nombre de la acción (etiqueta del botón de confirmar). */
   textoConfirmar: string
   /** Etiqueta del botón que cierra sin hacer nada. */
@@ -77,7 +77,7 @@ export default function DialogoConfirmacion({
       ref={referencia}
       className={[estilos.dialogo, animacion.centrado, saliendo ? animacion.saliendo : ''].filter(Boolean).join(' ')}
       aria-labelledby={idTitulo}
-      aria-describedby={idConsecuencia}
+      aria-describedby={consecuencia ? idConsecuencia : undefined}
       onCancel={(evento) => {
         // Esc: se cierra salvo que la acción esté en curso.
         evento.preventDefault()
@@ -87,9 +87,11 @@ export default function DialogoConfirmacion({
       <h2 id={idTitulo} className={estilos.titulo}>
         {titulo}
       </h2>
-      <p id={idConsecuencia} className={estilos.consecuencia}>
-        {consecuencia}
-      </p>
+      {consecuencia && (
+        <p id={idConsecuencia} className={estilos.consecuencia}>
+          {consecuencia}
+        </p>
+      )}
       {children && <div className={estilos.contenido}>{children}</div>}
       <div className={estilos.acciones}>
         <Boton variante="secundario" onClick={cerrar} deshabilitado={cargando}>

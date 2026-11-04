@@ -56,6 +56,20 @@
   background: var(--color-bg-hover);
 }
 
+/* Enlace (Figma 388-7305): texto Pequeño medio en acento, sin marco ni alto mínimo, pegado a la izquierda. */
+.enlace {
+  align-self: flex-start;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-action-text);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+.enlace:hover {
+  text-decoration: underline;
+}
+
 .destructivo {
   background: var(--color-error-bg);
   border-color: var(--web-error-border);

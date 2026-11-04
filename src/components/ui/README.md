@@ -10,6 +10,8 @@ Componentes base del sistema de diseño: el equivalente en código de la página
 
 **Pestañas en caja y tabla sin marco:** `Pestanas` con `enCaja`, `derecha` y `ancho="completo"` (pasos), y `TablaDatos` con `sinMarco` dentro de ella (detalle del corte). Una columna con `tituloOculto` deja su título solo para lectores de pantalla (acciones).
 
+**Formularios de ficha:** `GrupoOpciones` con `segmentado` (control segmentado de radios, «Severidad» de «Clasificar»), `ListaDescripcion` con `columnas="filas"` (una fila por par, etiqueta a la izquierda y una línea entre filas, la ficha de una incidencia) y `Boton` con `variante="enlace"` (acción secundaria dentro de una tarjeta).
+
 **Detalle lateral:** `DialogoDetalle` con `lateral` para un panel de solo lectura a la derecha (historial de cambios).
 
 **Movimiento de los diálogos:** `AnimacionDialogo.module.css` (entrada y salida, centrada, lateral o, en móvil, la hoja desde abajo) y `useCierreAnimado.ts` (espera a que termine la salida antes de avisar con `onCerrar`) los comparten `DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`. Un diálogo nuevo los usa igual.

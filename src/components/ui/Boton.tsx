@@ -1,7 +1,8 @@
 /**
  * Boton: componente «Botón» del sistema de diseño de Figma (DESIGN.md, sección 4.1).
  *
- * Tipos: primario, secundario, fantasma y destructivo. Alto de 36px (`compacto`: 32px, solo en barras de
+ * Tipos: primario, secundario, fantasma, destructivo y enlace (texto de acento sin marco, para una acción
+ * secundaria dentro de una tarjeta: «Solicitar inspección en campo», Figma 388-7305). Alto de 36px (`compacto`: 32px, solo en barras de
  * tabla). `terciario` es el nombre antiguo de `fantasma` y se mantiene mientras migran las pantallas.
  * Etiqueta con verbo en infinitivo + objeto («Aplicar filtros»); nunca «Aceptar», «OK» ni «Enviar».
  * Regla de pantalla: una sola acción primaria visible por pantalla o paso.
@@ -19,7 +20,7 @@ import Icono, { type NombreIcono } from './Icono'
 import estilos from './Boton.module.css'
 
 /** `terciario` es el nombre antiguo de `fantasma`: no lo uses en código nuevo. */
-export type VarianteBoton = 'primario' | 'secundario' | 'fantasma' | 'destructivo' | 'terciario'
+export type VarianteBoton = 'primario' | 'secundario' | 'fantasma' | 'destructivo' | 'enlace' | 'terciario'
 
 interface PropsComunes {
   variante?: VarianteBoton
