@@ -1,0 +1,245 @@
+/* Calendario con capas (MOD-03, AV-266): layout y tokens; los eventos los pinta EventoCalendario. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tituloMes {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-titulo-seccion-size);
+  font-weight: var(--type-titulo-seccion-weight);
+  line-height: var(--type-titulo-seccion-line);
+}
+
+/* Calendario a la izquierda y agenda de 256 a la derecha (Figma 358-2284). */
+.calendarioYAgenda {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.sinAgenda {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mes {
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.cabeceraSemana,
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cabeceraSemana span {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--type-etiqueta-size);
+  font-weight: var(--type-etiqueta-weight);
+  line-height: var(--type-etiqueta-line);
+}
+
+/* Fila del número del día, tres carriles de eventos y la del «+N más». */
+.semana {
+  grid-template-rows:
+    calc(var(--space-6) + var(--space-2))
+    repeat(4, calc(var(--type-leyenda-line) + var(--space-1)));
+  padding-bottom: var(--space-1);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.dia {
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  margin: 0 0 calc(-1 * var(--space-1));
+  padding: var(--space-1);
+  border: 0;
+  border-left: 1px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dia:first-child {
+  border-left: 0;
+}
+
+.dia:hover {
+  background: var(--color-bg-hover);
+}
+
+.dia:focus-visible {
+  outline: 2px solid var(--color-action-primary);
+  outline-offset: -2px;
+}
+
+.fueraDeMes {
+  color: var(--color-text-disabled);
+}
+
+.seleccionado {
+  background: var(--color-bg-subtle);
+}
+
+/* Número de 24, círculo de acento si es hoy. */
+.numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.hoy {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+/* Los eventos van encima de los días sin capturar el clic: se elige el día. */
+.segmento {
+  z-index: 1;
+  min-width: 0;
+  padding: 0 var(--space-1);
+  pointer-events: none;
+}
+
+.agenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.cabeceraAgenda {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tituloAgenda {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--type-titulo-tarjeta-size);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  line-height: var(--type-titulo-tarjeta-line);
+}
+
+.detalle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.listaAgenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.restriccionAgenda,
+.actividadAgenda {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+/* En la agenda el texto del evento no se recorta. */
+.restriccionAgenda > :first-child,
+.actividadAgenda > :first-child {
+  max-width: 100%;
+}
+
+.bloqueAgenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rotuloAgenda,
+.rotuloLeyenda {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-etiqueta-size);
+  font-weight: var(--type-etiqueta-weight);
+  line-height: var(--type-etiqueta-line);
+}
+
+.rotuloLeyenda {
+  color: var(--color-text-primary);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.separador {
+  width: 1px;
+  height: var(--space-4);
+  background: var(--color-border-default);
+}
+
+@media (max-width: 1023px) {
+  .calendarioYAgenda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* En móvil, los días quedan como cuadrículas con solo el número y la agenda debajo. */
+@media (max-width: 40rem) {
+  .semana {
+    grid-template-rows: calc(var(--space-8) + var(--space-2));
+  }
+
+  .segmento {
+    display: none;
+  }
+
+  /* Sin sitio para los eventos, un punto bajo el número avisa de que el día tiene algo; el detalle, en la agenda. */
+  .dia {
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .conEventos::after {
+    content: '';
+    width: var(--space-1);
+    height: var(--space-1);
+    border-radius: var(--radius-full);
+    background: var(--color-action-primary);
+  }
+}

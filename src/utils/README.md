@@ -18,6 +18,6 @@ Lógica pura con pruebas: formato, fechas, validaciones y transformaciones. Sin 
 
 **Nombres:** camelCase con el módulo de sufijo cuando es de un módulo (`validacionCore.ts`, `etiquetasCore.ts`).
 
-**Ejemplo:** `instanteLima.ts` da `hoyLima()`, que usa `CalendarioRestriccionesPage.tsx`; su prueba está en `instanteLima.test.ts`.
+**Ejemplo:** `instanteLima.ts` da `hoyLima()`, que usa `pages/planificacion/calendario/CalendarioPage.tsx`; su prueba está en `instanteLima.test.ts`.
 
 **Destino:** `formato.ts` e `instanteLima.ts` a `compartido/`; el resto a `modulos/<modulo>/utils/`.
