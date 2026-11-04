@@ -28,6 +28,7 @@ vi.mock('@/services/api/planificacion', () => ({
     programada,
     { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial },
     { ...programada, id: 9, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-11-01', fecha_fin_prevista: '2026-11-04', fecha_inicio_real: '2026-11-01' },
+    { ...programada, id: 10, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-10-30', fecha_fin_prevista: '2026-11-02', fecha_inicio_real: '2026-10-30' },
   ],
   listarServiciosPeriodicos: async () => [],
   listarRestricciones: async () => [
@@ -37,7 +38,10 @@ vi.mock('@/services/api/planificacion', () => ({
 }))
 vi.mock('@/services/api/corte', async () => {
   const { cicloCorteSimulado } = await import('@/services/simulados/corte')
-  return { obtenerCicloCorte: async (ciclo: Programacion) => cicloCorteSimulado(ciclo) }
+  return {
+    obtenerCicloCorte: async (ciclo: Programacion) => cicloCorteSimulado(ciclo, ciclo.id === 10 ? '2026-11-04' : '2026-11-02'),
+    registrarLimpieza: async (_id: number, fecha: string) => ({ id: 99, fecha, autor: 'Robert G.' }),
+  }
 })
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
@@ -124,6 +128,25 @@ describe('CicloDetallePage', () => {
 
     await userEvent.setup().click(screen.getByRole('tab', { name: 'Interrupciones 1' }))
     expect(screen.getByText('Ruido durante clases en las aulas Z201 a Z205.')).toBeTruthy()
+  })
+
+  it('con la ruta incompleta, la limpieza avisa de lo que falta y no deja registrar (Figma 371-4576)', async () => {
+    pintar('9')
+    await userEvent.setup().click(await screen.findByRole('tab', { name: 'Limpieza' }))
+    expect(screen.getByText('Faltan 17 jardines por cortar')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Registrar jornada' }).getAttribute('aria-disabled')).toBe('true')
+  })
+
+  it('con la ruta completa, suma corte y limpieza frente a 3 + 1 y cierra el ciclo (Figma 371-4838 y 371-5092)', async () => {
+    pintar('10')
+    const usuario = userEvent.setup()
+    expect(await screen.findByText('Ruta completa')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Cerrar ciclo' })).toBeTruthy()
+    await usuario.click(screen.getByRole('tab', { name: 'Limpieza' }))
+    expect(screen.getByText('Total: 3 días de corte + 2 de limpieza = 5')).toBeTruthy()
+    expect(screen.getByText('No cumple')).toBeTruthy()
+    await usuario.click(screen.getByRole('button', { name: 'Registrar jornada' }))
+    expect(await screen.findByText('Total: 3 días de corte + 3 de limpieza = 6')).toBeTruthy()
   })
 
   it('avisa si el ciclo no existe', async () => {

@@ -110,8 +110,51 @@
   line-height: var(--type-leyenda-line);
 }
 
-.panelCorte {
-  padding: 0 var(--space-4);
+.panelLimpieza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.listaSimple {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* «Total: 3 días de corte + 1 de limpieza = 4» con «Cumple» o «No cumple» (Figma 371-4838 y 371-5092). */
+.totalLimpieza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cumple {
+  background: var(--color-success-bg);
+  border-color: var(--web-success-border);
+}
+
+.noCumple {
+  background: var(--color-error-bg);
+  border-color: var(--web-error-border);
+}
+
+/* Duración por encima del máximo (Figma 371-5092). */
+.notaError {
+  color: var(--color-error);
 }
 
 /* Nota del avance sin actualizar en más de 24 h, en aviso (Figma 371-4306). */
