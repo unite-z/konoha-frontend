@@ -6,7 +6,7 @@
  */
 import type { ReactNode } from 'react'
 import Boton from './Boton'
-import Icono from './Icono'
+import Icono, { type NombreIcono } from './Icono'
 import { ICONO_TONO } from './tonos'
 import estilos from './AvisoEnLinea.module.css'
 
@@ -18,13 +18,17 @@ export interface AvisoEnLineaProps {
   /** Explicación (texto o lista). */
   children?: ReactNode
   accion?: { texto: string; onClick: () => void }
+  /** Icono propio en lugar del del tono (`wifi-off` en «Sin conexión», Figma 353-2396). */
+  icono?: NombreIcono
+  /** Banda de una línea: menos relleno y texto pequeño («Sin conexión · 2 marcas pendientes de enviar», 353-2396). */
+  compacto?: boolean
 }
 
-export default function AvisoEnLinea({ tono, titulo, children, accion }: AvisoEnLineaProps) {
+export default function AvisoEnLinea({ tono, titulo, children, accion, icono, compacto = false }: AvisoEnLineaProps) {
   return (
-    <div className={`${estilos.aviso} ${estilos[tono]}`} role={tono === 'error' ? 'alert' : 'status'}>
+    <div className={`${estilos.aviso} ${estilos[tono]} ${compacto ? estilos.compacto : ''}`} role={tono === 'error' ? 'alert' : 'status'}>
       <span className={estilos.icono}>
-        <Icono nombre={ICONO_TONO[tono]} tamano="base" />
+        <Icono nombre={icono ?? ICONO_TONO[tono]} tamano="base" />
       </span>
       <div className={estilos.cuerpo}>
         {titulo && <p className={estilos.titulo}>{titulo}</p>}

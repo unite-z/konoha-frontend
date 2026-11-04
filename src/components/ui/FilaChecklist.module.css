@@ -14,7 +14,7 @@
   cursor: pointer;
 }
 
-.fila:hover {
+.fila:hover:not(:disabled) {
   background: var(--color-bg-hover);
 }
 
