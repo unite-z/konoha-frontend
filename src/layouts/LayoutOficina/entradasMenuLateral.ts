@@ -119,6 +119,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [
       { texto: 'Usuarios', icono: 'list', ruta: RUTAS_CORE.usuarios },
       { texto: 'Registro de accesos', icono: 'clipboard', ruta: RUTAS_CORE.accesos },
+      { texto: 'Importación', icono: 'paperclip', ruta: RUTAS_CORE.importacion },
     ],
   },
 ]

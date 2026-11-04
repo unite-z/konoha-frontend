@@ -12,6 +12,8 @@ import type {
   Credenciales,
   EntidadRegistro,
   EntradaHistorial,
+  FilaImportacion,
+  Importacion,
   NuevoUsuario,
   PaginaCore,
   PaginaRepositorio,
@@ -19,6 +21,7 @@ import type {
   RolConPermisos,
   RolUsuario,
   SesionCore,
+  TipoImportacion,
   TipoRepositorio,
   UsuarioConContrasena,
   UsuarioResumen,
@@ -146,6 +149,27 @@ export function subirAdjunto(
   formulario.set('archivo', archivo)
   return solicitarCore('adjuntos/', { metodo: 'POST', formulario, cabeceras: { 'Idempotency-Key': clave } })
 }
+
+// --- Importación desde Excel (RF-T-009) --------------------------------------------------------------------
+
+/** `POST importaciones/`: valida el archivo sin incorporar datos. */
+export function validarImportacion(tipo: TipoImportacion, archivo: File): Promise<Importacion> {
+  const formulario = new FormData()
+  formulario.set('tipo', tipo)
+  formulario.set('archivo', archivo)
+  return solicitarCore('importaciones/', { metodo: 'POST', formulario })
+}
+
+export function listarFilasImportacion(id: number, page: number, signal?: AbortSignal): Promise<PaginaCore<FilaImportacion>> {
+  return solicitarCore(`importaciones/${id}/filas/`, { parametros: { page }, signal })
+}
+
+/** `POST importaciones/{id}/confirmar/`: incorpora las filas válidas. */
+export function confirmarImportacion(id: number): Promise<Importacion> {
+  return solicitarCore(`importaciones/${id}/confirmar/`, { metodo: 'POST' })
+}
+
+// --- Exportación a Excel (RF-T-011) ------------------------------------------------------------------------
 
 /** Listados que se exportan a Excel. Incidencias se añade cuando exista su módulo (hoy el backend responde 409). */
 export type ListadoExportable = 'actividades' | 'atenciones' | 'ejemplares'

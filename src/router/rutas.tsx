@@ -49,6 +49,7 @@ import CambioContrasenaPage from '../pages/acceso/CambioContrasenaPage'
 import IngresoPage from '../pages/acceso/IngresoPage'
 import RepositorioPage from '../pages/repositorio/RepositorioPage'
 import AccesosPage from '../pages/usuarios-roles/AccesosPage'
+import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
@@ -132,6 +133,7 @@ export const router = createBrowserRouter([
               { path: RUTAS_CORE.usuarios, element: <UsuariosPage /> },
               { path: `${RUTAS_CORE.usuarios}/:id`, element: <UsuarioDetallePage /> },
               { path: RUTAS_CORE.accesos, element: <AccesosPage /> },
+              { path: RUTAS_CORE.importacion, element: <ImportacionPage /> },
             ],
           },
           {

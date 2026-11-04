@@ -152,6 +152,7 @@ export const RUTAS_CORE = {
   cambiarContrasena: '/cambiar-contrasena', // HU-MOD01-003
   usuarios: `${BASE_USUARIOS}/usuarios`, // RF-T-002 y RF-T-003
   accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
+  importacion: `${BASE_USUARIOS}/importacion`, // RF-T-009
   repositorio: '/repositorio', // RF-T-010
 } as const
 
