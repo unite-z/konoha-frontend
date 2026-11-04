@@ -1,7 +1,7 @@
 import { useMemo, useState, type MouseEvent, type WheelEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
-import type { UsoFuenteMapa } from '../../types/mapaInventario'
-import type { AreasVerdesGeoJSON } from '../../services/api/mapaInventario'
+import type { UsoFuenteMapa } from '@/types/mapaInventario'
+import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
