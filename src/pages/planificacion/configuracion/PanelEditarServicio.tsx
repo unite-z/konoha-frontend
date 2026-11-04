@@ -6,8 +6,8 @@
  *
  * Solo envía lo que cambia: un `PUT servicios/{id}/frecuencias/{estacion}/` por estación y `PUT servicios/{id}/duracion/`.
  * Avisa de que la frecuencia nueva solo afecta a los ciclos que se programen y de si un ciclo en curso ya supera la
- * duración nueva. «Usar valores iniciales» espera a que el backend los exponga; «Ver historial», a AV-256. El
- * subtítulo de Figma con la vía y el proveedor no llega en `GET servicios/`.
+ * duración nueva (Figma 367-3617). El subtítulo lleva la vía y el proveedor, y «Usar valores iniciales» rellena el
+ * borrador con los de la sección (los dos del contrato de AV-363, simulados hasta entonces); «Ver historial», AV-256.
  */
 import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -15,18 +15,18 @@ import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
-import { actualizarDuracion, actualizarFrecuencia, listarProgramaciones } from '@/services/api/planificacion'
+import { actualizarDuracion, actualizarFrecuencia, listarProgramaciones, obtenerValoresIniciales } from '@/services/api/planificacion'
 import { ESTACIONES, type Estacion, type ServicioPeriodico } from '@/types/planificacion'
-import { formatearFechaHora } from '@/utils/formato'
-import { hoyLima } from '@/utils/instanteLima'
+import { fechaLimaDeInstante, hoyLima } from '@/utils/instanteLima'
 import type { BorradorDuracion, BorradorFrecuencia } from '@/utils/validacionPlanificacion'
 import { diasDelPeriodo } from '../calendario/programarCiclo'
 import { rangoCiclos } from '../ciclos/ciclos'
-import { fechaCorta } from '../resumen/resumenPlanificacion'
+import { fechaNumerica } from '../resumen/resumenPlanificacion'
 import estilos from './Configuracion.module.css'
-import { borradorInicial, estadoServicio, ultimaModificacion, validarServicio } from './configuracionServicios'
+import { borradorInicial, conValoresIniciales, estadoServicio, subtituloServicio, ultimaModificacion, validarServicio } from './configuracionServicios'
 
 export interface PanelEditarServicioProps {
   servicio: ServicioPeriodico
@@ -57,11 +57,25 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   const validacion = validarServicio(borrador, inicial)
   const hayCambios = JSON.stringify(borrador) !== JSON.stringify(inicial)
   const nuevaDuracion = validacion.duracion?.duracion_maxima_dias
-  const cicloExcedido = nuevaDuracion
-    ? (ciclos.datos ?? []).find(
+  const ciclosExcedidos = nuevaDuracion
+    ? (ciclos.datos ?? []).filter(
         (c) => c.tipo_servicio_id === servicio.id && c.estado === 'EnCurso' && diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > nuevaDuracion,
       )
-    : undefined
+    : []
+  const [cargandoIniciales, setCargandoIniciales] = useState(false)
+
+  async function usarValoresIniciales() {
+    setCargandoIniciales(true)
+    setError(null)
+    try {
+      const valores = await obtenerValoresIniciales(servicio)
+      setBorrador(borradorInicial(conValoresIniciales(servicio, valores)))
+    } catch (causa) {
+      setError({ titulo: 'No se pudieron cargar los valores iniciales', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+    } finally {
+      setCargandoIniciales(false)
+    }
+  }
   const modificado = ultimaModificacion(servicio)
   const sinConfigurar = estadoServicio(servicio).texto !== 'Configurado'
   const erroresTabla = ESTACIONES.flatMap((estacion) => Object.values(validacion.erroresFrecuencia[estacion] ?? {}))
@@ -127,7 +141,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       abierto
       ancho="lateral"
       titulo={servicio.nombre}
-      descripcion={servicio.es_ruidoso ? 'Servicio ruidoso' : undefined}
+      descripcion={subtituloServicio(servicio)}
       textoConfirmar="Guardar cambios"
       enviando={enviando}
       hayCambios={hayCambios}
@@ -138,17 +152,23 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       onCerrar={onCerrar}
     >
       {sinConfigurar && (
-        <>
-          <AvisoEnLinea tono="info" titulo="Sin configurar">
-            Puedes partir de los valores iniciales de la sección.
-          </AvisoEnLinea>
-          <div>
-            <Boton variante="fantasma" compacto deshabilitado ayudaDeshabilitado="Aún no disponible.">
-              Usar valores iniciales
-            </Boton>
-          </div>
-        </>
+        <AvisoEnLinea tono="info" titulo="Sin configurar">
+          Puedes partir de los valores iniciales de la sección.
+        </AvisoEnLinea>
       )}
+      <div>
+        <Boton
+          variante="fantasma"
+          compacto
+          className={estilos.enlace}
+          cargando={cargandoIniciales}
+          deshabilitado={!DATOS_SIMULADOS || enviando}
+          ayudaDeshabilitado={DATOS_SIMULADOS ? undefined : 'Aún no disponible.'}
+          onClick={() => void usarValoresIniciales()}
+        >
+          Usar valores iniciales
+        </Boton>
+      </div>
 
       <div className={estilos.bloque}>
         <p className={estilos.apartado}>Frecuencia por estación (días)</p>
@@ -161,8 +181,10 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
           </ul>
         )}
       </div>
-      {validacion.frecuencias.length > 0 && (
-        <AvisoEnLinea tono="info">La nueva frecuencia solo afecta a los ciclos que se programen a partir de ahora.</AvisoEnLinea>
+      {hayCambios && !sinConfigurar && (
+        <AvisoEnLinea tono="info" titulo="Solo afecta a los ciclos que se programen a partir de ahora">
+          Los ya programados se conservan.
+        </AvisoEnLinea>
       )}
 
       <div className={estilos.bloque}>
@@ -174,15 +196,18 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
           <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />
         </div>
       </div>
-      {cicloExcedido && (
-        <AvisoEnLinea tono="advertencia" titulo="Un ciclo en curso ya supera la nueva duración">
-          Empezó el {fechaCorta(cicloExcedido.fecha_inicio_real ?? cicloExcedido.fecha_inicio_prevista)}: se generará una alerta de duración excedida.
+      {ciclosExcedidos.length > 0 && (
+        <AvisoEnLinea
+          tono="advertencia"
+          titulo={`${ciclosExcedidos.length} ${ciclosExcedidos.length === 1 ? 'ciclo en curso ya supera' : 'ciclos en curso ya superan'} el nuevo máximo`}
+        >
+          Al guardar se generará una alerta de duración excedida.
         </AvisoEnLinea>
       )}
 
-      {modificado && (
+      {modificado && !sinConfigurar && (
         <p className={estilos.modificado}>
-          Última modificación: {formatearFechaHora(modificado.fecha)} · {modificado.autor}
+          Última modificación: {fechaNumerica(fechaLimaDeInstante(modificado.fecha) ?? modificado.fecha.slice(0, 10))} · {modificado.autor}
         </p>
       )}
     </DialogoFormulario>

@@ -14,14 +14,25 @@ import type {
   RestriccionEntrada,
   ServicioPeriodico,
   TipoRestriccion,
+  ValoresIniciales,
 } from '@/types/planificacion'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
 export async function listarServiciosPeriodicos(signal?: AbortSignal) {
   const servicios = await solicitarPlanificacion<ServicioPeriodico[]>('servicios/', { signal })
   if (!DATOS_SIMULADOS) return servicios
-  // Hasta AV-363, la vía del servicio se simula (D9).
-  return servicios.map((s) => ({ ...s, via: s.via ?? 'Tercerizado' }))
+  // Hasta AV-363, la vía y el proveedor del servicio se simulan (D9).
+  const { simularViaServicios } = await import('../simulados/serviciosPlanificacion')
+  return simularViaServicios(servicios)
+}
+
+/** `GET servicios/{id}/valores-iniciales/` (AV-363). Hasta que exista, con `VITE_DATOS_SIMULADOS=true` se simula (D9). */
+export async function obtenerValoresIniciales(servicio: ServicioPeriodico, signal?: AbortSignal) {
+  if (DATOS_SIMULADOS) {
+    const { simularValoresIniciales } = await import('../simulados/serviciosPlanificacion')
+    return simularValoresIniciales(servicio, signal)
+  }
+  return solicitarPlanificacion<ValoresIniciales>(`servicios/${servicio.id}/valores-iniciales/`, { signal })
 }
 
 /** `PUT servicios/{id}/frecuencias/{estacion}/` (solo jefe). Devuelve el servicio actualizado. */

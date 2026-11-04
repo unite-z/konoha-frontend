@@ -69,7 +69,8 @@ describe('ConfiguracionPage', () => {
     await usuario.clear(within(panel).getByLabelText(/máxima en Primavera/))
     await usuario.type(within(panel).getByLabelText(/máxima en Primavera/), '45')
     await usuario.type(within(panel).getByLabelText(/teórica en Verano/), '20')
-    expect(within(panel).getByText(/solo afecta a los ciclos que se programen/)).toBeTruthy()
+    // Servicio aún incompleto (sin duración): como en Figma 367-3334, sin el aviso de los ciclos ya programados.
+    expect(within(panel).queryByText(/Solo afecta a los ciclos que se programen/)).toBeNull()
     await usuario.click(within(panel).getByRole('button', { name: 'Guardar cambios' }))
 
     expect(actualizarFrecuencia).toHaveBeenCalledExactlyOnceWith(1, 'Verano', { frecuencia_teorica_dias: 20 })
