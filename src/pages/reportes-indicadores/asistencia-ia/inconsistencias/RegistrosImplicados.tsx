@@ -4,6 +4,7 @@
  * solo con color). En móvil, un bloque por campo. Con un solo registro, sus datos en una lista.
  * Cada registro enlaza con su módulo cuando hay pantalla (`rutaRegistro`).
  */
+// Excepción al sistema (AV-351): tabla de comparación campo a campo entre registros; TablaDatos es para listados.
 import { useEsMovil } from '../../../../components/reportes-indicadores/useEsMovil'
 import { BotonEnlace } from '../../../../components/ui/Boton'
 import ListaDescripcion from '../../../../components/ui/ListaDescripcion'

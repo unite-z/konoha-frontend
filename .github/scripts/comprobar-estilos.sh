@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Reglas de docs/estandares/estilo-codigo-ts-react.md que oxlint no cubre:
+# Reglas de docs/estandares/estilo-codigo-ts-react.md y del sistema de diseño (DESIGN.md) que oxlint no cubre:
 #   1. en todo src/: colores escritos a mano fuera de tokens.css y fetch fuera de services/api/;
 #   2. solo en las líneas añadidas del PR: medidas en px (salvo 0-2 px y @media) y style={...}
-#      (salvo valores calculados marcados con el comentario estilo-calculado).
-# Lo segundo solo mira lo nuevo porque main aún tiene medidas antiguas: se corrigen al tocarlas.
+#      (salvo valores calculados marcados con el comentario estilo-calculado);
+#   3. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
+#      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
+#      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
+# Lo segundo solo mira lo nuevo porque main aún tiene medidas antiguas: se corrigen al tocarlas. Lo tercero no se
+# aplica aún a inventario ni planificación (MOD-02 y MOD-03), que se migran después: así no bloquea sus PR.
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -21,6 +25,33 @@ while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Llamada a fetch fuera de src/services/api/: usa el cliente del módulo."
 done < <(git grep -nE '(^|[^a-zA-Z0-9_])fetch\(' -- 'src/*.ts' 'src/*.tsx' ':!src/services' ':!*.test.ts' ':!*.test.tsx' \
   | sin_comentarios)
+
+# --- Sistema de diseño en las carpetas migradas (AV-351) --------------------------------------------------
+migradas=(src/components/ui src/components/core src/components/reportes-indicadores src/components/tercerizados
+  src/layouts src/pages/servicios-tercerizados src/pages/reportes-indicadores src/pages/acceso
+  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo)
+
+while IFS=: read -r fichero linea _; do
+  falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/styles/tokens.css (DESIGN.md, 3.1)."
+done < <(git grep -nE 'var\(--(green|neutral|blue|red|amber|slate|gray)-[0-9]' -- "${migradas[@]/%//*.css}" "${migradas[@]/%//*.tsx}" \
+  | sin_comentarios)
+
+while IFS=: read -r fichero linea _; do
+  if ! grep -q 'Excepción al sistema (AV-351)' "$fichero"; then
+    falla "$fichero" "$linea" "Control crudo fuera de components/ui: usa Boton, Casilla, GrupoOpciones, Selector, DialogoFormulario o TablaDatos. Si es un dato interactivo, documéntalo con «Excepción al sistema (AV-351): motivo»."
+  fi
+done < <(git grep -nE '<(button|input|select|textarea|dialog|table)([[:space:]>]|$)' -- "${migradas[@]/%//*.tsx}" \
+  ':!src/components/ui' ':!src/layouts' ':!*.test.tsx' | sin_comentarios)
+
+# Variables definidas en cualquier CSS o como propiedad calculada en TSX; usadas en las carpetas migradas.
+definidas=$(git grep -hoE -- '--[a-zA-Z0-9-]+[[:space:]]*:' -- 'src/*.css' | sed -E 's/[[:space:]]*:$//'
+  git grep -hoE -- "['\"]--[a-zA-Z0-9-]+['\"]" -- 'src/*.tsx' | tr -d "'\"")
+while IFS=: read -r fichero linea uso; do
+  nombre=${uso#var(}
+  if ! grep -qxF -- "$nombre" <<< "$definidas"; then
+    falla "$fichero" "$linea" "La variable $nombre no está definida: usa un token de src/styles/tokens.css."
+  fi
+done < <(git grep -noE 'var\(--[a-zA-Z0-9-]+' -- "${migradas[@]/%//*.css}" "${migradas[@]/%//*.tsx}")
 
 # Líneas añadidas, con su número en el fichero nuevo (a partir de las cabeceras @@ del diff).
 while IFS=$'\t' read -r fichero linea texto; do

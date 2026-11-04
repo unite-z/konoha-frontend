@@ -37,7 +37,7 @@
     box-shadow var(--duracion-transicion);
 }
 .tarjeta:hover {
-  border-color: var(--green-700);
+  border-color: var(--color-action-primary);
   box-shadow: var(--web-elev-2);
 }
 
@@ -61,11 +61,11 @@
   justify-content: center;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--green-50);
-  color: var(--green-700);
+  background: var(--color-action-subtle);
+  color: var(--color-action-primary);
 }
 .tarjeta:hover .icono {
-  background: var(--green-100);
+  background: var(--color-action-subtle);
 }
 
 .textos {
@@ -76,9 +76,9 @@
 }
 
 .titulo {
-  font-size: var(--type-heading-md-size);
-  line-height: var(--type-heading-md-line);
-  font-weight: var(--type-heading-md-weight);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
   color: var(--color-text-primary);
   overflow-wrap: anywhere;
 }
@@ -98,8 +98,8 @@
 }
 
 .etiqueta {
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
   color: var(--color-text-muted);
 }
 
@@ -118,8 +118,8 @@
   margin-top: auto;
   font-size: var(--type-body-lg-size);
   line-height: var(--type-body-lg-line);
-  font-weight: var(--type-label-md-weight);
-  color: var(--green-700);
+  font-weight: var(--type-cuerpo-medio-weight);
+  color: var(--color-action-primary);
 }
 .tarjeta:hover .accion {
   text-decoration: underline;

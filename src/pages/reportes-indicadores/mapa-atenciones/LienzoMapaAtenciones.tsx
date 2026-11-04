@@ -13,6 +13,7 @@
  * - E1: si MapLibre no se puede crear (por ejemplo, sin WebGL) o falla antes de cargar, avisa con `onError`.
  * - Leyenda siempre visible en la esquina inferior derecha (la escala va abajo a la izquierda).
  */
+// Excepción al sistema (AV-351): cada marca del mapa es un <button> posicionado sobre el lienzo; es un dato, no un botón de acción.
 import { useEffect, useRef } from 'react'
 import {
   Map as MapaMapLibre,

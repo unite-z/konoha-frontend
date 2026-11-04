@@ -10,6 +10,7 @@
  * - El estado elegido y la página van en la URL, para conservarlos al volver desde la revisión.
  * - En móvil, cada propuesta es una ficha en lugar de una fila.
  */
+// Excepción al sistema (AV-351): la ficha móvil de cada propuesta es un <button> que la abre entera; no tiene el aspecto de Boton.
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useEsMovil } from '../../../components/reportes-indicadores/useEsMovil'

@@ -8,6 +8,7 @@
  * - «Analizar datos» solo se muestra a los roles que pueden solicitar a la IA (ROLES_SOLICITAR_IA).
  * - En móvil, cada hallazgo es una ficha.
  */
+// Excepción al sistema (AV-351): la ficha móvil de cada hallazgo es un <button> que lo abre entero; no tiene el aspecto de Boton.
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import AvisoDatosSimulados from '../../../components/reportes-indicadores/AvisoDatosSimulados'

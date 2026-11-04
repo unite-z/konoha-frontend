@@ -6,6 +6,7 @@
  * - las restricciones en la cabecera de cada día, con la insignia de Planificación.
  * Al pulsar una propuesta se abre su ficha en el panel lateral. Las modificadas se ven en sus nuevas fechas.
  */
+// Excepción al sistema (AV-351): los bloques del calendario son <button> de datos y la casilla de la leyenda lleva una muestra de color.
 import { useState } from 'react'
 import Boton from '../../../../components/ui/Boton'
 import { GrupoChips } from '../../../../components/ui/ChipsFiltro'
