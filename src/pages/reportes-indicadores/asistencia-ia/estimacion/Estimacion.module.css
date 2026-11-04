@@ -1,0 +1,164 @@
+/*
+ * Estimación de recursos con IA (RF-IA-004). Solo tokens semánticos del sistema de diseño (DESIGN.md): nada de
+ * primitivos, colores ni px. Las piezas (tarjetas, opciones, estados, botones) son componentes de `components/ui`.
+ */
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Ficha de decisión: sugerencia de la IA a la izquierda y decisión a la derecha (una columna en tablet y móvil). */
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.unaColumna {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sugerencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--web-info-border);
+  border-radius: var(--radius-md);
+  background: var(--color-info-bg);
+  color: var(--color-text-primary);
+}
+
+.etiquetaIa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
+  color: var(--color-info);
+}
+
+.valor {
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+  overflow-wrap: anywhere;
+}
+
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.final {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.secundario {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-error);
+}
+
+.lista {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+/* Duración: número y unidad en la misma fila. */
+.duracion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+/* Editor de insumos: una fila por insumo (bloques en móvil). */
+.insumos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filaInsumo {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.quitar {
+  padding-top: var(--space-6);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.cabeceraLista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.modoDescribir {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.modoDescribir > :last-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1023px) {
+  .ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .filaInsumo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+  }
+  .filaInsumo > :first-child {
+    grid-column: 1 / -1;
+  }
+  .quitar {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+  .quitar > button {
+    width: 100%;
+  }
+
+  .modoDescribir,
+  .duracion {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
