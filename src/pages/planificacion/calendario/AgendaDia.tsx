@@ -54,7 +54,7 @@ export default function AgendaDia({ dia, eventos, onCerrar, onDarDeBaja, onProgr
                   {restriccion.aplica_servicios_ruidosos ? ' · solo servicios ruidosos' : ''}
                 </span>
                 {onDarDeBaja && (
-                  <Boton variante="fantasma" compacto onClick={() => onDarDeBaja(restriccion)}>
+                  <Boton variante="fantasma" compacto className={estilos.darDeBaja} onClick={() => onDarDeBaja(restriccion)}>
                     Dar de baja<span className="sr-only"> {restriccion.tipo}</span>
                   </Boton>
                 )}
