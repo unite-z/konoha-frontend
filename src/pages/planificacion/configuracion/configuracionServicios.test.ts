@@ -38,7 +38,7 @@ describe('configuracionServicios', () => {
     }
     const resultado = validarServicio(conCambios, inicial)
     expect(resultado.valido).toBe(false)
-    expect(resultado.erroresFrecuencia.Verano?.maxima).toBe('Mínimo 30, la habitual')
+    expect(resultado.erroresFrecuencia.Verano?.maxima).toBe('Verano: la máxima no puede ser menor que la práctica')
     expect(resultado.frecuencias).toEqual([{ estacion: 'Otoño', entrada: { frecuencia_teorica_dias: 20 } }])
     expect(resultado.duracion).toMatchObject({ duracion_maxima_dias: 4, dias_limpieza: 1 })
   })

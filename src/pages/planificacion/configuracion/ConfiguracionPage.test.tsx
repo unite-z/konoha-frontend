@@ -59,15 +59,16 @@ describe('ConfiguracionPage', () => {
     await usuario.click(within(tabla).getByRole('button', { name: 'Configurar Corte de césped' }))
     const panel = screen.getByRole('dialog', { name: 'Corte de césped' })
 
-    await usuario.clear(within(panel).getByLabelText(/Máxima/, { selector: '#frecuencia-Primavera-maxima' }))
-    await usuario.type(within(panel).getByLabelText(/Máxima/, { selector: '#frecuencia-Primavera-maxima' }), '25')
+    await usuario.clear(within(panel).getByLabelText(/máxima en Primavera/))
+    await usuario.type(within(panel).getByLabelText(/máxima en Primavera/), '25')
+    expect(within(panel).getByText('Primavera: la máxima no puede ser menor que la práctica')).toBeTruthy()
+    expect(within(panel).getByRole('button', { name: 'Guardar cambios' }).getAttribute('aria-disabled')).toBe('true')
     await usuario.click(within(panel).getByRole('button', { name: 'Guardar cambios' }))
-    expect(within(panel).getByText('Mínimo 30, la habitual')).toBeTruthy()
     expect(actualizarFrecuencia).not.toHaveBeenCalled()
 
-    await usuario.clear(within(panel).getByLabelText(/Máxima/, { selector: '#frecuencia-Primavera-maxima' }))
-    await usuario.type(within(panel).getByLabelText(/Máxima/, { selector: '#frecuencia-Primavera-maxima' }), '45')
-    await usuario.type(within(panel).getByLabelText(/Teórica/, { selector: '#frecuencia-Verano-teorica' }), '20')
+    await usuario.clear(within(panel).getByLabelText(/máxima en Primavera/))
+    await usuario.type(within(panel).getByLabelText(/máxima en Primavera/), '45')
+    await usuario.type(within(panel).getByLabelText(/teórica en Verano/), '20')
     expect(within(panel).getByText(/solo afecta a los ciclos que se programen/)).toBeTruthy()
     await usuario.click(within(panel).getByRole('button', { name: 'Guardar cambios' }))
 

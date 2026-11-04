@@ -144,3 +144,8 @@
 .resumen a {
   color: var(--color-error);
 }
+
+/* Hora vacía sin foco: se oculta el marcador del navegador («--:--» o la hora actual en gris de Safari). */
+.control[data-vacio]:not(:focus)::-webkit-datetime-edit {
+  color: transparent;
+}

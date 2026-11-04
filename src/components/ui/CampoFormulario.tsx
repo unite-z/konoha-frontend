@@ -30,6 +30,7 @@ export function MarcoCampo({
   error,
   bloqueadoMotivo,
   etiquetaOculta,
+  idErrorExterno,
   children,
 }: PropsMarcoCampo & { children: ReactNode }) {
   return (
@@ -54,7 +55,7 @@ export function MarcoCampo({
           {bloqueadoMotivo}
         </p>
       )}
-      {error && (
+      {error && !idErrorExterno && (
         <p id={`${id}-error`} className={estilos.error}>
           <Icono nombre="aspa" tamano="sm" />
           <span>{error}</span>
@@ -78,8 +79,8 @@ const TECLADO: Record<FormatoCampo, 'numeric' | 'decimal'> = { entero: 'numeric'
 
 /** Campo de una línea. */
 export default function CampoFormulario(props: CampoFormularioProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, formato, decimales, negativo, onChange, ...resto } = props
-  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno, compacto, className, formato, decimales, negativo, onChange, ...resto } = props
+  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno }
 
   // Quita lo que no admite el formato antes de avisar a la página y deja el cursor donde estaba.
   const alCambiar: typeof onChange = formato
@@ -101,6 +102,8 @@ export default function CampoFormulario(props: CampoFormularioProps) {
         inputMode={formato ? TECLADO[formato] : undefined}
         {...resto}
         onChange={alCambiar}
+        // Hora vacía: sin el marcador gris del navegador, que en Safari parece una hora elegida.
+        data-vacio={resto.type === 'time' && !resto.value ? true : undefined}
         id={id}
         className={clasesDeControl(error, Boolean(bloqueadoMotivo), className, compacto)}
         aria-invalid={error ? true : undefined}
@@ -116,8 +119,8 @@ export type AreaTextoProps = PropsMarcoCampo & Omit<TextareaHTMLAttributes<HTMLT
 
 /** Campo de varias líneas. */
 export function AreaTexto(props: AreaTextoProps) {
-  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, compacto, className, ...resto } = props
-  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta }
+  const { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno, compacto, className, ...resto } = props
+  const marco = { id, etiqueta, obligatorio, ayuda, error, bloqueadoMotivo, etiquetaOculta, idErrorExterno }
   return (
     <MarcoCampo {...marco}>
       <textarea

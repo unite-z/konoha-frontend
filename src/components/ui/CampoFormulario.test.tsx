@@ -77,4 +77,12 @@ describe('CampoFormulario', () => {
     await usuario.paste('3 días')
     expect(campo.value).toBe('3')
   })
+
+  it('con idErrorExterno se marca en error y enlaza el mensaje de fuera sin repetirlo', () => {
+    render(<CampoFormulario id="maxima" etiqueta="Máxima" error="Verano: la máxima no puede ser menor que la práctica" idErrorExterno="errores-tabla" />)
+    const campo = screen.getByLabelText('Máxima')
+    expect(campo.getAttribute('aria-invalid')).toBe('true')
+    expect(campo.getAttribute('aria-describedby')).toBe('errores-tabla')
+    expect(screen.queryByText(/no puede ser menor/)).toBeNull()
+  })
 })
