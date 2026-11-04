@@ -112,7 +112,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
               d={ruta(feature.geometry, limites)}
               fill={uso.color}
               fillOpacity={activo ? 1 : 0.78}
-              stroke={activo ? 'var(--neutral-950)' : uso.color}
+              stroke={activo ? 'var(--map-selected-stroke)' : uso.color}
               strokeWidth={activo ? 3 : 1.3}
               onMouseEnter={(evento) => posicionar(evento, feature)}
               onMouseMove={(evento) => posicionar(evento, feature)}

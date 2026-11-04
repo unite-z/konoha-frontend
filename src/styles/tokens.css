@@ -139,23 +139,6 @@
   --type-label-sm-weight: var(--type-etiqueta-weight);
 }
 
-/*
- * Primitivos de la Guía Web antigua. Siguen aquí solo porque algunas páginas aún los usan;
- * AV-332 los sustituye por tokens semánticos y después se borran. No se usan en código nuevo.
- */
-:root {
-  --green-900: #1B5E20;
-  --green-700: #2E7D32;
-  --green-500: #43A047;
-  --green-100: #E8F5E9;
-  --green-50: #F3FAF4;
-  --neutral-950: #111827;
-  --neutral-700: #374151;
-  --neutral-500: #6B7280;
-  --neutral-300: #D1D5DB;
-  --neutral-50: #F9FAFB;
-}
-
 /* Medidas de layout sin variable en Figma */
 :root {
   --web-header-height: 52px; /* Cabecera de Figma */
@@ -186,7 +169,10 @@
   --map-label-color: #84928A;
   --map-label-strong-color: #37443D;
   --map-label-outline-width: 3px;
-  --map-swatch-outline: color-mix(in srgb, var(--neutral-950) 55%, transparent);
+  --map-area-fill: #E8F5E9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-line: #43A047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-selected-stroke: #111827; /* contorno del área seleccionada en el mapa vectorial */
+  --map-swatch-outline: color-mix(in srgb, var(--map-selected-stroke) 55%, transparent);
 }
 
 /*
