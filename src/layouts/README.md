@@ -14,7 +14,7 @@ Estructura común de las pantallas de oficina: `LayoutOficina/`.
 | `AccionesPagina.tsx` | lleva la acción principal de la página (Botón primario) a la derecha del h1, con un portal |
 | (móvil) | el h1 queda solo para lectores de pantalla: el título va en la barra superior; la barra inferior usa `textoMovil` si la entrada lo tiene («Ajustes») |
 | `AccionMovil.tsx` | lleva la acción de la página a la barra superior móvil (el «+» del Calendario), con un portal |
-| `JuntoTitulo.tsx` | lleva lo que va pegado al h1 (el estado del registro, como en «Detalle de ciclo») justo detrás del título, con un portal |
+| `JuntoTitulo.tsx` | lleva lo que va pegado al h1 (el estado del registro, como en «Detalle de ciclo») justo detrás del título, con un portal; con `debajo`, una segunda línea bajo el subtítulo (el enlace al requerimiento del ciclo) |
 
 **Reglas:**
 - Cada página declara su título y sus migas con `usePaginaActual`, y no pinta su propio h1: el layout lo pone al principio del contenido. La acción principal («Registrar…») va en `<AccionesPagina>`, no en una barra propia de la página, y el estado del registro, en `<JuntoTitulo>`. La cabecera no conoce las páginas.
