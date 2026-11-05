@@ -10,7 +10,7 @@ import IncidenciaDetallePage from './IncidenciaDetallePage'
 const derivacion = vi.hoisted(() => ({ disponible: true }))
 
 vi.mock('@/services/api/incidencias', () => ({
-  get DERIVACION_DISPONIBLE() {
+  get ENCARGO_DISPONIBLE() {
     return derivacion.disponible
   },
   obtenerIncidencia: async (id: number) => {
@@ -52,7 +52,7 @@ describe('IncidenciaDetallePage', () => {
 
   it('derivada a tercerizado muestra el avance del requerimiento (Figma 394-9194)', async () => {
     pintar('37')
-    expect(await screen.findByRole('heading', { name: 'Requerimiento REQ-2026-044' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Requerimiento AT-3f9c2a1b' })).toBeTruthy()
     expect(screen.getByText('Podas Altura Demo E.I.R.L. · extraordinaria')).toBeTruthy()
     expect(screen.getByText(/Informe del proveedor/).textContent).toContain('en curso')
     expect(screen.getByText(/^Conformidad/).textContent).toContain('pendiente')
@@ -68,12 +68,12 @@ describe('IncidenciaDetallePage', () => {
     expect(screen.getByRole('heading', { name: 'Derivar de nuevo' })).toBeTruthy()
   })
 
-  it('sin el backend de la derivación (AV-277 y AV-278), avisa en lugar de derivar', async () => {
+  it('sin el backend del encargo (AV-277), avisa en lugar de derivar a un capataz', async () => {
     derivacion.disponible = false
     pintar('32')
     expect(await screen.findByText('Se canceló el encargo ENC-2026-118')).toBeTruthy()
     await userEvent.setup().click(screen.getByRole('radio', { name: 'Encargo a un capataz' }))
-    expect(screen.getByText('Derivar aún no está disponible')).toBeTruthy()
+    expect(screen.getByText('El encargo a un capataz aún no está disponible')).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Encargo a un capataz' })).toBeNull()
     derivacion.disponible = true
   })
