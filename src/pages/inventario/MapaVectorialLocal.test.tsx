@@ -9,28 +9,27 @@ const datos: AreasVerdesGeoJSON = {
   features: [
     {
       type: 'Feature',
-      properties: { mapa_id: 'poligono-1', Uso: 'Recreación', Nombre: 'Parque', 'Área': 100 },
+      properties: { mapa_id: 'poligono-1', Uso: 'Recreación', Nombre: 'Parque', 'Área': 100, clasificacion_mapa_id: 'tipo:7' },
       geometry: { type: 'MultiPolygon', coordinates: [[[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]] },
     },
     {
       type: 'Feature',
-      properties: { mapa_id: 'poligono-2', Uso: 'Deporte', Nombre: 'Cancha', 'Área': 200 },
+      properties: { mapa_id: 'poligono-2', Uso: 'Deporte', Nombre: 'Cancha', 'Área': 200, clasificacion_mapa_id: 'tipo:8' },
       geometry: { type: 'MultiPolygon', coordinates: [[[[2, 0], [3, 0], [3, 1], [2, 1], [2, 0]]]] },
     },
   ],
 }
 
 const usos = [
-  { nombre: 'Recreación', color: '#008000' },
-  { nombre: 'Deporte', color: '#0000ff' },
+  { id: 'tipo:7', nombre: 'Recreativo', color: '#008000' },
+  { id: 'tipo:8', nombre: 'Deportivo', color: '#0000ff' },
 ]
 
 describe('MapaVectorialLocal', () => {
-  it('filtra los polígonos por su uso original', () => {
+  it('filtra los polígonos por su clasificación efectiva', () => {
     const props = {
       datos,
       usos,
-      categorias: [],
       usoSeleccionado: '',
       onSeleccionar: vi.fn(),
     }
@@ -38,7 +37,7 @@ describe('MapaVectorialLocal', () => {
     expect(screen.getByRole('img', { name: '2 polígonos visibles' })).toBeTruthy()
     expect(container.querySelectorAll('svg path[class]')).toHaveLength(2)
 
-    rerender(<MapaVectorialLocal {...props} usoSeleccionado="Recreación" />)
+    rerender(<MapaVectorialLocal {...props} usoSeleccionado="tipo:7" />)
     expect(screen.getByRole('img', { name: '1 polígonos visibles' })).toBeTruthy()
     expect(container.querySelectorAll('svg path[class]')).toHaveLength(1)
   })

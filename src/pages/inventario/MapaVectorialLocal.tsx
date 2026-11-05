@@ -2,10 +2,11 @@
 import { useMemo, useState, type MouseEvent, type WheelEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
+import type { ClasificacionMapa } from '@/utils/mapaAreasVerdes'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
-type UsoMapaLocal = { nombre: string; color: string }
+type UsoMapaLocal = Pick<ClasificacionMapa, 'id' | 'nombre' | 'color'>
 
 interface Props {
   datos: AreasVerdesGeoJSON
@@ -35,7 +36,7 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
   const [hover, setHover] = useState<Hover | null>(null)
   const limites = useMemo(() => obtenerLimites(datos.features), [datos.features])
   const visibles = datos.features.filter((feature) => {
-    const uso = usos.find((item) => item.nombre === texto(feature.properties?.Uso))
+    const uso = usos.find((item) => item.id === texto(feature.properties?.clasificacion_mapa_id))
     return uso ? usoVisible(uso, usoSeleccionado) : false
   })
   const viewWidth = 1000 / zoom
@@ -100,7 +101,7 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
           <text x="38" y="632">Escala relativa</text>
         </g>
         {visibles.map((feature, indice) => {
-          const uso = usos.find((item) => item.nombre === texto(feature.properties?.Uso))
+          const uso = usos.find((item) => item.id === texto(feature.properties?.clasificacion_mapa_id))
           if (!uso) return null
           const activo = hover?.feature === feature
           return (
@@ -144,8 +145,8 @@ function limitar(valor: number, minimo: number, maximo: number) {
   return Math.max(minimo, Math.min(maximo, valor))
 }
 
-function usoVisible(uso: UsoMapaLocal, filtroFuente: string) {
-  return !filtroFuente || uso.nombre === filtroFuente
+function usoVisible(uso: UsoMapaLocal, filtro: string) {
+  return !filtro || uso.id === filtro
 }
 
 function obtenerLimites(features: FeatureArea[]): Limites {
