@@ -34,7 +34,7 @@ export default function ParticipantesPage() {
   const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[evidenciaActividad,setEvidenciaActividad]=useState<ActividadCampo|null>(null),[verificacionActividad,setVerificacionActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[poda,setPoda]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
     <AccionesPagina><ExportarExcel listado="actividades" />{usuario?.rol==='Capataz'&&<Boton variante="secundario" onClick={()=>setPoda(true)}>Registrar poda menor</Boton>}{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
-    <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
+    <p className={estilos.descripcion}>Usa «Registrar actividad» para las tareas del parte y «Registrar poda menor» para podas de ejemplares que cumplan el límite de altura. Después, indica quiénes realizaron cada actividad.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
     <Tarjeta>
       <div className={estilos.filtros}>
