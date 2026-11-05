@@ -46,6 +46,25 @@ export interface EjemplarCampana {
   estado_intervencion: 'Pendiente' | 'Incompleta' | 'Verificada'
 }
 
+export interface TramoRendimiento {
+  dia_desde: number
+  dia_hasta: number
+  fecha_desde: FechaIso
+  fecha_hasta: FechaIso
+  atendidos: number
+  promedio: string
+}
+
+export interface RendimientoCampanaPoda {
+  verificados: number
+  dias_con_ejecucion: number
+  /** Texto decimal. `null` si no hay ejecución verificada. */
+  promedio: string | null
+  umbral_alerta: number
+  destacado: boolean
+  tramos: TramoRendimiento[]
+}
+
 export interface VentanaCierre {
   anio: number
   fecha_inicio: FechaIso
