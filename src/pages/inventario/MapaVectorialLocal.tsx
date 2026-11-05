@@ -1,7 +1,6 @@
 // Excepción al sistema (AV-351): barra de herramientas del lienzo SVG del mapa (seleccionar, mover y zoom), como los controles de maplibre; no son acciones de página.
 import { useMemo, useState, type MouseEvent, type WheelEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
-import type { UsoFuenteMapa } from '@/types/mapaInventario'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import estilos from './MapaAreasVerdesPage.module.css'
 
@@ -11,7 +10,6 @@ type UsoMapaLocal = { nombre: string; color: string }
 interface Props {
   datos: AreasVerdesGeoJSON
   usos: UsoMapaLocal[]
-  categorias: UsoFuenteMapa[]
   usoSeleccionado: string
   onSeleccionar: (feature: FeatureArea) => void
 }
@@ -29,7 +27,7 @@ interface Hover {
   feature: FeatureArea
 }
 
-export default function MapaVectorialLocal({ datos, usos, categorias, usoSeleccionado, onSeleccionar }: Props) {
+export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSeleccionar }: Props) {
   const [zoom, setZoom] = useState(1)
   const [modo, setModo] = useState<'seleccionar' | 'mover'>('seleccionar')
   const [centro, setCentro] = useState({ x: 500, y: 350 })
@@ -110,9 +108,9 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
               key={`${texto(feature.properties?.mapa_id)}-${indice}`}
               className={estilos.poligonoLocal}
               d={ruta(feature.geometry, limites)}
-              fill={uso.color}
+              fill={texto(feature.properties?.tipo_uso_color) || uso.color}
               fillOpacity={activo ? 1 : 0.78}
-              stroke={activo ? 'var(--map-selected-stroke)' : uso.color}
+              stroke={activo ? 'var(--map-selected-stroke)' : texto(feature.properties?.tipo_uso_color) || uso.color}
               strokeWidth={activo ? 3 : 1.3}
               onMouseEnter={(evento) => posicionar(evento, feature)}
               onMouseMove={(evento) => posicionar(evento, feature)}
@@ -130,12 +128,12 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
       </div>
       {hover && (
         <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
-          <strong>{texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
+          <strong>{texto(hover.feature.properties?.inventario_nombre) || texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
           <span>Uso: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
-          {categorias.find((categoria) => categoria.uso_fuente === texto(hover.feature.properties?.Uso))?.tipo_uso_nombre && (
-            <span>Tipo del sistema: {categorias.find((categoria) => categoria.uso_fuente === texto(hover.feature.properties?.Uso))?.tipo_uso_nombre}</span>
-          )}
-          <span>Superficie: {formatearSuperficie(hover.feature.properties?.['Área'])}</span>
+          <span>Tipo de uso vigente: {texto(hover.feature.properties?.tipo_uso_nombre) || 'Sin clasificar'}</span>
+          <span>Superficie: {hover.feature.properties?.inventario_superficie_m2 == null
+            ? formatearSuperficie(hover.feature.properties?.['Área'])
+            : formatearSuperficie(hover.feature.properties.inventario_superficie_m2)}</span>
         </div>
       )}
     </div>
