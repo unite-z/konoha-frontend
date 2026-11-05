@@ -106,7 +106,9 @@ export interface EventoIncidencia {
 export type EstadoPaso = 'Hecho' | 'EnCurso' | 'Pendiente'
 
 export interface RequerimientoIncidencia {
-  /** «REQ-2026-044». */
+  /** La atención de MOD-05. */
+  id: number
+  /** El de MOD-05 («AT-3f9c…»); se muestra corto, como en sus pantallas. */
   codigo: string
   proveedor: string
   tipo_atencion: 'Programada' | 'Extraordinaria'

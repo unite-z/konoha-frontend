@@ -3,6 +3,7 @@
  * atendió, la evidencia y las observaciones, con «Devolver» y «Cerrar incidencia».
  * - Sin evidencia no se puede cerrar: «Sin evidencia» y «Para cerrar hace falta la evidencia.» (390-8205).
  * - «Devolver» pasa la tarjeta a «Devolver a En atención» con observaciones obligatorias (390-8390).
+ * - Derivada a un proveedor (AV-278), el informe adjunto en Servicios tercerizados vale como evidencia.
  */
 import { useState } from 'react'
 import Boton from '@/components/ui/Boton'
@@ -11,7 +12,7 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { cerrarIncidencia, devolverIncidencia } from '@/services/api/incidencias'
 import type { AtencionIncidencia, IncidenciaDetalle } from '@/types/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
-import { textoAtendida } from './detalleIncidencia'
+import { diaMes, informeDelProveedor, textoAtendida } from './detalleIncidencia'
 import Evidencias from './Evidencias'
 import estilos from './Incidencias.module.css'
 
@@ -27,7 +28,8 @@ export default function TarjetaRevisarAtencion({ incidencia, atencion, onCambiad
   const [mostrarError, setMostrarError] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const sinEvidencia = atencion.evidencias.length === 0
+  const informe = informeDelProveedor(incidencia)
+  const sinEvidencia = atencion.evidencias.length === 0 && !informe
 
   async function cerrar() {
     setEnviando(true)
@@ -93,7 +95,11 @@ export default function TarjetaRevisarAtencion({ incidencia, atencion, onCambiad
         <div className={estilos.camposAccion}>
           <div>
             <p className={estilos.rotuloCarga}>Evidencia *</p>
-            <Evidencias evidencias={atencion.evidencias} />
+            {informe && atencion.evidencias.length === 0 ? (
+              <p className={estilos.subtituloAccion}>Informe del proveedor en Servicios tercerizados, del {diaMes(informe)}.</p>
+            ) : (
+              <Evidencias evidencias={atencion.evidencias} />
+            )}
             {sinEvidencia && <p className={estilos.errorAccion}>Para cerrar hace falta la evidencia.</p>}
           </div>
           {!sinEvidencia && (

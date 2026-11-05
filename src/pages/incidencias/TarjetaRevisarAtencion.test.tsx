@@ -32,6 +32,30 @@ describe('TarjetaRevisarAtencion', () => {
     expect(onCambiada).toHaveBeenCalledWith(expect.objectContaining({ estado: 'Cerrada' }), 'INC-2026-035 cerrada')
   })
 
+  it('derivada a un proveedor, su informe en Servicios tercerizados vale como evidencia (AV-278)', async () => {
+    if (!sinEvidencia?.atencion) throw new Error('sin atención simulada')
+    const conInforme = {
+      ...sinEvidencia,
+      requerimiento: {
+        id: 44,
+        codigo: 'AT-3f9c2a1b7e4d',
+        proveedor: 'Podas Altura Demo E.I.R.L.',
+        tipo_atencion: 'Extraordinaria' as const,
+        pasos: [
+          { nombre: 'Requerimiento', estado: 'Hecho' as const, fecha: '2026-10-31' },
+          { nombre: 'Orden de compra', estado: 'Hecho' as const, fecha: '2026-11-01' },
+          { nombre: 'Informe del proveedor', estado: 'Hecho' as const, fecha: '2026-11-03' },
+          { nombre: 'Conformidad', estado: 'EnCurso' as const, fecha: null },
+        ],
+      },
+    }
+    render(<TarjetaRevisarAtencion incidencia={conInforme} atencion={sinEvidencia.atencion} onCambiada={vi.fn()} />)
+
+    expect(screen.getByText('Informe del proveedor en Servicios tercerizados, del 03/11.')).toBeTruthy()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Cerrar incidencia' }))
+    expect(cerrarIncidencia).toHaveBeenCalledWith(31, undefined)
+  })
+
   it('sin evidencia no deja cerrar (Figma 390-8205)', async () => {
     if (!sinEvidencia?.atencion) throw new Error('sin atención simulada')
     render(<TarjetaRevisarAtencion incidencia={sinEvidencia} atencion={sinEvidencia.atencion} onCambiada={vi.fn()} />)

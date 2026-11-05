@@ -6,7 +6,7 @@
  * - Acción primaria «Marcar ejemplar»: los tres roles del módulo.
  */
 import { useCallback, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Estado from '@/components/ui/Estado'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
@@ -14,11 +14,12 @@ import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { puedeMarcarAtencionEspecial } from '@/config/permisosMaestros'
+import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencionEspecial } from '@/router/rutasApp'
 import { listarAtencionesEspeciales, listarPlagas } from '@/services/api/maestrosTercerizados'
 import { listarTodo } from '@/services/api/tercerizados'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
@@ -37,7 +38,7 @@ import estilos from './Maestros.module.css'
 
 const TITULO = 'Ejemplares con atención especial'
 
-const ESTADOS: EstadoAtencionEspecial[] = ['En seguimiento', 'Aplicaciones completas']
+const ESTADOS: EstadoAtencionEspecial[] = ['En seguimiento', 'Aplicaciones completas', 'Cancelado']
 
 const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
   {
@@ -66,7 +67,9 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
     clave: 'estado',
     titulo: 'Estado',
     render: (e) =>
-      e.estado === 'Aplicaciones completas' ? (
+      e.estado === 'Cancelado' ? (
+        <Estado tono="neutro" texto="Cancelado" />
+      ) : e.estado === 'Aplicaciones completas' ? (
         <Estado tono="exito" texto="Aplicaciones completas" />
       ) : (
         <Estado tono="info" texto="En seguimiento" />
@@ -77,7 +80,10 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
 export default function AtencionEspecialPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Atención especial' }])
   const { state } = useLocation()
-  const puedeMarcar = puedeMarcarAtencionEspecial(useRolTercerizados())
+  const navegar = useNavigate()
+  const rol = useRolTercerizados()
+  const puedeMarcar = puedeMarcarAtencionEspecial(rol)
+  const puedeProgramarPlan = puedeRegistrarAtencion(rol)
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
@@ -112,6 +118,11 @@ export default function AtencionEspecialPage() {
     <div className={estilos.pagina}>
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />
       <AccionesPagina>
+        {puedeProgramarPlan && (
+          <BotonEnlace to={RUTAS_TERCERIZADOS.planFitosanitario} variante="secundario">
+            Programar plan estacional
+          </BotonEnlace>
+        )}
         {puedeMarcar && (
           <BotonEnlace to={RUTAS_TERCERIZADOS.marcarEjemplar} variante="primario">
             Marcar ejemplar
@@ -178,6 +189,7 @@ export default function AtencionEspecialPage() {
           filas={consulta.datos?.results ?? []}
           claveFila={(e) => String(e.id)}
           estado={estadoTabla === 'inactivo' ? 'cargando' : estadoTabla}
+          onFilaClick={(e) => navegar(rutaDetalleAtencionEspecial(e.id))}
           paginacionServidor={{
             pagina,
             total,

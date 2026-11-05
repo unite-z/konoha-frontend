@@ -107,3 +107,9 @@ export function horasHistorial(eventos: EventoIncidencia[], hoy: string): string
     return indice > 0 && texto.startsWith('hoy ') ? texto.slice(4) : texto
   })
 }
+
+/** Fecha del informe del proveedor en MOD-05 si la incidencia se derivó y ya lo tiene (AV-278); `null` si no. */
+export function informeDelProveedor(incidencia: IncidenciaDetalle): string | null {
+  const paso = incidencia.requerimiento?.pasos.find((p) => p.nombre === 'Informe del proveedor')
+  return paso?.estado === 'Hecho' ? paso.fecha : null
+}

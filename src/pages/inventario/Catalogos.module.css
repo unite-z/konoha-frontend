@@ -99,3 +99,49 @@
 .avisoFila {
   margin-top: var(--space-2);
 }
+
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.resultado {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-success-bg);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.resultado span {
+  color: var(--color-text-secondary);
+}
+
+.resultado[aria-pressed='true'] {
+  border-color: var(--color-success);
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.ficha dt {
+  color: var(--color-text-secondary);
+}
+
+.ficha dd {
+  margin: 0;
+}

@@ -3,44 +3,29 @@
  * Registro de un proveedor de servicios tercerizados (Guía Web 5.3: formulario de una pantalla).
  *
  * - Solo el jefe de sección registra proveedores (el back-end lo vuelve a comprobar).
- * - Razón social y RUC obligatorios; contacto y vínculo con otras empresas opcionales. «Subsidiaria» y
- *   «Vinculada» piden el proveedor con el que se vinculan.
+ * - Razón social y RUC obligatorios; contacto (nombre, teléfono y correo) y vínculo con otras empresas
+ *   opcionales. «Subsidiaria» y «Vinculada» piden el proveedor con el que se vinculan.
  * - RUC ya registrado: el servidor responde 409 y la pantalla ofrece abrir el proveedor existente.
  * - Si falla el guardado no se crea ningún registro parcial (el servidor lo registra todo en una transacción).
  */
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
-import CampoFormulario, { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import { LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
 import EstadoVacio from '@/components/ui/EstadoVacio'
-import Selector from '@/components/ui/Selector'
-import Tarjeta from '@/components/ui/Tarjeta'
-import SelectorBuscable from '@/components/ui/SelectorBuscable'
 import { puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
-import { listarProveedoresMaestro, registrarProveedor } from '@/services/api/maestrosTercerizados'
+import { registrarProveedor } from '@/services/api/maestrosTercerizados'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
-import type { ProveedorMaestro, TipoVinculo } from '@/types/maestrosTercerizados'
-import {
-  BORRADOR_PROVEEDOR_VACIO,
-  OPCIONES_VINCULO,
-  construirProveedor,
-  hayErrores,
-  requiereRelacionado,
-  validarProveedor,
-  type BorradorProveedor,
-  type ErroresProveedor,
-} from '@/utils/validacionMaestros'
+import { BORRADOR_PROVEEDOR_VACIO, construirProveedor, hayErrores, validarProveedor, type BorradorProveedor } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
+import CamposProveedor, { IDS_PROVEEDOR, ORDEN_PROVEEDOR } from './CamposProveedor'
 import { enfocar, interpretarFallo, type FalloRegistro } from './fallosRegistro'
 import type { EstadoNavegacionMaestros } from './filtrosMaestros'
 import estilos from './Maestros.module.css'
 
 const TITULO = 'Registrar proveedor'
-
-const IDS = { razonSocial: 'proveedor-razon-social', ruc: 'proveedor-ruc', relacionado: 'proveedor-relacionado' } as const
-const ORDEN: (keyof ErroresProveedor)[] = ['razonSocial', 'ruc', 'relacionado']
 
 export default function ProveedorNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.proveedoresContratos, { texto: 'Registrar proveedor' }])
@@ -69,8 +54,8 @@ export default function ProveedorNuevoPage() {
   }
 
   const errores = intentado ? validarProveedor(borrador) : {}
-  const resumen: ErrorResumen[] = ORDEN.filter((clave) => errores[clave]).map((clave) => ({
-    idCampo: IDS[clave],
+  const resumen: ErrorResumen[] = ORDEN_PROVEEDOR.filter((clave) => errores[clave]).map((clave) => ({
+    idCampo: IDS_PROVEEDOR[clave],
     mensaje: errores[clave] as string,
   }))
 
@@ -84,9 +69,9 @@ export default function ProveedorNuevoPage() {
     if (enCurso.current) return
     setIntentado(true)
     const nuevos = validarProveedor(borrador)
-    const primero = ORDEN.find((clave) => nuevos[clave])
+    const primero = ORDEN_PROVEEDOR.find((clave) => nuevos[clave])
     if (primero) {
-      enfocar(IDS[primero])
+      enfocar(IDS_PROVEEDOR[primero])
       return
     }
     enCurso.current = true
@@ -115,72 +100,7 @@ export default function ProveedorNuevoPage() {
       <LeyendaObligatorio />
       <ResumenErrores titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de guardar`} errores={resumen} />
 
-      <Tarjeta titulo="Datos del proveedor" relleno="amplio">
-        <div className={estilos.cuadricula}>
-          <CampoFormulario
-            id={IDS.razonSocial}
-            etiqueta="Razón social"
-            obligatorio
-            maxLength={200}
-            ayuda="Nombre legal de la empresa"
-            value={borrador.razonSocial}
-            onChange={(e) => cambiar({ razonSocial: e.target.value })}
-            error={errores.razonSocial}
-          />
-          <CampoFormulario
-            id={IDS.ruc}
-            etiqueta="RUC"
-            obligatorio
-            formato="entero"
-            maxLength={11}
-            ayuda="11 dígitos"
-            value={borrador.ruc}
-            onChange={(e) => cambiar({ ruc: e.target.value })}
-            error={errores.ruc}
-          />
-          <CampoFormulario
-            id="proveedor-contacto"
-            etiqueta="Contacto (opcional)"
-            maxLength={200}
-            ayuda="Nombre y teléfono de la persona de contacto"
-            value={borrador.contacto}
-            onChange={(e) => cambiar({ contacto: e.target.value })}
-          />
-        </div>
-      </Tarjeta>
-
-      <Tarjeta titulo="Vínculo con otras empresas" relleno="amplio">
-        <div className={estilos.cuadricula}>
-          <Selector
-            id="proveedor-vinculo"
-            etiqueta="Tipo de vínculo"
-            ayuda="Empresa principal, subsidiaria o vinculada con otro proveedor"
-            valor={borrador.tipoVinculo}
-            opciones={OPCIONES_VINCULO.map((o) => ({ valor: o.valor, texto: o.texto }))}
-            onCambiar={(valor) =>
-              cambiar({
-                tipoVinculo: valor as TipoVinculo,
-                relacionado: requiereRelacionado(valor as TipoVinculo) ? borrador.relacionado : null,
-              })
-            }
-          />
-          {requiereRelacionado(borrador.tipoVinculo) && (
-            <SelectorBuscable<ProveedorMaestro>
-              id={IDS.relacionado}
-              etiqueta="Proveedor relacionado"
-              obligatorio
-              ayuda="Empresa principal con la que se vincula"
-              error={errores.relacionado}
-              valor={borrador.relacionado}
-              claveDe={(p) => p.id}
-              textoDe={(p) => p.razon_social}
-              detalleDe={(p) => (p.ruc ? `RUC ${p.ruc}` : 'Sin RUC')}
-              buscar={(q, signal) => listarProveedoresMaestro({ q: q || undefined, activo: true }, 1, signal)}
-              onCambiar={(relacionado) => cambiar({ relacionado })}
-            />
-          )}
-        </div>
-      </Tarjeta>
+      <CamposProveedor borrador={borrador} errores={errores} onCambiar={cambiar} />
 
       {fallo && (
         <AvisoFallo

@@ -34,10 +34,12 @@ export interface SelectorBuscableProps<T> extends PropsMarcoCampo {
   placeholder?: string
   /** Clave de caché: cambia si cambian los filtros de `buscar` (por ejemplo, el área elegida). */
   claveBusqueda?: string
+  /** Oculta `detalleDe` una vez elegido (si esos datos ya se muestran aparte, para no repetirlos). */
+  ocultarDetalleElegido?: boolean
 }
 
 export default function SelectorBuscable<T>(props: SelectorBuscableProps<T>) {
-  const { valor, claveDe, textoDe, detalleDe, buscar, onCambiar, placeholder, claveBusqueda = '', ...marco } = props
+  const { valor, claveDe, textoDe, detalleDe, buscar, onCambiar, placeholder, claveBusqueda = '', ocultarDetalleElegido = false, ...marco } = props
   const idLista = useId()
   const entrada = useRef<HTMLInputElement>(null)
   const [texto, setTexto] = useState('')
@@ -92,7 +94,7 @@ export default function SelectorBuscable<T>(props: SelectorBuscableProps<T>) {
             <span id={marco.id} tabIndex={-1}>
               {textoDe(valor)}
             </span>
-            {detalleDe && <span className={estilos.detalle}>{detalleDe(valor)}</span>}
+            {detalleDe && !ocultarDetalleElegido && <span className={estilos.detalle}>{detalleDe(valor)}</span>}
           </span>
           <Boton variante="terciario" compacto onClick={cambiar} aria-label={`Cambiar ${marco.etiqueta.toLowerCase()}`}>
             Cambiar

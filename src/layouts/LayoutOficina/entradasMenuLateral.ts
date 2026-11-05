@@ -87,6 +87,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Catálogos y sectores', icono: 'sliders', ruta: RUTAS_INVENTARIO.catalogos },
       { texto: 'Ejemplares y especies', icono: 'tree', ruta: RUTAS_INVENTARIO.ejemplares },
       { texto: 'Mapa del campus', icono: 'map', ruta: RUTAS_INVENTARIO.mapa },
+      { texto: 'Campañas de poda', icono: 'scissors', ruta: RUTAS_INVENTARIO.campanasPoda },
     ],
   },
   {
@@ -112,6 +113,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Atenciones', icono: 'list', ruta: RUTAS_TERCERIZADOS.atenciones },
       { texto: 'Proveedores y contratos', icono: 'truck', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
       { texto: 'Control fitosanitario', icono: 'leaf', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
+      { texto: 'Productos agronómicos', icono: 'clipboard', ruta: RUTAS_TERCERIZADOS.productosAgronomicos },
+      { texto: 'Observaciones de plagas', icono: 'triangle-alert', ruta: RUTAS_TERCERIZADOS.observacionesPlagas },
     ],
   },
   {

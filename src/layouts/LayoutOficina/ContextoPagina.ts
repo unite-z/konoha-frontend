@@ -40,6 +40,8 @@ export interface ValorContextoPagina {
   nodoAcciones?: HTMLElement | null
   /** Hueco pegado al título donde `JuntoTitulo` pinta, por ejemplo, el estado del registro («Programada»). */
   nodoJunto?: HTMLElement | null
+  /** Hueco bajo el subtítulo donde `<JuntoTitulo debajo>` pinta una segunda línea con enlace (el requerimiento del ciclo). */
+  nodoDebajo?: HTMLElement | null
   /** Hueco a la derecha de la barra superior móvil donde `AccionMovil` pinta la acción de la página. */
   nodoAccionMovil?: HTMLElement | null
 }

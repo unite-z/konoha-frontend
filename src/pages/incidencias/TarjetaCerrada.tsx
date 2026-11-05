@@ -4,11 +4,13 @@
  */
 import Tarjeta from '@/components/ui/Tarjeta'
 import type { IncidenciaDetalle } from '@/types/incidencias'
-import { textoTiempoCierre } from './detalleIncidencia'
+import { diaMes, informeDelProveedor, textoTiempoCierre } from './detalleIncidencia'
 import Evidencias from './Evidencias'
 import estilos from './Incidencias.module.css'
 
 export default function TarjetaCerrada({ incidencia }: { incidencia: IncidenciaDetalle }) {
+  // Derivada a un proveedor, la evidencia es su informe en Servicios tercerizados (AV-278).
+  const informe = informeDelProveedor(incidencia)
   return (
     <Tarjeta titulo="Cerrada" nivel={2}>
       <div className={estilos.accion}>
@@ -22,7 +24,11 @@ export default function TarjetaCerrada({ incidencia }: { incidencia: IncidenciaD
           {incidencia.atencion && (
             <div>
               <p className={estilos.rotuloCarga}>Evidencia *</p>
-              <Evidencias evidencias={incidencia.atencion.evidencias} />
+              {informe && incidencia.atencion.evidencias.length === 0 ? (
+                <p className={estilos.subtituloAccion}>Informe del proveedor en Servicios tercerizados, del {diaMes(informe)}.</p>
+              ) : (
+                <Evidencias evidencias={incidencia.atencion.evidencias} />
+              )}
             </div>
           )}
           {incidencia.cierre?.avisado_a && <p className={estilos.subtituloAccion}>Se avisó a {incidencia.cierre.avisado_a.replace(/\.$/, '')}.</p>}

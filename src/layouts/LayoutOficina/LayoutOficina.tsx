@@ -42,10 +42,11 @@ export default function LayoutOficina() {
   const [pagina, establecerPagina] = useState<DatosPagina>({ titulo: '', migas: [] })
   const [nodoAcciones, setNodoAcciones] = useState<HTMLElement | null>(null)
   const [nodoJunto, setNodoJunto] = useState<HTMLElement | null>(null)
+  const [nodoDebajo, setNodoDebajo] = useState<HTMLElement | null>(null)
   const [nodoAccionMovil, setNodoAccionMovil] = useState<HTMLElement | null>(null)
   const valor = useMemo(
-    () => ({ pagina, establecerPagina, nodoAcciones, nodoJunto, nodoAccionMovil }),
-    [pagina, nodoAcciones, nodoJunto, nodoAccionMovil],
+    () => ({ pagina, establecerPagina, nodoAcciones, nodoJunto, nodoDebajo, nodoAccionMovil }),
+    [pagina, nodoAcciones, nodoJunto, nodoDebajo, nodoAccionMovil],
   )
   const [comprimido, setComprimido] = useState(leerComprimido)
   const alternarComprimido = useCallback(() => {
@@ -118,6 +119,7 @@ export default function LayoutOficina() {
                     ) : (
                       <p className={estilos.subtitulo}>{pagina.subtitulo}</p>
                     )}
+                    <div ref={setNodoDebajo} className={estilos.debajoTitulo} />
                   </div>
                 ) : (
                   <>

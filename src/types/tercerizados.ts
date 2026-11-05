@@ -59,6 +59,25 @@ export interface Alcance {
   unidad_medida_simbolo: string | null
 }
 
+/** Producto agronómico aplicado en la atención (RF-FIT-003). Conserva el nombre aunque el producto se inhabilite. */
+export interface ProductoAplicado {
+  id: number
+  producto_id: number
+  producto_nombre: string
+  /** `false` si el producto ya no está disponible en el catálogo. */
+  producto_activo: boolean
+  dosis: string
+}
+
+/** Plaga controlada en la atención (RF-FIT-004), del catálogo de plagas. Conserva el nombre aunque la plaga se inhabilite. */
+export interface PlagaControlada {
+  id: number
+  plaga_id: number
+  plaga_nombre: string
+  /** `false` si la plaga ya no está disponible en el catálogo. */
+  plaga_activo: boolean
+}
+
 export interface CambioEstado {
   estado_anterior: EstadoAtencion | ''
   estado_nuevo: EstadoAtencion
@@ -100,6 +119,8 @@ export interface Atencion {
   usuario_creacion_nombre: string | null
   usuario_modificacion_id: number
   alcances: Alcance[]
+  productos: ProductoAplicado[]
+  plagas: PlagaControlada[]
   historial: CambioEstado[]
 }
 
@@ -146,11 +167,20 @@ export interface OrigenEntrada {
   unidad_provisional?: string
 }
 
+/** Producto aplicado a enviar (RF-FIT-003); la dosis es texto libre y opcional. */
+export interface ProductoAplicadoEntrada {
+  producto_id: number
+  dosis?: string
+}
+
 export interface CrearAtencionEntrada extends OrigenEntrada {
   contrato_id: number
   descripcion: string
   es_riesgo?: boolean
   alcances: AlcanceEntrada[]
+  productos?: ProductoAplicadoEntrada[]
+  /** Ids del catálogo de plagas (RF-FIT-004). */
+  plagas_controladas?: number[]
 }
 
 export interface CorregirOrigenEntrada extends OrigenEntrada {

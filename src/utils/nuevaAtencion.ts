@@ -9,6 +9,7 @@ import type {
   Contrato,
   CrearAtencionEntrada,
   OrigenAtencion,
+  ProductoAplicadoEntrada,
   UnidadInstitucional,
 } from '../types/tercerizados'
 
@@ -36,6 +37,19 @@ export interface AlcanceSeleccionado {
   unidad_medida_id: string
 }
 
+/** Producto agronómico elegido para la atención (RF-FIT-003), con su dosis como texto libre. */
+export interface ProductoSeleccionado {
+  producto_id: number
+  nombre: string
+  dosis: string
+}
+
+/** Plaga del catálogo elegida como controlada en la atención (RF-FIT-004). */
+export interface PlagaSeleccionada {
+  plaga_id: number
+  nombre: string
+}
+
 export interface BorradorAtencion {
   contrato: Contrato | null
   descripcion: string
@@ -46,6 +60,8 @@ export interface BorradorAtencion {
   unidad: UnidadInstitucional | null
   unidadProvisional: string
   alcances: AlcanceSeleccionado[]
+  productos: ProductoSeleccionado[]
+  plagasControladas: PlagaSeleccionada[]
 }
 
 export const BORRADOR_VACIO: BorradorAtencion = {
@@ -57,6 +73,8 @@ export const BORRADOR_VACIO: BorradorAtencion = {
   unidad: null,
   unidadProvisional: '',
   alcances: [],
+  productos: [],
+  plagasControladas: [],
 }
 
 export function claveAlcance(tipo: TipoAlcance, id: number): string {
@@ -76,8 +94,28 @@ export function alternarAlcance(
 /** `true` si el borrador tiene algo escrito o elegido (para avisar antes de salir). */
 export function hayCambiosBorrador(b: BorradorAtencion): boolean {
   return Boolean(
-    b.contrato || b.descripcion.trim() || b.es_riesgo || b.origen || b.unidad || b.unidadProvisional.trim() || b.alcances.length,
+    b.contrato ||
+      b.descripcion.trim() ||
+      b.es_riesgo ||
+      b.origen ||
+      b.unidad ||
+      b.unidadProvisional.trim() ||
+      b.alcances.length ||
+      b.productos.length ||
+      b.plagasControladas.length,
   )
+}
+
+/** Agrega el producto si no está elegido o lo quita si ya estaba (selección con casillas). */
+export function alternarProducto(lista: ProductoSeleccionado[], producto: { id: number; nombre: string }): ProductoSeleccionado[] {
+  if (lista.some((p) => p.producto_id === producto.id)) return lista.filter((p) => p.producto_id !== producto.id)
+  return [...lista, { producto_id: producto.id, nombre: producto.nombre, dosis: '' }]
+}
+
+/** Agrega la plaga si no está elegida o la quita si ya estaba (selección con casillas). */
+export function alternarPlaga(lista: PlagaSeleccionada[], plaga: { id: number; nombre: string }): PlagaSeleccionada[] {
+  if (lista.some((p) => p.plaga_id === plaga.id)) return lista.filter((p) => p.plaga_id !== plaga.id)
+  return [...lista, { plaga_id: plaga.id, nombre: plaga.nombre }]
 }
 
 /**
@@ -171,10 +209,17 @@ export function construirEntrada(b: BorradorAtencion): CrearAtencionEntrada {
     if (b.unidadModo === 'existente' && b.unidad) entrada.unidad_solicitante_id = b.unidad.id
     else entrada.unidad_provisional = b.unidadProvisional.trim()
   }
+  if (b.productos.length > 0) {
+    entrada.productos = b.productos.map((p): ProductoAplicadoEntrada => {
+      const dosis = p.dosis.trim()
+      return dosis ? { producto_id: p.producto_id, dosis } : { producto_id: p.producto_id }
+    })
+  }
+  if (b.plagasControladas.length > 0) entrada.plagas_controladas = b.plagasControladas.map((p) => p.plaga_id)
   return entrada
 }
 
 /** Paso del asistente al que pertenece un campo rechazado por el servidor (para llevar al usuario allí). */
 export function pasoDeCampo(campo: string): 1 | 2 {
-  return campo.startsWith('alcances') ? 2 : 1
+  return campo.startsWith('alcances') || campo.startsWith('productos') || campo.startsWith('plagas_controladas') ? 2 : 1
 }
