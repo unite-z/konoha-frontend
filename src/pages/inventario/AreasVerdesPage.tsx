@@ -26,6 +26,7 @@ const COLUMNAS: ColumnaTabla<AreaVerde>[] = [
   { clave: 'sector', titulo: 'Sector', render: (area) => area.sector_nombre ?? 'Sin sector' },
   { clave: 'cuartel', titulo: 'Cuartel histórico', render: (area) => area.cuartel_numero ?? '—' },
   { clave: 'cobertura', titulo: 'Cobertura', render: (area) => area.tipo_cobertura_nombre ?? 'Sin cobertura' },
+  { clave: 'tipo-uso', titulo: 'Tipo de uso', render: (area) => area.tipo_uso_nombre ?? 'Sin tipo de uso' },
   { clave: 'ubicacion', titulo: 'Ubicación', multilinea: true, render: (area) => area.ubicacion },
 ]
 
