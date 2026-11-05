@@ -12,8 +12,8 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { useSesionCampo } from '@/sesion/ContextoSesionCampo'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { ActividadCampo, CuadrillaCampo, OperarioCampo, ParticipantesCampo } from '@/types/operacionCampo'
-import { puedeRegistrarCampo } from '@/utils/operacionCampo'
-import { formatearFecha } from '@/utils/formato'
+import { esJefeCampo, puedeRegistrarCampo } from '@/utils/operacionCampo'
+import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import DialogoNuevaActividad from './DialogoNuevaActividad'
@@ -23,13 +23,14 @@ import { comprimirFotografia } from '@/utils/comprimirFotografia'
 import estilos from './OperacionCampo.module.css'
 import Estado from '@/components/ui/Estado'
 import { TONO_ESTADO } from '@/components/ui/tonos'
+import VerificacionActividad from './VerificacionActividad'
 
 export default function ParticipantesPage() {
   usePaginaActual('Participantes por actividad',[{texto:'Operación de campo'},{texto:'Participantes por actividad'}])
-  const {usuario}=useSesionCampo(), puedeRegistrar=puedeRegistrarCampo(usuario)
+  const {usuario}=useSesionCampo(), puedeRegistrar=puedeRegistrarCampo(usuario), puedeVerificar=esJefeCampo(usuario)
   const listado=useListadoCampo<ActividadCampo>('actividades',['fecha','cuadrilla_id'])
   const cuadrillas=useConsulta('filtro-cuadrillas',signal=>todosCampo<CuadrillaCampo>('cuadrillas/',{},signal))
-  const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[evidenciaActividad,setEvidenciaActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
+  const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[evidenciaActividad,setEvidenciaActividad]=useState<ActividadCampo|null>(null),[verificacionActividad,setVerificacionActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
     <AccionesPagina><ExportarExcel listado="actividades" />{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
     <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
@@ -49,14 +50,17 @@ export default function ParticipantesPage() {
       {clave:'cantidad',titulo:'Participantes',alineacion:'derecha',render:a=>a.participantes.cantidad_operarios},
       {clave:'operarios',titulo:'Operarios',multilinea:true,render:a=>a.participantes.operarios.length?a.participantes.operarios.map(p=>`${p.nombres} ${p.apellidos}`).join(', '):'Sin selección registrada'},
       {clave:'estado',titulo:'Parte',render:a=><Estado tono={TONO_ESTADO[a.estado==='Abierto'?'info':'neutral']} texto={a.estado}/>},
+      {clave:'verificacion',titulo:'Verificación',multilinea:true,render:a=>a.fecha_verificacion?<><span className={estilos.celdaPrincipal}>Verificada por {a.verificado_por_nombre??'Jefe de sección'}</span><span className={estilos.secundario}>{formatearFechaHora(a.fecha_verificacion)} · {a.verificacion_observaciones}</span></>:'Pendiente de verificar'},
       {clave:'acciones',titulo:'Acciones',render:a=><Boton variante="fantasma" compacto aria-label={`${puedeRegistrar&&a.estado==='Abierto'?'Seleccionar':'Ver'} operarios de actividad ${a.id}`} onClick={()=>setActual(a)}>{puedeRegistrar&&a.estado==='Abierto'?'Seleccionar operarios':'Ver participantes'}</Boton>},
       {clave:'materiales',titulo:'Materiales',render:a=><Boton variante="fantasma" compacto aria-label={`Materiales de actividad ${a.id}`} onClick={()=>setMaterialActividad(a)}>Materiales</Boton>},
       {clave:'evidencias',titulo:'Evidencias',render:a=><Boton variante="fantasma" compacto aria-label={`Fotografías de actividad ${a.id}`} onClick={()=>setEvidenciaActividad(a)}>Fotografías</Boton>},
+      ...(puedeVerificar?[{clave:'verificar',titulo:'Revisión',render:(a:ActividadCampo)=><Boton variante="fantasma" compacto aria-label={`Verificar actividad ${a.id}`} onClick={()=>setVerificacionActividad(a)}>{a.fecha_verificacion?'Actualizar verificación':'Verificar'}</Boton>}]:[]),
     ]}/>
     {nueva&&<DialogoNuevaActividad onCerrar={()=>setNueva(false)} onGuardado={actividad=>{setNueva(false);setActual(actividad);setAviso('Actividad registrada. Selecciona los operarios que participaron');listado.consulta.reintentar()}}/>}
     {actual&&<DialogoParticipantes actividad={actual} soloLectura={!puedeRegistrar||actual.estado==='Cerrado'} onCerrar={()=>setActual(null)} onGuardado={()=>{setActual(null);setAviso('Los participantes se guardaron correctamente');listado.consulta.reintentar()}}/>}
     {materialActividad&&<MaterialesActividad actividad={materialActividad} soloLectura={!puedeRegistrar||materialActividad.estado==='Cerrado'} onCerrar={()=>setMaterialActividad(null)}/>}
     {evidenciaActividad&&<DialogoFormulario abierto titulo="Fotografías de la actividad" textoConfirmar="Cerrar" onEnviar={()=>setEvidenciaActividad(null)} onCerrar={()=>setEvidenciaActividad(null)} conObligatorios={false}><Adjuntos entidad="actividad" registroId={evidenciaActividad.id} puedeAdjuntar={usuario?.rol==='Capataz'&&evidenciaActividad.estado==='Abierto'} tiposAceptados=".jpg,.jpeg,.png" ayudaCarga="JPEG o PNG, de hasta 20 MB." prepararArchivo={comprimirFotografia}/></DialogoFormulario>}
+    {verificacionActividad&&<VerificacionActividad actividad={verificacionActividad} onCerrar={()=>setVerificacionActividad(null)} onGuardado={()=>{setVerificacionActividad(null);setAviso('Verificación registrada con su autor y fecha');listado.consulta.reintentar()}}/>}
   </div>
 }
 
