@@ -32,6 +32,8 @@ it('envía clase, fecha de solicitud e incidencia junto con la actividad', async
   }))
   render(<DialogoNuevaActividad onCerrar={() => {}} onGuardado={guardado} />)
   const usuario = userEvent.setup()
+  expect(await screen.findByText('Opcional. No puede ser posterior a la fecha de atención.')).toBeTruthy()
+  expect(screen.getByText('Opcional. Introduce una incidencia registrada; no puede combinarse con un encargo de origen.')).toBeTruthy()
   await usuario.selectOptions(await screen.findByLabelText(/^Cuadrilla/), '1')
   await usuario.selectOptions(screen.getByLabelText(/^Clase de actividad/), '3')
   await usuario.selectOptions(screen.getByLabelText(/^Tipo de actividad/), '7')
