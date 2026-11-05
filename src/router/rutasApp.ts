@@ -107,6 +107,10 @@ export function rutaRegistrarPoda(campanaId: number): string {
   return `${rutaCampanaPoda(campanaId)}/registrar`
 }
 
+export function rutaRendimientoCampana(campanaId: number): string {
+  return `${rutaCampanaPoda(campanaId)}/rendimiento`
+}
+
 export function rutaIntervencionPoda(id: number): string {
   return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
 }
