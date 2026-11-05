@@ -35,12 +35,15 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
           id={IDS_PASO1.contrato}
           etiqueta="Contrato vigente"
           obligatorio
-          ayuda="Busca por número, proveedor o servicio. Solo se listan contratos vigentes hoy."
+          // Solo hace falta mientras se busca: una vez elegido el contrato, sobra.
+          ayuda={borrador.contrato ? undefined : 'Busca por número, proveedor o servicio. Solo se listan contratos vigentes hoy.'}
           error={errores.contrato}
           valor={borrador.contrato}
           claveDe={(c) => c.id}
           textoDe={(c) => c.numero}
           detalleDe={detalleContrato}
+          // Elegido el contrato, sus datos ya se muestran en la lista de debajo: no se repiten aquí.
+          ocultarDetalleElegido
           buscar={(q, signal) => listarContratos({ vigente: true, q: q || undefined }, signal)}
           onCambiar={(contrato) => cambiar({ contrato })}
         />
@@ -62,11 +65,14 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
           marcada={borrador.es_riesgo || riesgoCatalogo}
           disabled={riesgoCatalogo}
           onCambiar={(marcada) => cambiar({ es_riesgo: marcada })}
-          ayuda={`${
+          // El aviso del bloqueo solo aplica una vez marcada: no hace falta adelantarlo si todavía no aplica.
+          ayuda={
             riesgoCatalogo
-              ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo; la marca no se puede quitar.`
-              : 'Márcala si el trabajo implica riesgo para las personas.'
-          } El inicio de una atención de riesgo queda bloqueado hasta integrar la revisión de seguridad.`}
+              ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo: la marca no se puede quitar y el inicio queda bloqueado hasta integrar la revisión de seguridad.`
+              : borrador.es_riesgo
+                ? 'El inicio de la atención queda bloqueado hasta integrar la revisión de seguridad.'
+                : 'Márcala si el trabajo implica riesgo para las personas.'
+          }
         />
       </Tarjeta>
 

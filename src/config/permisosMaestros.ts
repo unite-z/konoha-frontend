@@ -15,3 +15,18 @@ export function puedeRegistrarProveedoresYContratos(rol: RolTercerizados | null)
 export function puedeMarcarAtencionEspecial(rol: RolTercerizados | null): boolean {
   return rol !== null
 }
+
+/** Solo el jefe de sección habilita o inhabilita un proveedor. */
+export function puedeCambiarEstadoProveedor(rol: RolTercerizados | null): boolean {
+  return rol === JEFE
+}
+
+/** Solo el jefe de sección administra el catálogo de productos agronómicos (RF-FIT-003). */
+export function puedeAdministrarProductosAgronomicos(rol: RolTercerizados | null): boolean {
+  return rol === JEFE
+}
+
+/** Los tres roles del módulo registran observaciones de plagas (RF-FIT-005). */
+export function puedeRegistrarObservacionPlaga(rol: RolTercerizados | null): boolean {
+  return rol !== null
+}

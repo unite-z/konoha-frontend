@@ -17,7 +17,8 @@ import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFil
 import Estado from '@/components/ui/Estado'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Pestanas from '@/components/ui/Pestanas'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
+import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import SelectorBuscable from '@/components/ui/SelectorBuscable'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import Tarjeta from '@/components/ui/Tarjeta'
 import { insigniaAEstado } from '@/components/ui/tonos'
@@ -28,17 +29,11 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { obtenerContrato } from '@/services/api/maestrosTercerizados'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
-import { listarAtenciones, listarTodosLosContratos } from '@/services/api/tercerizados'
+import { listarAtenciones, listarContratos } from '@/services/api/tercerizados'
 import type { Atencion, Contrato } from '@/types/tercerizados'
-import {
-  ESTADOS_ATENCION,
-  OPCIONES_ORIGEN,
-  codigoCorto,
-  insigniaEstado,
-  resumenAlcances,
-  textoOrigen,
-} from '@/utils/estadosTercerizados'
+import { ESTADOS_ATENCION, OPCIONES_ORIGEN, codigoCorto, insigniaEstado, textoOrigen } from '@/utils/estadosTercerizados'
 import {
   FILTROS_BANDEJA_VACIOS,
   LARGO_MAXIMO_BUSQUEDA,
@@ -82,43 +77,9 @@ const COLUMNAS: ColumnaTabla<Atencion>[] = [
       </span>
     ),
   },
-  {
-    clave: 'descripcion',
-    titulo: 'Descripción',
-    multilinea: true,
-    render: (a) => <span className={estilos.celdaDescripcion}>{a.descripcion}</span>,
-  },
-  { clave: 'servicio', titulo: 'Servicio', render: (a) => a.tipo_servicio_nombre ?? SIN_VALOR },
-  {
-    clave: 'proveedor',
-    titulo: 'Proveedor',
-    subtitulo: 'Contrato',
-    multilinea: true,
-    render: (a) => (
-      <>
-        {a.proveedor_nombre ?? SIN_VALOR}
-        <br />
-        <span className={estilos.ayuda}>{a.contrato_numero ?? SIN_VALOR}</span>
-      </>
-    ),
-  },
-  {
-    clave: 'origen',
-    titulo: 'Origen',
-    multilinea: true,
-    render: (a) => (
-      <>
-        {textoOrigen(a.origen)}
-        {a.unidad_solicitante_nombre && (
-          <>
-            <br />
-            <span className={estilos.ayuda}>{a.unidad_solicitante_nombre}</span>
-          </>
-        )}
-      </>
-    ),
-  },
-  { clave: 'oc', titulo: 'Orden de compra', render: (a) => a.numero_orden_compra || SIN_VALOR },
+  { clave: 'servicio', titulo: 'Servicio', multilinea: true, render: (a) => a.tipo_servicio_nombre ?? SIN_VALOR },
+  { clave: 'proveedor', titulo: 'Proveedor', multilinea: true, render: (a) => a.proveedor_nombre ?? SIN_VALOR },
+  { clave: 'contrato', titulo: 'Contrato', render: (a) => <span className="cifra">{a.contrato_numero ?? SIN_VALOR}</span> },
   {
     clave: 'estado',
     titulo: 'Estado',
@@ -129,7 +90,6 @@ const COLUMNAS: ColumnaTabla<Atencion>[] = [
       </span>
     ),
   },
-  { clave: 'alcances', titulo: 'Alcance', multilinea: true, render: (a) => resumenAlcances(a.alcances) },
   { clave: 'registro', titulo: 'Registrada', render: (a) => formatearFecha(a.fecha_creacion) },
 ]
 
@@ -150,12 +110,12 @@ export default function AtencionesPage() {
     (datos) => datos.results.length === 0,
   )
 
-  const contratos = useConsulta('contratos', (signal) => listarTodosLosContratos(signal))
-  const opcionesContrato: OpcionSelector[] = (contratos.datos?.contratos ?? []).map((c) => ({
-    valor: String(c.id),
-    texto: textoContrato(c),
-  }))
-  const contratoAplicado = contratos.datos?.contratos.find((c) => c.id === filtros.contrato_id)
+  // Para mostrar el contrato ya elegido en el filtro (la búsqueda solo trae resultados mientras se escribe).
+  const contratoFiltro = useConsulta(
+    filtros.contrato_id ? `contrato-filtro|${filtros.contrato_id}` : null,
+    (signal) => obtenerContrato(filtros.contrato_id as number, signal),
+  )
+  const contratoAplicado: Contrato | null = filtros.contrato_id ? (contratoFiltro.datos ?? null) : null
 
   // Borrador de la búsqueda: se aplica al enviar. Si la URL cambia (chip quitado), el borrador la refleja.
   const [busqueda, setBusqueda] = useState(filtros.q ?? '')
@@ -228,25 +188,16 @@ export default function AtencionesPage() {
             opcionTodos={OPCION_TODOS}
             onCambiar={(valor) => aplicar({ origen: valor || null })}
           />
-          <Selector
+          <SelectorBuscable<Contrato>
             id="filtro-contrato"
             etiqueta="Contrato"
-            valor={filtros.contrato_id ? String(filtros.contrato_id) : ''}
-            opciones={
-              contratoAplicado || !filtros.contrato_id
-                ? opcionesContrato
-                : [...opcionesContrato, { valor: String(filtros.contrato_id), texto: `n.º ${filtros.contrato_id}` }]
-            }
-            opcionTodos={OPCION_TODOS}
-            ayuda={contratos.datos && !contratos.datos.completo ? 'Se muestran los primeros 500 contratos' : undefined}
-            bloqueadoMotivo={
-              contratos.estado === 'error'
-                ? 'No se pudieron cargar los contratos. Recarga la página para filtrar por contrato'
-                : contratos.cargaVisible
-                  ? 'Cargando contratos…'
-                  : undefined
-            }
-            onCambiar={(valor) => aplicar({ contrato_id: valor || null })}
+            ayuda="Busca por número o proveedor"
+            valor={contratoAplicado}
+            claveDe={(c) => c.id}
+            textoDe={(c) => c.numero}
+            detalleDe={(c) => c.proveedor_nombre ?? SIN_VALOR}
+            buscar={(q, signal) => listarContratos({ q: q || undefined }, signal)}
+            onCambiar={(contrato) => aplicar({ contrato_id: contrato ? String(contrato.id) : null })}
           />
           <div className={estilos.accionFiltros}>
             <Boton type="submit" variante="secundario">

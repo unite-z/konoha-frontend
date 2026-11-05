@@ -1,7 +1,8 @@
 /* ListaDescripcion: etiqueta en body-sm atenuada sobre el valor (mockup, pantalla 6). */
 .lista {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  /* auto-fit (no auto-fill): con pocos elementos, ocupan el ancho en vez de dejar huecos vacíos. */
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: var(--space-4) var(--space-6);
   margin: 0;
 }

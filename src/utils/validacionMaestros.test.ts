@@ -1,18 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import type { ProveedorMaestro } from '../types/maestrosTercerizados'
+import type { ContratoMaestro, ProductoAgronomico, ProveedorMaestro } from '../types/maestrosTercerizados'
+import type { AreaVerde, Ejemplar } from '../types/tercerizados'
 import {
+  BORRADOR_APLICACION_VACIO,
   BORRADOR_CONTRATO_VACIO,
   BORRADOR_ESPECIAL_VACIO,
+  BORRADOR_OBSERVACION_VACIO,
+  BORRADOR_PRODUCTO_VACIO,
   BORRADOR_PROVEEDOR_VACIO,
+  borradorDeProducto,
+  construirAplicacionAdicional,
   construirContrato,
   construirEspecial,
+  construirObservacion,
+  construirProducto,
   construirProveedor,
   hayErrores,
   normalizarMonto,
   textoAplicaciones,
   textoVinculo,
+  validarAplicacionAdicional,
   validarContrato,
   validarEspecial,
+  validarObservacion,
+  validarProducto,
   validarProveedor,
   type BorradorContrato,
 } from './validacionMaestros'
@@ -22,7 +33,9 @@ const PRINCIPAL: ProveedorMaestro = {
   razon_social: 'Servicios Verdes Demo S.A.C.',
   ruc: '20000000001',
   activo: true,
-  contacto: '',
+  contacto_nombre: '',
+  contacto_telefono: '',
+  contacto_correo: '',
   tipo_vinculo: 'Principal',
   proveedor_relacionado_id: null,
   proveedor_relacionado_nombre: null,
@@ -34,7 +47,8 @@ const CONTRATO_VALIDO: BorradorContrato = {
   tipoServicioId: '3',
   area: '120 ejemplares',
   monto: '12 000,00',
-  frecuencia: '4 al año',
+  frecuenciaCantidad: '4',
+  frecuenciaUnidad: 'Anio',
   inicio: '2026-01-01',
   fin: '2026-12-31',
   condiciones: '  Pago a 30 días ',
@@ -79,12 +93,12 @@ describe('construirProveedor', () => {
       ...BORRADOR_PROVEEDOR_VACIO,
       razonSocial: 'Fumigaciones Demo',
       ruc: '20000000002',
-      contacto: 'Rosa Demo',
+      contactoNombre: 'Rosa Demo',
       tipoVinculo: 'Subsidiaria',
       relacionado: PRINCIPAL,
     })
     expect(entrada.proveedor_relacionado_id).toBe(7)
-    expect(entrada.contacto).toBe('Rosa Demo')
+    expect(entrada.contacto_nombre).toBe('Rosa Demo')
   })
 })
 
@@ -119,7 +133,16 @@ describe('validarContrato', () => {
 
   it('señala todos los campos obligatorios que faltan', () => {
     const errores = validarContrato(BORRADOR_CONTRATO_VACIO)
-    expect(Object.keys(errores).sort()).toEqual(['area', 'fin', 'frecuencia', 'inicio', 'monto', 'proveedor', 'tipoServicio'])
+    expect(Object.keys(errores).sort()).toEqual([
+      'area',
+      'fin',
+      'frecuenciaCantidad',
+      'frecuenciaUnidad',
+      'inicio',
+      'monto',
+      'proveedor',
+      'tipoServicio',
+    ])
   })
 
   it('las condiciones son opcionales', () => {
@@ -134,6 +157,14 @@ describe('validarContrato', () => {
   it('rechaza un monto inválido', () => {
     expect(validarContrato({ ...CONTRATO_VALIDO, monto: '12,3456' }).monto).toBeDefined()
   })
+
+  it.each(['0', '366', 'abc', ''])('rechaza una frecuencia de %j veces', (frecuenciaCantidad) => {
+    expect(validarContrato({ ...CONTRATO_VALIDO, frecuenciaCantidad }).frecuenciaCantidad).toBeDefined()
+  })
+
+  it('exige el período de la frecuencia', () => {
+    expect(validarContrato({ ...CONTRATO_VALIDO, frecuenciaUnidad: '' }).frecuenciaUnidad).toBeDefined()
+  })
 })
 
 describe('construirContrato', () => {
@@ -143,7 +174,8 @@ describe('construirContrato', () => {
       tipo_servicio_id: 3,
       area_metrado_estimado: '120 ejemplares',
       monto_fijo: '12000.00',
-      frecuencia_pactada: '4 al año',
+      frecuencia_cantidad: 4,
+      frecuencia_unidad: 'Anio',
       vigencia_inicio: '2026-01-01',
       vigencia_fin: '2026-12-31',
       condiciones: 'Pago a 30 días',
@@ -182,5 +214,121 @@ describe('atención especial', () => {
 
   it('formatea las aplicaciones', () => {
     expect(textoAplicaciones(1, 2)).toBe('1 de 2')
+  })
+})
+
+describe('aplicación adicional', () => {
+  const CONTRATO: ContratoMaestro = {
+    id: 1,
+    numero: 'CT-FIT-001',
+    proveedor_id: 1,
+    proveedor_nombre: 'Fumigaciones del Campus S.A.',
+    tipo_servicio_id: 1,
+    tipo_servicio_nombre: 'Control fitosanitario',
+    vigencia_inicio: '2026-01-01',
+    vigencia_fin: '2026-12-31',
+    area_metrado_estimado: null,
+    monto_fijo: null,
+    frecuencia_pactada: null,
+    frecuencia_cantidad: null,
+    frecuencia_unidad: null,
+    condiciones: '',
+    vigente: true,
+    atenciones: 0,
+  }
+
+  it('pide el contrato y las dos fechas', () => {
+    const errores = validarAplicacionAdicional(BORRADOR_APLICACION_VACIO)
+    expect(errores.contrato).toBeDefined()
+    expect(errores.fechaInicio).toBeDefined()
+    expect(errores.fechaFin).toBeDefined()
+  })
+
+  it('el fin no puede ser anterior al inicio', () => {
+    const borrador = { ...BORRADOR_APLICACION_VACIO, contrato: CONTRATO, fechaInicio: '2026-06-10', fechaFin: '2026-06-01' }
+    expect(validarAplicacionAdicional(borrador).fechaFin).toMatch(/anterior/)
+  })
+
+  it('sin errores con contrato y fechas válidas', () => {
+    const borrador = { ...BORRADOR_APLICACION_VACIO, contrato: CONTRATO, fechaInicio: '2026-06-01', fechaFin: '2026-06-01' }
+    expect(hayErrores(validarAplicacionAdicional(borrador))).toBe(false)
+  })
+
+  it('construye la entrada y omite el motivo vacío', () => {
+    const borrador = { contrato: CONTRATO, fechaInicio: '2026-06-01', fechaFin: '2026-06-01', motivo: '' }
+    expect(construirAplicacionAdicional(borrador)).toEqual({ contrato_id: 1, fecha_inicio: '2026-06-01', fecha_fin: '2026-06-01' })
+    expect(construirAplicacionAdicional({ ...borrador, motivo: ' Coincide con una restricción ' }).motivo).toBe('Coincide con una restricción')
+  })
+})
+
+describe('producto agronómico', () => {
+  const PRODUCTO: ProductoAgronomico = { id: 1, nombre: 'Insecticida Demo', principio_activo: 'Imidacloprid', presentacion: 'Frasco 250 ml', activo: true }
+
+  it('pide el nombre', () => {
+    const errores = validarProducto(BORRADOR_PRODUCTO_VACIO)
+    expect(errores.nombre).toBeDefined()
+    expect(errores.principioActivo).toBeUndefined()
+    expect(errores.presentacion).toBeUndefined()
+  })
+
+  it('el principio activo y la presentación son opcionales', () => {
+    expect(hayErrores(validarProducto({ ...BORRADOR_PRODUCTO_VACIO, nombre: 'Insecticida' }))).toBe(false)
+  })
+
+  it('construye la entrada y omite lo vacío', () => {
+    expect(construirProducto({ nombre: ' Insecticida ', principioActivo: '', presentacion: '' })).toEqual({ nombre: 'Insecticida' })
+    expect(construirProducto({ nombre: 'Insecticida', principioActivo: ' Imidacloprid ', presentacion: ' Frasco 250 ml ' })).toEqual({
+      nombre: 'Insecticida',
+      principio_activo: 'Imidacloprid',
+      presentacion: 'Frasco 250 ml',
+    })
+  })
+
+  it('arma el borrador de edición a partir del producto cargado', () => {
+    expect(borradorDeProducto(PRODUCTO)).toEqual({ nombre: 'Insecticida Demo', principioActivo: 'Imidacloprid', presentacion: 'Frasco 250 ml' })
+  })
+})
+
+describe('observación de plaga', () => {
+  const AREA: AreaVerde = { id: 3, nombre: 'Jardín A', activo: true }
+  const EJEMPLAR: Ejemplar = { id: 9, codigo: 'E-09', area_verde_id: 3, area_verde_nombre: 'Jardín A' }
+  const HOY = '2026-10-21'
+
+  it('exige el destino, la plaga, la descripción y la fecha', () => {
+    const errores = validarObservacion(BORRADOR_OBSERVACION_VACIO, HOY)
+    expect(errores.destino).toMatch(/área verde/)
+    expect(errores.plaga).toBeDefined()
+    expect(errores.descripcion).toBeDefined()
+    expect(errores.fecha).toBeDefined()
+  })
+
+  it('pide un ejemplar cuando el destino es un ejemplar', () => {
+    expect(validarObservacion({ ...BORRADOR_OBSERVACION_VACIO, tipoDestino: 'ejemplar' }, HOY).destino).toMatch(/ejemplar/)
+  })
+
+  it('no admite una fecha futura', () => {
+    const borrador = { ...BORRADOR_OBSERVACION_VACIO, area: AREA, plagaId: '1', descripcion: 'Presencia visible', fecha: '2026-10-22' }
+    expect(validarObservacion(borrador, HOY).fecha).toMatch(/futura/)
+  })
+
+  it('sin errores con un destino, plaga, descripción y fecha válidos', () => {
+    const borrador = { ...BORRADOR_OBSERVACION_VACIO, area: AREA, plagaId: '1', descripcion: 'Presencia visible en hojas', fecha: HOY }
+    expect(hayErrores(validarObservacion(borrador, HOY))).toBe(false)
+  })
+
+  it('construye la entrada con el área o el ejemplar elegido, nunca ambos', () => {
+    const base = { plagaId: '2', descripcion: ' Presencia visible ', fecha: HOY }
+    expect(construirObservacion({ ...BORRADOR_OBSERVACION_VACIO, ...base, tipoDestino: 'area', area: AREA })).toEqual({
+      area_verde_id: 3,
+      plaga_id: 2,
+      descripcion: 'Presencia visible',
+      fecha_observacion: HOY,
+    })
+    expect(construirObservacion({ ...BORRADOR_OBSERVACION_VACIO, ...base, tipoDestino: 'ejemplar', ejemplar: EJEMPLAR })).toEqual({
+      ejemplar_id: 9,
+      plaga_id: 2,
+      descripcion: 'Presencia visible',
+      fecha_observacion: HOY,
+    })
   })
 })

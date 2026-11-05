@@ -147,11 +147,61 @@ export const RUTAS_TERCERIZADOS = {
   nuevoContrato: `${BASE_TERCERIZADOS}/proveedores-contratos/contratos/nuevo`, // RF-SER-002
   controlFitosanitario: `${BASE_TERCERIZADOS}/control-fitosanitario`, // RF-INV-011
   marcarEjemplar: `${BASE_TERCERIZADOS}/control-fitosanitario/marcar`, // RF-INV-011
+  planFitosanitario: `${BASE_TERCERIZADOS}/control-fitosanitario/plan`, // RF-FIT-001
+  productosAgronomicos: `${BASE_TERCERIZADOS}/productos-agronomicos`, // RF-FIT-003
+  nuevoProductoAgronomico: `${BASE_TERCERIZADOS}/productos-agronomicos/nuevo`, // RF-FIT-003
+  observacionesPlagas: `${BASE_TERCERIZADOS}/control-fitosanitario/observaciones`, // RF-FIT-005
+  nuevaObservacionPlaga: `${BASE_TERCERIZADOS}/control-fitosanitario/observaciones/nueva`, // RF-FIT-005
 } as const
 
 /** Ficha de una atención tercerizada. */
 export function rutaDetalleAtencion(id: number | string): string {
   return `${RUTAS_TERCERIZADOS.atenciones}/${id}`
+}
+
+/** Ficha de un proveedor. */
+export function rutaDetalleProveedor(id: number | string): string {
+  return `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/${id}`
+}
+
+/** Edición de un proveedor (solo jefe de sección). */
+export function rutaEditarProveedor(id: number | string): string {
+  return `${rutaDetalleProveedor(id)}/editar`
+}
+
+/** Ficha de un contrato. */
+export function rutaDetalleContrato(id: number | string): string {
+  return `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/${id}`
+}
+
+/** Edición de un contrato (solo jefe de sección). */
+export function rutaEditarContrato(id: number | string): string {
+  return `${rutaDetalleContrato(id)}/editar`
+}
+
+/** Ficha de un producto agronómico. */
+export function rutaDetalleProductoAgronomico(id: number | string): string {
+  return `${RUTAS_TERCERIZADOS.productosAgronomicos}/${id}`
+}
+
+/** Edición de un producto agronómico (solo jefe de sección). */
+export function rutaEditarProductoAgronomico(id: number | string): string {
+  return `${rutaDetalleProductoAgronomico(id)}/editar`
+}
+
+/** Ficha de un ejemplar marcado con atención especial (RF-INV-011 y RF-FIT-006). */
+export function rutaDetalleAtencionEspecial(id: number | string): string {
+  return `${RUTAS_TERCERIZADOS.controlFitosanitario}/${id}`
+}
+
+/** Programar una aplicación adicional del ejemplar marcado (RF-FIT-006, solo jefe de sección). */
+export function rutaProgramarAplicacionAdicional(id: number | string): string {
+  return `${rutaDetalleAtencionEspecial(id)}/aplicaciones/nueva`
+}
+
+/** Ficha de una observación de plaga (RF-FIT-005, solo lectura). */
+export function rutaDetalleObservacionPlaga(id: number | string): string {
+  return `${RUTAS_TERCERIZADOS.observacionesPlagas}/${id}`
 }
 
 /** `true` si la ruta pertenece a MOD-05. */
@@ -244,6 +294,8 @@ export const MIGAS_TERCERIZADOS = {
   atenciones: { texto: 'Atenciones', ruta: RUTAS_TERCERIZADOS.atenciones },
   proveedoresContratos: { texto: 'Proveedores y contratos', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
   controlFitosanitario: { texto: 'Control fitosanitario', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
+  productosAgronomicos: { texto: 'Productos agronómicos', ruta: RUTAS_TERCERIZADOS.productosAgronomicos },
+  observacionesPlagas: { texto: 'Observaciones de plagas', ruta: RUTAS_TERCERIZADOS.observacionesPlagas },
 } satisfies Record<string, Miga>
 
 // --- MOD-01 «Core y seguridad» -------------------------------------------------------------------------
