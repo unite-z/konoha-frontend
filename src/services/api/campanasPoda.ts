@@ -1,5 +1,5 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { CambioCampana, CampanaPoda, EjemplarCampana, EstadoCampana, NuevaCampana, PaginaApi, RendimientoCampanaPoda, VentanaCierre } from '@/types/campanasPoda'
+import type { CambioCampana, CampanaPoda, EjemplarCampana, EspeciesCampana, EstadoCampana, NuevaCampana, PaginaApi, RendimientoCampanaPoda, VentanaCierre } from '@/types/campanasPoda'
 
 const BASE = '/api/v1/inventario'
 const RUTA = 'campanas-poda/'
@@ -40,6 +40,9 @@ export function consultarVentanaCierre(anio: number, signal?: AbortSignal): Prom
 }
 export function consultarRendimiento(id: number, signal?: AbortSignal): Promise<RendimientoCampanaPoda> {
   return solicitarTercerizados(`${RUTA}${id}/rendimiento/`, { signal, base: BASE })
+}
+export function consultarEspecies(id: number, signal?: AbortSignal): Promise<EspeciesCampana> {
+  return solicitarTercerizados(`${RUTA}${id}/especies/`, { signal, base: BASE })
 }
 export function planificarCampana(id: number): Promise<CampanaPoda> {
   return solicitarTercerizados(`${RUTA}${id}/planificacion/`, { metodo: 'POST', base: BASE })

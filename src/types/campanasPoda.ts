@@ -65,6 +65,25 @@ export interface RendimientoCampanaPoda {
   tramos: TramoRendimiento[]
 }
 
+export interface EspecieCampana {
+  /** `null` agrupa los ejemplares sin especie asignada. */
+  especie_id: number | null
+  nombre_comun: string | null
+  nombre_cientifico: string | null
+  planificados: number
+  /** Con poda verificada. */
+  atendidos: number
+  /** Solo con registros sin fotografía. */
+  incompletos: number
+}
+
+export interface EspeciesCampana {
+  planificados: number
+  atendidos: number
+  incompletos: number
+  especies: EspecieCampana[]
+}
+
 export interface VentanaCierre {
   anio: number
   fecha_inicio: FechaIso

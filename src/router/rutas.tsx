@@ -59,6 +59,7 @@ import CampanaPodaDetallePage from '../pages/inventario/CampanaPodaDetallePage'
 import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
 import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
 import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
+import EspeciesCampanaPage from '../pages/inventario/EspeciesCampanaPage'
 import RendimientoCampanaPage from '../pages/inventario/RendimientoCampanaPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
@@ -159,6 +160,7 @@ export const router = createBrowserRouter([
                 { path: 'campanas-poda/:id/editar', element: <PlanificarCampanaPage /> },
                 { path: 'campanas-poda/:id/registrar', element: <RegistrarPodaPage /> },
                 { path: 'campanas-poda/:id/rendimiento', element: <RendimientoCampanaPage /> },
+                { path: 'campanas-poda/:id/especies', element: <EspeciesCampanaPage /> },
                 { path: 'intervenciones-poda/:id', element: <IntervencionPodaPage /> },
                 { path: 'mapa', lazy: async () => ({ Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default }) },
               ],
