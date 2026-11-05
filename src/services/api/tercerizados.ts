@@ -156,12 +156,6 @@ export async function listarTodo<T>(
   return { resultados, completo: false }
 }
 
-/** Todos los contratos (para el filtro de la bandeja). */
-export async function listarTodosLosContratos(signal?: AbortSignal): Promise<{ contratos: Contrato[]; completo: boolean }> {
-  const { resultados, completo } = await listarTodo((page) => listarContratos({ page }, signal))
-  return { contratos: resultados, completo }
-}
-
 export function listarProveedores(consulta: ConsultaCatalogo & { activo?: boolean } = {}, signal?: AbortSignal) {
   return catalogo<Proveedor>('proveedores', { ...consulta }, signal)
 }

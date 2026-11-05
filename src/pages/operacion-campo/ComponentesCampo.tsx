@@ -5,6 +5,7 @@ import Casilla from '@/components/ui/Casilla'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
+import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { type ResultadoConsulta } from '@/hooks/useConsulta'
 import type { OperarioCampo } from '@/types/operacionCampo'
@@ -12,6 +13,7 @@ import type { useListadoCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
 
 export function EstadoCatalogos<T>({consulta,children}:{consulta:ResultadoConsulta<T>;children:(datos:T)=>ReactNode}) {
+  if(consulta.error?.estado===403) return <EstadoSinAcceso/>
   if(consulta.estado==='error') return <EstadoError titulo="No pudimos cargar las opciones" descripcion={consulta.error?.detalle??''} onReintentar={consulta.reintentar}/>
   if(!consulta.datos||consulta.estado==='cargando') return <EstadoCarga forma="tabla" filas={3}/>
   return <>{children(consulta.datos)}</>

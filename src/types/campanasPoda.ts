@@ -46,6 +46,44 @@ export interface EjemplarCampana {
   estado_intervencion: 'Pendiente' | 'Incompleta' | 'Verificada'
 }
 
+export interface TramoRendimiento {
+  dia_desde: number
+  dia_hasta: number
+  fecha_desde: FechaIso
+  fecha_hasta: FechaIso
+  atendidos: number
+  promedio: string
+}
+
+export interface RendimientoCampanaPoda {
+  verificados: number
+  dias_con_ejecucion: number
+  /** Texto decimal. `null` si no hay ejecución verificada. */
+  promedio: string | null
+  umbral_alerta: number
+  destacado: boolean
+  tramos: TramoRendimiento[]
+}
+
+export interface EspecieCampana {
+  /** `null` agrupa los ejemplares sin especie asignada. */
+  especie_id: number | null
+  nombre_comun: string | null
+  nombre_cientifico: string | null
+  planificados: number
+  /** Con poda verificada. */
+  atendidos: number
+  /** Solo con registros sin fotografía. */
+  incompletos: number
+}
+
+export interface EspeciesCampana {
+  planificados: number
+  atendidos: number
+  incompletos: number
+  especies: EspecieCampana[]
+}
+
 export interface VentanaCierre {
   anio: number
   fecha_inicio: FechaIso

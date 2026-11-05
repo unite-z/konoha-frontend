@@ -22,5 +22,6 @@ export interface EjemplarInventario {
   longitud: number | null
   cantidad: number
   area_verde_id: number | null
+  altura_total_m: number | null
   advertencia_placa_repetida: boolean
 }

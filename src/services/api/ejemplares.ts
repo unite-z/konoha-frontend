@@ -3,12 +3,13 @@ import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 
 const BASE = '/api/v1/inventario'
 
-export function listarEjemplares(q = '', page = 1, signal?: AbortSignal): Promise<EjemplarInventario[]> {
-  return solicitarTercerizados('ejemplares', { parametros: { q, page }, signal, base: BASE })
+export function listarEjemplares(q = '', page = 1, signal?: AbortSignal, areaVerdeId?: number): Promise<EjemplarInventario[]> {
+  return solicitarTercerizados('ejemplares', { parametros: { q, page, area_verde_id: areaVerdeId }, signal, base: BASE })
 }
 export function crearEjemplar(entrada: {
   codigo_placa_antigua?: string | null; especie_id?: number | null; tipo_vegetacion?: string | null
   ubicacion?: string | null; latitud?: string | null; longitud?: string | null; cantidad?: number
+  altura_total_m?: number | null
 }): Promise<EjemplarInventario> {
   return solicitarTercerizados('ejemplares', { metodo: 'POST', cuerpo: entrada, base: BASE })
 }

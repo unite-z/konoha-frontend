@@ -10,7 +10,7 @@
  *   reintenta solo: se pide revisar la bandeja antes de volver a intentarlo.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router'
+import { useBlocker, useLocation, useNavigate } from 'react-router'
 import AsistentePasos from '@/components/ui/AsistentePasos'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
@@ -22,6 +22,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
+import { listarObservacionesPorAlcance, listarPlagas, listarProductosAgronomicos } from '@/services/api/maestrosTercerizados'
 import {
   crearAtencion,
   listarAreasVerdes,
@@ -30,6 +31,8 @@ import {
   listarUnidadesMedida,
 } from '@/services/api/tercerizados'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import type { Contrato } from '@/types/tercerizados'
+import { formatearFecha } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
 import {
   BORRADOR_VACIO,
@@ -46,6 +49,8 @@ import {
 import { ID_LISTA_SELECCIONADOS, IDS_PASO1 } from './idsCampos'
 import PasoAlcances from './PasoAlcances'
 import PasoContratoOrigen from './PasoContratoOrigen'
+import PasoPlagas from './PasoPlagas'
+import PasoProductos from './PasoProductos'
 import PasoRevision from './PasoRevision'
 import estilos from './NuevaAtencion.module.css'
 
@@ -57,6 +62,16 @@ export interface EstadoNavegacionRegistro {
   aviso: string
 }
 
+/** Estado con el que se abre el asistente desde la ficha de un contrato, ya con ese contrato elegido. */
+export interface EstadoContratoElegido {
+  contrato: Contrato
+}
+
+function contratoDeOrigen(estado: unknown): Contrato | null {
+  const contrato = (estado as Partial<EstadoContratoElegido> | null)?.contrato
+  return contrato && typeof contrato.id === 'number' ? contrato : null
+}
+
 /** Nombre legible de un campo que rechace el servidor (sus mensajes pueden venir en inglés). */
 const NOMBRE_CAMPO: Record<string, string> = {
   contrato_id: 'contrato',
@@ -66,6 +81,8 @@ const NOMBRE_CAMPO: Record<string, string> = {
   unidad_provisional: 'nombre de la unidad',
   es_riesgo: 'marca de riesgo',
   alcances: 'espacios y ejemplares',
+  productos: 'productos aplicados',
+  plagas_controladas: 'plagas controladas',
 }
 
 function nombreCampo(campo: string): string {
@@ -87,8 +104,12 @@ export default function NuevaAtencionPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.atenciones, { texto: 'Nueva' }])
   const rol = useRolTercerizados()
   const navegar = useNavigate()
+  const { state } = useLocation()
+  const contratoInicial = contratoDeOrigen(state)
 
-  const [borrador, setBorrador] = useState<BorradorAtencion>(BORRADOR_VACIO)
+  const [borrador, setBorrador] = useState<BorradorAtencion>(() =>
+    contratoInicial ? { ...BORRADOR_VACIO, contrato: contratoInicial } : BORRADOR_VACIO,
+  )
   const [paso, setPaso] = useState(0)
   const [alcanzado, setAlcanzado] = useState(0)
   // Tras el primer intento de avanzar, los errores del paso se recalculan en vivo al corregir.
@@ -103,6 +124,23 @@ export default function NuevaAtencionPage() {
   const unidades = useConsulta('unidades-medida', (signal) => listarTodo((page) => listarUnidadesMedida({ page }, signal)))
   const areas = useConsulta('areas-activas', (signal) => listarTodo((page) => listarAreasVerdes({ activo: true, page }, signal)))
   const servicio = tipos.datos?.resultados.find((t) => t.id === borrador.contrato?.tipo_servicio_id) ?? null
+  const esFitosanitario = servicio?.nombre === 'Control fitosanitario'
+  const productosCatalogo = useConsulta(
+    esFitosanitario ? 'productos-agronomicos-activos' : null,
+    (signal) => listarTodo((page) => listarProductosAgronomicos({ activo: true }, page, signal)),
+  )
+  const plagasCatalogo = useConsulta(
+    esFitosanitario ? 'plagas-activas' : null,
+    (signal) => listarTodo((page) => listarPlagas({ activo: true, page }, signal)),
+  )
+  // RF-FIT-005: observaciones ya registradas en los mismos espacios o ejemplares elegidos, como contexto.
+  const areaIdsElegidas = borrador.alcances.filter((a) => a.tipo === 'area').map((a) => a.id)
+  const ejemplarIdsElegidos = borrador.alcances.filter((a) => a.tipo === 'ejemplar').map((a) => a.id)
+  const hayAlcancesElegidos = areaIdsElegidas.length > 0 || ejemplarIdsElegidos.length > 0
+  const observacionesPrevias = useConsulta(
+    esFitosanitario && hayAlcancesElegidos ? JSON.stringify(['observaciones-alcance', areaIdsElegidas, ejemplarIdsElegidos]) : null,
+    (signal) => listarObservacionesPorAlcance(areaIdsElegidas, ejemplarIdsElegidos, signal),
+  )
 
   const errores1: ErroresPaso1 = intentado[0] ? validarPaso1(borrador, hoyLima()) : {}
   const errores2: ErroresPaso2 = intentado[1] ? validarPaso2(borrador.alcances) : ERRORES_PASO2_VACIOS
@@ -185,7 +223,11 @@ export default function NuevaAtencionPage() {
     setEnviando(true)
     setErrorRegistro(null)
     try {
-      const atencion = await crearAtencion(construirEntrada(borrador))
+      // Un cambio de contrato a un servicio que no es control fitosanitario descarta los productos y las
+      // plagas elegidos: el paso que los muestra ya no está disponible para revisarlos.
+      const atencion = await crearAtencion(
+        construirEntrada(esFitosanitario ? borrador : { ...borrador, productos: [], plagasControladas: [] }),
+      )
       registrada.current = true
       navegar(rutaDetalleAtencion(atencion.id), {
         replace: true,
@@ -235,6 +277,37 @@ export default function NuevaAtencionPage() {
             unidadesMedida={unidades.datos?.resultados ?? []}
             areas={areas.datos?.resultados ?? []}
           />
+        )}
+        {paso === 1 && esFitosanitario && (
+          <PasoProductos
+            productos={borrador.productos}
+            onCambiar={(productos) => cambiar({ productos })}
+            catalogo={productosCatalogo.datos?.resultados ?? []}
+          />
+        )}
+        {paso === 1 && esFitosanitario && (
+          <PasoPlagas
+            plagas={borrador.plagasControladas}
+            onCambiar={(plagasControladas) => cambiar({ plagasControladas })}
+            catalogo={plagasCatalogo.datos?.resultados ?? []}
+          />
+        )}
+        {paso === 1 && esFitosanitario && (observacionesPrevias.datos?.length ?? 0) > 0 && (
+          <AvisoEnLinea
+            tono="info"
+            titulo={`Hay ${observacionesPrevias.datos?.length} observación${observacionesPrevias.datos?.length === 1 ? '' : 'es'} de plagas registrada${observacionesPrevias.datos?.length === 1 ? '' : 's'} en estos espacios o ejemplares`}
+          >
+            <ul className={estilos.listaRevision}>
+              {observacionesPrevias.datos?.map((o) => (
+                <li key={o.id}>
+                  <strong>{o.plaga_nombre}</strong> en {o.area_verde_nombre ?? o.ejemplar_codigo} ·{' '}
+                  <span className="cifra">{formatearFecha(o.fecha_observacion)}</span>
+                  <br />
+                  <span className={estilos.ayuda}>{o.descripcion}</span>
+                </li>
+              ))}
+            </ul>
+          </AvisoEnLinea>
         )}
         {paso === 2 && (
           <PasoRevision borrador={borrador} servicio={servicio} unidadesMedida={unidades.datos?.resultados ?? []} onEditar={irA} />

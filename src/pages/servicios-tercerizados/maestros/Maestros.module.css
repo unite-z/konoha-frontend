@@ -89,3 +89,54 @@
   align-items: flex-start;
   gap: var(--space-3);
 }
+
+/* --- Ficha del proveedor ------------------------------------------------------------------------------ */
+
+.cabeceraFicha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.tituloPrincipal {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  overflow-wrap: anywhere;
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  /* Mismo alto en la fila: con un número distinto de campos, los bordes inferiores quedaban desalineados. */
+  align-items: stretch;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cabeceraSeccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.tituloSeccion {
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+@media (max-width: 1023px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

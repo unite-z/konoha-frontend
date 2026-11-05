@@ -1,11 +1,12 @@
 // RF-SER-001 · Lista de proveedores
+import { useLocation, useNavigate } from 'react-router'
 import Estado from '@/components/ui/Estado'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
-import { RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { rutaDetalleProveedor, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarProveedoresMaestro } from '@/services/api/maestrosTercerizados'
 import type { ProveedorMaestro, TipoVinculo } from '@/types/maestrosTercerizados'
 import { formatearNumero, SIN_VALOR } from '@/utils/formato'
@@ -14,15 +15,22 @@ import BarraFiltros from './BarraFiltros'
 import { paginaDe, POR_PAGINA, type EstablecerFiltros, type FiltrosMaestros } from './filtrosMaestros'
 import estilos from './Maestros.module.css'
 
+/** Filtros de la lista a los que vuelve la ficha del proveedor, y el aviso tras editarlo. */
+export interface EstadoNavegacionProveedor {
+  volverA: string
+  aviso?: string
+}
+
 const OPCIONES_ESTADO = [
   { valor: 'habilitado', texto: 'Habilitado' },
   { valor: 'inhabilitado', texto: 'Inhabilitado' },
 ]
 
 const COLUMNAS: ColumnaTabla<ProveedorMaestro>[] = [
-  { clave: 'razon_social', titulo: 'Proveedor', multilinea: true, render: (p) => p.razon_social },
   { clave: 'ruc', titulo: 'RUC', render: (p) => <span className={estilos.cifra}>{p.ruc ?? SIN_VALOR}</span> },
-  { clave: 'contacto', titulo: 'Contacto', multilinea: true, render: (p) => p.contacto || SIN_VALOR },
+  { clave: 'razon_social', titulo: 'Proveedor', multilinea: true, render: (p) => p.razon_social },
+  // El teléfono queda en la ficha: aquí solo el nombre, para que una fila no crezca con un nombre largo.
+  { clave: 'contacto', titulo: 'Contacto', multilinea: true, render: (p) => p.contacto_nombre || SIN_VALOR },
   { clave: 'vinculo', titulo: 'Vínculo', multilinea: true, render: (p) => textoVinculo(p) },
   { clave: 'contratos', titulo: 'Contratos', alineacion: 'derecha', render: (p) => formatearNumero(p.contratos) },
   {
@@ -40,6 +48,8 @@ export interface ListaProps {
 }
 
 export default function ListaProveedores({ filtros, establecer, puedeRegistrar }: ListaProps) {
+  const navegar = useNavigate()
+  const { search } = useLocation()
   const pagina = paginaDe(filtros.pagina)
   const q = filtros.q
   const activo = filtros.estado === 'habilitado' ? true : filtros.estado === 'inhabilitado' ? false : undefined
@@ -125,6 +135,7 @@ export default function ListaProveedores({ filtros, establecer, puedeRegistrar }
           filas={consulta.datos?.results ?? []}
           claveFila={(p) => String(p.id)}
           estado={estadoTabla === 'inactivo' ? 'cargando' : estadoTabla}
+          onFilaClick={(p) => navegar(rutaDetalleProveedor(p.id), { state: { volverA: search } satisfies EstadoNavegacionProveedor })}
           paginacionServidor={{
             pagina,
             total,

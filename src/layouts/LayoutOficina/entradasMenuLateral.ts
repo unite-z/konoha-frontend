@@ -101,6 +101,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Encargos', icono: 'clipboard', ruta: RUTAS_CAMPO.encargos },
       { texto: 'Actividades por cuadrilla', icono: 'list', ruta: RUTAS_CAMPO.actividades },
       { texto: 'Participantes por actividad', icono: 'check', ruta: RUTAS_CAMPO.participantes },
+      { texto: 'Catálogo de actividades', icono: 'sliders', ruta: RUTAS_CAMPO.catalogoActividades },
     ],
   },
   {
@@ -113,6 +114,8 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Atenciones', icono: 'list', ruta: RUTAS_TERCERIZADOS.atenciones },
       { texto: 'Proveedores y contratos', icono: 'truck', ruta: RUTAS_TERCERIZADOS.proveedoresContratos },
       { texto: 'Control fitosanitario', icono: 'leaf', ruta: RUTAS_TERCERIZADOS.controlFitosanitario },
+      { texto: 'Productos agronómicos', icono: 'clipboard', ruta: RUTAS_TERCERIZADOS.productosAgronomicos },
+      { texto: 'Observaciones de plagas', icono: 'triangle-alert', ruta: RUTAS_TERCERIZADOS.observacionesPlagas },
     ],
   },
   {

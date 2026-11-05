@@ -3,6 +3,8 @@ import type { Contrato } from '../types/tercerizados'
 import {
   BORRADOR_VACIO,
   alternarAlcance,
+  alternarPlaga,
+  alternarProducto,
   construirEntrada,
   hayCambiosBorrador,
   hayErroresPaso2,
@@ -134,10 +136,69 @@ describe('utilidades', () => {
   it('detecta cambios en el borrador', () => {
     expect(hayCambiosBorrador(BORRADOR_VACIO)).toBe(false)
     expect(hayCambiosBorrador({ ...BORRADOR_VACIO, descripcion: ' x' })).toBe(true)
+    expect(hayCambiosBorrador({ ...BORRADOR_VACIO, productos: [{ producto_id: 1, nombre: 'Insecticida', dosis: '' }] })).toBe(true)
   })
 
   it('ubica el paso de un campo rechazado', () => {
     expect(pasoDeCampo('alcances[0].metrado')).toBe(2)
+    expect(pasoDeCampo('productos[0].producto_id')).toBe(2)
+    expect(pasoDeCampo('plagas_controladas[0]')).toBe(2)
     expect(pasoDeCampo('contrato_id')).toBe(1)
+  })
+})
+
+describe('alternarPlaga', () => {
+  it('agrega y quita por id sin duplicar', () => {
+    let lista = alternarPlaga([], { id: 1, nombre: 'Pulgón' })
+    expect(lista).toEqual([{ plaga_id: 1, nombre: 'Pulgón' }])
+    lista = alternarPlaga(lista, { id: 1, nombre: 'Pulgón' })
+    expect(lista).toEqual([])
+  })
+})
+
+describe('construirEntrada con plagas controladas', () => {
+  it('omite el campo si no hay plagas elegidas', () => {
+    expect(construirEntrada(borrador({ alcances: seleccion() })).plagas_controladas).toBeUndefined()
+  })
+
+  it('envía solo los ids', () => {
+    const entrada = construirEntrada(
+      borrador({
+        alcances: seleccion(),
+        plagasControladas: [
+          { plaga_id: 1, nombre: 'Pulgón' },
+          { plaga_id: 2, nombre: 'Cochinilla' },
+        ],
+      }),
+    )
+    expect(entrada.plagas_controladas).toEqual([1, 2])
+  })
+})
+
+describe('alternarProducto', () => {
+  it('agrega y quita por id sin duplicar', () => {
+    let lista = alternarProducto([], { id: 1, nombre: 'Insecticida Demo' })
+    expect(lista).toEqual([{ producto_id: 1, nombre: 'Insecticida Demo', dosis: '' }])
+    lista = alternarProducto(lista, { id: 1, nombre: 'Insecticida Demo' })
+    expect(lista).toEqual([])
+  })
+})
+
+describe('construirEntrada con productos', () => {
+  it('omite el campo si no hay productos elegidos', () => {
+    expect(construirEntrada(borrador({ alcances: seleccion() })).productos).toBeUndefined()
+  })
+
+  it('envía la dosis solo si se escribió', () => {
+    const entrada = construirEntrada(
+      borrador({
+        alcances: seleccion(),
+        productos: [
+          { producto_id: 1, nombre: 'Insecticida', dosis: ' 5 ml por litro ' },
+          { producto_id: 2, nombre: 'Fungicida', dosis: '' },
+        ],
+      }),
+    )
+    expect(entrada.productos).toEqual([{ producto_id: 1, dosis: '5 ml por litro' }, { producto_id: 2 }])
   })
 })

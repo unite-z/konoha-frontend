@@ -31,11 +31,22 @@ export interface AdjuntosProps {
   registroId: number
   /** La interfaz oculta la carga si el rol no puede adjuntar; el servidor decide. */
   puedeAdjuntar: boolean
+  tiposAceptados?: string
+  ayudaCarga?: string
+  prepararArchivo?: (archivo: File) => Promise<File>
   /** Tras subir un archivo, por si la ficha depende de sus adjuntos (poda verificada, AV-309). */
   onCambio?: () => void
 }
 
-export default function Adjuntos({ entidad, registroId, puedeAdjuntar, onCambio }: AdjuntosProps) {
+export default function Adjuntos({
+  entidad,
+  registroId,
+  puedeAdjuntar,
+  tiposAceptados = TIPOS,
+  ayudaCarga = 'PDF, JPEG, PNG, DOCX o XLSX, de hasta 20 MB.',
+  prepararArchivo,
+  onCambio,
+}: AdjuntosProps) {
   const [version, setVersion] = useState(0)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
   const [subiendo, setSubiendo] = useState(false)
@@ -50,7 +61,7 @@ export default function Adjuntos({ entidad, registroId, puedeAdjuntar, onCambio 
     setSubiendo(true)
     setPendiente({ ...objetivo, error: null })
     try {
-      await subirAdjunto(entidad, registroId, objetivo.archivo, objetivo.clave)
+      await subirAdjunto(entidad, registroId, prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo, objetivo.clave)
       setPendiente(null)
       setVersion((v) => v + 1)
       onCambio?.()
@@ -113,8 +124,8 @@ export default function Adjuntos({ entidad, registroId, puedeAdjuntar, onCambio 
       {puedeAdjuntar && !sinPermiso && (
         <>
           <ZonaCarga
-            acepta={TIPOS}
-            ayuda="PDF, JPEG, PNG, DOCX o XLSX, de hasta 20 MB."
+            acepta={tiposAceptados}
+            ayuda={ayudaCarga}
             deshabilitada={subiendo}
             onArchivos={(archivos) => {
               const archivo = archivos[0]
