@@ -2,6 +2,8 @@
 
 Pantallas sin menú de la sesión de MOD-01: `IngresoPage.tsx` (inicio de sesión, RF-T-001) y `CambioContrasenaPage.tsx` (cambio obligatorio de contraseña temporal, HU-MOD01-003).
 
+`FondoNodos.tsx` es el fondo animado del inicio de sesión: red de nodos que se mueve sola y lanza una onda al pulsar el fondo (referencia williamlin.io, colores `--web-nodos-*` de `tokens.css`). Con «reducir movimiento» queda quieto.
+
 **MOD-01 está repartido** entre esta carpeta, `usuarios-roles/`, `repositorio/` y `components/core/`. Sus servicios son `services/api/core.ts` y `clienteCore.ts`, sus tipos `types/core.ts`, y sus rutas `RUTAS_CORE` en `router/rutasApp.ts`.
 
 **Va aquí:** solo pantallas previas a la sesión o que la sesión exige antes de entrar.

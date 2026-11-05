@@ -1,8 +1,8 @@
-/* Ingreso y cambio de contraseña de MOD-01: tarjeta centrada fuera del layout (Guía Web 5.3). */
+/* Ingreso y cambio de contraseña de MOD-01: tarjeta centrada a lo ancho y a lo alto, fuera del layout (Guía Web 5.3). */
 .fondo {
   min-height: 100vh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: var(--space-8) var(--space-4);
   background: var(--color-bg-page);
@@ -68,5 +68,110 @@
 
   .acciones > * {
     width: 100%;
+  }
+}
+
+/* Inicio de sesión como en Figma (423:2 y 423:23): tarjeta de 480, relleno de 40, radio md y 20 entre bloques. */
+.tarjetaIngreso {
+  --acceso-ancho: 30rem;
+  gap: calc(var(--space-4) + var(--space-1));
+  padding: calc(var(--space-8) + var(--space-2));
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fondo de nodos (FondoNodos): ocupa toda la pantalla detrás de la tarjeta. Recibe los clics del fondo (lanzan una onda); la tarjeta va por encima y se usa con normalidad. */
+.fondoIngreso {
+  position: relative;
+  overflow: hidden;
+}
+
+.fondoNodos {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Pista de la esquina, como en la referencia: no tapa los clics del fondo. */
+.pistaNodos {
+  position: absolute;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  pointer-events: none;
+}
+
+.marcaLogo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--space-8) + var(--space-3));
+}
+
+.simbolo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.nombreMarca {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  letter-spacing: var(--type-titulo-seccion-tracking);
+}
+
+.campus {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.tituloIngreso {
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  letter-spacing: var(--type-titulo-pagina-tracking);
+}
+
+.subtitulo {
+  color: var(--color-text-muted);
+}
+
+.formularioIngreso {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-4) + var(--space-1));
+}
+
+.formularioIngreso > div:empty {
+  display: none;
+}
+
+.accionesIngreso {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-4) + var(--space-1));
+}
+
+.accionesIngreso > * {
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .tarjetaIngreso {
+    padding: var(--space-6);
   }
 }

@@ -95,7 +95,25 @@ export const RUTAS_INVENTARIO = {
   coberturas: `${BASE_INVENTARIO}/coberturas`,
   catalogos: `${BASE_INVENTARIO}/catalogos`,
   ejemplares: `${BASE_INVENTARIO}/ejemplares`,
+  campanasPoda: `${BASE_INVENTARIO}/campanas-poda`,
+  nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
 } as const
+
+export function rutaCampanaPoda(id: number): string {
+  return `${RUTAS_INVENTARIO.campanasPoda}/${id}`
+}
+
+export function rutaRegistrarPoda(campanaId: number): string {
+  return `${rutaCampanaPoda(campanaId)}/registrar`
+}
+
+export function rutaIntervencionPoda(id: number): string {
+  return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
+}
+
+export function rutaEditarCampanaPoda(id: number): string {
+  return `${rutaCampanaPoda(id)}/editar`
+}
 
 export function esRutaInventario(ruta: string): boolean {
   return ruta === BASE_INVENTARIO || ruta.startsWith(`${BASE_INVENTARIO}/`)
@@ -107,6 +125,7 @@ export const MIGAS_INVENTARIO = {
   nuevaArea: { texto: 'Registrar área', ruta: RUTAS_INVENTARIO.nuevaArea },
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
+  campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
