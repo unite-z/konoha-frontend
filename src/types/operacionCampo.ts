@@ -14,6 +14,8 @@ export interface CuadrillaCampo {
 }
 export interface EntradaCuadrilla { nombre: string; capataz_id: number; activa: boolean; operarios: number[] }
 export interface CatalogoCampo { id: number; nombre: string; activo: boolean }
+export interface TipoActividadCampo extends CatalogoCampo { clase_id: number }
+export interface EntradaTipoActividadCampo { nombre: string; clase_id: number; activo: boolean }
 export interface EntradaEncargo {
   cuadrilla_id: number; tipo_actividad_id: number; area_verde_id: number; descripcion: string
   periodicidad: 'Semanal' | 'Quincenal'; fecha_reunion: string; fecha_inicio: string; fecha_fin: string; plazo_previsto: string
