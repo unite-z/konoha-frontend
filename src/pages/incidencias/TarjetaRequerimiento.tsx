@@ -1,15 +1,16 @@
 /**
  * Tarjeta «Requerimiento a un proveedor» de una incidencia clasificada por la vía tercerizada (AV-284, Figma 389-7706
- * y 389-7903; AV-278): proveedor, contrato vigente, servicio, tipo de atención y, con ejemplar, «Crear también la
- * poda del ejemplar».
+ * y 389-7903; AV-278): proveedor, contrato vigente, servicio y tipo de atención. El backend crea la atención en
+ * Servicios tercerizados (MOD-05) con el ejemplar o el espacio de la incidencia.
  *
- * Si el proveedor no tiene contrato aplicable, se avisa de que va como extraordinaria con orden de servicio y el
- * botón pasa a «Crear como extraordinaria» (389-7903).
+ * Diferencias con Figma, porque los módulos dueños aún no lo admiten (AV-278, decisión en AV-330):
+ * - sin contrato vigente, Figma la crea como extraordinaria con orden de servicio (389-7903); MOD-05 aún no registra
+ *   atenciones sin contrato, así que se avisa y no se puede crear;
+ * - «Crear también la poda del ejemplar» no se ofrece: MOD-02 aún no tiene la poda vinculada (RF-POD-005).
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
-import Casilla from '@/components/ui/Casilla'
 import GrupoOpciones from '@/components/ui/GrupoOpciones'
 import Selector from '@/components/ui/Selector'
 import Tarjeta from '@/components/ui/Tarjeta'
@@ -36,7 +37,6 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
   const [servicio, setServicio] = useState('')
   // Una incidencia urgente no espera a la próxima atención programada: por defecto, extraordinaria.
   const [tipo, setTipo] = useState<TipoAtencion>('Extraordinaria')
-  const [crearPoda, setCrearPoda] = useState(Boolean(incidencia.ejemplar))
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,16 +48,16 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
 
   async function crear() {
     setMostrarErrores(true)
-    if (!proveedor || (!sinContrato && !contrato)) return
+    if (!proveedor || sinContrato || !contrato) return
     setEnviando(true)
     setError(null)
     try {
       const derivada = await crearRequerimiento(incidencia.id, {
         proveedor_id: proveedor.id,
-        contrato_id: sinContrato ? null : (contrato?.id ?? null),
-        servicio: sinContrato ? null : servicio || null,
-        tipo_atencion: sinContrato ? 'Extraordinaria' : tipo,
-        crear_poda: !sinContrato && Boolean(incidencia.ejemplar) && crearPoda,
+        contrato_id: contrato.id,
+        servicio: servicio || null,
+        tipo_atencion: tipo,
+        crear_poda: false,
       })
       onCreado(derivada, `Requerimiento creado para ${proveedor.razon_social}`)
     } catch (causa) {
@@ -86,8 +86,8 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
             error={mostrarErrores && !proveedor ? 'Elige el proveedor.' : undefined}
           />
           {sinContrato ? (
-            <AvisoEnLinea tono="advertencia" titulo="Sin contrato aplicable">
-              Se tramitará como extraordinaria con orden de servicio.
+            <AvisoEnLinea tono="advertencia" titulo="Sin contrato vigente">
+              Servicios tercerizados aún no registra atenciones sin contrato. Elige un proveedor con contrato vigente.
             </AvisoEnLinea>
           ) : (
             proveedor && (
@@ -111,9 +111,6 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
                   onCambiar={setServicio}
                 />
                 <GrupoOpciones etiqueta="Tipo de atención" obligatorio segmentado opciones={TIPOS} valor={tipo} onCambiar={setTipo} />
-                {incidencia.ejemplar && (
-                  <Casilla id="requerimiento-poda" etiqueta="Crear también la poda del ejemplar" marcada={crearPoda} onCambiar={setCrearPoda} />
-                )}
               </>
             )
           )}
@@ -123,8 +120,8 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
           <Boton variante="secundario" onClick={onVolver}>
             Volver
           </Boton>
-          <Boton cargando={enviando} onClick={() => void crear()}>
-            {sinContrato ? 'Crear como extraordinaria' : 'Crear requerimiento'}
+          <Boton cargando={enviando} deshabilitado={sinContrato} onClick={() => void crear()}>
+            Crear requerimiento
           </Boton>
         </div>
       </div>

@@ -5,6 +5,7 @@
  */
 import Tarjeta from '@/components/ui/Tarjeta'
 import type { RequerimientoIncidencia } from '@/types/incidencias'
+import { codigoCorto } from '@/utils/estadosTercerizados'
 import { diaMes } from './detalleIncidencia'
 import estilos from './Incidencias.module.css'
 
@@ -13,7 +14,7 @@ const TEXTO_ESTADO = { Hecho: 'hecho', EnCurso: 'en curso', Pendiente: 'pendient
 
 export default function TarjetaSeguimientoRequerimiento({ requerimiento }: { requerimiento: RequerimientoIncidencia }) {
   return (
-    <Tarjeta titulo={`Requerimiento ${requerimiento.codigo}`} nivel={2}>
+    <Tarjeta titulo={`Requerimiento ${codigoCorto(requerimiento.codigo)}`} nivel={2}>
       <div className={estilos.accion}>
         <p className={estilos.subtituloAccion}>
           {requerimiento.proveedor} · {requerimiento.tipo_atencion.toLowerCase()}

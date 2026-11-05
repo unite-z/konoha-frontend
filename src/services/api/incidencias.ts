@@ -1,14 +1,14 @@
 /**
  * Servicios de incidencias de MOD-03 (AV-274 a AV-281). Base: `/api/v1/planificacion/incidencias/`.
- * La derivación a encargo o a requerimiento (AV-277 y AV-278) aún no tiene backend: solo responde con
- * `VITE_DATOS_SIMULADOS=true` (D9).
+ * El encargo a un capataz (AV-277) aún no tiene backend: solo responde con `VITE_DATOS_SIMULADOS=true` (D9).
+ * El requerimiento a un proveedor (AV-278) ya va al backend.
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
 import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SeguimientoIncidencia, SolicitudInspeccion } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
-/** La derivación a encargo o a requerimiento (AV-277 y AV-278) solo existe con datos simulados hasta su backend. */
-export const DERIVACION_DISPONIBLE = DATOS_SIMULADOS
+/** El encargo a un capataz (AV-277) solo existe con datos simulados hasta su backend. */
+export const ENCARGO_DISPONIBLE = DATOS_SIMULADOS
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
 export async function listarIncidencias(signal?: AbortSignal) {
@@ -78,19 +78,14 @@ export async function solicitarInspeccion(id: number, cuerpo: SolicitudInspeccio
 
 /** `GET incidencias/{id}/proveedores/` (AV-278): proveedores con sus contratos para la vía tercerizada. */
 export async function listarProveedoresIncidencia(incidenciaId: number, signal?: AbortSignal) {
-  if (DATOS_SIMULADOS) {
-    const { simularProveedores } = await import('../simulados/incidencias')
-    return simularProveedores(signal)
-  }
   return solicitarPlanificacion<ProveedorIncidencia[]>(`incidencias/${incidenciaId}/proveedores/`, { signal })
 }
 
-/** `POST incidencias/{id}/requerimiento/` (AV-278): requerimiento al proveedor; devuelve la incidencia Derivada · tercerizada. */
+/**
+ * `POST incidencias/{id}/requerimiento/` (AV-278): requerimiento al proveedor; devuelve la incidencia Derivada ·
+ * tercerizada. Sin contrato responde 409 `sin-contrato` (MOD-05 aún no registra la extraordinaria sin contrato).
+ */
 export async function crearRequerimiento(incidenciaId: number, cuerpo: NuevoRequerimiento) {
-  if (DATOS_SIMULADOS) {
-    const { simularRequerimiento } = await import('../simulados/incidencias')
-    return simularRequerimiento(incidenciaId, cuerpo)
-  }
   return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/requerimiento/`, { metodo: 'POST', cuerpo })
 }
 

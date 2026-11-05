@@ -20,7 +20,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_INCIDENCIAS, RUTAS_INCIDENCIAS } from '@/router/rutasApp'
-import { DERIVACION_DISPONIBLE, obtenerIncidencia } from '@/services/api/incidencias'
+import { ENCARGO_DISPONIBLE, obtenerIncidencia } from '@/services/api/incidencias'
 import type { IncidenciaDetalle, ViaIncidencia } from '@/types/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
 import { ESTADO_INCIDENCIA } from './bandeja'
@@ -105,14 +105,14 @@ export default function IncidenciaDetallePage() {
           {cerrada && incidencia.historial && incidencia.historial.length > 0 && <HistorialIncidencia eventos={incidencia.historial} />}
         </div>
         {/* Clasificada por la vía de personal propio: el encargo a un capataz (Figma 389-7502 y 394-8975). */}
-        {incidencia.estado === 'Clasificada' && (via === 'PersonalPropio' || via === 'Tercerizada') && !DERIVACION_DISPONIBLE && (
-          <AvisoEnLinea tono="info" titulo="Derivar aún no está disponible">
-            La incidencia queda clasificada. El encargo a un capataz y el requerimiento a un proveedor llegarán pronto.
+        {incidencia.estado === 'Clasificada' && via === 'PersonalPropio' && !ENCARGO_DISPONIBLE && (
+          <AvisoEnLinea tono="info" titulo="El encargo a un capataz aún no está disponible">
+            La incidencia queda clasificada. El encargo a un capataz llegará pronto.
           </AvisoEnLinea>
         )}
-        {incidencia.estado === 'Clasificada' && via === 'PersonalPropio' && DERIVACION_DISPONIBLE && <TarjetaEncargo key={incidencia.id} incidencia={incidencia} onVolver={volver} onCreado={derivada} />}
+        {incidencia.estado === 'Clasificada' && via === 'PersonalPropio' && ENCARGO_DISPONIBLE && <TarjetaEncargo key={incidencia.id} incidencia={incidencia} onVolver={volver} onCreado={derivada} />}
         {/* Clasificada por la vía tercerizada: el requerimiento a un proveedor (Figma 389-7706 y 389-7903). */}
-        {incidencia.estado === 'Clasificada' && via === 'Tercerizada' && DERIVACION_DISPONIBLE && <TarjetaRequerimiento key={incidencia.id} incidencia={incidencia} onVolver={volver} onCreado={derivada} />}
+        {incidencia.estado === 'Clasificada' && via === 'Tercerizada' && <TarjetaRequerimiento key={incidencia.id} incidencia={incidencia} onVolver={volver} onCreado={derivada} />}
         {/* Encargo cancelado: elegir de nuevo la vía (Figma 390-8582). */}
         {cancelado && !elegida && <TarjetaDerivarDeNuevo onElegir={(nueva) => setViaElegida({ id: incidencia.id, via: nueva })} />}
         {/* Derivada a tercerizado: el avance del requerimiento (Figma 394-9194). */}
