@@ -1,5 +1,5 @@
 .pagina { display: flex; flex-direction: column; gap: var(--space-6); }
-.descripcion, .ayuda { color: var(--color-text-secondary); }
+.descripcion, .ayuda { color: var(--color-text-muted); }
 .filtros { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; }
 .filtros > * { min-width: calc(var(--space-8) * 5); }
 .buscar { display: flex; align-items: flex-end; gap: var(--space-3); flex: 1; }
@@ -15,6 +15,8 @@
 .operario { min-height: calc(var(--space-12) - var(--space-1)); border-radius: var(--radius-sm); padding: var(--space-2); }
 .operario:has(input:checked) { background: var(--color-action-subtle); }
 .fecha { white-space: nowrap; }
+.detalleVerificacion { display: flex; flex-direction: column; gap: var(--space-2); color: var(--color-text-secondary); }
+.detalleVerificacion p { margin: 0; }
 @media (max-width: 767px) {
   .rejilla, .listaOperarios { grid-template-columns: 1fr; }
   .filtros { align-items: stretch; }
