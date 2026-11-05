@@ -24,15 +24,16 @@ import estilos from './OperacionCampo.module.css'
 import Estado from '@/components/ui/Estado'
 import { TONO_ESTADO } from '@/components/ui/tonos'
 import VerificacionActividad from './VerificacionActividad'
+import DialogoPodaMenor from './DialogoPodaMenor'
 
 export default function ParticipantesPage() {
   usePaginaActual('Participantes por actividad',[{texto:'Operación de campo'},{texto:'Participantes por actividad'}])
   const {usuario}=useSesionCampo(), puedeRegistrar=puedeRegistrarCampo(usuario), puedeVerificar=esJefeCampo(usuario)
   const listado=useListadoCampo<ActividadCampo>('actividades',['fecha','cuadrilla_id'])
   const cuadrillas=useConsulta('filtro-cuadrillas',signal=>todosCampo<CuadrillaCampo>('cuadrillas/',{},signal))
-  const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[evidenciaActividad,setEvidenciaActividad]=useState<ActividadCampo|null>(null),[verificacionActividad,setVerificacionActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[aviso,setAviso]=useState('')
+  const [actual,setActual]=useState<ActividadCampo|null>(null),[materialActividad,setMaterialActividad]=useState<ActividadCampo|null>(null),[evidenciaActividad,setEvidenciaActividad]=useState<ActividadCampo|null>(null),[verificacionActividad,setVerificacionActividad]=useState<ActividadCampo|null>(null),[nueva,setNueva]=useState(false),[poda,setPoda]=useState(false),[aviso,setAviso]=useState('')
   return <div className={estilos.pagina}>
-    <AccionesPagina><ExportarExcel listado="actividades" />{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
+    <AccionesPagina><ExportarExcel listado="actividades" />{usuario?.rol==='Capataz'&&<Boton variante="secundario" onClick={()=>setPoda(true)}>Registrar poda menor</Boton>}{puedeRegistrar&&<Boton onClick={()=>setNueva(true)}>Registrar actividad</Boton>}</AccionesPagina>
     <p className={estilos.descripcion}>Indica quiénes realizaron cada actividad. La cantidad se calcula a partir de las personas seleccionadas.</p>
     {aviso&&<AvisoEnLinea tono="exito" accion={{texto:'Cerrar aviso',onClick:()=>setAviso('')}}>{aviso}</AvisoEnLinea>}
     <Tarjeta>
@@ -44,7 +45,7 @@ export default function ParticipantesPage() {
       </div>
     </Tarjeta>
     <TablaCampo titulo="Actividades y operarios participantes" listado={listado} vacio="No hay actividades con estos filtros" columnas={[
-      {clave:'tipo_actividad_nombre',titulo:'Actividad',multilinea:true,render:a=><><span className={estilos.celdaPrincipal}>{a.tipo_actividad_nombre}</span><span className={estilos.secundario}>{a.area_verde_nombre}</span></>},
+      {clave:'tipo_actividad_nombre',titulo:'Actividad',multilinea:true,render:a=><><span className={estilos.celdaPrincipal}>{a.tipo_actividad_nombre}</span><span className={estilos.secundario}>{a.area_verde_nombre}{a.ejemplar_codigo?` · ${a.ejemplar_codigo}`:a.pendiente_vinculacion?' · Pendiente de vinculación':''}</span></>},
       {clave:'cuadrilla_nombre',titulo:'Cuadrilla'},
       {clave:'fecha',titulo:'Fecha',render:a=>formatearFecha(a.fecha)},
       {clave:'cantidad',titulo:'Participantes',alineacion:'derecha',render:a=>a.participantes.cantidad_operarios},
@@ -57,6 +58,7 @@ export default function ParticipantesPage() {
       ...(puedeVerificar?[{clave:'verificar',titulo:'Revisión',render:(a:ActividadCampo)=><Boton variante="fantasma" compacto aria-label={`Verificar actividad ${a.id}`} onClick={()=>setVerificacionActividad(a)}>{a.fecha_verificacion?'Actualizar verificación':'Verificar'}</Boton>}]:[]),
     ]}/>
     {nueva&&<DialogoNuevaActividad onCerrar={()=>setNueva(false)} onGuardado={actividad=>{setNueva(false);setActual(actividad);setAviso('Actividad registrada. Selecciona los operarios que participaron');listado.consulta.reintentar()}}/>}
+    {poda&&<DialogoPodaMenor onCerrar={()=>setPoda(false)} onGuardado={actividad=>{setPoda(false);setEvidenciaActividad(actividad);setAviso('Poda menor registrada. Añade la fotografía de evidencia');listado.consulta.reintentar()}} onIncidencia={mensaje=>{setPoda(false);setAviso(mensaje)}}/>}
     {actual&&<DialogoParticipantes actividad={actual} soloLectura={!puedeRegistrar||actual.estado==='Cerrado'} onCerrar={()=>setActual(null)} onGuardado={()=>{setActual(null);setAviso('Los participantes se guardaron correctamente');listado.consulta.reintentar()}}/>}
     {materialActividad&&<MaterialesActividad actividad={materialActividad} soloLectura={!puedeRegistrar||materialActividad.estado==='Cerrado'} onCerrar={()=>setMaterialActividad(null)}/>}
     {evidenciaActividad&&<DialogoFormulario abierto titulo="Fotografías de la actividad" textoConfirmar="Cerrar" onEnviar={()=>setEvidenciaActividad(null)} onCerrar={()=>setEvidenciaActividad(null)} conObligatorios={false}><Adjuntos entidad="actividad" registroId={evidenciaActividad.id} puedeAdjuntar={usuario?.rol==='Capataz'&&evidenciaActividad.estado==='Abierto'} tiposAceptados=".jpg,.jpeg,.png" ayudaCarga="JPEG o PNG, de hasta 20 MB." prepararArchivo={comprimirFotografia}/></DialogoFormulario>}

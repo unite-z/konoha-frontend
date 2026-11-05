@@ -2,6 +2,8 @@
 
 Operación de campo: `CuadrillasPage`, `EncargosPage` y `ParticipantesPage`, con `DialogoNuevaActividad`, piezas comunes en `ComponentesCampo.tsx` y el hook del módulo `useCampo.ts`.
 
+`DialogoPodaMenor` implementa AV-315 sobre el parte diario: vincula ejemplares de menos de 5 m, deja los árboles sin catastro pendientes de vinculación y deriva los ejemplares de 5 m o más al flujo existente de incidencias. Tras registrar abre las evidencias de AV-82. La altura procede de MOD-02 y debe coordinarse con AV-133.
+
 | Qué | Dónde |
 |---|---|
 | Servicios | `services/api/operacionCampo.ts` (`campoApi`, `todosCampo`) |
