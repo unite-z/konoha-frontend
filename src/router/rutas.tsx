@@ -57,6 +57,8 @@ import EjemplaresPage from '../pages/inventario/EjemplaresPage'
 import CampanasPodaPage from '../pages/inventario/CampanasPodaPage'
 import CampanaPodaDetallePage from '../pages/inventario/CampanaPodaDetallePage'
 import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
+import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
+import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
@@ -154,6 +156,8 @@ export const router = createBrowserRouter([
                 { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
                 { path: 'campanas-poda/:id', element: <CampanaPodaDetallePage /> },
                 { path: 'campanas-poda/:id/editar', element: <PlanificarCampanaPage /> },
+                { path: 'campanas-poda/:id/registrar', element: <RegistrarPodaPage /> },
+                { path: 'intervenciones-poda/:id', element: <IntervencionPodaPage /> },
                 { path: 'mapa', lazy: async () => ({ Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default }) },
               ],
             }],

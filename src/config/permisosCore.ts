@@ -24,6 +24,8 @@ export const PERMISOS = {
   registrarInventario: 'INV.INVENTARIO.REGISTRAR',
   /** Planificar la campaña de poda mayor (AV-308). */
   planificarPoda: 'INV.PODA.PLANIFICAR',
+  /** Registrar la poda de un ejemplar (AV-309): ingeniero de campo y practicante. */
+  registrarPoda: 'INV.PODA.REGISTRAR',
 } as const
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS]

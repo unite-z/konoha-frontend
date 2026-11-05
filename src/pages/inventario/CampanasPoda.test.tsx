@@ -20,6 +20,7 @@ const CAMPANA = {
   atencion_id: null,
   total_ejemplares: 220,
   capacidad: { dias: 10, estimada: 120, requerido_por_dia: '22.00', excedida: true },
+  avance: { verificables: 180, incompletos: 1, porcentaje: '81.8' },
 }
 
 const api = vi.hoisted(() => ({
@@ -35,7 +36,7 @@ const api = vi.hoisted(() => ({
   iniciarCampana: vi.fn(),
   finalizarCampana: vi.fn(),
 }))
-const permiso = vi.hoisted(() => ({ planificar: true }))
+const permiso = vi.hoisted(() => ({ planificar: true, registrar: false }))
 
 vi.mock('@/services/api/campanasPoda', () => api)
 vi.mock('@/services/api/ejemplares', () => ({
@@ -43,7 +44,7 @@ vi.mock('@/services/api/ejemplares', () => ({
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 7 } }) }))
-vi.mock('@/config/permisosCore', () => ({ PERMISOS: { planificarPoda: 'planificar' }, puede: () => permiso.planificar }))
+vi.mock('@/config/permisosCore', () => ({ PERMISOS: { planificarPoda: 'planificar', registrarPoda: 'registrar' }, puede: (_sesion: unknown, codigo: string) => (codigo === 'registrar' ? permiso.registrar : permiso.planificar) }))
 vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
 
 function pagina(ruta: string) {
