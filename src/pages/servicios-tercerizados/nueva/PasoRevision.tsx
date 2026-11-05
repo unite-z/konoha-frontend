@@ -20,6 +20,10 @@ export interface PasoRevisionProps {
 export default function PasoRevision({ borrador, servicio, unidadesMedida, onEditar }: PasoRevisionProps) {
   const { contrato } = borrador
   const riesgo = borrador.es_riesgo || Boolean(servicio?.es_riesgo)
+  // Un cambio de contrato a otro servicio deja productos y plagas elegidos que ya no se pueden revisar ni enviar.
+  const esFitosanitario = servicio?.nombre === 'Control fitosanitario'
+  const productos = esFitosanitario ? borrador.productos : []
+  const plagasControladas = esFitosanitario ? borrador.plagasControladas : []
   const unidad =
     borrador.origen !== 'SolicitudUnidad'
       ? null
@@ -83,6 +87,45 @@ export default function PasoRevision({ borrador, servicio, unidadesMedida, onEdi
           })}
         </ul>
       </Tarjeta>
+
+      {productos.length > 0 && (
+        <Tarjeta
+          titulo={`Productos aplicados (${formatearNumero(productos.length)})`}
+          relleno="amplio"
+          acciones={
+            <Boton variante="fantasma" compacto onClick={() => onEditar(1)} aria-label="Editar productos aplicados">
+              Editar
+            </Boton>
+          }
+        >
+          <ul className={estilos.listaRevision}>
+            {productos.map((p) => (
+              <li key={p.producto_id}>
+                <strong>{p.nombre}</strong>
+                {p.dosis.trim() && <span className={estilos.ayuda}> · {p.dosis.trim()}</span>}
+              </li>
+            ))}
+          </ul>
+        </Tarjeta>
+      )}
+
+      {plagasControladas.length > 0 && (
+        <Tarjeta
+          titulo={`Plagas controladas (${formatearNumero(plagasControladas.length)})`}
+          relleno="amplio"
+          acciones={
+            <Boton variante="fantasma" compacto onClick={() => onEditar(1)} aria-label="Editar plagas controladas">
+              Editar
+            </Boton>
+          }
+        >
+          <ul className={estilos.listaRevision}>
+            {plagasControladas.map((p) => (
+              <li key={p.plaga_id}>{p.nombre}</li>
+            ))}
+          </ul>
+        </Tarjeta>
+      )}
 
       <AvisoEnLinea tono="info" titulo="Al registrar">
         La atención quedará en «Requerimiento registrado». La orden de compra la emite Logística; después podrás registrar

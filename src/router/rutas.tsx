@@ -53,8 +53,22 @@ import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
 import CatalogosPage from '../pages/inventario/CatalogosPage'
 import EjemplaresPage from '../pages/inventario/EjemplaresPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
+import PlanFitosanitarioPage from '../pages/servicios-tercerizados/maestros/PlanFitosanitarioPage'
+import ProductosAgronomicosPage from '../pages/servicios-tercerizados/maestros/ProductosAgronomicosPage'
+import ProductoAgronomicoNuevoPage from '../pages/servicios-tercerizados/maestros/ProductoAgronomicoNuevoPage'
+import ProductoAgronomicoEditarPage from '../pages/servicios-tercerizados/maestros/ProductoAgronomicoEditarPage'
+import ProductoAgronomicoDetallePage from '../pages/servicios-tercerizados/maestros/ProductoAgronomicoDetallePage'
+import ObservacionesPlagasPage from '../pages/servicios-tercerizados/maestros/ObservacionesPlagasPage'
+import ObservacionPlagaNuevaPage from '../pages/servicios-tercerizados/maestros/ObservacionPlagaNuevaPage'
+import ObservacionPlagaDetallePage from '../pages/servicios-tercerizados/maestros/ObservacionPlagaDetallePage'
+import AtencionEspecialDetallePage from '../pages/servicios-tercerizados/maestros/AtencionEspecialDetallePage'
+import ProgramarAplicacionPage from '../pages/servicios-tercerizados/maestros/ProgramarAplicacionPage'
+import ContratoDetallePage from '../pages/servicios-tercerizados/maestros/ContratoDetallePage'
+import ContratoEditarPage from '../pages/servicios-tercerizados/maestros/ContratoEditarPage'
 import ContratoNuevoPage from '../pages/servicios-tercerizados/maestros/ContratoNuevoPage'
 import MarcarEjemplarPage from '../pages/servicios-tercerizados/maestros/MarcarEjemplarPage'
+import ProveedorDetallePage from '../pages/servicios-tercerizados/maestros/ProveedorDetallePage'
+import ProveedorEditarPage from '../pages/servicios-tercerizados/maestros/ProveedorEditarPage'
 import ProveedorNuevoPage from '../pages/servicios-tercerizados/maestros/ProveedorNuevoPage'
 import ProveedoresContratosPage from '../pages/servicios-tercerizados/maestros/ProveedoresContratosPage'
 import RutaProtegida, { InicioRol, RutaConEntrada, RutaConPermiso } from '../sesion/RutaProtegida'
@@ -172,9 +186,23 @@ export const router = createBrowserRouter([
               { path: `${RUTAS_TERCERIZADOS.atenciones}/:id`, element: <AtencionDetallePage /> },
               { path: RUTAS_TERCERIZADOS.proveedoresContratos, element: <ProveedoresContratosPage /> }, // RF-SER-001 y 002
               { path: RUTAS_TERCERIZADOS.nuevoProveedor, element: <ProveedorNuevoPage /> }, // RF-SER-001
+              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/:id`, element: <ProveedorDetallePage /> }, // RF-SER-001 y 002
+              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/:id/editar`, element: <ProveedorEditarPage /> }, // RF-SER-001
               { path: RUTAS_TERCERIZADOS.nuevoContrato, element: <ContratoNuevoPage /> }, // RF-SER-002
+              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/:id`, element: <ContratoDetallePage /> }, // RF-SER-002
+              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/:id/editar`, element: <ContratoEditarPage /> }, // RF-SER-002
               { path: RUTAS_TERCERIZADOS.controlFitosanitario, element: <AtencionEspecialPage /> }, // RF-INV-011
               { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> }, // RF-INV-011
+              { path: RUTAS_TERCERIZADOS.planFitosanitario, element: <PlanFitosanitarioPage /> }, // RF-FIT-001
+              { path: RUTAS_TERCERIZADOS.productosAgronomicos, element: <ProductosAgronomicosPage /> }, // RF-FIT-003
+              { path: RUTAS_TERCERIZADOS.nuevoProductoAgronomico, element: <ProductoAgronomicoNuevoPage /> }, // RF-FIT-003
+              { path: `${RUTAS_TERCERIZADOS.productosAgronomicos}/:id/editar`, element: <ProductoAgronomicoEditarPage /> }, // RF-FIT-003
+              { path: `${RUTAS_TERCERIZADOS.productosAgronomicos}/:id`, element: <ProductoAgronomicoDetallePage /> }, // RF-FIT-003
+              { path: RUTAS_TERCERIZADOS.observacionesPlagas, element: <ObservacionesPlagasPage /> }, // RF-FIT-005
+              { path: RUTAS_TERCERIZADOS.nuevaObservacionPlaga, element: <ObservacionPlagaNuevaPage /> }, // RF-FIT-005
+              { path: `${RUTAS_TERCERIZADOS.observacionesPlagas}/:id`, element: <ObservacionPlagaDetallePage /> }, // RF-FIT-005
+              { path: `${RUTAS_TERCERIZADOS.controlFitosanitario}/:id/aplicaciones/nueva`, element: <ProgramarAplicacionPage /> }, // RF-FIT-006
+              { path: `${RUTAS_TERCERIZADOS.controlFitosanitario}/:id`, element: <AtencionEspecialDetallePage /> }, // RF-INV-011 y RF-FIT-006
             ],
           },
           // MOD-03 «Planificación».

@@ -1,16 +1,17 @@
 // RF-SER-002 · Lista de contratos
+import { useLocation, useNavigate } from 'react-router'
 import Estado from '@/components/ui/Estado'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
-import { RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import { rutaDetalleContrato, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarContratosMaestro } from '@/services/api/maestrosTercerizados'
 import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import BarraFiltros from './BarraFiltros'
-import { paginaDe, POR_PAGINA } from './filtrosMaestros'
+import { paginaDe, POR_PAGINA, type EstadoNavegacionContrato } from './filtrosMaestros'
 import type { ListaProps } from './ListaProveedores'
 import estilos from './Maestros.module.css'
 
@@ -19,17 +20,10 @@ const OPCIONES_VIGENCIA = [
   { valor: 'vencido', texto: 'Vencido (histórico)' },
 ]
 
-function textoMonto(monto: string | null): string {
-  return monto === null ? SIN_VALOR : `S/ ${formatearNumero(Number(monto), 2)}`
-}
-
 const COLUMNAS: ColumnaTabla<ContratoMaestro>[] = [
   { clave: 'numero', titulo: 'Contrato', render: (c) => <span className={estilos.cifra}>{c.numero}</span> },
   { clave: 'proveedor', titulo: 'Proveedor', multilinea: true, render: (c) => c.proveedor_nombre ?? SIN_VALOR },
   { clave: 'servicio', titulo: 'Servicio', multilinea: true, render: (c) => c.tipo_servicio_nombre ?? SIN_VALOR },
-  { clave: 'area', titulo: 'Área o metrado estimado', multilinea: true, render: (c) => c.area_metrado_estimado ?? SIN_VALOR },
-  { clave: 'monto', titulo: 'Monto fijo', alineacion: 'derecha', render: (c) => <span className={estilos.cifra}>{textoMonto(c.monto_fijo)}</span> },
-  { clave: 'frecuencia', titulo: 'Frecuencia', multilinea: true, render: (c) => c.frecuencia_pactada ?? SIN_VALOR },
   {
     clave: 'vigencia',
     titulo: 'Vigencia',
@@ -49,9 +43,12 @@ const COLUMNAS: ColumnaTabla<ContratoMaestro>[] = [
         <Estado tono="aviso" texto="Vencido" ayuda="Se conserva como histórico: no se puede usar en nuevas atenciones" />
       ),
   },
+  { clave: 'atenciones', titulo: 'Atenciones', alineacion: 'derecha', render: (c) => formatearNumero(c.atenciones) },
 ]
 
 export default function ListaContratos({ filtros, establecer, puedeRegistrar }: ListaProps) {
+  const navegar = useNavigate()
+  const { search } = useLocation()
   const pagina = paginaDe(filtros.pagina)
   const q = filtros.q
   const vigente = filtros.vigencia === 'vigente' ? true : filtros.vigencia === 'vencido' ? false : undefined
@@ -123,6 +120,7 @@ export default function ListaContratos({ filtros, establecer, puedeRegistrar }: 
           filas={consulta.datos?.results ?? []}
           claveFila={(c) => String(c.id)}
           estado={estadoTabla === 'inactivo' ? 'cargando' : estadoTabla}
+          onFilaClick={(c) => navegar(rutaDetalleContrato(c.id), { state: { volverA: search } satisfies EstadoNavegacionContrato })}
           paginacionServidor={{
             pagina,
             total,

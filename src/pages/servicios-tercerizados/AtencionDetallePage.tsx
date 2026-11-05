@@ -25,7 +25,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { obtenerAtencion } from '@/services/api/tercerizados'
-import type { Alcance, Atencion } from '@/types/tercerizados'
+import type { Alcance, Atencion, PlagaControlada, ProductoAplicado } from '@/types/tercerizados'
 import {
   codigoCorto,
   insigniaAcuerdo,
@@ -43,6 +43,35 @@ import { PERMISOS, puede } from '@/config/permisosCore'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { EstadoNavegacionBandeja } from './AtencionesPage'
 import estilos from './Tercerizados.module.css'
+
+const COLUMNAS_PRODUCTOS: ColumnaTabla<ProductoAplicado>[] = [
+  {
+    clave: 'producto',
+    titulo: 'Producto',
+    multilinea: true,
+    render: (p) => (
+      <>
+        {p.producto_nombre}
+        {!p.producto_activo && <Estado tono="neutro" texto="Inhabilitado" />}
+      </>
+    ),
+  },
+  { clave: 'dosis', titulo: 'Dosis', multilinea: true, render: (p) => p.dosis || SIN_VALOR },
+]
+
+const COLUMNAS_PLAGAS: ColumnaTabla<PlagaControlada>[] = [
+  {
+    clave: 'plaga',
+    titulo: 'Plaga',
+    multilinea: true,
+    render: (p) => (
+      <>
+        {p.plaga_nombre}
+        {!p.plaga_activo && <Estado tono="neutro" texto="Inhabilitada" />}
+      </>
+    ),
+  },
+]
 
 const COLUMNAS_ALCANCES: ColumnaTabla<Alcance>[] = [
   { clave: 'tipo', titulo: 'Tipo', render: (a) => (a.area_verde_id ? 'Área verde' : 'Ejemplar') },
@@ -191,6 +220,39 @@ function Ficha({
           claveFila={(a) => String(a.id)}
         />
       </section>
+
+      {atencion.productos.length > 0 && (
+        <section className={estilos.seccion} aria-labelledby="titulo-productos">
+          <div className={estilos.cabeceraSeccion}>
+            <h2 id="titulo-productos" className={estilos.tituloSeccion}>
+              Productos aplicados
+            </h2>
+            <span className={estilos.ayuda}>
+              {atencion.productos.length} {atencion.productos.length === 1 ? 'producto' : 'productos'}
+            </span>
+          </div>
+          <TablaDatos
+            titulo="Productos aplicados en la atención"
+            columnas={COLUMNAS_PRODUCTOS}
+            filas={atencion.productos}
+            claveFila={(p) => String(p.id)}
+          />
+        </section>
+      )}
+
+      {atencion.plagas.length > 0 && (
+        <section className={estilos.seccion} aria-labelledby="titulo-plagas">
+          <div className={estilos.cabeceraSeccion}>
+            <h2 id="titulo-plagas" className={estilos.tituloSeccion}>
+              Plagas controladas
+            </h2>
+            <span className={estilos.ayuda}>
+              {atencion.plagas.length} {atencion.plagas.length === 1 ? 'plaga' : 'plagas'}
+            </span>
+          </div>
+          <TablaDatos titulo="Plagas controladas en la atención" columnas={COLUMNAS_PLAGAS} filas={atencion.plagas} claveFila={(p) => String(p.id)} />
+        </section>
+      )}
 
       <DocumentosProveedor atencion={atencion} version={versionDocumentos} />
 
