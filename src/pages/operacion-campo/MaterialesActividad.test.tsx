@@ -26,9 +26,10 @@ it('valida un traslado y lo guarda sin duplicar la actividad', async () => {
   }))
   const actividad = { id: 1, tipo_actividad_nombre: 'Propagación', area_verde_nombre: 'Jardín', estado: 'Abierto' } as ActividadCampo
   render(<MaterialesActividad actividad={actividad} soloLectura={false} onCerrar={() => {}} />)
+  expect(await screen.findByText('No hay materiales registrados')).toBeTruthy()
   const usuario = userEvent.setup()
   await usuario.selectOptions(await screen.findByLabelText('Material o insumo'), '1')
-  await usuario.type(screen.getByLabelText('Cantidad utilizada'), '4')
+  await usuario.type(screen.getByLabelText('Cantidad utilizada'), '4,5')
   await usuario.selectOptions(screen.getByLabelText('Unidad de medida'), '1')
   await usuario.type(screen.getByLabelText('Origen del traslado'), 'Vivero')
   await usuario.click(screen.getByRole('button', { name: 'Añadir material' }))
@@ -37,5 +38,5 @@ it('valida un traslado y lo guarda sin duplicar la actividad', async () => {
   await usuario.type(screen.getByLabelText('Destino del traslado'), 'Jardín')
   await usuario.click(screen.getByRole('button', { name: 'Añadir material' }))
   await waitFor(() => expect(escritos).toHaveLength(1))
-  expect(escritos[0]).toMatchObject({ material_id: 1, cantidad: 4, unidad_medida_id: 1, origen: 'Vivero', destino: 'Jardín' })
+  expect(escritos[0]).toMatchObject({ material_id: 1, cantidad: 4.5, unidad_medida_id: 1, origen: 'Vivero', destino: 'Jardín' })
 })

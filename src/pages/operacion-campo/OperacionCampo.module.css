@@ -1,5 +1,5 @@
 .pagina { display: flex; flex-direction: column; gap: var(--space-6); }
-.descripcion, .ayuda { color: var(--color-text-secondary); }
+.descripcion, .ayuda { color: var(--color-text-muted); }
 .filtros { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; }
 .filtros > * { min-width: calc(var(--space-8) * 5); }
 .buscar { display: flex; align-items: flex-end; gap: var(--space-3); flex: 1; }
