@@ -40,7 +40,7 @@ it('envía clase, fecha de solicitud e incidencia junto con la actividad', async
   await usuario.type(screen.getByLabelText(/^Fecha de atención/), '2026-10-21')
   await usuario.type(screen.getByLabelText(/^Fecha de solicitud/), '2026-10-20')
   await usuario.type(screen.getByLabelText(/^Identificador de incidencia/), '12')
-  await usuario.type(screen.getByLabelText(/^Superficie intervenida/), '12.5')
+  await usuario.type(screen.getByLabelText(/^Superficie intervenida/), '12,5')
   await usuario.type(screen.getByLabelText(/^Cantidad solicitada/), '10')
   await usuario.type(screen.getByLabelText(/^Cantidad ejecutada/), '8')
   await usuario.selectOptions(screen.getByLabelText(/^Unidad de medida/), '1')
