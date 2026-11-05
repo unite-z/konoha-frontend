@@ -106,3 +106,13 @@ destino}`. Cantidad y unidad son obligatorias; origen y destino se informan
 juntos para un traslado. La fecha y el espacio pertenecen a la actividad.
 El servidor exige acceso a la cuadrilla para escribir y conserva los registros
 anteriores sin permitir su borrado desde este flujo.
+
+## AV-82: fotografías de actividades
+
+El diálogo de fotografías reutiliza `Adjuntos` de MOD-01 con entidad `actividad`.
+La selección admite JPEG y PNG; antes de subir, el navegador genera un JPEG
+de hasta 1600 píxeles en su lado mayor con calidad 0,8. La subida conserva el
+`Idempotency-Key` para reintentos. El backend comprueba que el capataz sea dueño
+de la actividad al adjuntar, listar o descargar; otros roles conservan sus
+permisos de consulta. Las fotografías siguen siendo opcionales para cerrar el
+parte. La integración sin conexión corresponde a RF-T-012.
