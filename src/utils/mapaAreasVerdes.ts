@@ -1,5 +1,5 @@
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
-import type { PoligonoMapaAsignado, UsoFuenteMapa } from '@/types/mapaInventario'
+import type { PoligonoMapaAsignado } from '@/types/mapaInventario'
 
 export interface ClasificacionMapa {
   id: string
@@ -9,9 +9,14 @@ export interface ClasificacionMapa {
   tipoUsoId: number | null
 }
 
+export function etiquetaClasificacionMapa(clasificacion: ClasificacionMapa): string {
+  return clasificacion.tipoUsoId === null
+    ? `${clasificacion.nombre} · categoría de origen`
+    : clasificacion.nombre
+}
+
 export function enriquecerMapaAreasVerdes(
   geojson: AreasVerdesGeoJSON,
-  categorias: UsoFuenteMapa[],
   asignaciones: PoligonoMapaAsignado[],
   coloresTipo: ReadonlyMap<number, string>,
   coloresOrigen: ReadonlyMap<string, string>,
@@ -23,13 +28,12 @@ export function enriquecerMapaAreasVerdes(
       const propiedades = feature.properties ?? {}
       const usoFuente = texto(propiedades.Uso)
       const vinculacion = asignacionesPorId.get(texto(propiedades.mapa_id))
-      const categoria = categorias.find((item) => item.uso_fuente === usoFuente)
       const fichaVinculada = vinculacion?.area_verde_id != null
       const tipoFichaId = fichaVinculada ? vinculacion.area_verde_tipo_uso_id : null
-      const tipoId = tipoFichaId ?? categoria?.tipo_uso_id ?? null
+      const tipoId = tipoFichaId
       const tipoNombre = tipoFichaId !== null
         ? vinculacion?.area_verde_tipo_uso_nombre ?? ''
-        : categoria?.tipo_uso_nombre ?? ''
+        : ''
       const nombreClasificacion = tipoId === null ? usoFuente : tipoNombre
       return {
         ...feature,
@@ -85,6 +89,17 @@ export function filtrarMapaPorClasificacion(
       (feature) => feature.properties?.clasificacion_mapa_id === idClasificacion,
     ),
   }
+}
+
+/** Devuelve el color de una clave sin depender del orden actual del catálogo. */
+export function colorEstableClasificacion(clave: string, paleta: readonly string[]): string {
+  if (paleta.length === 0) return ''
+  let hash = 2166136261
+  for (const caracter of clave) {
+    hash ^= caracter.codePointAt(0) ?? 0
+    hash = Math.imul(hash, 16777619)
+  }
+  return paleta[(hash >>> 0) % paleta.length]
 }
 
 function texto(valor: unknown): string {

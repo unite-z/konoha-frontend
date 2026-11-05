@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -80,9 +81,10 @@ function GestionSectorArea({ area, sectores, editable, alGuardar }: {
 
 export default function AreasVerdesPage() {
   usePaginaActual('Áreas verdes', [MIGAS_INVENTARIO.areasVerdes])
+  const [parametros] = useSearchParams()
   const sesion = useSesionActiva()
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
-  const [busqueda, setBusqueda] = useState('')
+  const [busqueda, setBusqueda] = useState(() => parametros.get('buscar') ?? '')
   const [sectorId, setSectorId] = useState('')
   const [cuartelId, setCuartelId] = useState('')
   const [tipoUsoId, setTipoUsoId] = useState('')

@@ -43,7 +43,7 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
   const viewHeight = 700 / zoom
 
   function posicionar(evento: MouseEvent<SVGPathElement>, feature: FeatureArea) {
-    const rect = evento.currentTarget.ownerSVGElement?.parentElement?.getBoundingClientRect()
+    const rect = (evento.currentTarget.ownerSVGElement?.parentElement ?? evento.currentTarget.closest('svg')?.parentElement)?.getBoundingClientRect()
     if (!rect) return
     setHover({ x: evento.clientX - rect.left + 12, y: evento.clientY - rect.top + 12, feature })
   }
@@ -131,10 +131,10 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
         <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
           <strong>{texto(hover.feature.properties?.inventario_nombre) || texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
           <span>Uso: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
-          <span>Tipo de uso vigente: {texto(hover.feature.properties?.tipo_uso_nombre) || 'Sin clasificar'}</span>
-          <span>Superficie: {hover.feature.properties?.inventario_superficie_m2 == null
-            ? formatearSuperficie(hover.feature.properties?.['Área'])
-            : formatearSuperficie(hover.feature.properties.inventario_superficie_m2)}</span>
+          <span>Clasificación: {texto(hover.feature.properties?.clasificacion_mapa_nombre) || texto(hover.feature.properties?.Uso) || 'Sin clasificar'}</span>
+          <span>{hover.feature.properties?.inventario_superficie_m2 == null
+            ? `Superficie cartográfica: ${formatearSuperficie(hover.feature.properties?.['Área'])}`
+            : `Superficie registrada: ${formatearSuperficie(hover.feature.properties.inventario_superficie_m2)}`}</span>
         </div>
       )}
     </div>
