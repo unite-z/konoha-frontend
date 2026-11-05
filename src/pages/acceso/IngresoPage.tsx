@@ -4,8 +4,13 @@
  *
  * - El servidor responde un mensaje genérico ante credenciales incorrectas y avisa del bloqueo o de la
  *   cuenta no activa: se muestra tal cual.
- * - «Mantener la sesión en este móvil» solo vale en el móvil de campo (canal `campo`) y es voluntario.
+ * - «Mantener sesión en este dispositivo» solo vale en el móvil de campo (canal `campo`) y es voluntario:
+ *   en escritorio no se muestra porque el servidor no alarga la sesión de oficina.
+ * - «¿Olvidaste tu contraseña?» muestra cómo pedir una contraseña temporal: MOD-01 aún no recupera por correo.
  * - Bloquea el doble envío y, al entrar, vuelve a la ruta de `?volver=` (solo internas).
+ *
+ * Diseño: Figma «MOD01 · Web · login · Inicia sesión» (423:2) y su versión móvil (423:23), más el fondo de
+ * nodos en movimiento (`FondoNodos`), pedido por Marcos y aún no dibujado en Figma.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
@@ -13,14 +18,17 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import Casilla from '@/components/ui/Casilla'
-import CampoFormulario, { LeyendaObligatorio } from '@/components/ui/CampoFormulario'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import Icono from '@/components/ui/Icono'
 import { RUTAS_CORE, destinoTrasIngresoCore } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { useSesion } from '@/sesion/ContextoSesion'
+import FondoNodos from './FondoNodos'
 import estilos from './Acceso.module.css'
 
 const ID_CORREO = 'ingreso-correo'
 const ID_CLAVE = 'ingreso-clave'
+const ID_OLVIDO = 'ingreso-olvido'
 
 /** Pantalla de móvil: se ofrece mantener la sesión (CU-MOD01-001 5a). */
 function esMovil(): boolean {
@@ -40,6 +48,7 @@ export default function IngresoPage() {
   const [errores, setErrores] = useState<{ correo?: string; clave?: string }>({})
   const [errorServidor, setErrorServidor] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [verOlvido, setVerOlvido] = useState(false)
   const enCurso = useRef(false)
   const movil = esMovil()
   const sesionPerdida = Boolean((state as { perdida?: boolean } | null)?.perdida)
@@ -85,15 +94,21 @@ export default function IngresoPage() {
   }
 
   return (
-    <main className={estilos.fondo}>
-      <Tarjeta relleno="amplio" etiquetadaPor="ingreso-titulo" className={estilos.tarjeta}>
-        <p className={estilos.marca}>Gestión de Áreas Verdes · Campus PUCP</p>
-        <h1 id="ingreso-titulo" className={estilos.titulo}>
+    <main className={`${estilos.fondo} ${estilos.fondoIngreso}`}>
+      <FondoNodos />
+      <Tarjeta relleno="amplio" etiquetadaPor="ingreso-titulo" className={`${estilos.tarjeta} ${estilos.tarjetaIngreso}`}>
+        <p className={estilos.marcaLogo}>
+          <span className={estilos.simbolo}>
+            <Icono nombre="leaf" tamano="base" />
+          </span>
+          <span className={estilos.nombreMarca}>Áreas Verdes</span>
+          <span className={estilos.campus}>PUCP</span>
+        </p>
+        <h1 id="ingreso-titulo" className={estilos.tituloIngreso}>
           Inicia sesión
         </h1>
-        <p className={estilos.texto}>Usa tu correo institucional y tu contraseña.</p>
-        <form className={estilos.formulario} onSubmit={enviar} noValidate>
-          <LeyendaObligatorio />
+        <p className={estilos.subtitulo}>Ingresa con tu cuenta institucional para acceder al sistema.</p>
+        <form className={estilos.formularioIngreso} onSubmit={enviar} noValidate>
           {sesionPerdida && !errorServidor && (
             <AvisoEnLinea tono="info" titulo="Tu sesión terminó">
               Vuelve a iniciar sesión para continuar.
@@ -107,9 +122,9 @@ export default function IngresoPage() {
           <CampoFormulario
             id={ID_CORREO}
             etiqueta="Correo institucional"
-            ayuda="Las cuentas que venían de Servicios tercerizados entran con su usuario."
             type="email"
-            obligatorio
+            required
+            placeholder="usuario@pucp.edu.pe"
             autoComplete="username"
             autoCapitalize="none"
             spellCheck={false}
@@ -122,7 +137,7 @@ export default function IngresoPage() {
             id={ID_CLAVE}
             etiqueta="Contraseña"
             type="password"
-            obligatorio
+            required
             autoComplete="current-password"
             value={clave}
             onChange={(e) => setClave(e.target.value)}
@@ -131,22 +146,37 @@ export default function IngresoPage() {
           />
           {movil && (
             <Casilla
-              etiqueta="Mantener la sesión en este móvil (hasta 30 días). Úsalo solo en el móvil asignado."
+              etiqueta="Mantener sesión en este dispositivo"
               marcada={mantener}
               onCambiar={setMantener}
               disabled={enviando}
             />
           )}
-          <p className={estilos.texto}>
-            ¿Olvidaste tu contraseña? Pide al jefe de sección una contraseña temporal.
-          </p>
-          <div className={estilos.acciones}>
+          <div className={estilos.accionesIngreso}>
             <Boton type="submit" cargando={enviando}>
               Ingresar
             </Boton>
+            <Boton
+              variante="fantasma"
+              aria-expanded={verOlvido}
+              aria-controls={ID_OLVIDO}
+              onClick={() => setVerOlvido((v) => !v)}
+            >
+              ¿Olvidaste tu contraseña?
+            </Boton>
+          </div>
+          <div id={ID_OLVIDO}>
+            {verOlvido && (
+              <AvisoEnLinea tono="info" titulo="Pide una contraseña temporal">
+                El jefe de sección te da una contraseña temporal; al entrar, el sistema te pide cambiarla.
+              </AvisoEnLinea>
+            )}
           </div>
         </form>
       </Tarjeta>
+      <p className={estilos.pistaNodos} aria-hidden="true">
+        Pulsa sobre las partículas
+      </p>
     </main>
   )
 }
