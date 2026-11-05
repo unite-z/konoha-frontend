@@ -19,7 +19,7 @@ export function listarEspecies(incluirInactivas = false, signal?: AbortSignal): 
   return solicitarTercerizados('especies', { parametros: { incluir_inactivas: incluirInactivas }, signal, base: BASE })
 }
 export function crearEspecie(entrada: {
-  nombre_comun: string; nombre_cientifico?: string; forma_biologica: string
+  nombre_comun: string; nombre_cientifico: string; forma_biologica: string
 }): Promise<EspecieVegetal> {
   return solicitarTercerizados('especies', { metodo: 'POST', cuerpo: entrada, base: BASE })
 }
