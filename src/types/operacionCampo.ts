@@ -30,8 +30,10 @@ export interface ParticipantesCampo { actividad_id: number; cantidad_operarios: 
 export interface ActividadCampo {
   id: number; parte_id: number; cuadrilla_id: number; capataz_id: number; fecha: string; estado: 'Abierto' | 'Cerrado'
   tipo_actividad_id: number; area_verde_id: number; fecha_hora_actividad: string; encargo_id: number | null; observaciones: string | null
+  clase_actividad_id: number | null; fecha_solicitud: string | null; incidencia_id: number | null
   cuadrilla_nombre: string; tipo_actividad_nombre: string; area_verde_nombre: string; participantes: ParticipantesCampo
 }
 export interface EntradaActividad {
   parte_id: number; tipo_actividad_id: number; area_verde_id: number; fecha_hora_actividad: string; encargo_id: number | null; observaciones: string
+  clase_actividad_id: number | null; fecha_solicitud: string | null; incidencia_id: number | null
 }
