@@ -126,6 +126,11 @@ export default function BandejaIncidenciasPage() {
             setAviso(`${registrada.codigo} registrada`)
             consulta.reintentar()
           }}
+          onAnadida={(codigo) => {
+            setRegistrando(false)
+            setAviso(`Añadido a ${codigo}`)
+            consulta.reintentar()
+          }}
         />
       )}
       <AvisoTemporal mensaje={aviso} onCerrar={cerrarAviso} />

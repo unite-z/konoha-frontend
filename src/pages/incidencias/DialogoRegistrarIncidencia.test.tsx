@@ -1,81 +1,205 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import DialogoRegistrarIncidencia from './DialogoRegistrarIncidencia'
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import DialogoRegistrarIncidencia from "./DialogoRegistrarIncidencia";
 
-const registrarIncidencia = vi.fn(async (_cuerpo: unknown, _foto: File | null) => ({ id: 42, codigo: 'INC-2026-042' }))
-vi.mock('@/services/api/incidencias', () => ({
-  obtenerCatalogosRegistro: async () => ({
-    tipos: ['Rama caída', 'Hojarasca'],
-    espacios: [{ nombre: 'Estacionamiento 3', ejemplares: ['T-0907 · Eucalipto'] }],
-    usuarios: [{ id: 1, nombre: 'Ana Q.' }],
+const registrarIncidencia = vi.fn(
+  async (_cuerpo: unknown, _foto: File | null) => ({
+    id: 42,
+    codigo: "INC-2026-042",
   }),
-  registrarIncidencia: (cuerpo: unknown, foto: File | null) => registrarIncidencia(cuerpo, foto),
-}))
+);
+const buscarPosiblesDuplicados = vi.fn(
+  async (
+    _tipo: string,
+    _espacio: string,
+    _ejemplar: string | null,
+  ): Promise<unknown[]> => [],
+);
+const sumarReporte = vi.fn(
+  async (_id: number, _descripcion: string, _foto: File | null) => undefined,
+);
+vi.mock("@/services/api/incidencias", () => ({
+  obtenerCatalogosRegistro: async () => ({
+    tipos: ["Rama caída", "Hojarasca"],
+    espacios: [
+      { nombre: "Estacionamiento 3", ejemplares: ["T-0907 · Eucalipto"] },
+    ],
+    usuarios: [{ id: 1, nombre: "Ana Q." }],
+  }),
+  registrarIncidencia: (cuerpo: unknown, foto: File | null) =>
+    registrarIncidencia(cuerpo, foto),
+  buscarPosiblesDuplicados: (
+    tipo: string,
+    espacio: string,
+    ejemplar: string | null,
+  ) => buscarPosiblesDuplicados(tipo, espacio, ejemplar),
+  sumarReporte: (id: number, descripcion: string, foto: File | null) =>
+    sumarReporte(id, descripcion, foto),
+}));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-    this.open = true
-  }
+    this.open = true;
+  };
   HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
-    this.open = false
-  }
-})
+    this.open = false;
+  };
+});
 afterEach(() => {
-  cleanup()
-  registrarIncidencia.mockClear()
-})
+  cleanup();
+  vi.clearAllMocks();
+});
 
-describe('DialogoRegistrarIncidencia', () => {
-  it('registra una incidencia telefónica de una persona externa con su foto (Figma 394-8504)', async () => {
-    const onRegistrada = vi.fn()
-    render(<DialogoRegistrarIncidencia onCerrar={vi.fn()} onRegistrada={onRegistrada} />)
-    const usuario = userEvent.setup()
-    await screen.findByRole('option', { name: 'Rama caída' })
+describe("DialogoRegistrarIncidencia", () => {
+  it("registra una incidencia telefónica de una persona externa con su foto (Figma 394-8504)", async () => {
+    const onRegistrada = vi.fn();
+    render(
+      <DialogoRegistrarIncidencia
+        onCerrar={vi.fn()}
+        onRegistrada={onRegistrada}
+        onAnadida={vi.fn()}
+      />,
+    );
+    const usuario = userEvent.setup();
+    await screen.findByRole("option", { name: "Rama caída" });
 
-    await usuario.click(screen.getByRole('button', { name: 'Registrar' }))
-    expect(screen.getByText('Elige el tipo.')).toBeTruthy()
-    expect(screen.getByText('Escribe el nombre.')).toBeTruthy()
-    expect(registrarIncidencia).not.toHaveBeenCalled()
+    await usuario.click(screen.getByRole("button", { name: "Registrar" }));
+    expect(screen.getByText("Elige el tipo.")).toBeTruthy();
+    expect(screen.getByText("Escribe el nombre.")).toBeTruthy();
+    expect(registrarIncidencia).not.toHaveBeenCalled();
 
-    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), 'Rama caída')
-    await usuario.type(screen.getByLabelText(/^Nombre/), 'Vigilante · Puerta 3')
-    await usuario.type(screen.getByLabelText('Contacto'), '987 654 321')
-    await usuario.selectOptions(screen.getByLabelText(/^Espacio/), 'Estacionamiento 3')
-    await usuario.selectOptions(screen.getByLabelText('Ejemplar'), 'T-0907 · Eucalipto')
-    await usuario.type(screen.getByLabelText(/^Descripción/), 'Rama sobre la vía de salida')
-    const foto = new File(['x'], 'rama.jpg', { type: 'image/jpeg' })
-    await usuario.upload(document.querySelector('input[type="file"]') as HTMLInputElement, foto)
-    expect(screen.getByText('rama.jpg')).toBeTruthy()
+    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), "Rama caída");
+    await usuario.type(
+      screen.getByLabelText(/^Nombre/),
+      "Vigilante · Puerta 3",
+    );
+    await usuario.type(screen.getByLabelText("Contacto"), "987 654 321");
+    await usuario.selectOptions(
+      screen.getByLabelText(/^Espacio/),
+      "Estacionamiento 3",
+    );
+    await usuario.selectOptions(
+      screen.getByLabelText("Ejemplar"),
+      "T-0907 · Eucalipto",
+    );
+    await usuario.type(
+      screen.getByLabelText(/^Descripción/),
+      "Rama sobre la vía de salida",
+    );
+    const foto = new File(["x"], "rama.jpg", { type: "image/jpeg" });
+    await usuario.upload(
+      document.querySelector('input[type="file"]') as HTMLInputElement,
+      foto,
+    );
+    expect(screen.getByText("rama.jpg")).toBeTruthy();
 
-    await usuario.click(screen.getByRole('button', { name: 'Registrar' }))
+    await usuario.click(screen.getByRole("button", { name: "Registrar" }));
     expect(registrarIncidencia).toHaveBeenCalledWith(
       {
-        canal: 'Telefono',
-        tipo: 'Rama caída',
-        reportado_por: { nombre: 'Vigilante · Puerta 3', contacto: '987 654 321' },
-        espacio: 'Estacionamiento 3',
-        ejemplar: 'T-0907 · Eucalipto',
-        descripcion: 'Rama sobre la vía de salida',
+        canal: "Telefono",
+        tipo: "Rama caída",
+        reportado_por: {
+          nombre: "Vigilante · Puerta 3",
+          contacto: "987 654 321",
+        },
+        espacio: "Estacionamiento 3",
+        ejemplar: "T-0907 · Eucalipto",
+        descripcion: "Rama sobre la vía de salida",
       },
       foto,
-    )
-    expect(onRegistrada).toHaveBeenCalled()
-  })
+    );
+    expect(onRegistrada).toHaveBeenCalled();
+  });
 
-  it('con un usuario del sistema, lo elige de la lista', async () => {
-    render(<DialogoRegistrarIncidencia onCerrar={vi.fn()} onRegistrada={vi.fn()} />)
-    const usuario = userEvent.setup()
-    await screen.findByRole('option', { name: 'Rama caída' })
+  it("con un usuario del sistema, lo elige de la lista", async () => {
+    render(
+      <DialogoRegistrarIncidencia
+        onCerrar={vi.fn()}
+        onRegistrada={vi.fn()}
+        onAnadida={vi.fn()}
+      />,
+    );
+    const usuario = userEvent.setup();
+    await screen.findByRole("option", { name: "Rama caída" });
 
-    await usuario.click(screen.getByRole('radio', { name: 'Usuario del sistema' }))
-    expect(screen.queryByLabelText(/^Nombre/)).toBeNull()
-    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), 'Hojarasca')
-    await usuario.selectOptions(screen.getByRole('combobox', { name: /^Usuario/ }), '1')
-    await usuario.selectOptions(screen.getByLabelText(/^Espacio/), 'Estacionamiento 3')
-    await usuario.type(screen.getByLabelText(/^Descripción/), 'Hojas en la vía')
-    await usuario.click(screen.getByRole('button', { name: 'Registrar' }))
-    expect(registrarIncidencia).toHaveBeenCalledWith(expect.objectContaining({ reportado_por: { usuario_id: 1 }, ejemplar: null }), null)
-  })
-})
+    await usuario.click(
+      screen.getByRole("radio", { name: "Usuario del sistema" }),
+    );
+    expect(screen.queryByLabelText(/^Nombre/)).toBeNull();
+    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), "Hojarasca");
+    await usuario.selectOptions(
+      screen.getByRole("combobox", { name: /^Usuario/ }),
+      "1",
+    );
+    await usuario.selectOptions(
+      screen.getByLabelText(/^Espacio/),
+      "Estacionamiento 3",
+    );
+    await usuario.type(
+      screen.getByLabelText(/^Descripción/),
+      "Hojas en la vía",
+    );
+    await usuario.click(screen.getByRole("button", { name: "Registrar" }));
+    expect(registrarIncidencia).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reportado_por: { usuario_id: 1 },
+        ejemplar: null,
+      }),
+      null,
+    );
+  });
+
+  it("si ya hay una abierta igual, deja añadir el reporte a la existente o registrar igualmente (HU-020)", async () => {
+    buscarPosiblesDuplicados.mockResolvedValue([
+      {
+        id: 7,
+        codigo: "INC-2026-007",
+        tipo: "Rama caída",
+        ejemplar: "T-0907 · Eucalipto",
+        fecha_registro: new Date().toISOString(),
+      },
+    ]);
+    const onAnadida = vi.fn();
+    render(
+      <DialogoRegistrarIncidencia
+        onCerrar={vi.fn()}
+        onRegistrada={vi.fn()}
+        onAnadida={onAnadida}
+      />,
+    );
+    const usuario = userEvent.setup();
+    await screen.findByRole("option", { name: "Rama caída" });
+    await usuario.selectOptions(screen.getByLabelText(/^Tipo/), "Rama caída");
+    await usuario.type(screen.getByLabelText(/^Nombre/), "Vigilancia");
+    await usuario.selectOptions(
+      screen.getByLabelText(/^Espacio/),
+      "Estacionamiento 3",
+    );
+    await usuario.selectOptions(
+      screen.getByLabelText("Ejemplar"),
+      "T-0907 · Eucalipto",
+    );
+    await usuario.type(
+      screen.getByLabelText(/^Descripción/),
+      "Otra vez la rama",
+    );
+    await usuario.click(screen.getByRole("button", { name: "Registrar" }));
+
+    expect(
+      await screen.findByText("Ya hay una incidencia abierta"),
+    ).toBeTruthy();
+    expect(buscarPosiblesDuplicados).toHaveBeenCalledWith(
+      "Rama caída",
+      "Estacionamiento 3",
+      "T-0907 · Eucalipto",
+    );
+    expect(registrarIncidencia).not.toHaveBeenCalled();
+    await usuario.click(
+      screen.getByRole("button", { name: "Añadir a la existente" }),
+    );
+    expect(sumarReporte).toHaveBeenCalledWith(7, "Otra vez la rama", null);
+    expect(onAnadida).toHaveBeenCalledWith("INC-2026-007");
+  });
+});
