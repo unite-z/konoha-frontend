@@ -5,6 +5,7 @@
 import type { CambioEstadoCiclo } from '@/services/api/planificacion'
 import type { FechaIso } from '@/types/comun'
 import type { EstadoProgramacion, Programacion, Restriccion, ServicioPeriodico } from '@/types/planificacion'
+import { codigoCorto } from '@/utils/estadosTercerizados'
 import { instanteALocalLima } from '@/utils/instanteLima'
 import { horaCorta, textoHorario } from '@/utils/planificacion'
 import { diaFigma, dias, fechaCorta, fechaNumerica, listaConY } from '../resumen/resumenPlanificacion'
@@ -180,4 +181,14 @@ export function historialCiclo(ciclo: Programacion): { clave: string; texto: str
       const local = instanteALocalLima(evento.fecha_hora) ?? evento.fecha_hora
       return { clave: `${evento.estado}-${evento.fecha_hora}`, texto: TEXTO_EVENTO[evento.estado], detalle: `${local.slice(8, 10)}/${local.slice(5, 7)} ${local.slice(11, 16)} · ${evento.autor}` }
     })
+}
+
+/**
+ * Lo que se dice del requerimiento al programar el ciclo (AV-263, Figma 373-5779): «requerimiento AT-1a2b3c4d
+ * generado en Servicios tercerizados», o por qué no se generó. `null` si no aplica (sin proveedor o sin ruta).
+ */
+export function textoRequerimiento(ciclo: Programacion): string | null {
+  if (ciclo.requerimiento) return `requerimiento ${codigoCorto(ciclo.requerimiento.codigo)} generado en Servicios tercerizados`
+  if (ciclo.motivo_sin_requerimiento) return `sin requerimiento en Servicios tercerizados: ${ciclo.motivo_sin_requerimiento.charAt(0).toLowerCase()}${ciclo.motivo_sin_requerimiento.slice(1)}`
+  return null
 }

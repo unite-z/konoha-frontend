@@ -8,7 +8,7 @@
  * (AV-263) y «confirmado por» de los avisos (AV-253). La ruta del corte la añade AV-270.
  */
 import { useCallback, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import BarraAvance from '@/components/ui/BarraAvance'
@@ -25,13 +25,14 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
-import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaDetalleAtencion } from '@/router/rutasApp'
 import { obtenerCicloCorte } from '@/services/api/corte'
 import { listarRestricciones, listarServiciosPeriodicos, obtenerProgramacion, type CambioEstadoCiclo } from '@/services/api/planificacion'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { CicloCorte, InterrupcionCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
+import { codigoCorto } from '@/utils/estadosTercerizados'
 import { ahoraLimaLocal, hoyLima } from '@/utils/instanteLima'
 import { conflictosDelPeriodo } from '../calendario/programarCiclo'
 import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
@@ -114,6 +115,17 @@ function FichaCiclo({
         {/* Como en Figma, «En curso» va relleno y sin punto. */}
         <Estado tono={estado.tono} texto={estado.texto} punto={ciclo.estado !== 'EnCurso'} />
       </JuntoTitulo>
+      {/* Como en Figma 380-7171: «Requerimiento AT-… · Servicios tercerizados», con enlace a su ficha (AV-263). */}
+      {ciclo.requerimiento ? (
+        <JuntoTitulo debajo>
+          <Link to={rutaDetalleAtencion(ciclo.requerimiento.id)} className={estilos.enlaceRequerimiento}>
+            Requerimiento {codigoCorto(ciclo.requerimiento.codigo)}
+          </Link>{' '}
+          · Servicios tercerizados
+        </JuntoTitulo>
+      ) : (
+        ciclo.motivo_sin_requerimiento && <JuntoTitulo debajo>Sin requerimiento en Servicios tercerizados: {ciclo.motivo_sin_requerimiento}</JuntoTitulo>
+      )}
       {botones && !esMovil && <AccionesPagina>{botones}</AccionesPagina>}
       {corte && interrumpiendo && (
         <DialogoInterrupcion

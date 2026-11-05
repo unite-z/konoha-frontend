@@ -30,6 +30,8 @@ vi.mock('@/services/api/planificacion', async () => {
     { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial },
     { ...programada, id: 9, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-11-01', fecha_fin_prevista: '2026-11-04', fecha_inicio_real: '2026-11-01' },
     { ...programada, id: 10, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-10-30', fecha_fin_prevista: '2026-11-02', fecha_inicio_real: '2026-10-30' },
+    { ...programada, id: 11, requerimiento: { id: 55, codigo: 'AT-1a2b3c4d5e6f', estado: 'Requerimiento registrado' } },
+    { ...programada, id: 12, motivo_sin_requerimiento: 'El proveedor no tiene contrato vigente para este servicio' },
   ]
   return {
   obtenerProgramacion: async (id: number) => {
@@ -172,6 +174,15 @@ describe('CicloDetallePage', () => {
     } finally {
       window.matchMedia = original
     }
+  })
+
+  it('enlaza el requerimiento de Servicios tercerizados o dice por qué no lo hay (AV-263, Figma 380-7171)', async () => {
+    pintar('11')
+    const enlace = await screen.findByRole('link', { name: 'Requerimiento AT-1a2b3c4d' })
+    expect(enlace.getAttribute('href')).toMatch(/\/atenciones\/55$/)
+    cleanup()
+    pintar('12')
+    expect(await screen.findByText('Sin requerimiento en Servicios tercerizados: El proveedor no tiene contrato vigente para este servicio')).toBeTruthy()
   })
 
   it('avisa si el ciclo no existe', async () => {

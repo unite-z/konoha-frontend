@@ -125,6 +125,17 @@ export interface Programacion {
   codigo?: string | null
   /** Contrato de AV-253: transiciones con autor y hora, en el detalle. */
   historial?: EventoCiclo[]
+  /** Contrato de AV-263: la atención de MOD-05 creada al programar un corte con proveedor. */
+  requerimiento?: RequerimientoCiclo | null
+  /** Contrato de AV-263: por qué no se creó el requerimiento (sin contrato vigente, sin jardines en MOD-05…). */
+  motivo_sin_requerimiento?: string | null
+}
+
+/** Requerimiento de Servicios tercerizados de un ciclo (AV-263): la atención de MOD-05 y su estado. */
+export interface RequerimientoCiclo {
+  id: number
+  codigo: string
+  estado: string
 }
 
 /** Una transición del ciclo (AV-253): a qué estado pasó, cuándo y quién. */

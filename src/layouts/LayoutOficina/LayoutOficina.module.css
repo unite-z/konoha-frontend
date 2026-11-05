@@ -116,6 +116,18 @@
   color: var(--color-text-muted);
 }
 
+/* Segunda línea bajo el subtítulo (`<JuntoTitulo debajo>`): «Requerimiento AT-… · Servicios tercerizados» en Figma 380-7171. */
+.debajoTitulo {
+  margin-top: var(--space-1);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  color: var(--color-text-muted);
+}
+
+.debajoTitulo:empty {
+  display: none;
+}
+
 /* «Saltar al contenido»: visible solo al recibir el foco. */
 .saltar {
   position: absolute;

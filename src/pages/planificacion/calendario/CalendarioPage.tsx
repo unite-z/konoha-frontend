@@ -22,6 +22,7 @@ import type { Programacion, Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
 import { hoyLima } from '@/utils/instanteLima'
 import type { AvisoCiclos } from '../ciclos/ciclos'
+import { textoRequerimiento } from '../ciclos/detalleCiclo'
 import { nombreMes, sumarDias } from '../resumen/resumenPlanificacion'
 import AgendaDia from './AgendaDia'
 import {
@@ -313,12 +314,20 @@ export default function CalendarioPage() {
           onCerrar={cerrarPanel}
           onProgramada={(programada) => {
             if (parametros.get('atiende') === '1') {
-              const avisoCiclos: AvisoCiclos = { mensaje: 'Ciclo programado', detalle: `${programada.servicio}: alerta atendida.` }
+              // Figma 373-5779: «Alerta atendida · requerimiento REQ-… generado en Servicios tercerizados.» (AV-263).
+              const requerimiento = textoRequerimiento(programada)
+              const avisoCiclos: AvisoCiclos = {
+                mensaje: 'Ciclo programado',
+                detalle: requerimiento ? `Alerta atendida · ${requerimiento}.` : `${programada.servicio}: alerta atendida.`,
+              }
               void navegar(RUTAS_PLANIFICACION.ciclos, { state: { aviso: avisoCiclos } })
               return
             }
             cerrarPanel()
-            setAviso(`${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}.`)
+            const requerimiento = textoRequerimiento(programada)
+            setAviso(
+              `${programada.servicio} programado del ${programada.fecha_inicio_prevista.slice(8, 10)} al ${programada.fecha_fin_prevista.slice(8, 10)}${requerimiento ? `; ${requerimiento}` : ''}.`,
+            )
             programaciones.reintentar()
           }}
         />
