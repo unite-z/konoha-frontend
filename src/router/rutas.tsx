@@ -71,6 +71,7 @@ import { PERMISOS } from '../config/permisosCore'
 import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, RUTAS_MIS_INCIDENCIAS, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
+import ActividadesPage from '../pages/operacion-campo/ActividadesPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
 import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
@@ -100,6 +101,7 @@ export const router = createBrowserRouter([
                   { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
                   { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
                   { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
+                  { path: RUTAS_CAMPO.actividades, element: <ActividadesPage /> },
                   { path: RUTAS_CAMPO.participantes, element: <ParticipantesPage /> },
                 ],
               },
