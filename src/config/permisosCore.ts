@@ -22,6 +22,8 @@ export const PERMISOS = {
   consultarPartes: 'CAM.PARTE.CONSULTAR',
   consultarInventario: 'INV.INVENTARIO.CONSULTAR',
   registrarInventario: 'INV.INVENTARIO.REGISTRAR',
+  /** Planificar la campaña de poda mayor (AV-308). */
+  planificarPoda: 'INV.PODA.PLANIFICAR',
 } as const
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS]
