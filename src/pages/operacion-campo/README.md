@@ -2,6 +2,8 @@
 
 Operación de campo: `CuadrillasPage`, `EncargosPage` y `ParticipantesPage`, con `DialogoNuevaActividad`, piezas comunes en `ComponentesCampo.tsx` y el hook del módulo `useCampo.ts`.
 
+`DialogoPodaMenor` implementa AV-315 sobre el parte diario: vincula ejemplares de menos de 5 m, deja los árboles sin catastro pendientes de vinculación y deriva los ejemplares de 5 m o más al flujo existente de incidencias. Tras registrar abre las evidencias de AV-82. La altura procede de MOD-02 y debe coordinarse con AV-133.
+
 | Qué | Dónde |
 |---|---|
 | Servicios | `services/api/operacionCampo.ts` (`campoApi`, `todosCampo`) |
@@ -68,3 +70,60 @@ lectura/escritura y compatibilidad con la API anterior. No demuestra persistenci
 conservación histórica en la base de datos ni aceptación integrada. Antes de cerrar
 AV-62, ejecutar esos flujos contra el backend real, consultar un parte anterior
 después de desactivar/renombrar su tipo y adjuntar evidencia integrada en Linear.
+
+## AV-56: registro ágil de actividades
+
+`POST /api/v1/operacion-campo/actividades/` conserva los campos existentes
+`parte_id`, `tipo_actividad_id`, `area_verde_id`, `fecha_hora_actividad`,
+`encargo_id` y `observaciones`. Añade `clase_actividad_id`,
+`fecha_solicitud` (YYYY-MM-DD) e `incidencia_id`, los tres opcionales para
+mantener las altas anteriores. El servidor comprueba que el tipo pertenece
+a la clase indicada, que la solicitud no es posterior al parte y que la
+incidencia existe. La clase se guarda como dato histórico de la actividad.
+
+Ejemplo: `{parte_id: 10, clase_actividad_id: 3, tipo_actividad_id: 14,
+area_verde_id: 2, fecha_hora_actividad: "2026-10-21T08:00:00-05:00",
+fecha_solicitud: "2026-10-20", incidencia_id: null, encargo_id: null}`.
+El capataz solo puede registrar en su cuadrilla; un parte cerrado responde
+409 y los datos de origen inválidos responden 400. La integración con la
+base de datos y el servicio real sigue pendiente de prueba.
+
+## AV-70: medidas y tiempo
+
+El registro de actividad admite `superficie_m2`, `cantidad_solicitada`,
+`cantidad_ejecutada`, `unidad_medida_id` y `tiempo_minutos`. Los valores
+anteriores son opcionales para conservar el contrato previo. La superficie
+se expresa en m² y el tiempo en minutos (1 a 1440). Si se registra alguna
+cantidad, se exige una unidad de `GET catalogos/unidades-medida/`.
+El servidor rechaza valores negativos, unidad desconocida y tiempo fuera
+de rango antes de crear la actividad.
+
+## AV-79: materiales y traslados
+
+`GET /api/v1/operacion-campo/catalogos/materiales/` ofrece los materiales
+catalogados; «Otro» envía `material_id: null` y una `descripcion_otro` obligatoria.
+`GET/POST /api/v1/operacion-campo/actividades/{id}/materiales/` consulta y
+registra `{material_id, descripcion_otro, cantidad, unidad_medida_id, origen,
+destino}`. Cantidad y unidad son obligatorias; origen y destino se informan
+juntos para un traslado. La fecha y el espacio pertenecen a la actividad.
+El servidor exige acceso a la cuadrilla para escribir y conserva los registros
+anteriores sin permitir su borrado desde este flujo.
+
+## AV-317: verificación en campo
+
+`PUT /api/v1/operacion-campo/actividades/{id}/verificacion/` recibe
+`{observaciones}`. Solo el jefe de sección puede registrar o actualizar la
+verificación. La respuesta conserva `verificacion_observaciones`,
+`verificado_por_usuario_id`, `verificado_por_nombre` y `fecha_verificacion`
+separados de `observaciones` y `fecha_hora_actividad`, que pertenecen a la
+ejecución del capataz. Cada cambio se incorpora al historial común de la actividad.
+
+## AV-82: fotografías de actividades
+
+El diálogo de fotografías reutiliza `Adjuntos` de MOD-01 con entidad `actividad`.
+La selección admite JPEG y PNG; antes de subir, el navegador genera un JPEG
+de hasta 1600 píxeles en su lado mayor con calidad 0,8. La subida conserva el
+`Idempotency-Key` para reintentos. El backend comprueba que el capataz sea dueño
+de la actividad al adjuntar, listar o descargar; otros roles conservan sus
+permisos de consulta. Las fotografías siguen siendo opcionales para cerrar el
+parte. La integración sin conexión corresponde a RF-T-012.
