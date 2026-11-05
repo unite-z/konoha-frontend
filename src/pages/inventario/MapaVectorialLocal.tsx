@@ -12,6 +12,8 @@ interface Props {
   datos: AreasVerdesGeoJSON
   usos: UsoMapaLocal[]
   usoSeleccionado: string
+  idPoligonoSeleccionado: string | null
+  idPoligonoCentrar: string | null
   onSeleccionar: (feature: FeatureArea) => void
 }
 
@@ -28,19 +30,24 @@ interface Hover {
   feature: FeatureArea
 }
 
-export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSeleccionar }: Props) {
+export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, idPoligonoSeleccionado, idPoligonoCentrar, onSeleccionar }: Props) {
   const [zoom, setZoom] = useState(1)
   const [modo, setModo] = useState<'seleccionar' | 'mover'>('seleccionar')
   const [centro, setCentro] = useState({ x: 500, y: 350 })
   const [arrastre, setArrastre] = useState<{ x: number; y: number; centroX: number; centroY: number } | null>(null)
   const [hover, setHover] = useState<Hover | null>(null)
   const limites = useMemo(() => obtenerLimites(datos.features), [datos.features])
+  const featureCentrada = idPoligonoCentrar
+    ? datos.features.find((actual) => texto(actual.properties?.mapa_id) === idPoligonoCentrar)
+    : null
+  const centroVisible = featureCentrada ? centroProyectado(featureCentrada, limites) : centro
+  const zoomVisible = featureCentrada ? Math.max(zoom, 2.4) : zoom
   const visibles = datos.features.filter((feature) => {
     const uso = usos.find((item) => item.id === texto(feature.properties?.clasificacion_mapa_id))
     return uso ? usoVisible(uso, usoSeleccionado) : false
   })
-  const viewWidth = 1000 / zoom
-  const viewHeight = 700 / zoom
+  const viewWidth = 1000 / zoomVisible
+  const viewHeight = 700 / zoomVisible
 
   function posicionar(evento: MouseEvent<SVGPathElement>, feature: FeatureArea) {
     const rect = (evento.currentTarget.ownerSVGElement?.parentElement ?? evento.currentTarget.closest('svg')?.parentElement)?.getBoundingClientRect()
@@ -52,7 +59,7 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
     <div className={estilos.mapaLocal}>
       <svg
         className={`${estilos.mapaLocalSvg} ${modo === 'mover' ? estilos.modoMover : estilos.modoSeleccionar}`}
-        viewBox={`${centro.x - viewWidth / 2} ${centro.y - viewHeight / 2} ${viewWidth} ${viewHeight}`}
+        viewBox={`${centroVisible.x - viewWidth / 2} ${centroVisible.y - viewHeight / 2} ${viewWidth} ${viewHeight}`}
         role="img"
         aria-label={`${visibles.length} polígonos visibles`}
         onMouseLeave={() => setHover(null)}
@@ -103,18 +110,22 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
         {visibles.map((feature, indice) => {
           const uso = usos.find((item) => item.id === texto(feature.properties?.clasificacion_mapa_id))
           if (!uso) return null
-          const activo = hover?.feature === feature
+          const sobrevolado = hover?.feature === feature
+          const seleccionado = texto(feature.properties?.mapa_id) === idPoligonoSeleccionado
+          const color = texto(feature.properties?.tipo_uso_color) || uso.color
           return (
             <path
               key={`${texto(feature.properties?.mapa_id)}-${indice}`}
               className={estilos.poligonoLocal}
               d={ruta(feature.geometry, limites)}
-              fill={texto(feature.properties?.tipo_uso_color) || uso.color}
-              fillOpacity={activo ? 1 : 0.78}
-              stroke={activo ? 'var(--map-selected-stroke)' : texto(feature.properties?.tipo_uso_color) || uso.color}
-              strokeWidth={activo ? 3 : 1.3}
+              fill={color}
+              fillOpacity={sobrevolado ? 1 : seleccionado ? 0.9 : 0.78}
+              stroke={color}
+              strokeWidth={seleccionado ? 3 : sobrevolado ? 2 : 1.3}
+              strokeDasharray={seleccionado ? '5 2' : undefined}
               onMouseEnter={(evento) => posicionar(evento, feature)}
               onMouseMove={(evento) => posicionar(evento, feature)}
+              onMouseLeave={() => setHover(null)}
               onClick={() => { if (modo === 'seleccionar') onSeleccionar(feature) }}
             />
           )
@@ -170,6 +181,20 @@ function recorrer(coordenadas: unknown, limites: Limites, puntos?: number[][]) {
 
 function calcularEscala(limites: Limites) {
   return Math.min(940 / (limites.maxX - limites.minX), 640 / (limites.maxY - limites.minY))
+}
+
+function centroProyectado(feature: FeatureArea, limites: Limites) {
+  const limitesFeature: Limites = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  recorrer(feature.geometry.coordinates, limitesFeature)
+  const medioX = (limitesFeature.minX + limitesFeature.maxX) / 2
+  const medioY = (limitesFeature.minY + limitesFeature.maxY) / 2
+  const escala = calcularEscala(limites)
+  const offsetX = (1000 - (limites.maxX - limites.minX) * escala) / 2
+  const offsetY = (700 - (limites.maxY - limites.minY) * escala) / 2
+  return {
+    x: offsetX + (medioX - limites.minX) * escala,
+    y: offsetY + (limites.maxY - medioY) * escala,
+  }
 }
 
 function ruta(geometria: MultiPolygon, limites: Limites) {

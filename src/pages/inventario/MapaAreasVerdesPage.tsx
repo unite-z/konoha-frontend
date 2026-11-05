@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Map as MapaMapLibre, NavigationControl, Popup, ScaleControl, type FilterSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -11,7 +12,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
 import { listarTiposUso } from '@/services/api/catalogosInventario'
 import { asignarPoligonoMapa, clasificarUsoFuenteMapa, listarPoligonosMapa, listarTodasLasAreasVerdes, listarUsosFuenteMapa } from '@/services/api/mapaAsignaciones'
-import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
+import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON, type PropiedadesAreaMapa } from '@/services/api/mapaInventario'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import type { ElementoInventario } from '@/types/catalogosInventario'
@@ -53,6 +54,11 @@ interface HoverMapa {
 
 export default function MapaAreasVerdesPage() {
   usePaginaActual('Mapa del campus', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.mapa])
+  const [parametros, establecerParametros] = useSearchParams()
+  const idPoligonoSeleccionado = parametros.get('poligono')
+  const idPoligonoCentrar = parametros.get('centrar') === '1' ? idPoligonoSeleccionado : null
+  const modoRegistro = parametros.get('modo') === 'registrar'
+  const registrada = parametros.get('registrada') === '1'
   const sesion = useSesionActiva()
   const contenedorMapa = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<MapaMapLibre | null>(null)
@@ -62,13 +68,14 @@ export default function MapaAreasVerdesPage() {
   const asignaciones = useConsulta('mapa-poligonos', listarPoligonosMapa)
   const tiposUso = useConsulta('mapa-tipos-uso', (signal) => listarTiposUso(false, signal))
   const areas = useConsulta('mapa-inventario-areas', listarTodasLasAreasVerdes)
-  const [clasificacionSeleccionada, setClasificacionSeleccionada] = useState('')
-  const [seleccion, setSeleccion] = useState<PoligonoSeleccionado | null>(null)
+  const [clasificacionUsuario, setClasificacionUsuario] = useState('')
+  const [seleccionActualizada, setSeleccionActualizada] = useState<PoligonoSeleccionado | null>(null)
   const [, setHoverMapa] = useState<HoverMapa | null>(null)
   const [guardando, setGuardando] = useState<'uso' | 'area' | null>(null)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
   const [mensajeAccion, setMensajeAccion] = useState<string | null>(null)
   const puedeEditar = puede(sesion, PERMISOS.gestionarCatalogos)
+  const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
 
   const consultaConError = [mapa, categorias, asignaciones, tiposUso, areas].find((consulta) => consulta.estado === 'error' && !consulta.datos)
   const consultaPendiente = [mapa, categorias, asignaciones, tiposUso, areas].some((consulta) => !consulta.datos)
@@ -84,6 +91,62 @@ export default function MapaAreasVerdesPage() {
     () => mapaEnriquecido ? listarClasificacionesMapa(mapaEnriquecido) : [],
     [mapaEnriquecido],
   )
+
+  const featureSeleccionado = useMemo(
+    () => mapaEnriquecido?.features.find((feature) => texto(feature.properties?.mapa_id) === idPoligonoSeleccionado) ?? null,
+    [mapaEnriquecido, idPoligonoSeleccionado],
+  )
+  const clasificacionSolicitada = featureSeleccionado
+    ? texto(featureSeleccionado.properties?.clasificacion_mapa_id)
+    : ''
+  const clasificacionSeleccionada = idPoligonoCentrar ? clasificacionSolicitada : clasificacionUsuario
+  const detalleSeleccionado = useMemo(() => {
+    if (!featureSeleccionado) return null
+    const propiedades = featureSeleccionado.properties
+    const idFuente = texto(propiedades.mapa_id)
+    const usoFuente = texto(propiedades.Uso)
+    if (!idFuente || !usoFuente) return null
+    const asignacion = poligonosPorId.get(idFuente)
+    const clasificacion = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)
+    const tipoFichaId = asignacion?.area_verde_id == null ? null : asignacion.area_verde_tipo_uso_id
+    return {
+      idFuente,
+      usoFuente,
+      nombre: (asignacion?.area_verde_nombre ?? texto(propiedades.Nombre)) || 'Área verde del campus',
+      tipoUsoId: clasificacion?.tipo_uso_id ?? null,
+      areaVerdeId: asignacion?.area_verde_id ?? null,
+      areaVerdeNombre: asignacion?.area_verde_nombre ?? null,
+      superficieRegistrada: asignacion?.area_verde_superficie_m2 ?? null,
+      superficieCartografica: texto(propiedades['Área']) || null,
+      clasificacionNombre: tipoFichaId !== null
+        ? asignacion?.area_verde_tipo_uso_nombre ?? `Tipo ${tipoFichaId}`
+        : `${usoFuente} · categoría de origen`,
+    } satisfies PoligonoSeleccionado
+  }, [categorias.datos, featureSeleccionado, poligonosPorId])
+  const seleccion = seleccionActualizada?.idFuente === idPoligonoSeleccionado
+    ? seleccionActualizada
+    : detalleSeleccionado
+  const tieneFichaVinculada = seleccion
+    ? poligonosPorId.get(seleccion.idFuente)?.area_verde_id != null
+    : false
+  const setSeleccion = useCallback((siguiente: PoligonoSeleccionado) => {
+    setSeleccionActualizada(siguiente)
+  }, [])
+
+  const seleccionarPoligono = useCallback((propiedades: PropiedadesAreaMapa) => {
+    const idFuente = texto(propiedades.mapa_id)
+    const usoFuente = texto(propiedades.Uso)
+    if (!idFuente || !usoFuente) return
+    setSeleccionActualizada(null)
+    setErrorAccion(null)
+    setMensajeAccion(null)
+    establecerParametros((anteriores) => {
+      const siguientes = new URLSearchParams(anteriores)
+      siguientes.set('poligono', idFuente)
+      siguientes.delete('centrar')
+      return siguientes
+    }, { replace: true })
+  }, [establecerParametros])
 
   useEffect(() => {
     if (!contenedorMapa.current || !mapaEnriquecido) return
@@ -168,27 +231,9 @@ export default function MapaAreasVerdesPage() {
     instancia.on('click', capasPorClasificacion, (evento) => {
       const propiedades = evento.features?.[0]?.properties
       if (!propiedades) return
+      seleccionarPoligono(propiedades)
       const idFuente = texto(propiedades.mapa_id)
-      const usoFuente = texto(propiedades.Uso)
-      if (!idFuente || !usoFuente) return
       const asignacion = poligonosPorId.get(idFuente)
-      const clasificacion = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)
-      const tipoFichaId = asignacion?.area_verde_id == null ? null : asignacion.area_verde_tipo_uso_id
-      setSeleccion({
-        idFuente,
-        usoFuente,
-        nombre: (asignacion?.area_verde_nombre ?? texto(propiedades.Nombre)) || 'Área verde del campus',
-        tipoUsoId: clasificacion?.tipo_uso_id ?? null,
-        areaVerdeId: asignacion?.area_verde_id ?? null,
-        areaVerdeNombre: asignacion?.area_verde_nombre ?? null,
-        superficieRegistrada: asignacion?.area_verde_superficie_m2 ?? null,
-        superficieCartografica: texto(propiedades['Área']) || null,
-        clasificacionNombre: tipoFichaId !== null
-          ? asignacion?.area_verde_tipo_uso_nombre ?? `Tipo ${tipoFichaId}`
-          : `${usoFuente} · categoría de origen`,
-      })
-      setErrorAccion(null)
-      setMensajeAccion(null)
       const contenido = document.createElement('div')
       contenido.className = estilos.popup
       const titulo = document.createElement('strong')
@@ -217,7 +262,7 @@ export default function MapaAreasVerdesPage() {
       instancia.remove()
       mapaRef.current = null
     }
-  }, [mapaEnriquecido, clasificaciones, categorias.datos, poligonosPorId])
+  }, [mapaEnriquecido, clasificaciones, categorias.datos, poligonosPorId, seleccionarPoligono])
 
   useEffect(() => {
     clasificacionSeleccionadaRef.current = clasificacionSeleccionada
@@ -267,7 +312,7 @@ export default function MapaAreasVerdesPage() {
     try {
       const respuesta = await clasificarUsoFuenteMapa(seleccion.usoFuente, seleccion.tipoUsoId)
       setMensajeAccion(`Se actualizó la equivalencia del catálogo para todos los polígonos con la categoría «${seleccion.usoFuente}». No cambia la clasificación efectiva ni el tipo de las fichas vinculadas.`)
-      setSeleccion((actual) => actual ? { ...actual, tipoUsoId: respuesta.tipo_uso_id } : null)
+      setSeleccionActualizada({ ...seleccion, tipoUsoId: respuesta.tipo_uso_id })
       categorias.reintentar()
     } catch (causa) {
       setErrorAccion(causa instanceof Error ? causa.message : 'No se pudo guardar la clasificación.')
@@ -285,17 +330,17 @@ export default function MapaAreasVerdesPage() {
       const respuesta = await asignarPoligonoMapa(seleccion.idFuente, seleccion.areaVerdeId)
       setMensajeAccion(respuesta.area_verde_id ? `Vinculado con ${respuesta.area_verde_nombre}.` : 'Se quitó el vínculo con el inventario.')
       const clasificacionOrigen = categorias.datos?.find((item) => item.uso_fuente === seleccion.usoFuente)
-      setSeleccion((actual) => actual ? {
-        ...actual,
+      setSeleccionActualizada({
+        ...seleccion,
         areaVerdeId: respuesta.area_verde_id,
-        nombre: respuesta.area_verde_nombre ?? actual.nombre,
+        nombre: respuesta.area_verde_nombre ?? seleccion.nombre,
         areaVerdeNombre: respuesta.area_verde_nombre,
         superficieRegistrada: respuesta.area_verde_superficie_m2,
         clasificacionNombre: respuesta.area_verde_id === null || respuesta.area_verde_tipo_uso_id === null
-          ? `${actual.usoFuente} · categoría de origen`
+          ? `${seleccion.usoFuente} · categoría de origen`
           : respuesta.area_verde_tipo_uso_nombre ?? `Tipo ${respuesta.area_verde_tipo_uso_id}`,
-        tipoUsoId: respuesta.area_verde_id === null ? clasificacionOrigen?.tipo_uso_id ?? null : actual.tipoUsoId,
-      } : null)
+        tipoUsoId: respuesta.area_verde_id === null ? clasificacionOrigen?.tipo_uso_id ?? null : seleccion.tipoUsoId,
+      })
       asignaciones.reintentar()
     } catch (causa) {
       setErrorAccion(causa instanceof Error ? causa.message : 'No se pudo guardar el vínculo con el inventario.')
@@ -308,48 +353,41 @@ export default function MapaAreasVerdesPage() {
     <div className={estilos.pagina}>
       <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>
       <div className={estilos.encabezado}>
-        <p>La clasificación usa el tipo vigente de la ficha vinculada; si falta, conserva como referencia la categoría original del GeoJSON.</p>
+        <p>{modoRegistro
+          ? 'Elige en el mapa el jardín cuyo registro vas a crear. El contorno ya está cargado desde el GeoJSON.'
+          : 'La clasificación usa el tipo vigente de la ficha vinculada; si falta, conserva como referencia la categoría original del GeoJSON.'}</p>
         <div className={estilos.filtrosMapa}>
           <Selector
             id="filtro-clasificacion-mapa"
             etiqueta="Filtrar por clasificación"
             valor={clasificacionSeleccionada}
-            onCambiar={setClasificacionSeleccionada}
+            onCambiar={(valor) => {
+              setClasificacionUsuario(valor)
+              if (idPoligonoCentrar) {
+                establecerParametros((anteriores) => {
+                  const siguientes = new URLSearchParams(anteriores)
+                  siguientes.delete('centrar')
+                  return siguientes
+                }, { replace: true })
+              }
+            }}
             opcionTodos="Todas las clasificaciones"
             opciones={clasificaciones.map((clasificacion) => ({ valor: clasificacion.id, texto: etiquetaClasificacionMapa(clasificacion) }))}
           />
         </div>
       </div>
 
+      {modoRegistro && <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>}
+      {registrada && <AvisoEnLinea tono="exito">El área quedó registrada y vinculada al polígono del mapa.</AvisoEnLinea>}
+
       <section className={estilos.panelMapa} aria-label="Mapa interactivo de áreas verdes del campus">
         <MapaVectorialLocal
           datos={mapaEnriquecido ?? mapa.datos}
           usos={clasificaciones}
           usoSeleccionado={clasificacionSeleccionada}
-          onSeleccionar={(feature) => {
-            const propiedades = feature.properties
-            const idFuente = texto(propiedades.mapa_id)
-            const usoFuente = texto(propiedades.Uso)
-            if (!idFuente || !usoFuente) return
-            const asignacion = poligonosPorId.get(idFuente)
-            const clasificacion = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)
-            const tipoFichaId = asignacion?.area_verde_id == null ? null : asignacion.area_verde_tipo_uso_id
-            setSeleccion({
-              idFuente,
-              usoFuente,
-              nombre: (asignacion?.area_verde_nombre ?? texto(propiedades.Nombre)) || 'Área verde del campus',
-              tipoUsoId: clasificacion?.tipo_uso_id ?? null,
-              areaVerdeId: asignacion?.area_verde_id ?? null,
-              areaVerdeNombre: asignacion?.area_verde_nombre ?? null,
-              superficieRegistrada: asignacion?.area_verde_superficie_m2 ?? null,
-              superficieCartografica: texto(propiedades['Área']) || null,
-              clasificacionNombre: tipoFichaId !== null
-                ? asignacion?.area_verde_tipo_uso_nombre ?? `Tipo ${tipoFichaId}`
-                : `${usoFuente} · categoría de origen`,
-            })
-            setErrorAccion(null)
-            setMensajeAccion(null)
-          }}
+          idPoligonoSeleccionado={idPoligonoSeleccionado}
+          idPoligonoCentrar={idPoligonoCentrar}
+          onSeleccionar={(feature) => seleccionarPoligono(feature.properties)}
         />
         <div className={estilos.panelFlotante}>
           <h2>Clasificación</h2>
@@ -368,24 +406,32 @@ export default function MapaAreasVerdesPage() {
               <h3>{seleccion.nombre}</h3>
               <p>Uso original: <strong>{seleccion.usoFuente}</strong></p>
               <p>Clasificación efectiva: <strong>{seleccion.clasificacionNombre}</strong></p>
-              {seleccion.areaVerdeId !== null && (
+              {tieneFichaVinculada && (
                 <>
                   <p>Superficie registrada en la ficha: <strong>{seleccion.superficieRegistrada === null ? 'No disponible' : `${formatearSuperficie(seleccion.superficieRegistrada)} m²`}</strong></p>
                   <p>Superficie cartográfica del GeoJSON: <strong>{seleccion.superficieCartografica === null ? 'No disponible' : `${formatearSuperficie(seleccion.superficieCartografica)} m²`}</strong></p>
                   <BotonEnlace variante="enlace" to={`${RUTAS_INVENTARIO.areasVerdes}?buscar=${encodeURIComponent(seleccion.areaVerdeNombre ?? seleccion.nombre)}`}>
-                    Buscar ficha en el inventario
+                    {modoRegistro ? 'Ver en el inventario' : 'Buscar ficha en el inventario'}
                   </BotonEnlace>
                 </>
               )}
+              {modoRegistro && !tieneFichaVinculada && seleccion.areaVerdeId === null && puedeRegistrar && (
+                <BotonEnlace
+                  variante="primario"
+                  to={`${RUTAS_INVENTARIO.nuevaArea}?poligono=${encodeURIComponent(seleccion.idFuente)}`}
+                >
+                  Registrar este jardín
+                </BotonEnlace>
+              )}
               {puedeEditar ? (
                 <>
-                  {seleccion.areaVerdeId !== null && (poligonosPorId.get(seleccion.idFuente)?.area_verde_tipo_uso_id ?? null) !== null ? (
+                  {tieneFichaVinculada && (poligonosPorId.get(seleccion.idFuente)?.area_verde_tipo_uso_id ?? null) !== null ? (
                     <div className={estilos.ayuda}>
                       <p>Tipo vigente de la ficha: <strong>{poligonosPorId.get(seleccion.idFuente)?.area_verde_tipo_uso_nombre ?? 'Sin tipo asignado'}</strong></p>
                       <p>Para cambiar el tipo o la superficie registrada, edita la ficha del inventario. La edición desde esta interfaz está pendiente en AV-111.</p>
                     </div>
                   ) : <p className={estilos.ayuda}>Sin un tipo vigente en la ficha, este polígono conserva «{seleccion.usoFuente}» como categoría de origen.</p>}
-                  <details>
+                  {!modoRegistro && <details>
                     <summary>Equivalencia global de «Tipo del catálogo»</summary>
                     <p className={estilos.ayuda}>Este dato de referencia se aplica a toda la categoría original «{seleccion.usoFuente}». No edita una ficha ni cambia la clasificación efectiva del mapa; para modificar un área vinculada, abre su ficha en el inventario.</p>
                     <Selector
@@ -401,20 +447,23 @@ export default function MapaAreasVerdesPage() {
                     <Boton variante="secundario" compacto cargando={guardando === 'uso'} deshabilitado={guardando !== null} onClick={() => void guardarClasificacion()}>
                       Guardar equivalencia de categoría
                     </Boton>
-                  </details>
-                  <Selector
-                    id="area-poligono"
-                    etiqueta="Área del inventario vinculada"
-                    compacto
-                    valor={seleccion.areaVerdeId === null ? '' : String(seleccion.areaVerdeId)}
-                    disabled={guardando !== null}
-                    onCambiar={(valor) => setSeleccion({ ...seleccion, areaVerdeId: valor ? Number(valor) : null })}
-                    opcionTodos="Sin vincular"
-                    opciones={inventarioAreas.map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))}
-                  />
-                  <Boton variante="secundario" compacto cargando={guardando === 'area'} deshabilitado={guardando !== null} onClick={() => void guardarVinculo()}>
-                    Guardar vínculo
-                  </Boton>
+                  </details>}
+                  {modoRegistro && !tieneFichaVinculada && <p className={estilos.ayuda}>O selecciona una ficha que ya exista, por ejemplo qwe, y vincúlala a este jardín.</p>}
+                  {(!modoRegistro || !tieneFichaVinculada) && <>
+                    <Selector
+                      id="area-poligono"
+                      etiqueta="Área del inventario vinculada"
+                      compacto
+                      valor={seleccion.areaVerdeId === null ? '' : String(seleccion.areaVerdeId)}
+                      disabled={guardando !== null}
+                      onCambiar={(valor) => setSeleccion({ ...seleccion, areaVerdeId: valor ? Number(valor) : null })}
+                      opcionTodos="Sin vincular"
+                      opciones={inventarioAreas.map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))}
+                    />
+                    <Boton variante="secundario" compacto cargando={guardando === 'area'} deshabilitado={guardando !== null} onClick={() => void guardarVinculo()}>
+                      {modoRegistro ? 'Vincular ficha existente' : 'Guardar vínculo'}
+                    </Boton>
+                  </>}
                 </>
               ) : (
                 <p>Solo el jefe de sección puede editar la clasificación y el vínculo con el inventario.</p>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -13,6 +13,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
 import { asignarSectorArea, listarAreasVerdes, listarHistorialSectorArea, type HistorialSectorArea } from '@/services/api/areasVerdes'
+import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/catalogosInventario'
 import type { SectorInventario } from '@/types/catalogosInventario'
 import type { AreaVerde } from '@/types/areasVerdes'
@@ -91,19 +92,70 @@ export default function AreasVerdesPage() {
   const sectores = useConsulta('areas-filtro-sectores', (signal) => listarSectores(false, signal))
   const cuarteles = useConsulta('areas-filtro-cuarteles', (signal) => listarCuarteles(true, signal))
   const tiposUso = useConsulta('areas-filtro-tipos-uso', (signal) => listarTiposUso(false, signal))
+  const poligonosMapa = useConsulta('areas-mapa-poligonos', listarPoligonosMapa)
   const filtros = { sector_id: sectorId ? Number(sectorId) : undefined, cuartel_id: cuartelId ? Number(cuartelId) : undefined, tipo_uso_id: tipoUsoId ? Number(tipoUsoId) : undefined }
   const consulta = useConsulta(`areas:${busqueda}:${sectorId}:${cuartelId}:${tipoUsoId}`, (signal) => listarAreasVerdes(busqueda, signal, filtros))
+  const poligonosPorArea = useMemo(() => {
+    const resultado = new Map<number, string[]>()
+    for (const poligono of poligonosMapa.datos ?? []) {
+      if (poligono.area_verde_id === null) continue
+      const actuales = resultado.get(poligono.area_verde_id) ?? []
+      actuales.push(poligono.id_fuente)
+      resultado.set(poligono.area_verde_id, actuales)
+    }
+    return resultado
+  }, [poligonosMapa.datos])
 
   if (consulta.estado === 'error' && !consulta.datos) {
     return <EstadoError titulo="No pudimos cargar las áreas verdes" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
   }
   if (!consulta.datos) return <EstadoCarga forma="tabla" />
 
+  const columnaMapa: ColumnaTabla<AreaVerde> = {
+    clave: 'mapa',
+    titulo: 'Mapa',
+    render: (area) => {
+      const idsFuente = poligonosPorArea.get(area.id) ?? []
+      if (idsFuente.length === 0) return '—'
+      return (
+        <div className={estilos.accionesMapa}>
+          {idsFuente.map((idFuente, indice) => (
+            <BotonEnlace
+              key={idFuente}
+              variante="enlace"
+              compacto
+              to={`${RUTAS_INVENTARIO.mapa}?poligono=${encodeURIComponent(idFuente)}&centrar=1`}
+              aria-label={idsFuente.length > 1 ? `Ver en el mapa: ${area.nombre}, polígono ${indice + 1}` : `Ver en el mapa: ${area.nombre}`}
+            >
+              Ver en el mapa
+            </BotonEnlace>
+          ))}
+        </div>
+      )
+    },
+  }
+  const columnasAreas = puedeGestionar
+    ? [
+        ...COLUMNAS.filter((columna) => columna.clave !== 'sector'),
+        {
+          clave: 'sector',
+          titulo: 'Sector y cambios',
+          render: (area: AreaVerde) => <GestionSectorArea
+            area={area}
+            sectores={sectores.datos ?? []}
+            editable={puedeGestionar}
+            alGuardar={() => void consulta.reintentar()}
+          />,
+        },
+        columnaMapa,
+      ]
+    : [...COLUMNAS, columnaMapa]
+
   return (
     <>
       <AccionesPagina>
         <BotonEnlace to={RUTAS_INVENTARIO.mapa}>Ver mapa</BotonEnlace>
-        <BotonEnlace to={RUTAS_INVENTARIO.nuevaArea} variante="primario">Registrar área</BotonEnlace>
+        <BotonEnlace to={`${RUTAS_INVENTARIO.mapa}?modo=registrar`} variante="primario">Registrar área</BotonEnlace>
       </AccionesPagina>
       <Tarjeta titulo="Inventario de áreas verdes" descripcion="Consulta y registra los espacios verdes del campus." relleno="amplio">
         <div className={estilos.busqueda}>
@@ -131,22 +183,18 @@ export default function AreasVerdesPage() {
           {cuarteles.estado === 'error' && <EstadoError titulo="No se pudieron cargar los cuarteles" descripcion={cuarteles.error?.detalle ?? ''} onReintentar={cuarteles.reintentar} nivel={3} />}
           {tiposUso.estado === 'error' && <EstadoError titulo="No se pudieron cargar los tipos de uso" descripcion={tiposUso.error?.detalle ?? ''} onReintentar={tiposUso.reintentar} nivel={3} />}
         </div>
+        {poligonosMapa.estado === 'error' && (
+          <EstadoError
+            titulo="No se pudieron consultar los vínculos con el mapa"
+            descripcion={poligonosMapa.error?.detalle ?? ''}
+            onReintentar={poligonosMapa.reintentar}
+            nivel={3}
+          />
+        )}
         <div className={estilos.tablaAreas}>
           <TablaDatos
             titulo="Áreas verdes"
-            columnas={puedeGestionar ? [
-              ...COLUMNAS.filter((columna) => columna.clave !== 'sector'),
-              {
-                clave: 'sector',
-                titulo: 'Sector y cambios',
-                render: (area) => <GestionSectorArea
-                  area={area}
-                  sectores={sectores.datos ?? []}
-                  editable={puedeGestionar}
-                  alGuardar={() => void consulta.reintentar()}
-                />,
-              },
-            ] : COLUMNAS}
+            columnas={columnasAreas}
             filas={consulta.datos.results}
             claveFila={(area) => String(area.id)}
             vacio={{ titulo: 'Aún no hay áreas verdes', descripcion: 'Registra un área para iniciar el inventario del campus.' }}

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AreasVerdesPage from './AreasVerdesPage'
 
-const { listarAreasVerdes } = vi.hoisted(() => ({
+const { listarAreasVerdes, listarPoligonosMapa } = vi.hoisted(() => ({
   listarAreasVerdes: vi.fn(async (_q = '', _signal?: AbortSignal, filtros?: { tipo_uso_id?: number }) => {
     const area = (id: number, nombre: string, tipoUsoId: number, tipoUsoNombre: string) => ({
       id,
@@ -27,6 +27,14 @@ const { listarAreasVerdes } = vi.hoisted(() => ({
       : areas
     return { count: results.length, next: null, previous: null, results }
   }),
+  listarPoligonosMapa: vi.fn(async () => [{
+    id_fuente: 'qwe-poligono',
+    area_verde_id: 1,
+    area_verde_nombre: 'Jardín ornamental',
+    area_verde_superficie_m2: '10',
+    area_verde_tipo_uso_id: 11,
+    area_verde_tipo_uso_nombre: 'Ornamental',
+  }]),
 }))
 
 vi.mock('@/services/api/areasVerdes', () => ({
@@ -34,6 +42,7 @@ vi.mock('@/services/api/areasVerdes', () => ({
   asignarSectorArea: vi.fn(),
   listarHistorialSectorArea: vi.fn(),
 }))
+vi.mock('@/services/api/mapaAsignaciones', () => ({ listarPoligonosMapa }))
 vi.mock('@/services/api/catalogosInventario', () => ({
   listarSectores: async () => [],
   listarCuarteles: async () => [],
@@ -57,6 +66,7 @@ vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({
 afterEach(() => {
   cleanup()
   listarAreasVerdes.mockClear()
+  listarPoligonosMapa.mockClear()
 })
 
 describe('AreasVerdesPage', () => {
@@ -82,5 +92,19 @@ describe('AreasVerdesPage', () => {
     expect(await screen.findByText('Cancha deportiva')).toBeTruthy()
     await waitFor(() => expect(screen.queryByText('Jardín ornamental')).toBeNull())
     expect(screen.getAllByText('Deportivo').length).toBeGreaterThan(0)
+  })
+
+  it('ofrece abrir en el mapa el polígono vinculado a cada área', async () => {
+    render(<MemoryRouter><AreasVerdesPage /></MemoryRouter>)
+
+    const enlace = await screen.findByRole('link', { name: 'Ver en el mapa: Jardín ornamental' })
+    expect(enlace.getAttribute('href')).toBe('/areas-verdes/mapa?poligono=qwe-poligono&centrar=1')
+    expect(screen.queryByRole('link', { name: 'Ver en el mapa: Cancha deportiva' })).toBeNull()
+  })
+
+  it('inicia el registro eligiendo primero un polígono existente del mapa', async () => {
+    render(<MemoryRouter><AreasVerdesPage /></MemoryRouter>)
+    const enlace = await screen.findByRole('link', { name: 'Registrar área' })
+    expect(enlace.getAttribute('href')).toBe('/areas-verdes/mapa?modo=registrar')
   })
 })
