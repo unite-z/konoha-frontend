@@ -13,7 +13,7 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarCampanaPoda, rutaRegistrarPoda, rutaRendimientoCampana } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarCampanaPoda, rutaEspeciesCampana, rutaRegistrarPoda, rutaRendimientoCampana } from '@/router/rutasApp'
 import { finalizarCampana, iniciarCampana, listarEjemplaresCampana, obtenerCampana, planificarCampana, retirarCampana } from '@/services/api/campanasPoda'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { CampanaPoda, EjemplarCampana } from '@/types/campanasPoda'
@@ -120,6 +120,7 @@ export default function CampanaPodaDetallePage() {
         <div className={estilos.acciones}>
           {puedeRegistrar && campana.estado === 'EnEjecucion' && <Boton variante="primario" onClick={() => navegar(rutaRegistrarPoda(id))}>Registrar intervención</Boton>}
           <Boton variante="secundario" onClick={() => navegar(rutaRendimientoCampana(id))}>Ver rendimiento</Boton>
+          <Boton variante="secundario" onClick={() => navegar(rutaEspeciesCampana(id))}>Ver especies atendidas</Boton>
         </div>
       )}
 
