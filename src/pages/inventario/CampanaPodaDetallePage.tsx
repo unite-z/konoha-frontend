@@ -13,7 +13,7 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarCampanaPoda } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarCampanaPoda, rutaRegistrarPoda } from '@/router/rutasApp'
 import { finalizarCampana, iniciarCampana, listarEjemplaresCampana, obtenerCampana, planificarCampana, retirarCampana } from '@/services/api/campanasPoda'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { CampanaPoda, EjemplarCampana } from '@/types/campanasPoda'
@@ -23,11 +23,14 @@ import estilos from './CampanasPoda.module.css'
 
 const POR_PAGINA = 25
 
+const TONO_PODA = { Pendiente: 'neutro', Incompleta: 'aviso', Verificada: 'exito' } as const
+
 const COLUMNAS: ColumnaTabla<EjemplarCampana>[] = [
   { clave: 'codigo', titulo: 'Código' },
   { clave: 'referencia_catastro', titulo: 'Referencia de catastro', render: (ejemplar) => ejemplar.referencia_catastro ?? '—' },
   { clave: 'especie_nombre_comun', titulo: 'Especie', render: (ejemplar) => ejemplar.especie_nombre_comun ?? 'Sin especie asignada' },
   { clave: 'ubicacion', titulo: 'Ubicación', render: (ejemplar) => ejemplar.ubicacion ?? 'Sin ubicación' },
+  { clave: 'estado_intervencion', titulo: 'Poda', render: (ejemplar) => <Estado tono={TONO_PODA[ejemplar.estado_intervencion]} texto={ejemplar.estado_intervencion} /> },
 ]
 
 const ACCIONES: Partial<Record<CampanaPoda['estado'], { texto: string; ejecutar: (id: number) => Promise<CampanaPoda>; aviso: string }>> = {
@@ -41,6 +44,7 @@ export default function CampanaPodaDetallePage() {
   const navegar = useNavigate()
   const sesion = useSesionActiva()
   const puedePlanificar = puede(sesion, PERMISOS.planificarPoda)
+  const puedeRegistrar = puede(sesion, PERMISOS.registrarPoda)
   const [pagina, setPagina] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -106,8 +110,17 @@ export default function CampanaPodaDetallePage() {
           { etiqueta: 'Objetivo', valor: `${campana.total_ejemplares} ejemplares` },
           { etiqueta: 'Objetivo diario', valor: `${campana.objetivo_diario} ejemplares por día` },
           { etiqueta: 'Capacidad estimada', valor: `${campana.capacidad.estimada} ejemplares en ${campana.capacidad.dias} días` },
+          { etiqueta: 'Intervenidos verificables', valor: campana.avance.verificables },
+          { etiqueta: 'Incompletos', valor: campana.avance.incompletos },
+          { etiqueta: 'Avance', valor: `${campana.avance.porcentaje} %` },
         ]} />
       </Tarjeta>
+
+      {puedeRegistrar && campana.estado === 'EnEjecucion' && (
+        <div className={estilos.acciones}>
+          <Boton variante="primario" onClick={() => navegar(rutaRegistrarPoda(id))}>Registrar intervención</Boton>
+        </div>
+      )}
 
       {puedePlanificar && (accion || editable) && (
         <div className={estilos.acciones}>

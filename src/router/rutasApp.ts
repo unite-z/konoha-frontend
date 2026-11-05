@@ -103,6 +103,14 @@ export function rutaCampanaPoda(id: number): string {
   return `${RUTAS_INVENTARIO.campanasPoda}/${id}`
 }
 
+export function rutaRegistrarPoda(campanaId: number): string {
+  return `${rutaCampanaPoda(campanaId)}/registrar`
+}
+
+export function rutaIntervencionPoda(id: number): string {
+  return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
+}
+
 export function rutaEditarCampanaPoda(id: number): string {
   return `${rutaCampanaPoda(id)}/editar`
 }

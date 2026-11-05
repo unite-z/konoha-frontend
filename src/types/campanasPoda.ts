@@ -12,6 +12,13 @@ export interface CapacidadCampana {
   excedida: boolean
 }
 
+export interface AvanceCampana {
+  verificables: number
+  incompletos: number
+  /** Texto decimal: verificables sobre el total de la lista. */
+  porcentaje: string
+}
+
 export interface CampanaPoda {
   id: number
   anio: number
@@ -25,6 +32,7 @@ export interface CampanaPoda {
   atencion_id: number | null
   total_ejemplares: number
   capacidad: CapacidadCampana
+  avance: AvanceCampana
 }
 
 export interface EjemplarCampana {
@@ -35,6 +43,7 @@ export interface EjemplarCampana {
   especie_nombre_comun: string | null
   ubicacion: string | null
   area_verde_id: number | null
+  estado_intervencion: 'Pendiente' | 'Incompleta' | 'Verificada'
 }
 
 export interface VentanaCierre {

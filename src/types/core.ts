@@ -162,7 +162,7 @@ export interface Acceso {
 }
 
 /** Entidades con historial y adjuntos (RF-T-007 y RF-T-008). */
-export type EntidadRegistro = 'actividad' | 'atencion' | 'incidencia' | 'ejemplar'
+export type EntidadRegistro = 'actividad' | 'atencion' | 'incidencia' | 'ejemplar' | 'intervencion'
 
 /** Entrada de `GET historial/`. La acción de MOD-05 puede traer otros textos. */
 export interface EntradaHistorial {
