@@ -39,6 +39,8 @@ export interface ActividadCampo {
   tipo_actividad_id: number; area_verde_id: number; fecha_hora_actividad: string; encargo_id: number | null; observaciones: string | null
   clase_actividad_id: number | null; fecha_solicitud: string | null; incidencia_id: number | null
   superficie_m2: number | null; cantidad_solicitada: number | null; cantidad_ejecutada: number | null; unidad_medida_id: number | null; tiempo_minutos: number | null
+  verificacion_observaciones: string | null; verificado_por_usuario_id: number | null
+  verificado_por_nombre: string | null; fecha_verificacion: string | null
   cuadrilla_nombre: string; tipo_actividad_nombre: string; area_verde_nombre: string; participantes: ParticipantesCampo
 }
 export interface EntradaActividad {

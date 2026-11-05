@@ -107,6 +107,15 @@ juntos para un traslado. La fecha y el espacio pertenecen a la actividad.
 El servidor exige acceso a la cuadrilla para escribir y conserva los registros
 anteriores sin permitir su borrado desde este flujo.
 
+## AV-317: verificación en campo
+
+`PUT /api/v1/operacion-campo/actividades/{id}/verificacion/` recibe
+`{observaciones}`. Solo el jefe de sección puede registrar o actualizar la
+verificación. La respuesta conserva `verificacion_observaciones`,
+`verificado_por_usuario_id`, `verificado_por_nombre` y `fecha_verificacion`
+separados de `observaciones` y `fecha_hora_actividad`, que pertenecen a la
+ejecución del capataz. Cada cambio se incorpora al historial común de la actividad.
+
 ## AV-82: fotografías de actividades
 
 El diálogo de fotografías reutiliza `Adjuntos` de MOD-01 con entidad `actividad`.
