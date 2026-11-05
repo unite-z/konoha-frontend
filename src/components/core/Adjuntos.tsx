@@ -1,6 +1,6 @@
 // RF-T-007 · Adjuntos y consulta de evidencias (HU-MOD01-009)
 /**
- * Fotografías y documentos de un registro (actividad, atención, incidencia o ejemplar).
+ * Fotografías y documentos de un registro (actividad, atención, incidencia, ejemplar o intervención de poda).
  *
  * - Cada subida lleva un UUID propio como `Idempotency-Key`. Si falla, «Reintentar» reutiliza el mismo:
  *   aunque el servidor llegara a guardarlo, no se duplica.
@@ -34,9 +34,11 @@ export interface AdjuntosProps {
   tiposAceptados?: string
   ayudaCarga?: string
   prepararArchivo?: (archivo: File) => Promise<File>
+  /** Actualiza fichas cuyo estado depende de las evidencias (AV-309). */
+  onCambio?: () => void
 }
 
-export default function Adjuntos({ entidad, registroId, puedeAdjuntar, tiposAceptados = TIPOS, ayudaCarga = 'PDF, JPEG, PNG, DOCX o XLSX, de hasta 20 MB.', prepararArchivo }: AdjuntosProps) {
+export default function Adjuntos({ entidad, registroId, puedeAdjuntar, tiposAceptados = TIPOS, ayudaCarga = 'PDF, JPEG, PNG, DOCX o XLSX, de hasta 20 MB.', prepararArchivo, onCambio }: AdjuntosProps) {
   const [version, setVersion] = useState(0)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
   const [subiendo, setSubiendo] = useState(false)
@@ -54,6 +56,7 @@ export default function Adjuntos({ entidad, registroId, puedeAdjuntar, tiposAcep
       await subirAdjunto(entidad, registroId, prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo, objetivo.clave)
       setPendiente(null)
       setVersion((v) => v + 1)
+      onCambio?.()
     } catch (causa) {
       setPendiente({ ...objetivo, error: aErrorApi(causa).detalle })
     } finally {
