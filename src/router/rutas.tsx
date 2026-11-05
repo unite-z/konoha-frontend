@@ -30,6 +30,8 @@ import EstimacionRecursosPage from '../pages/reportes-indicadores/asistencia-ia/
 import RevisionEstimacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionEstimacionPage'
 import ClasificacionIncidenciasIaPage from '../pages/reportes-indicadores/asistencia-ia/ClasificacionIncidenciasIaPage'
 import RevisionClasificacionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionClasificacionPage'
+import EvidenciaFitosanitariaIaPage from '../pages/reportes-indicadores/asistencia-ia/EvidenciaFitosanitariaIaPage'
+import RevisionEvidenciaPage from '../pages/reportes-indicadores/asistencia-ia/RevisionEvidenciaPage'
 import MapaAtencionesPage from '../pages/reportes-indicadores/mapa-atenciones/MapaAtencionesPage'
 import DetalleIndicadorPage from '../pages/reportes-indicadores/panel/DetalleIndicadorPage'
 import PanelIndicadoresPage from '../pages/reportes-indicadores/panel/PanelIndicadoresPage'
@@ -52,6 +54,12 @@ import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
 import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
 import CatalogosPage from '../pages/inventario/CatalogosPage'
 import EjemplaresPage from '../pages/inventario/EjemplaresPage'
+import CampanasPodaPage from '../pages/inventario/CampanasPodaPage'
+import CampanaPodaDetallePage from '../pages/inventario/CampanaPodaDetallePage'
+import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
+import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
+import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
+import RendimientoCampanaPage from '../pages/inventario/RendimientoCampanaPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import PlanFitosanitarioPage from '../pages/servicios-tercerizados/maestros/PlanFitosanitarioPage'
 import ProductosAgronomicosPage from '../pages/servicios-tercerizados/maestros/ProductosAgronomicosPage'
@@ -137,6 +145,8 @@ export const router = createBrowserRouter([
               { path: `${RUTAS.estimacionRecursos}/:id`, element: <RevisionEstimacionPage /> }, // RF-IA-004
               { path: RUTAS.clasificacionIncidencias, element: <ClasificacionIncidenciasIaPage /> }, // RF-IA-005
               { path: `${RUTAS.clasificacionIncidencias}/:id`, element: <RevisionClasificacionPage /> }, // RF-IA-005
+              { path: RUTAS.evidenciaFitosanitaria, element: <EvidenciaFitosanitariaIaPage /> }, // RF-IA-006
+              { path: `${RUTAS.evidenciaFitosanitaria}/:id`, element: <RevisionEvidenciaPage /> }, // RF-IA-006
               { path: RUTAS.panel, element: <PanelIndicadoresPage /> }, // RF-REP-001
               { path: `${RUTAS.panel}/:indicador`, element: <DetalleIndicadorPage /> }, // RF-REP-001
               { path: RUTAS.materialVegetal, element: <MaterialVegetalPage /> }, // RF-REP-005
@@ -157,6 +167,13 @@ export const router = createBrowserRouter([
                 { path: 'coberturas', element: <CoberturasPage /> },
                 { path: 'catalogos', element: <CatalogosPage /> },
                 { path: 'ejemplares', element: <EjemplaresPage /> },
+                { path: 'campanas-poda', element: <CampanasPodaPage /> },
+                { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
+                { path: 'campanas-poda/:id', element: <CampanaPodaDetallePage /> },
+                { path: 'campanas-poda/:id/editar', element: <PlanificarCampanaPage /> },
+                { path: 'campanas-poda/:id/registrar', element: <RegistrarPodaPage /> },
+                { path: 'campanas-poda/:id/rendimiento', element: <RendimientoCampanaPage /> },
+                { path: 'intervenciones-poda/:id', element: <IntervencionPodaPage /> },
                 { path: 'mapa', lazy: async () => ({ Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default }) },
               ],
             }],

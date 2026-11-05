@@ -87,6 +87,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Catálogos y sectores', icono: 'sliders', ruta: RUTAS_INVENTARIO.catalogos },
       { texto: 'Ejemplares y especies', icono: 'tree', ruta: RUTAS_INVENTARIO.ejemplares },
       { texto: 'Mapa del campus', icono: 'map', ruta: RUTAS_INVENTARIO.mapa },
+      { texto: 'Campañas de poda', icono: 'scissors', ruta: RUTAS_INVENTARIO.campanasPoda },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ErrorApi, alPerderSesion, solicitar } from './cliente'
+import { ErrorApi, alPerderSesion, solicitar, solicitarBlob } from './cliente'
 
 function responder(estado: number, cuerpo: unknown = {}) {
   const peticiones = vi.fn(async () => new Response(JSON.stringify(cuerpo), { status: estado }))
@@ -46,5 +46,26 @@ describe('solicitar con la sesión de MOD-01', () => {
 
     await expect(solicitar('ia/extracciones/metricas/')).rejects.toMatchObject({ estado: 403 })
     expect(perdida).not.toHaveBeenCalled()
+  })
+})
+
+describe('multipart y blob (RF-IA-006)', () => {
+  it('envía el FormData tal cual, sin Content-Type JSON (el navegador pone el boundary)', async () => {
+    const peticiones = responder(201)
+    const formulario = new FormData()
+    formulario.set('datos', '{}')
+    await solicitar('ia/evidencias-fitosanitarias/', { metodo: 'POST', formulario })
+    const [, opciones] = peticiones.mock.calls[0] as unknown as [string, RequestInit]
+    expect(opciones.body).toBe(formulario)
+    expect(cabeceras(peticiones)['Content-Type']).toBeUndefined()
+  })
+
+  it('solicitarBlob devuelve el archivo y, si falla, el ErrorApi del cuerpo', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(new Blob(['imagen'], { type: 'image/png' }), { status: 200 })))
+    const blob = await solicitarBlob('ia/evidencias-fitosanitarias/1/fotografias/2/')
+    expect(blob.type).toBe('image/png')
+
+    responder(404, { codigo: 'no-encontrado', detalle: 'No existe la fotografía' })
+    await expect(solicitarBlob('ia/evidencias-fitosanitarias/1/fotografias/9/')).rejects.toMatchObject({ estado: 404, detalle: 'No existe la fotografía' })
   })
 })

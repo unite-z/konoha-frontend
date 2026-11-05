@@ -1,13 +1,13 @@
 /**
- * Datos simulados de incidencias de MOD-03 (AV-283). La aplicación usa el backend (AV-274 a AV-281) salvo en la
- * derivación a encargo o a requerimiento (AV-277 y AV-278), que solo responde con `VITE_DATOS_SIMULADOS=true`; el resto
+ * Datos simulados de incidencias de MOD-03 (AV-283). La aplicación usa el backend (AV-274 a AV-281) salvo en el
+ * encargo a un capataz (AV-277), que solo responde con `VITE_DATOS_SIMULADOS=true`; el resto
  * son datos de ejemplo de las pruebas. Las fechas se calculan hacia atrás desde ahora para que los plazos se vean
  * siempre igual.
  *
  * Escenarios con `?simular=`: `vacio` (bandeja vacía) y los genéricos de `simulacion.ts`.
  */
 import { ErrorApi } from '../api/cliente'
-import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, RequerimientoIncidencia, SeguimientoIncidencia, EstadoIncidencia } from '@/types/incidencias'
+import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, RequerimientoIncidencia, SeguimientoIncidencia, EstadoIncidencia } from '@/types/incidencias'
 import { errorNoEncontrado, escenarioSimulado, responderSimulado } from './simulacion'
 
 const HORA = 3_600_000
@@ -110,7 +110,8 @@ const DETALLES: Record<number, Pick<IncidenciaDetalle, 'zona' | 'descripcion' | 
 /** Requerimientos de las derivadas a tercerizado (Figma 394-9194). */
 const REQUERIMIENTOS: Record<number, RequerimientoIncidencia> = {
   37: {
-    codigo: 'REQ-2026-044',
+    id: 44,
+    codigo: 'AT-3f9c2a1b7e4d4c0a9b1e2f3a4b5c6d7e',
     proveedor: 'Podas Altura Demo E.I.R.L.',
     tipo_atencion: 'Extraordinaria',
     pasos: [
@@ -208,42 +209,6 @@ export function simularDescartar(id: number): Promise<IncidenciaDetalle> {
 
 export function simularInspectores(signal?: AbortSignal): Promise<Inspector[]> {
   return responderSimulado(() => INSPECTORES, { signal })
-}
-
-const PROVEEDORES: ProveedorIncidencia[] = [
-  { id: 7, razon_social: 'Podas Altura Demo E.I.R.L.', contratos: [{ id: 70, codigo: 'CT-DEMO-007', vigente: true, servicios: ['Poda en altura', 'Tala controlada'] }] },
-  { id: 8, razon_social: 'Arbolistas del Perú', contratos: [] },
-]
-
-export function simularProveedores(signal?: AbortSignal): Promise<ProveedorIncidencia[]> {
-  return responderSimulado(() => PROVEEDORES, { signal })
-}
-
-export function simularRequerimiento(id: number, cuerpo: NuevoRequerimiento): Promise<IncidenciaDetalle> {
-  return responderSimulado(() => {
-    const proveedor = PROVEEDORES.find((p) => p.id === cuerpo.proveedor_id)
-    cambios.set(id, {
-      ...cambios.get(id),
-      estado: 'DerivadaTercerizada',
-      via: 'Tercerizada',
-      responsable: proveedor?.razon_social ?? null,
-      encargo_cancelado: null,
-      requerimiento: {
-        codigo: 'REQ-2026-045',
-        proveedor: proveedor?.razon_social ?? '',
-        tipo_atencion: cuerpo.tipo_atencion,
-        pasos: [
-          { nombre: 'Requerimiento', estado: 'Hecho', fecha: new Date().toISOString().slice(0, 10) },
-          { nombre: 'Orden de compra', estado: 'EnCurso', fecha: null },
-          { nombre: 'Informe del proveedor', estado: 'Pendiente', fecha: null },
-          { nombre: 'Conformidad', estado: 'Pendiente', fecha: null },
-        ],
-      },
-    })
-    const incidencia = incidenciaSimulada(id)
-    if (!incidencia) throw errorNoEncontrado()
-    return incidencia
-  })
 }
 
 export function simularCerrar(id: number): Promise<IncidenciaDetalle> {

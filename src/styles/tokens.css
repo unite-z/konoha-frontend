@@ -37,6 +37,12 @@
   --web-error-border: #fecaca; /* estado/error/borde */
   --web-error-hover: #991b1b; /* hover del botón destructivo (sin variable en Figma) */
   --web-scrim: rgba(15, 23, 42, 0.5); /* velo de diálogos y paneles */
+  /* Fondo de nodos del inicio de sesión (FondoNodos, referencia williamlin.io; sin variable en Figma) */
+  --web-nodos-punto: #71717a;
+  --web-nodos-onda: #0284c7;
+  --web-nodos-linea: #71717a;
+  --web-nodos-alfa-linea: 0.55;
+  --web-nodos-alfa-onda: 0.9;
   color-scheme: light;
 }
 
@@ -210,5 +216,10 @@
   --color-error-bg: #342535;
   --web-error-border: #991b1b;
   --web-error-hover: #7f1d1d;
+  --web-nodos-punto: #a1a1aa;
+  --web-nodos-onda: #38bdf8;
+  --web-nodos-linea: #71717a;
+  --web-nodos-alfa-linea: 0.5;
+  --web-nodos-alfa-onda: 0.85;
   color-scheme: dark;
 }

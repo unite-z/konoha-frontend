@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Programacion } from '@/types/planificacion'
-import { accionesCiclo, duracionCiclo, indicadoresCiclo, indicadorRestricciones, periodoCiclo, subtituloCiclo, validarFechaReal } from './detalleCiclo'
+import { accionesCiclo, duracionCiclo, indicadoresCiclo, indicadorRestricciones, periodoCiclo, subtituloCiclo, textoRequerimiento, validarFechaReal } from './detalleCiclo'
 
 const ciclo: Programacion = {
   id: 1,
@@ -17,6 +17,16 @@ const ciclo: Programacion = {
 }
 
 describe('detalleCiclo', () => {
+  it('dice el requerimiento generado o por qué no se generó (AV-263, Figma 373-5779)', () => {
+    expect(textoRequerimiento({ ...ciclo, requerimiento: { id: 5, codigo: 'AT-1a2b3c4d5e6f', estado: 'Requerimiento registrado' } })).toBe(
+      'requerimiento AT-1a2b3c4d generado en Servicios tercerizados',
+    )
+    expect(textoRequerimiento({ ...ciclo, motivo_sin_requerimiento: 'Ningún jardín de la ruta está en el catálogo de MOD-05' })).toBe(
+      'sin requerimiento en Servicios tercerizados: ningún jardín de la ruta está en el catálogo de MOD-05',
+    )
+    expect(textoRequerimiento(ciclo)).toBeNull()
+  })
+
   it('ofrece las transiciones que permite el backend', () => {
     expect(accionesCiclo('Programada').map((a) => a.cambio)).toEqual(['cancelacion', 'inicio'])
     expect(accionesCiclo('EnCurso').map((a) => a.cambio)).toEqual(['fin'])

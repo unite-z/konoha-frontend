@@ -249,3 +249,13 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* «Requerimiento AT-…» bajo el subtítulo del detalle (Figma 380-7171, AV-263). */
+.enlaceRequerimiento {
+  color: var(--color-action-text);
+  text-decoration: none;
+}
+
+.enlaceRequerimiento:hover {
+  text-decoration: underline;
+}

@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('TarjetaRequerimiento', () => {
-  it('con contrato vigente crea el requerimiento extraordinario con la poda del ejemplar (Figma 389-7706)', async () => {
+  it('con contrato vigente crea el requerimiento extraordinario (Figma 389-7706)', async () => {
     if (!incidencia) throw new Error('sin incidencia simulada')
     const onCreado = vi.fn()
     render(<TarjetaRequerimiento incidencia={incidencia} onVolver={vi.fn()} onCreado={onCreado} />)
@@ -30,22 +30,24 @@ describe('TarjetaRequerimiento', () => {
     await usuario.selectOptions(await screen.findByLabelText(/^Proveedor/), '7')
     expect(screen.getByRole('option', { name: 'CT-DEMO-007 · vigente' })).toHaveProperty('selected', true)
     expect(screen.getByRole('radio', { name: 'Extraordinaria' })).toHaveProperty('checked', true)
-    expect(screen.getByRole('checkbox', { name: 'Crear también la poda del ejemplar' })).toHaveProperty('checked', true)
+    // MOD-02 aún no tiene la poda vinculada (RF-POD-005): no se ofrece.
+    expect(screen.queryByRole('checkbox', { name: 'Crear también la poda del ejemplar' })).toBeNull()
 
     await usuario.click(screen.getByRole('button', { name: 'Crear requerimiento' }))
-    expect(crearRequerimiento).toHaveBeenCalledWith(41, { proveedor_id: 7, contrato_id: 70, servicio: 'Poda en altura', tipo_atencion: 'Extraordinaria', crear_poda: true })
+    expect(crearRequerimiento).toHaveBeenCalledWith(41, { proveedor_id: 7, contrato_id: 70, servicio: 'Poda en altura', tipo_atencion: 'Extraordinaria', crear_poda: false })
     expect(onCreado).toHaveBeenCalledWith(expect.objectContaining({ estado: 'DerivadaTercerizada' }), 'Requerimiento creado para Podas Altura Demo E.I.R.L.')
   })
 
-  it('sin contrato aplicable avisa y lo crea como extraordinaria con orden de servicio (Figma 389-7903)', async () => {
+  it('sin contrato vigente avisa y no deja crearlo: MOD-05 aún no registra atenciones sin contrato (AV-278)', async () => {
     if (!incidencia) throw new Error('sin incidencia simulada')
     render(<TarjetaRequerimiento incidencia={incidencia} onVolver={vi.fn()} onCreado={vi.fn()} />)
     const usuario = userEvent.setup()
 
     await usuario.selectOptions(await screen.findByLabelText(/^Proveedor/), '8')
-    expect(screen.getByText('Sin contrato aplicable')).toBeTruthy()
+    expect(screen.getByText('Sin contrato vigente')).toBeTruthy()
     expect(screen.queryByLabelText(/^Contrato/)).toBeNull()
-    await usuario.click(screen.getByRole('button', { name: 'Crear como extraordinaria' }))
-    expect(crearRequerimiento).toHaveBeenCalledWith(41, { proveedor_id: 8, contrato_id: null, servicio: null, tipo_atencion: 'Extraordinaria', crear_poda: false })
+    const crear = screen.getByRole('button', { name: 'Crear requerimiento' })
+    await usuario.click(crear)
+    expect(crearRequerimiento).not.toHaveBeenCalled()
   })
 })

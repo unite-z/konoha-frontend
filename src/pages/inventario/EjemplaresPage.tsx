@@ -23,7 +23,12 @@ export default function EjemplaresPage() {
   const sesion = useSesionActiva()
   const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
-  const consulta = useConsulta('ejemplares-inventario', (signal) => listarEjemplares('', 1, signal))
+  const [busqueda, setBusqueda] = useState('')
+  const [terminoBusqueda, setTerminoBusqueda] = useState('')
+  const [ejemplarSeleccionadoId, setEjemplarSeleccionadoId] = useState<number | null>(null)
+  const [abrioFicha, setAbrioFicha] = useState(false)
+  const consulta = useConsulta(`ejemplares-inventario|${terminoBusqueda}`, (signal) => listarEjemplares(terminoBusqueda, 1, signal))
+  const ejemplarSeleccionado = consulta.datos?.find((ejemplar) => ejemplar.id === ejemplarSeleccionadoId)
   const especies = useConsulta('especies-inventario', (signal) => listarEspecies(false, signal))
   const [codigoPlaca, setCodigoPlaca] = useState('')
   const [especieId, setEspecieId] = useState('')
@@ -106,11 +111,11 @@ export default function EjemplaresPage() {
         <Tarjeta titulo="Añadir especie" relleno="amplio">
           <form className={estilos.alta} onSubmit={(evento) => enviar(evento, () => crearEspecie({
             nombre_comun: nombreComun.trim(),
-            nombre_cientifico: nombreCientifico.trim() || undefined,
+            nombre_cientifico: nombreCientifico.trim(),
             forma_biologica: formaBiologica.trim(),
           }), 'Especie añadida al catálogo.')}>
             <CampoFormulario id="nombre-comun-especie" etiqueta="Nombre común" value={nombreComun} onChange={(evento) => setNombreComun(evento.target.value)} maxLength={150} required />
-            <CampoFormulario id="nombre-cientifico-especie" etiqueta="Nombre científico (opcional)" value={nombreCientifico} onChange={(evento) => setNombreCientifico(evento.target.value)} maxLength={200} />
+            <CampoFormulario id="nombre-cientifico-especie" etiqueta="Nombre científico" value={nombreCientifico} onChange={(evento) => setNombreCientifico(evento.target.value)} maxLength={200} required />
             <CampoFormulario id="forma-biologica-especie" etiqueta="Forma biológica" value={formaBiologica} onChange={(evento) => setFormaBiologica(evento.target.value)} maxLength={80} required />
             <Boton type="submit" variante="secundario" deshabilitado={guardando}>Añadir especie</Boton>
           </form>
@@ -128,6 +133,53 @@ export default function EjemplaresPage() {
         </Tarjeta>
       )}
 
+      <Tarjeta titulo="Buscar ejemplares" relleno="amplio">
+        <p className={estilos.descripcion}>Busca por código nuevo o placa antigua; las placas repetidas muestran cada ejemplar por separado.</p>
+        <form className={estilos.alta} role="search" aria-label="Buscar ejemplares" onSubmit={(evento) => { evento.preventDefault(); setEjemplarSeleccionadoId(null); setAbrioFicha(false); setTerminoBusqueda(busqueda.trim()) }}>
+          <CampoFormulario id="buscar-ejemplares" etiqueta="Código nuevo o placa antigua" type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} />
+          <Boton type="submit" variante="secundario">Buscar</Boton>
+        </form>
+      </Tarjeta>
+
+      {terminoBusqueda ? (
+        <>
+          <Tarjeta titulo={`Coincidencias (${consulta.datos?.length ?? 0})`} descripcion="Elige por código, especie y ubicación." relleno="amplio">
+            {!consulta.datos || consulta.datos.length === 0 ? <EstadoVacio titulo="Sin coincidencias" descripcion="No se encontró un ejemplar. Comprueba el código o la placa." nivel={3} /> : (
+              <ul className={estilos.resultados}>
+                {consulta.datos.map((ejemplar) => (
+                  <li key={ejemplar.id}>
+                    <Boton
+                      type="button"
+                      variante="secundario"
+                      className={estilos.resultado}
+                      aria-pressed={ejemplarSeleccionadoId === ejemplar.id}
+                      onClick={() => { setEjemplarSeleccionadoId(ejemplar.id); setAbrioFicha(false) }}
+                    >
+                      <strong>{ejemplar.codigo} · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'} · {ejemplar.ubicacion ?? 'Sin ubicación'}</strong>
+                      <span>{ejemplar.codigo_placa_antigua ?? 'Sin placa antigua'}{ejemplar.advertencia_placa_repetida ? ' · Placa repetida' : ''}</span>
+                    </Boton>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Tarjeta>
+          <div className={estilos.accionesFila}>
+            <Boton variante="primario" deshabilitado={ejemplarSeleccionadoId === null} onClick={() => setAbrioFicha(true)}>Abrir ficha</Boton>
+            <Boton variante="secundario" onClick={() => { setBusqueda(''); setTerminoBusqueda(''); setEjemplarSeleccionadoId(null); setAbrioFicha(false) }}>Limpiar</Boton>
+          </div>
+          {abrioFicha && ejemplarSeleccionado && (
+              <Tarjeta titulo={`Ficha de ${ejemplarSeleccionado.codigo}`} relleno="amplio">
+                <dl className={estilos.ficha}>
+                  <dt>Código nuevo</dt><dd>{ejemplarSeleccionado.codigo}</dd>
+                  <dt>Placa antigua</dt><dd>{ejemplarSeleccionado.codigo_placa_antigua ?? 'Sin placa antigua'}</dd>
+                  <dt>Especie</dt><dd>{ejemplarSeleccionado.especie_nombre_comun ?? 'Sin especie asignada'}{ejemplarSeleccionado.especie_nombre_cientifico ? ` · ${ejemplarSeleccionado.especie_nombre_cientifico}` : ''}</dd>
+                  <dt>Ubicación</dt><dd>{ejemplarSeleccionado.ubicacion ?? 'Sin ubicación registrada'}</dd>
+                  <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
+                </dl>
+              </Tarjeta>
+          )}
+        </>
+      ) : (
       <Tarjeta titulo="Ejemplares" relleno="amplio">
         {consulta.datos.length === 0 ? <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." nivel={3} /> : (
           <ul className={estilos.lista}>
@@ -146,6 +198,7 @@ export default function EjemplaresPage() {
           </ul>
         )}
       </Tarjeta>
+      )}
     </div>
   )
 }
