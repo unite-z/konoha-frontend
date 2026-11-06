@@ -107,6 +107,13 @@ describe('validarPaso2', () => {
   })
 })
 
+describe('hayCambiosBorrador · modalidad', () => {
+  it('elegir la extraordinaria cuenta como cambio', () => {
+    expect(hayCambiosBorrador(BORRADOR_VACIO)).toBe(false)
+    expect(hayCambiosBorrador({ ...BORRADOR_VACIO, clase: 'Extraordinaria' })).toBe(true)
+  })
+})
+
 describe('construirEntrada', () => {
   it('envía solo los campos admitidos', () => {
     const entrada = construirEntrada(borrador({ descripcion: '  Corte  ', alcances: seleccion({ metrado: '1 250,5', unidad_medida_id: '2' }) }))
@@ -116,6 +123,11 @@ describe('construirEntrada', () => {
       origen: 'Demanda',
       alcances: [{ area_verde_id: 3, metrado: '1250.50', unidad_medida_id: 2 }, { ejemplar_id: 9 }],
     })
+  })
+
+  it('envía la clase solo si es extraordinaria', () => {
+    expect(construirEntrada(borrador({ alcances: seleccion() }))).not.toHaveProperty('clase')
+    expect(construirEntrada(borrador({ clase: 'Extraordinaria', alcances: seleccion() }))).toMatchObject({ clase: 'Extraordinaria' })
   })
 
   it('incluye riesgo y unidad según el caso', () => {

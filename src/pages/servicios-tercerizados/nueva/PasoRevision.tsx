@@ -5,7 +5,7 @@ import Estado from '@/components/ui/Estado'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import Tarjeta from '@/components/ui/Tarjeta'
 import type { TipoServicio, UnidadMedida } from '@/types/tercerizados'
-import { textoOrigen } from '@/utils/estadosTercerizados'
+import { textoClase, textoOrigen } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearNumero } from '@/utils/formato'
 import { normalizarMetrado, type BorradorAtencion } from '@/utils/nuevaAtencion'
 import estilos from './NuevaAtencion.module.css'
@@ -52,6 +52,7 @@ export default function PasoRevision({ borrador, servicio, unidadesMedida, onEdi
             { etiqueta: 'Proveedor', valor: contrato?.proveedor_nombre },
             { etiqueta: 'Servicio', valor: contrato?.tipo_servicio_nombre },
             { etiqueta: 'Vigencia', valor: contrato ? `Hasta ${formatearFecha(contrato.vigencia_fin)}` : null },
+            { etiqueta: 'Modalidad', valor: textoClase(borrador.clase) },
             { etiqueta: 'Origen', valor: borrador.origen ? textoOrigen(borrador.origen) : null },
             unidad !== null && { etiqueta: 'Unidad solicitante', valor: unidad },
             { etiqueta: 'Riesgo', valor: riesgo ? <Estado tono="aviso" texto="Atención de riesgo" /> : 'No' },

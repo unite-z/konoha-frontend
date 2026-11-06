@@ -3,7 +3,14 @@
  * Los estados se muestran con el texto exacto del back-end.
  */
 import type { Tono } from '../components/ui/Badge'
-import type { CambioEstado, CategoriaDocumento, EstadoAtencion, OrigenAtencion, ResultadoConformidad } from '../types/tercerizados'
+import type {
+  CambioEstado,
+  CategoriaDocumento,
+  ClaseAtencion,
+  EstadoAtencion,
+  OrigenAtencion,
+  ResultadoConformidad,
+} from '../types/tercerizados'
 
 /** Pasos del ciclo hasta el reporte, comunes a toda atención. */
 const CICLO_BASE: readonly EstadoAtencion[] = [
@@ -61,6 +68,25 @@ const TEXTO_ORIGEN: Record<OrigenAtencion, string> = {
 
 export function textoOrigen(origen: OrigenAtencion): string {
   return TEXTO_ORIGEN[origen] ?? origen
+}
+
+const TEXTO_CLASE: Record<ClaseAtencion, string> = {
+  ProgramadaContrato: 'Programada según contrato',
+  Extraordinaria: 'Extraordinaria',
+}
+
+export function textoClase(clase: ClaseAtencion): string {
+  return TEXTO_CLASE[clase] ?? clase
+}
+
+export const OPCIONES_CLASE: { valor: ClaseAtencion; texto: string }[] = (Object.keys(TEXTO_CLASE) as ClaseAtencion[]).map(
+  (valor) => ({ valor, texto: TEXTO_CLASE[valor] }),
+)
+
+/** La extraordinaria se tramita con orden de servicio; la programada, con la orden de compra de Logística. */
+export function textoOrden(clase: ClaseAtencion, mayuscula = false): string {
+  const texto = clase === 'Extraordinaria' ? 'orden de servicio' : 'orden de compra'
+  return mayuscula ? `${texto[0].toUpperCase()}${texto.slice(1)}` : texto
 }
 
 export const OPCIONES_ORIGEN: { valor: OrigenAtencion; texto: string }[] = (

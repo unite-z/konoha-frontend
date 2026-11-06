@@ -9,6 +9,7 @@
 import { useId, useState } from 'react'
 import Boton from '@/components/ui/Boton'
 import { disponibilidad } from '@/config/permisosTercerizados'
+import { textoOrden } from '@/utils/estadosTercerizados'
 import type { Atencion, ReporteProveedor, RolTercerizados } from '@/types/tercerizados'
 import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoConformidad from './DialogoConformidad'
@@ -77,7 +78,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
     {
       clave: 'oc',
       d: oc,
-      texto: tieneOc ? 'Corregir orden de compra' : 'Registrar orden de compra',
+      texto: `${tieneOc ? 'Corregir' : 'Registrar'} ${textoOrden(atencion.clase)}`,
       dialogo: 'ordenCompra' as const,
       primaria: oc.habilitada && !tieneOc,
     },

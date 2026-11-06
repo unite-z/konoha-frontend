@@ -29,10 +29,10 @@ const vigente: Contrato = {
   vigencia_fin: '2026-12-31',
 }
 
-function montar(cambiar = vi.fn()) {
+function montar(cambiar = vi.fn(), borrador = BORRADOR_VACIO) {
   render(
     <MemoryRouter>
-      <PasoContratoOrigen borrador={BORRADOR_VACIO} cambiar={cambiar} errores={{}} servicio={null} />
+      <PasoContratoOrigen borrador={borrador} cambiar={cambiar} errores={{}} servicio={null} />
     </MemoryRouter>,
   )
   return cambiar
@@ -70,5 +70,25 @@ describe('PasoContratoOrigen · contrato vigente', () => {
     await usuario.click(await screen.findByRole('option', { name: /CT-001/ }))
 
     expect(cambiar).toHaveBeenCalledWith({ contrato: vigente })
+  })
+})
+
+describe('PasoContratoOrigen · modalidad', () => {
+  it('ofrece las dos modalidades con la programada elegida por defecto', () => {
+    montar()
+    expect((screen.getByRole('radio', { name: 'Programada según contrato' }) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('radio', { name: 'Extraordinaria' }) as HTMLInputElement).checked).toBe(false)
+    expect(screen.queryByText(/orden de servicio/)).toBeNull()
+  })
+
+  it('elegir la extraordinaria cambia el borrador', async () => {
+    const cambiar = montar()
+    await userEvent.setup().click(screen.getByRole('radio', { name: 'Extraordinaria' }))
+    expect(cambiar).toHaveBeenCalledWith({ clase: 'Extraordinaria' })
+  })
+
+  it('avisa que la extraordinaria no inicia sin su orden de servicio', () => {
+    montar(vi.fn(), { ...BORRADOR_VACIO, clase: 'Extraordinaria' })
+    expect(screen.getByText(/No podrá iniciar hasta/)).toBeTruthy()
   })
 })

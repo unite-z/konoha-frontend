@@ -33,7 +33,15 @@ import { obtenerContrato } from '@/services/api/maestrosTercerizados'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import { listarAtenciones, listarContratos } from '@/services/api/tercerizados'
 import type { Atencion, Contrato } from '@/types/tercerizados'
-import { ESTADOS_ATENCION, OPCIONES_ORIGEN, codigoCorto, insigniaEstado, textoOrigen } from '@/utils/estadosTercerizados'
+import {
+  ESTADOS_ATENCION,
+  OPCIONES_CLASE,
+  OPCIONES_ORIGEN,
+  codigoCorto,
+  insigniaEstado,
+  textoClase,
+  textoOrigen,
+} from '@/utils/estadosTercerizados'
 import {
   FILTROS_BANDEJA_VACIOS,
   LARGO_MAXIMO_BUSQUEDA,
@@ -79,6 +87,7 @@ const COLUMNAS: ColumnaTabla<Atencion>[] = [
   },
   { clave: 'servicio', titulo: 'Servicio', multilinea: true, render: (a) => a.tipo_servicio_nombre ?? SIN_VALOR },
   { clave: 'proveedor', titulo: 'Proveedor', multilinea: true, render: (a) => a.proveedor_nombre ?? SIN_VALOR },
+  { clave: 'clase', titulo: 'Modalidad', render: (a) => textoClase(a.clase) },
   { clave: 'contrato', titulo: 'Contrato', render: (a) => <span className="cifra">{a.contrato_numero ?? SIN_VALOR}</span> },
   {
     clave: 'estado',
@@ -131,7 +140,7 @@ export default function AtencionesPage() {
   }
 
   function limpiarFiltros() {
-    establecer({ q: null, estado: null, origen: null, contrato_id: null, pagina: null })
+    establecer({ q: null, estado: null, origen: null, clase: null, contrato_id: null, pagina: null })
   }
 
   function buscar(evento: FormEvent<HTMLFormElement>) {
@@ -145,6 +154,7 @@ export default function AtencionesPage() {
     filtros.q && { clave: 'q', texto: `Búsqueda: ${filtros.q}` },
     filtros.estado && { clave: 'estado', texto: `Estado: ${filtros.estado}` },
     filtros.origen && { clave: 'origen', texto: `Origen: ${textoOrigen(filtros.origen)}` },
+    filtros.clase && { clave: 'clase', texto: `Modalidad: ${textoClase(filtros.clase)}` },
     filtros.contrato_id && {
       clave: 'contrato_id',
       texto: `Contrato: ${contratoAplicado ? textoContrato(contratoAplicado) : `n.º ${filtros.contrato_id}`}`,
@@ -187,6 +197,14 @@ export default function AtencionesPage() {
             opciones={OPCIONES_ORIGEN}
             opcionTodos={OPCION_TODOS}
             onCambiar={(valor) => aplicar({ origen: valor || null })}
+          />
+          <Selector
+            id="filtro-clase"
+            etiqueta="Modalidad"
+            valor={filtros.clase ?? ''}
+            opciones={OPCIONES_CLASE}
+            opcionTodos={OPCION_TODOS}
+            onCambiar={(valor) => aplicar({ clase: valor || null })}
           />
           <SelectorBuscable<Contrato>
             id="filtro-contrato"
