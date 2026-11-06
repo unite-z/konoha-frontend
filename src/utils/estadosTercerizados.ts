@@ -5,8 +5,8 @@
 import type { Tono } from '../components/ui/Badge'
 import type { CambioEstado, CategoriaDocumento, EstadoAtencion, OrigenAtencion } from '../types/tercerizados'
 
-/** Orden del ciclo (línea de estados del detalle). */
-export const ESTADOS_ATENCION: readonly EstadoAtencion[] = [
+/** Pasos del ciclo hasta el reporte, comunes a toda atención. */
+const CICLO_BASE: readonly EstadoAtencion[] = [
   'Requerimiento registrado',
   'OC referenciada',
   'En ejecución',
@@ -14,8 +14,24 @@ export const ESTADOS_ATENCION: readonly EstadoAtencion[] = [
   'Reporte adjunto',
 ]
 
+/** Todos los estados, en orden de ciclo (filtros de la bandeja). */
+export const ESTADOS_ATENCION: readonly EstadoAtencion[] = [...CICLO_BASE, 'Observado', 'Conforme / cerrado']
+
 /**
- * Tono de cada estado. «Reporte adjunto» es éxito de la carga, no conformidad (fuera de esta entrega).
+ * Pasos que recorre la línea de estados de la ficha. «Observado» solo aparece mientras la atención está
+ * en ella (RF-SER-012): tras la nueva revisión vuelve a «Reporte adjunto» y el paso desaparece.
+ */
+export function pasosCiclo(estado: EstadoAtencion): readonly EstadoAtencion[] {
+  return estado === 'Observado' ? ESTADOS_ATENCION : [...CICLO_BASE, 'Conforme / cerrado']
+}
+
+/** `true` desde que el servicio terminó (incluye observada y cerrada). */
+export function haTerminado(estado: EstadoAtencion): boolean {
+  return ESTADOS_ATENCION.indexOf(estado) >= ESTADOS_ATENCION.indexOf('Ejecutado pendiente de reporte')
+}
+
+/**
+ * Tono de cada estado. «Reporte adjunto» es éxito de la carga, no conformidad: esa es «Conforme / cerrado».
  * Neutral en los dos primeros para no confundir programación con éxito (Guía Web, tabla 10).
  */
 const TONO_ESTADO: Record<EstadoAtencion, Tono> = {
@@ -24,15 +40,17 @@ const TONO_ESTADO: Record<EstadoAtencion, Tono> = {
   'En ejecución': 'info',
   'Ejecutado pendiente de reporte': 'advertencia',
   'Reporte adjunto': 'exito',
+  Observado: 'advertencia',
+  'Conforme / cerrado': 'exito',
 }
 
 export function insigniaEstado(estado: EstadoAtencion): { texto: string; tono: Tono } {
   return { texto: estado, tono: TONO_ESTADO[estado] ?? 'neutral' }
 }
 
-/** Posición del estado en el ciclo (0 a 4); -1 si es desconocido. */
+/** Posición del estado entre los pasos de la línea de estados; -1 si es desconocido. */
 export function indiceEstado(estado: EstadoAtencion): number {
-  return ESTADOS_ATENCION.indexOf(estado)
+  return pasosCiclo(estado).indexOf(estado)
 }
 
 const TEXTO_ORIGEN: Record<OrigenAtencion, string> = {

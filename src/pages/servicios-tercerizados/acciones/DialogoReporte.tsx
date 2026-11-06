@@ -76,7 +76,7 @@ const ERRORES_VACIOS: ErroresReporte = { porDocumento: {} }
 
 function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExito }: Omit<DialogoReporteProps, 'abierto'>) {
   const finLima = atencion.fecha_hora_fin ? fechaLimaDeInstante(atencion.fecha_hora_fin) : null
-  const nuevaRevision = atencion.estado === 'Reporte adjunto'
+  const nuevaRevision = atencion.estado !== 'Ejecutado pendiente de reporte'
   const [fecha, setFecha] = useState(() => hoyLima())
   const [resumen, setResumen] = useState('')
   const [documentos, setDocumentos] = useState<Documento[]>([])

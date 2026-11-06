@@ -17,7 +17,7 @@ describe('leerFiltrosBandeja', () => {
   })
 
   it('ignora valores no válidos', () => {
-    expect(leer({ estado: 'Conforme', origen: 'demanda', contrato_id: '0', pagina: '-2' })).toEqual({ filtros: {}, pagina: 1 })
+    expect(leer({ estado: 'Cerrada', origen: 'demanda', contrato_id: '0', pagina: '-2' })).toEqual({ filtros: {}, pagina: 1 })
     expect(leer({ contrato_id: '3.5', pagina: 'abc' })).toEqual({ filtros: {}, pagina: 1 })
     expect(leer({ contrato_id: '99999999999999' }).filtros).toEqual({})
   })
