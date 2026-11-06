@@ -5,6 +5,7 @@
 import type {
   Acceso,
   Adjunto,
+  CanalAcceso,
   CambioContrasena,
   CambioCuenta,
   CambioDatosUsuario,
@@ -111,7 +112,15 @@ export function cambiarRol(id: number, rol: CodigoRol, motivo: string): Promise<
 }
 
 export function listarAccesos(
-  filtros: { usuario_id?: number; resultado?: ResultadoAcceso | ''; page?: number },
+  filtros: {
+    usuario_id?: number
+    usuario?: string
+    resultado?: ResultadoAcceso | ''
+    canal?: CanalAcceso | ''
+    desde?: string
+    hasta?: string
+    page?: number
+  },
   signal?: AbortSignal,
 ): Promise<PaginaCore<Acceso>> {
   return solicitarCore('accesos/', { parametros: filtros, signal })
