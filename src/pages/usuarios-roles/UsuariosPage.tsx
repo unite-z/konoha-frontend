@@ -1,7 +1,7 @@
 // RF-T-002 · Lista de cuentas (HU-MOD01-008, CU-MOD01-007)
 /**
- * Cuentas con rol, estado, vigencia y último acceso, con filtros en la URL y destacados: sin uso,
- * vigencia que vence pronto y varios rechazos. Solo el jefe de sección (la ruta y la API lo exigen).
+ * Cuentas con rol, estado, vigencia y último acceso, con filtros en la URL.
+ * Solo el jefe de sección (la ruta y la API lo exigen).
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -16,7 +16,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_CORE, rutaDetalleUsuario } from '@/router/rutasApp'
 import { listarUsuarios } from '@/services/api/core'
 import type { CodigoRol, UsuarioConContrasena, UsuarioResumen } from '@/types/core'
-import { DESTACADO, ESTADO_CUENTA, NOMBRE_ROL, ROLES_ASIGNABLES } from '@/utils/etiquetasCore'
+import { ESTADO_CUENTA, NOMBRE_ROL, ROLES_ASIGNABLES } from '@/utils/etiquetasCore'
 import { formatearFecha, formatearFechaHora, formatearNumero } from '@/utils/formato'
 import DialogoContrasenaTemporal from './DialogoContrasenaTemporal'
 import DialogoCuenta from './DialogoCuenta'
@@ -43,17 +43,6 @@ const COLUMNAS: ColumnaTabla<UsuarioResumen>[] = [
   { clave: 'estado', titulo: 'Estado', render: (u) => <Estado tono={TONO_ESTADO[ESTADO_CUENTA[u.estado].tono]} texto={ESTADO_CUENTA[u.estado].texto} /> },
   { clave: 'vigencia', titulo: 'Vigencia', render: (u) => (u.fecha_fin_vigencia ? `Hasta ${formatearFecha(u.fecha_fin_vigencia)}` : 'Sin fin') },
   { clave: 'acceso', titulo: 'Último acceso', render: (u) => (u.ultimo_acceso ? formatearFechaHora(u.ultimo_acceso) : 'Nunca') },
-  {
-    clave: 'destacados',
-    titulo: 'Atención',
-    render: (u) => (
-      <span className={estilos.badges}>
-        {u.destacados.map((d) => (
-          <Estado key={d} tono="aviso" texto={DESTACADO[d].texto} ayuda={DESTACADO[d].ayuda} />
-        ))}
-      </span>
-    ),
-  },
 ]
 
 const OPCIONES_ROL = ROLES_ASIGNABLES.map((rol) => ({ valor: rol, texto: NOMBRE_ROL[rol] }))
