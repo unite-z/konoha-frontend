@@ -2,7 +2,7 @@
  * Textos y tonos de los valores estables de MOD-01. La API envía códigos; la interfaz decide la etiqueta.
  */
 import type { Tono } from '../components/ui/tonos'
-import type { CodigoRol, Destacado, EstadoCuenta, ResultadoAcceso } from '../types/core'
+import type { CanalAcceso, CodigoRol, Destacado, EstadoCuenta, ResultadoAcceso } from '../types/core'
 
 export const NOMBRE_ROL: Record<CodigoRol, string> = {
   'jefe-seccion': 'Jefe de sección',
@@ -25,6 +25,12 @@ export const DESTACADO: Record<Destacado, { texto: string; ayuda: string }> = {
   'sin-uso': { texto: 'Sin uso', ayuda: 'Sin acceso en los últimos 60 días: candidata a desactivar' },
   'vence-pronto': { texto: 'Vence pronto', ayuda: 'La vigencia termina en los próximos 7 días' },
   rechazos: { texto: 'Rechazos', ayuda: 'Varios intentos sin permiso en los últimos 30 días' },
+}
+
+export const CANAL_ACCESO: Record<CanalAcceso, string> = {
+  oficina: 'Oficina',
+  campo: 'Campo',
+  api: 'Sistema',
 }
 
 export const RESULTADO_ACCESO: Record<ResultadoAcceso, { texto: string; tono: Tono }> = {

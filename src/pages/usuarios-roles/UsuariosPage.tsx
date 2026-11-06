@@ -5,7 +5,7 @@
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
@@ -13,7 +13,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_CORE, RUTAS_CORE, rutaDetalleUsuario } from '@/router/rutasApp'
+import { MIGAS_CORE, rutaDetalleUsuario } from '@/router/rutasApp'
 import { listarUsuarios } from '@/services/api/core'
 import type { CodigoRol, UsuarioConContrasena, UsuarioResumen } from '@/types/core'
 import { DESTACADO, ESTADO_CUENTA, NOMBRE_ROL, ROLES_ASIGNABLES } from '@/utils/etiquetasCore'
@@ -91,9 +91,6 @@ export default function UsuariosPage() {
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
-        <BotonEnlace to={RUTAS_CORE.accesos} variante="secundario">
-          Registro de accesos
-        </BotonEnlace>
         <Boton onClick={() => setAlta(true)}>Nueva cuenta</Boton>
       </AccionesPagina>
       <p className={estilos.descripcion}>Quién tiene acceso al sistema, con qué rol y cuándo entró por última vez.</p>

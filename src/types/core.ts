@@ -149,13 +149,16 @@ export interface CambioCuenta {
 
 export type ResultadoAcceso = 'Exitoso' | 'Fallido' | 'Bloqueado' | 'Denegado' | 'SinPermiso' | 'CierreSesion'
 
+/** Por dónde se produjo el acceso. `api`: lo registra el servidor al rechazar una petición sin permiso. */
+export type CanalAcceso = 'oficina' | 'campo' | 'api'
+
 export interface Acceso {
   id: number
   usuario_id: number | null
   usuario_nombre: string | null
   identificador: string | null
   fecha_hora: InstanteIso
-  canal: 'oficina' | 'campo' | 'api'
+  canal: CanalAcceso
   resultado: ResultadoAcceso
   motivo: string | null
   ruta: string | null
