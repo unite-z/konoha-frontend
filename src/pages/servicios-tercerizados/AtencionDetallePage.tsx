@@ -31,6 +31,8 @@ import {
   insigniaAcuerdo,
   insigniaEstado,
   textoAlcance,
+  textoClase,
+  textoOrden,
   textoOrigen,
 } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, SIN_VALOR } from '@/utils/formato'
@@ -150,11 +152,11 @@ function Ficha({
             { etiqueta: 'Proveedor', valor: atencion.proveedor_nombre },
             { etiqueta: 'Contrato', valor: atencion.contrato_numero },
             { etiqueta: 'Servicio', valor: atencion.tipo_servicio_nombre },
-            { etiqueta: 'Modalidad', valor: 'Programada según contrato' },
+            { etiqueta: 'Modalidad', valor: textoClase(atencion.clase) },
             { etiqueta: 'Origen', valor: textoOrigen(atencion.origen) },
             esSolicitudUnidad && { etiqueta: 'Unidad solicitante', valor: textoUnidad(atencion) },
             {
-              etiqueta: 'Orden de compra (Logística)',
+              etiqueta: `${textoOrden(atencion.clase, true)} (Logística)`,
               valor: atencion.numero_orden_compra
                 ? `${atencion.numero_orden_compra} · ${formatearFechaHora(atencion.fecha_orden_compra)}`
                 : 'Pendiente',

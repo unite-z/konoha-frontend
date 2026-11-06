@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { EstadoAtencion, OrigenAtencion, RolTercerizados } from '../types/tercerizados'
+import type { ClaseAtencion, EstadoAtencion, OrigenAtencion, RolTercerizados } from '../types/tercerizados'
 import { ESTADOS_ATENCION } from '../utils/estadosTercerizados'
 import { disponibilidad, esRolTercerizados, puedeRegistrarAtencion, type AccionAtencion } from './permisosTercerizados'
 
@@ -7,8 +7,18 @@ const JEFE: RolTercerizados = 'Jefe de sección'
 const INGENIERO: RolTercerizados = 'Ingeniero de campo'
 const PRACTICANTE: RolTercerizados = 'Practicante autorizado'
 
-function atencion(estado: EstadoAtencion, extra: { es_riesgo?: boolean; origen?: OrigenAtencion; numero_orden_compra?: string } = {}) {
-  return { estado, es_riesgo: false, origen: 'Demanda' as OrigenAtencion, numero_orden_compra: '', ...extra }
+function atencion(
+  estado: EstadoAtencion,
+  extra: { es_riesgo?: boolean; origen?: OrigenAtencion; clase?: ClaseAtencion; numero_orden_compra?: string } = {},
+) {
+  return {
+    estado,
+    es_riesgo: false,
+    origen: 'Demanda' as OrigenAtencion,
+    clase: 'ProgramadaContrato' as ClaseAtencion,
+    numero_orden_compra: '',
+    ...extra,
+  }
 }
 
 /** Estados en los que la acción está visible y habilitada para el rol. */
@@ -49,6 +59,12 @@ describe.each([JEFE, INGENIERO, PRACTICANTE])('acciones operativas de %s', (rol)
     const accion = disponibilidad('inicio', rol, atencion('Requerimiento registrado'))
     expect(accion.visible && !accion.habilitada).toBe(true)
     expect(accion.motivo).toMatch(/orden de compra/)
+  })
+
+  it('inicio de una extraordinaria sin orden pide la orden de servicio', () => {
+    const accion = disponibilidad('inicio', rol, atencion('Requerimiento registrado', { clase: 'Extraordinaria' }))
+    expect(accion.visible && !accion.habilitada).toBe(true)
+    expect(accion.motivo).toMatch(/orden de servicio/)
   })
 
   it('inicio de una atención de riesgo queda bloqueado con motivo', () => {

@@ -5,7 +5,7 @@
  * permite. El back-end vuelve a comprobarlo todo: estas reglas nunca sustituyen su respuesta.
  */
 import type { Atencion, RolTercerizados } from '../types/tercerizados'
-import { haTerminado } from '../utils/estadosTercerizados'
+import { haTerminado, textoOrden } from '../utils/estadosTercerizados'
 
 export const ROLES_TERCERIZADOS: readonly RolTercerizados[] = [
   'Jefe de sección',
@@ -51,7 +51,7 @@ export function puedeRegistrarAtencion(rol: RolTercerizados | null): boolean {
 export function disponibilidad(
   accion: AccionAtencion,
   rol: RolTercerizados | null,
-  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'numero_orden_compra'>,
+  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'clase' | 'numero_orden_compra'>,
 ): DisponibilidadAccion {
   if (!esRolTercerizados(rol)) return OCULTA
   const { estado } = atencion
@@ -63,7 +63,7 @@ export function disponibilidad(
     case 'ordenCompra':
       return antesDelInicio ? LISTA : OCULTA
     case 'inicio':
-      if (estado === 'Requerimiento registrado') return bloqueada('Registra primero la orden de compra emitida por Logística')
+      if (estado === 'Requerimiento registrado') return bloqueada(`Registra primero la ${textoOrden(atencion.clase)} emitida por Logística`)
       if (estado !== 'OC referenciada') return OCULTA
       if (atencion.es_riesgo) {
         return bloqueada('Atención de riesgo: el inicio queda bloqueado hasta integrar la revisión de seguridad')

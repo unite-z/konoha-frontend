@@ -2,11 +2,13 @@
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Casilla from '@/components/ui/Casilla'
 import { AreaTexto } from '@/components/ui/CampoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import SelectorBuscable from '@/components/ui/SelectorBuscable'
 import Tarjeta from '@/components/ui/Tarjeta'
 import { listarContratos } from '@/services/api/tercerizados'
 import type { Contrato, TipoServicio } from '@/types/tercerizados'
+import { OPCIONES_CLASE } from '@/utils/estadosTercerizados'
 import { formatearFecha } from '@/utils/formato'
 import type { BorradorAtencion, ErroresPaso1 } from '@/utils/nuevaAtencion'
 import CamposOrigen from '../CamposOrigen'
@@ -77,6 +79,19 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
       </Tarjeta>
 
       <Tarjeta titulo="Requerimiento" relleno="amplio">
+        <GrupoOpciones
+          etiqueta="Modalidad"
+          idBase="nueva-clase"
+          opciones={OPCIONES_CLASE}
+          valor={borrador.clase}
+          onCambiar={(clase) => cambiar({ clase })}
+        />
+        {borrador.clase === 'Extraordinaria' && (
+          <AvisoEnLinea tono="info">
+            La atención extraordinaria se tramita con una orden de servicio fuera de la programación. No podrá iniciar hasta
+            que se registre el número de esa orden.
+          </AvisoEnLinea>
+        )}
         <AreaTexto
           id={IDS_PASO1.descripcion}
           etiqueta="Descripción del trabajo"
