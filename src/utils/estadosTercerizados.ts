@@ -3,7 +3,7 @@
  * Los estados se muestran con el texto exacto del back-end.
  */
 import type { Tono } from '../components/ui/Badge'
-import type { CambioEstado, CategoriaDocumento, EstadoAtencion, OrigenAtencion } from '../types/tercerizados'
+import type { CambioEstado, CategoriaDocumento, EstadoAtencion, OrigenAtencion, ResultadoConformidad } from '../types/tercerizados'
 
 /** Pasos del ciclo hasta el reporte, comunes a toda atención. */
 const CICLO_BASE: readonly EstadoAtencion[] = [
@@ -91,6 +91,11 @@ export const OPCIONES_CATEGORIA: { valor: CategoriaDocumento; texto: string }[] 
 export function insigniaAcuerdo(acuerdo: boolean | null): { texto: string; tono: Tono } {
   if (acuerdo === null) return { texto: 'Pendiente', tono: 'neutral' }
   return acuerdo ? { texto: 'De acuerdo', tono: 'exito' } : { texto: 'En desacuerdo', tono: 'advertencia' }
+}
+
+/** Insignia de una decisión de conformidad: la observación advierte, no es un fallo. */
+export function insigniaConformidad(resultado: ResultadoConformidad): { texto: string; tono: Tono } {
+  return resultado === 'Conforme' ? { texto: 'Conforme', tono: 'exito' } : { texto: 'Observada', tono: 'advertencia' }
 }
 
 /** Código abreviado para tablas y títulos: «AT-» y los 8 primeros caracteres (el completo va en la ficha). */
