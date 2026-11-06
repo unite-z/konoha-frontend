@@ -150,6 +150,8 @@ export interface ReporteProveedor {
   usuario_creacion_id: number
   usuario_creacion_nombre: string | null
   fecha_creacion: InstanteIso
+  /** Solo al adjuntar: `true` si el envío repetía la última revisión (mismo contenido por SHA-256) y no se creó otra. */
+  repetido?: boolean
 }
 
 // --- Entradas -------------------------------------------------------------------------------------------
