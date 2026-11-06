@@ -5,6 +5,7 @@
  * permite. El back-end vuelve a comprobarlo todo: estas reglas nunca sustituyen su respuesta.
  */
 import type { Atencion, RolTercerizados } from '../types/tercerizados'
+import { haTerminado } from '../utils/estadosTercerizados'
 
 export const ROLES_TERCERIZADOS: readonly RolTercerizados[] = [
   'Jefe de sección',
@@ -21,6 +22,7 @@ export type AccionAtencion =
   | 'corregirOrigen'
   | 'acuerdoUnidad'
   | 'adjuntarReporte'
+  | 'conformidad'
 
 /** Resultado para una acción: si se muestra y, si se muestra deshabilitada, por qué. */
 export interface DisponibilidadAccion {
@@ -55,7 +57,7 @@ export function disponibilidad(
   const { estado } = atencion
   const esJefe = rol === JEFE
   const antesDelInicio = estado === 'Requerimiento registrado' || estado === 'OC referenciada'
-  const terminada = estado === 'Ejecutado pendiente de reporte' || estado === 'Reporte adjunto'
+  const terminada = haTerminado(estado)
 
   switch (accion) {
     case 'ordenCompra':
@@ -75,6 +77,13 @@ export function disponibilidad(
       if (!esJefe || atencion.origen !== 'SolicitudUnidad') return OCULTA
       return terminada ? LISTA : bloqueada('Se registra cuando termine la ejecución del servicio')
     case 'adjuntarReporte':
-      return terminada ? LISTA : OCULTA
+      // Con la atención conforme ya no se aceptan más revisiones.
+      return terminada && estado !== 'Conforme / cerrado' ? LISTA : OCULTA
+    case 'conformidad':
+      if (!esJefe) return OCULTA
+      if (estado === 'Reporte adjunto') return LISTA
+      if (estado === 'Ejecutado pendiente de reporte') return bloqueada('Adjunta primero el informe del proveedor')
+      if (estado === 'Observado') return bloqueada('Espera la nueva revisión del informe para volver a evaluarlo')
+      return OCULTA
   }
 }

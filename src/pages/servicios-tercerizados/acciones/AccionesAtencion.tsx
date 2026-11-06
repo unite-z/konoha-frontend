@@ -1,23 +1,24 @@
-// RF-SER-004, 005, 006 y 011 · Acciones de la ficha
+// RF-SER-004, 005, 006, 007 y 011 · Acciones de la ficha
 /**
  * Botones de las acciones disponibles según rol y estado (`config/permisosTercerizados.ts`) y sus diálogos.
  * Una sola acción primaria: el siguiente paso del ciclo; las demás, secundarias. Lo que el estado aún no
  * permite se muestra deshabilitado con su motivo.
  *
- * Corregir origen y registrar el acuerdo de la unidad son exclusivos del jefe de sección.
+ * Corregir origen, registrar el acuerdo de la unidad y dar la conformidad son exclusivos del jefe de sección.
  */
 import { useId, useState } from 'react'
 import Boton from '@/components/ui/Boton'
 import { disponibilidad } from '@/config/permisosTercerizados'
 import type { Atencion, ReporteProveedor, RolTercerizados } from '@/types/tercerizados'
 import DialogoAcuerdo from './DialogoAcuerdo'
+import DialogoConformidad from './DialogoConformidad'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'
 import DialogoOrigen from './DialogoOrigen'
 import DialogoReporte from './DialogoReporte'
 import estilos from '../Tercerizados.module.css'
 
-type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | null
+type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | 'conformidad' | null
 
 export interface AccionesAtencionProps {
   atencion: Atencion
@@ -38,9 +39,10 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
   const reporte = disponibilidad('adjuntarReporte', rol, atencion)
   const origen = disponibilidad('corregirOrigen', rol, atencion)
   const acuerdo = disponibilidad('acuerdoUnidad', rol, atencion)
+  const conformidad = disponibilidad('conformidad', rol, atencion)
   const tieneOc = Boolean(atencion.numero_orden_compra)
 
-  if (![oc, inicio, fin, reporte, origen, acuerdo].some((d) => d.visible)) return null
+  if (![oc, inicio, fin, reporte, origen, acuerdo, conformidad].some((d) => d.visible)) return null
 
   const cerrar = () => setAbierto(null)
   const exito = (mensaje: string) => {
@@ -56,6 +58,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
     { clave: 'oc', d: oc },
     { clave: 'origen', d: origen },
     { clave: 'acuerdo', d: acuerdo },
+    { clave: 'conformidad', d: conformidad },
   ].filter(({ d }) => d.visible && !d.habilitada && d.motivo)
   const describir = (clave: string, habilitada: boolean) => (habilitada ? undefined : `${idMotivos}-${clave}`)
 
@@ -65,7 +68,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
     {
       clave: 'reporte',
       d: reporte,
-      texto: atencion.estado === 'Reporte adjunto' ? 'Adjuntar nueva revisión' : 'Adjuntar reporte',
+      texto: atencion.estado === 'Ejecutado pendiente de reporte' ? 'Adjuntar reporte' : 'Adjuntar nueva revisión',
       dialogo: 'reporte' as const,
       // Primaria solo si aún falta el reporte; una nueva revisión es secundaria.
       primaria: reporte.habilitada && atencion.estado === 'Ejecutado pendiente de reporte',
@@ -77,6 +80,14 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
       texto: tieneOc ? 'Corregir orden de compra' : 'Registrar orden de compra',
       dialogo: 'ordenCompra' as const,
       primaria: oc.habilitada && !tieneOc,
+    },
+    {
+      clave: 'conformidad',
+      d: conformidad,
+      texto: 'Registrar conformidad',
+      dialogo: 'conformidad' as const,
+      // Con el reporte adjunto es el siguiente paso del ciclo.
+      primaria: conformidad.habilitada,
     },
     { clave: 'origen', d: origen, texto: 'Corregir origen', dialogo: 'origen' as const, primaria: false },
     {
@@ -121,6 +132,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
       <DialogoReporte abierto={abierto === 'reporte'} {...comunes} onReporteAdjunto={onReporteAdjunto} />
       <DialogoOrigen abierto={abierto === 'origen'} {...comunes} />
       <DialogoAcuerdo abierto={abierto === 'acuerdo'} {...comunes} />
+      <DialogoConformidad abierto={abierto === 'conformidad'} {...comunes} />
     </div>
   )
 }

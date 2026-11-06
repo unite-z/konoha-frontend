@@ -37,6 +37,7 @@ import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, 
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import AccionesAtencion from './acciones/AccionesAtencion'
 import DocumentosProveedor from './DocumentosProveedor'
+import SeccionConformidad from './SeccionConformidad'
 import Adjuntos from '@/components/core/Adjuntos'
 import HistorialCambios from '@/components/core/HistorialCambios'
 import { PERMISOS, puede } from '@/config/permisosCore'
@@ -203,6 +204,8 @@ function Ficha({
           </Tarjeta>
         )}
       </div>
+
+      <SeccionConformidad atencion={atencion} />
 
       <section className={estilos.seccion} aria-labelledby="titulo-alcances">
         <div className={estilos.cabeceraSeccion}>

@@ -29,6 +29,8 @@ export type EstadoAtencion =
   | 'En ejecución'
   | 'Ejecutado pendiente de reporte'
   | 'Reporte adjunto'
+  | 'Observado'
+  | 'Conforme / cerrado'
 
 export type OrigenAtencion = 'Demanda' | 'ProgramacionEstacional' | 'SolicitudUnidad'
 
@@ -78,6 +80,21 @@ export interface PlagaControlada {
   plaga_activo: boolean
 }
 
+/** Decisión del jefe de sección sobre el informe del proveedor (RF-SER-007). */
+export type ResultadoConformidad = 'Conforme' | 'Observada'
+
+export interface Conformidad {
+  id: number
+  resultado: ResultadoConformidad
+  fecha_conformidad: FechaIso
+  comentarios: string
+  /** Revisión del informe que se evaluó. */
+  revision: number
+  usuario_id: number
+  usuario_nombre: string | null
+  fecha_creacion: InstanteIso
+}
+
 export interface CambioEstado {
   estado_anterior: EstadoAtencion | ''
   estado_nuevo: EstadoAtencion
@@ -122,6 +139,8 @@ export interface Atencion {
   productos: ProductoAplicado[]
   plagas: PlagaControlada[]
   historial: CambioEstado[]
+  /** Decisiones de conformidad, de la más antigua a la más reciente. Ausente si el back-end aún no las envía. */
+  conformidades?: Conformidad[]
 }
 
 export interface ArchivoDocumento {
@@ -199,6 +218,12 @@ export interface AcuerdoUnidadEntrada {
   acuerdo_unidad: boolean | null
   fecha_acuerdo_unidad: FechaIso | null
   comentarios_acuerdo_unidad: string
+}
+
+export interface ConformidadEntrada {
+  resultado: ResultadoConformidad
+  fecha_conformidad: FechaIso
+  comentarios: string
 }
 
 export interface DocumentoEntrada {

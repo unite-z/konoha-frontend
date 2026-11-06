@@ -4,6 +4,7 @@
  * Replican las reglas del back-end para avisar antes de enviar; el back-end vuelve a validarlo todo y su
  * respuesta es la que vale. Los mensajes dicen qué hacer (Guía Web 7).
  */
+import type { ResultadoConformidad } from '../types/tercerizados'
 import { esFuturo, esLocalValido, instanteALocalLima, milisegundos } from './instanteLima'
 
 /** Largo máximo del número de OC (`numero_orden_compra`). */
@@ -251,5 +252,33 @@ export function validarAcuerdo(
     (v.respuesta === 'pendiente' || (actual.fecha ?? '') === v.fecha) &&
     actual.comentarios.trim() === v.comentarios.trim()
   if (sinCambios && !errores.fecha && !errores.comentarios) errores.respuesta = 'No hay cambios respecto a lo registrado'
+  return errores
+}
+
+export interface ValoresConformidad {
+  resultado: ResultadoConformidad | null
+  fecha: string
+  comentarios: string
+}
+
+export interface ErroresConformidad {
+  resultado?: string
+  fecha?: string
+  comentarios?: string
+}
+
+/**
+ * Conformidad u observación del informe (RF-SER-007). Hay que elegir una decisión; la fecha es obligatoria y no
+ * anterior al fin del servicio (Lima); al observar, los comentarios son obligatorios: dicen qué debe corregir el
+ * proveedor. Al dar la conformidad son opcionales.
+ */
+export function validarConformidad(v: ValoresConformidad, finLima: string | null): ErroresConformidad {
+  const errores: ErroresConformidad = {}
+  if (!v.resultado) errores.resultado = 'Elige si das la conformidad u observas el informe'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v.fecha)) errores.fecha = 'Indica la fecha de tu decisión'
+  else if (finLima && v.fecha < finLima) errores.fecha = 'La fecha no puede ser anterior al fin del servicio'
+  if (v.resultado === 'Observada' && !v.comentarios.trim()) {
+    errores.comentarios = 'Anota qué debe corregir el proveedor en el informe'
+  }
   return errores
 }

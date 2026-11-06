@@ -9,6 +9,7 @@ import type {
   AcuerdoUnidadEntrada,
   AreaVerde,
   Atencion,
+  ConformidadEntrada,
   ConsultaCatalogo,
   Contrato,
   CorregirOrigenEntrada,
@@ -78,6 +79,11 @@ export function corregirOrigen(id: number, entrada: CorregirOrigenEntrada, signa
 /** RF-SER-011: acuerdo de la unidad. No sustituye la conformidad ni cambia el estado. */
 export function registrarAcuerdoUnidad(id: number, entrada: AcuerdoUnidadEntrada, signal?: AbortSignal) {
   return solicitarTercerizados<Atencion>(`atenciones/${id}/acuerdo-unidad/`, { metodo: 'PATCH', cuerpo: entrada, signal })
+}
+
+/** RF-SER-007: conformidad u observación del informe. Una observación deja la atención «Observado» hasta la subsanación (RF-SER-012). */
+export function registrarConformidad(id: number, entrada: ConformidadEntrada, signal?: AbortSignal) {
+  return solicitarTercerizados<Atencion>(`atenciones/${id}/conformidad/`, { metodo: 'POST', cuerpo: entrada, signal })
 }
 
 // --- Reportes y documentos (RF-SER-006) -----------------------------------------------------------------

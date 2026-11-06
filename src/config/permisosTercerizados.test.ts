@@ -61,8 +61,12 @@ describe.each([JEFE, INGENIERO, PRACTICANTE])('acciones operativas de %s', (rol)
     expect(habilitadaEn('fin', rol)).toEqual(['En ejecución'])
   })
 
-  it('reporte solo tras el fin (nueva revisión también con reporte adjunto)', () => {
-    expect(habilitadaEn('adjuntarReporte', rol)).toEqual(['Ejecutado pendiente de reporte', 'Reporte adjunto'])
+  it('reporte solo tras el fin y hasta la conformidad (nueva revisión también con reporte adjunto u observado)', () => {
+    expect(habilitadaEn('adjuntarReporte', rol)).toEqual([
+      'Ejecutado pendiente de reporte',
+      'Reporte adjunto',
+      'Observado',
+    ])
   })
 })
 
@@ -82,9 +86,41 @@ describe('acciones exclusivas del jefe', () => {
     expect(habilitadaEn('acuerdoUnidad', JEFE, { origen: 'SolicitudUnidad' })).toEqual([
       'Ejecutado pendiente de reporte',
       'Reporte adjunto',
+      'Observado',
+      'Conforme / cerrado',
     ])
     expect(habilitadaEn('acuerdoUnidad', JEFE, { origen: 'Demanda' })).toEqual([])
     const antes = disponibilidad('acuerdoUnidad', JEFE, atencion('En ejecución', { origen: 'SolicitudUnidad' }))
     expect(antes).toMatchObject({ visible: true, habilitada: false })
+  })
+})
+
+describe('conformidad (RF-SER-007)', () => {
+  it.each([INGENIERO, PRACTICANTE])('%s no la ve en ningún estado', (rol) => {
+    for (const estado of ESTADOS_ATENCION) {
+      expect(disponibilidad('conformidad', rol, atencion(estado)).visible).toBe(false)
+    }
+  })
+
+  it('el jefe la da u observa solo con el reporte adjunto', () => {
+    expect(habilitadaEn('conformidad', JEFE)).toEqual(['Reporte adjunto'])
+  })
+
+  it('sin informe se muestra deshabilitada con su motivo (RN-007)', () => {
+    const d = disponibilidad('conformidad', JEFE, atencion('Ejecutado pendiente de reporte'))
+    expect(d).toMatchObject({ visible: true, habilitada: false })
+    expect(d.motivo).toMatch(/informe/i)
+  })
+
+  it('observado espera la nueva revisión', () => {
+    const d = disponibilidad('conformidad', JEFE, atencion('Observado'))
+    expect(d).toMatchObject({ visible: true, habilitada: false })
+    expect(d.motivo).toMatch(/revisión/i)
+  })
+
+  it('antes del fin y ya cerrada no se ofrece', () => {
+    for (const estado of ['Requerimiento registrado', 'OC referenciada', 'En ejecución', 'Conforme / cerrado'] as const) {
+      expect(disponibilidad('conformidad', JEFE, atencion(estado)).visible).toBe(false)
+    }
   })
 })
