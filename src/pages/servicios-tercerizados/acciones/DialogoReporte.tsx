@@ -6,9 +6,10 @@
  * - Un solo envío multipart con `fetch`. Mientras sube se muestra un indicador sin porcentaje y se puede
  *   cancelar (TODO: progreso por porcentaje con `XMLHttpRequest`).
  * - Los archivos quedan en el formulario ante cualquier error, para reintentar sin volver a elegirlos.
- * - El envío no es idempotente (un reintento crea otra revisión). Si se pierde la conexión o se cancela, se
- *   cuentan las revisiones antes y después: si aumentó, la revisión se registró; si no se puede saber, se
- *   pide revisar los documentos antes de reintentar.
+ * - El servidor es idempotente por contenido (SHA-256): reenviar lo mismo que la última revisión devuelve esa
+ *   revisión con `repetido: true` y no crea otra. Aun así, si se pierde la conexión o se cancela, se cuentan las
+ *   revisiones antes y después: si aumentó, la revisión se registró; si no se puede saber, se pide revisar los
+ *   documentos antes de reintentar.
  * - El tamaño máximo lo define el servidor (configurable); su mensaje se muestra tal cual.
  */
 import { useRef, useState } from 'react'
@@ -167,7 +168,11 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
         control.signal,
       )
       await refrescar(reporte)
-      onExito(`Revisión ${reporte.revision} del reporte adjuntada`)
+      onExito(
+        reporte.repetido
+          ? `Este reporte ya estaba registrado como revisión ${reporte.revision}; no se creó otra`
+          : `Revisión ${reporte.revision} del reporte adjuntada`,
+      )
     } catch (causa) {
       const cancelada = esCancelacion(causa)
       const fallo = cancelada ? null : aErrorApi(causa)

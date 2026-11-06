@@ -104,7 +104,11 @@ export function formularioReporte(entrada: ReporteEntrada): FormData {
   return formulario
 }
 
-/** Crea una revisión nueva completa. No es idempotente: un reintento crea otra revisión. */
+/**
+ * Crea una revisión nueva completa. Es idempotente por contenido: si el envío repite la última revisión (misma
+ * recepción, resumen y documentos con el mismo SHA-256), el servidor responde 200 con esa revisión y
+ * `repetido: true` en lugar de crear otra.
+ */
 export function adjuntarReporte(id: number, entrada: ReporteEntrada, signal?: AbortSignal) {
   return solicitarTercerizados<ReporteProveedor>(`atenciones/${id}/reportes/`, {
     metodo: 'POST',
