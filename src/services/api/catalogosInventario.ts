@@ -1,7 +1,17 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { AsignacionCapataz, CuartelInventario, ElementoInventario, PersonaInventario, SectorInventario } from '@/types/catalogosInventario'
+import type { AsignacionCapataz, CuartelInventario, ElementoInventario, NuevoTipoIntervencion, PersonaInventario, SectorInventario, TipoIntervencion } from '@/types/catalogosInventario'
 
 const BASE = '/api/v1/inventario'
+
+export function listarTiposIntervencion(incluirInactivos = false, signal?: AbortSignal): Promise<TipoIntervencion[]> {
+  return solicitarTercerizados('tipos-intervencion/', { parametros: { incluir_inactivos: incluirInactivos }, signal, base: BASE })
+}
+export function crearTipoIntervencion(entrada: NuevoTipoIntervencion): Promise<TipoIntervencion> {
+  return solicitarTercerizados('tipos-intervencion/', { metodo: 'POST', cuerpo: entrada, base: BASE })
+}
+export function cambiarTipoIntervencion(id: number, cambio: { activo: boolean }): Promise<TipoIntervencion> {
+  return solicitarTercerizados(`tipos-intervencion/${id}/`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
+}
 
 export function listarTiposUso(incluirInactivos = false, signal?: AbortSignal): Promise<ElementoInventario[]> {
   return solicitarTercerizados('tipos-uso', { parametros: { incluir_inactivos: incluirInactivos }, signal, base: BASE })

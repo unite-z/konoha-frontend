@@ -45,16 +45,18 @@ export interface DialogoReportarIncidenciaProps {
   onCerrar: () => void
   /** Se envió, se sumó a otra o quedó pendiente: el aviso que muestra la lista. */
   onEnviado: (aviso: string) => void
+  espacioInicial?: string
+  ejemplarInicial?: string
 }
 
-export default function DialogoReportarIncidencia({ onCerrar, onEnviado }: DialogoReportarIncidenciaProps) {
+export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacioInicial, ejemplarInicial }: DialogoReportarIncidenciaProps) {
   const sesion = useSesionActiva()
   const enLinea = useEnLinea()
   const catalogos = useConsulta('incidencias-catalogos-registro', obtenerCatalogosRegistro)
   const [tipo, setTipo] = useState<string | null>(null)
   const [foto, setFoto] = useState<File | null>(null)
-  const [espacioElegido, setEspacio] = useState<string | null>(null)
-  const [ejemplar, setEjemplar] = useState('')
+  const [espacioElegido, setEspacio] = useState<string | null>(espacioInicial ?? null)
+  const [ejemplar, setEjemplar] = useState(ejemplarInicial ?? '')
   const [descripcion, setDescripcion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)

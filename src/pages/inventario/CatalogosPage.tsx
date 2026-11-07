@@ -12,7 +12,7 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO } from '@/router/rutasApp'
-import { cambiarCuartel, cambiarSector, cambiarTipoUso, crearCuartel, crearSector, crearTipoUso, listarCapataces, listarCuarteles, listarSectores, listarTiposUso, asignarCapataz, listarHistorialCapataz } from '@/services/api/catalogosInventario'
+import { cambiarCuartel, cambiarSector, cambiarTipoIntervencion, cambiarTipoUso, crearCuartel, crearSector, crearTipoIntervencion, crearTipoUso, listarCapataces, listarCuarteles, listarSectores, listarTiposIntervencion, listarTiposUso, asignarCapataz, listarHistorialCapataz } from '@/services/api/catalogosInventario'
 import type { AsignacionCapataz } from '@/types/catalogosInventario'
 import { fechaLimaDeInstante } from '@/utils/instanteLima'
 import type { InstanteIso } from '@/types/comun'
@@ -29,7 +29,11 @@ export default function CatalogosPage() {
   const sectores = useConsulta('sectores-todos', (signal) => listarSectores(true, signal))
   const cuarteles = useConsulta('cuarteles-todos', (signal) => listarCuarteles(true, signal))
   const capataces = useConsulta('capataces', listarCapataces)
+  const intervenciones = useConsulta('tipos-intervencion-todos', (signal) => listarTiposIntervencion(true, signal))
   const [tipoNombre, setTipoNombre] = useState('')
+  const [intervencionNombre, setIntervencionNombre] = useState('')
+  const [intervencionAlcance, setIntervencionAlcance] = useState('')
+  const [intervencionEsPoda, setIntervencionEsPoda] = useState(false)
   const [sectorNombre, setSectorNombre] = useState('')
   const [sectorDemanda, setSectorDemanda] = useState(false)
   const [cuartelNumero, setCuartelNumero] = useState('')
@@ -47,7 +51,7 @@ export default function CatalogosPage() {
     try {
       await accion()
       setAviso(mensaje)
-      await Promise.all([usos.reintentar(), sectores.reintentar(), cuarteles.reintentar(), capataces.reintentar()])
+      await Promise.all([usos.reintentar(), sectores.reintentar(), cuarteles.reintentar(), capataces.reintentar(), intervenciones.reintentar()])
     } catch (causa) {
       setError(causa instanceof Error ? causa.message : 'No se pudo guardar el cambio.')
     } finally {
@@ -81,7 +85,7 @@ export default function CatalogosPage() {
 
   return (
     <div className={estilos.pagina}>
-      <p className={estilos.descripcion}>Tipos de uso, sectores de mantenimiento, capataces y cuarteles históricos opcionales.</p>
+      <p className={estilos.descripcion}>Tipos de uso, sectores de mantenimiento, capataces, tipos de intervención tercerizada y cuarteles históricos opcionales.</p>
       {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       {aviso && <AvisoEnLinea tono="exito">{aviso}</AvisoEnLinea>}
 
@@ -144,6 +148,44 @@ export default function CatalogosPage() {
                   {historiales[sector.id]?.length ? historiales[sector.id]?.map((asignacion) => <p key={asignacion.id}>{asignacion.capataz_nombre} · desde {fechaLimaDeInstante(asignacion.fecha_inicio as InstanteIso) ?? asignacion.fecha_inicio}{asignacion.fecha_fin ? ` · hasta ${fechaLimaDeInstante(asignacion.fecha_fin as InstanteIso) ?? asignacion.fecha_fin}` : ' · vigente'}</p>) : <p>Sin asignaciones anteriores.</p>}
                 </div>
               )}
+            </li>
+          ))}
+        </ul>
+      </Tarjeta>
+
+      <Tarjeta titulo="Tipos de intervención tercerizada" descripcion="Se usan al registrar intervenciones sobre ejemplares. Desactivar conserva las intervenciones ya registradas." relleno="amplio">
+        <form
+          className={estilos.alta}
+          onSubmit={(e) => enviar(e, async () => {
+            await crearTipoIntervencion({ nombre: intervencionNombre.trim(), descripcion: intervencionAlcance.trim() || null, es_poda: intervencionEsPoda })
+            setIntervencionNombre('')
+            setIntervencionAlcance('')
+            setIntervencionEsPoda(false)
+          }, 'Tipo de intervención creado.')}
+        >
+          <CampoFormulario id="nuevo-tipo-intervencion" etiqueta="Nombre" value={intervencionNombre} onChange={(e) => setIntervencionNombre(e.target.value)} maxLength={80} required />
+          <CampoFormulario id="alcance-tipo-intervencion" etiqueta="Descripción o alcance" value={intervencionAlcance} onChange={(e) => setIntervencionAlcance(e.target.value)} maxLength={300} />
+          <Casilla id="tipo-intervencion-poda" etiqueta="Es una poda (se ofrece en las campañas)" marcada={intervencionEsPoda} onCambiar={setIntervencionEsPoda} />
+          <Boton type="submit" variante="secundario" deshabilitado={guardando}>Añadir</Boton>
+        </form>
+        {intervenciones.estado === 'cargando' && <EstadoCarga forma="tabla" filas={2} texto="Cargando tipos de intervención…" retrasar />}
+        {intervenciones.estado === 'error' && <EstadoError titulo="No se pudieron cargar los tipos de intervención" descripcion={intervenciones.error?.detalle ?? ''} onReintentar={intervenciones.reintentar} nivel={3} />}
+        <ul className={estilos.lista}>
+          {intervenciones.datos?.map((tipo) => (
+            <li className={estilos.fila} key={tipo.id}>
+              <div>
+                <span className={estilos.dato}>
+                  <strong>{tipo.nombre}</strong>
+                  {tipo.es_poda && <Estado tono="info" texto="Poda" />}
+                  {!tipo.activo && <Estado tono="neutro" texto="Inactivo" />}
+                </span>
+                <div className={estilos.detalle}>
+                  {tipo.descripcion ?? 'Sin descripción'} · {tipo.usos === 1 ? '1 intervención registrada' : `${tipo.usos} intervenciones registradas`}
+                </div>
+              </div>
+              <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarTipoIntervencion(tipo.id, { activo: !tipo.activo }), tipo.activo ? 'Tipo de intervención desactivado.' : 'Tipo de intervención activado.')}>
+                {tipo.activo ? 'Desactivar' : 'Activar'}
+              </Boton>
             </li>
           ))}
         </ul>

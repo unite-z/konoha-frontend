@@ -94,6 +94,7 @@ import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE,
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ParticipantesPage from '../pages/operacion-campo/ParticipantesPage'
+import CatalogoActividadesPage from '../pages/operacion-campo/CatalogoActividadesPage'
 import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 
 /** «Acceso denegado» de Planificación (Figma 374-7925): el capataz tiene su ruta y su calendario en la app móvil. */
@@ -123,6 +124,7 @@ export const router = createBrowserRouter([
                   { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
                   { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
                   { path: RUTAS_CAMPO.participantes, element: <ParticipantesPage /> },
+                  { path: RUTAS_CAMPO.catalogoActividades, element: <CatalogoActividadesPage /> },
                 ],
               },
             ],
