@@ -1,7 +1,6 @@
 // Excepción al sistema (AV-351): barra de herramientas del lienzo SVG del mapa (seleccionar, mover y zoom), como los controles de maplibre; no son acciones de página.
 import { useMemo, useState, type MouseEvent, type WheelEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
-import type { UsoFuenteMapa } from '@/types/mapaInventario'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import estilos from './MapaAreasVerdesPage.module.css'
 
@@ -11,7 +10,6 @@ type UsoMapaLocal = { nombre: string; color: string }
 interface Props {
   datos: AreasVerdesGeoJSON
   usos: UsoMapaLocal[]
-  categorias: UsoFuenteMapa[]
   usoSeleccionado: string
   onSeleccionar: (feature: FeatureArea) => void
 }
@@ -29,7 +27,7 @@ interface Hover {
   feature: FeatureArea
 }
 
-export default function MapaVectorialLocal({ datos, usos, categorias, usoSeleccionado, onSeleccionar }: Props) {
+export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSeleccionar }: Props) {
   const [zoom, setZoom] = useState(1)
   const [modo, setModo] = useState<'seleccionar' | 'mover'>('seleccionar')
   const [centro, setCentro] = useState({ x: 500, y: 350 })
@@ -37,7 +35,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
   const [hover, setHover] = useState<Hover | null>(null)
   const limites = useMemo(() => obtenerLimites(datos.features), [datos.features])
   const visibles = datos.features.filter((feature) => {
-    const uso = usos.find((item) => item.nombre === texto(feature.properties?.Uso))
+    const uso = usos.find((item) => item.nombre === (texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso)))
     return uso ? usoVisible(uso, usoSeleccionado) : false
   })
   const viewWidth = 1000 / zoom
@@ -102,7 +100,7 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
           <text x="38" y="632">Escala relativa</text>
         </g>
         {visibles.map((feature, indice) => {
-          const uso = usos.find((item) => item.nombre === texto(feature.properties?.Uso))
+          const uso = usos.find((item) => item.nombre === (texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso)))
           if (!uso) return null
           const activo = hover?.feature === feature
           return (
@@ -131,10 +129,9 @@ export default function MapaVectorialLocal({ datos, usos, categorias, usoSelecci
       {hover && (
         <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
           <strong>{texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
-          <span>Uso: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
-          {categorias.find((categoria) => categoria.uso_fuente === texto(hover.feature.properties?.Uso))?.tipo_uso_nombre && (
-            <span>Tipo del sistema: {categorias.find((categoria) => categoria.uso_fuente === texto(hover.feature.properties?.Uso))?.tipo_uso_nombre}</span>
-          )}
+          <span>Uso original: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
+          <span>Tipo de uso efectivo: {texto(hover.feature.properties?.clasificacion_efectiva) || 'Sin clasificar'}</span>
+          <span>Origen: {texto(hover.feature.properties?.origen_clasificacion) === 'area-vinculada' ? 'Área vinculada' : 'Uso original'}</span>
           <span>Superficie: {formatearSuperficie(hover.feature.properties?.['Área'])}</span>
         </div>
       )}

@@ -30,7 +30,6 @@ describe('MapaVectorialLocal', () => {
     const props = {
       datos,
       usos,
-      categorias: [],
       usoSeleccionado: '',
       onSeleccionar: vi.fn(),
     }

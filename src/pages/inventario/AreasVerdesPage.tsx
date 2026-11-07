@@ -10,7 +10,7 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarAreaVerde } from '@/router/rutasApp'
 import { asignarSectorArea, listarAreasVerdes, listarHistorialSectorArea, type HistorialSectorArea } from '@/services/api/areasVerdes'
 import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/catalogosInventario'
 import type { SectorInventario } from '@/types/catalogosInventario'
@@ -82,6 +82,7 @@ export default function AreasVerdesPage() {
   usePaginaActual('Áreas verdes', [MIGAS_INVENTARIO.areasVerdes])
   const sesion = useSesionActiva()
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
+  const puedeEditar = puede(sesion, PERMISOS.registrarInventario)
   const [busqueda, setBusqueda] = useState('')
   const [sectorId, setSectorId] = useState('')
   const [cuartelId, setCuartelId] = useState('')
@@ -132,18 +133,23 @@ export default function AreasVerdesPage() {
         <div className={estilos.tablaAreas}>
           <TablaDatos
             titulo="Áreas verdes"
-            columnas={puedeGestionar ? [
+            columnas={puedeGestionar || puedeEditar ? [
               ...COLUMNAS.filter((columna) => columna.clave !== 'sector'),
-              {
+              ...(puedeGestionar ? [{
                 clave: 'sector',
                 titulo: 'Sector y cambios',
-                render: (area) => <GestionSectorArea
+                render: (area: AreaVerde) => <GestionSectorArea
                   area={area}
                   sectores={sectores.datos ?? []}
                   editable={puedeGestionar}
                   alGuardar={() => void consulta.reintentar()}
                 />,
-              },
+              }] : []),
+              ...(puedeEditar ? [{
+                clave: 'acciones',
+                titulo: 'Acciones',
+                render: (area: AreaVerde) => <BotonEnlace to={rutaEditarAreaVerde(area.id)} variante="secundario" compacto>Editar</BotonEnlace>,
+              }] : []),
             ] : COLUMNAS}
             filas={consulta.datos.results}
             claveFila={(area) => String(area.id)}
