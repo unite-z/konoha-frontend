@@ -59,6 +59,16 @@
   gap: var(--space-3);
 }
 
+.selectorPoligono {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.selectorPoligono > button {
+  justify-self: start;
+}
+
 .errorFormulario {
   grid-column: 1 / -1;
 }

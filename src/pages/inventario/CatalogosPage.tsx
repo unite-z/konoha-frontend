@@ -14,6 +14,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { cambiarCuartel, cambiarSector, cambiarTipoIntervencion, cambiarTipoUso, crearCuartel, crearSector, crearTipoIntervencion, crearTipoUso, listarCapataces, listarCuarteles, listarSectores, listarTiposIntervencion, listarTiposUso, asignarCapataz, listarHistorialCapataz } from '@/services/api/catalogosInventario'
 import type { AsignacionCapataz } from '@/types/catalogosInventario'
+import { clasificarUsoFuenteMapa, listarUsosFuenteMapa } from '@/services/api/mapaAsignaciones'
 import { fechaLimaDeInstante } from '@/utils/instanteLima'
 import type { InstanteIso } from '@/types/comun'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
@@ -26,6 +27,7 @@ export default function CatalogosPage() {
   const sesion = useSesionActiva()
   const puedeEditar = puede(sesion, PERMISOS.gestionarCatalogos)
   const usos = useConsulta('tipos-uso-todos', (signal) => listarTiposUso(true, signal))
+  const equivalencias = useConsulta(puedeEditar ? 'equivalencias-mapa' : null, listarUsosFuenteMapa)
   const sectores = useConsulta('sectores-todos', (signal) => listarSectores(true, signal))
   const cuarteles = useConsulta('cuarteles-todos', (signal) => listarCuarteles(true, signal))
   const capataces = useConsulta('capataces', listarCapataces)
@@ -132,6 +134,28 @@ export default function CatalogosPage() {
                   {uso.activo ? 'Desactivar' : 'Activar'}
                 </Boton>
               </div>
+            </li>
+          ))}
+        </ul>
+      </Tarjeta>
+
+      <Tarjeta titulo="Equivalencias de referencia del mapa"
+        descripcion="Cada cambio se aplica como referencia a toda la categoría original del mapa. El tipo de uso de cada ficha se edita en el inventario."
+        relleno="amplio">
+        {equivalencias.estado === 'cargando' && <EstadoCarga forma="tabla" filas={2} texto="Cargando equivalencias…" retrasar />}
+        {equivalencias.estado === 'error' && <EstadoError titulo="No se pudieron cargar las equivalencias" descripcion={equivalencias.error?.detalle ?? ''} onReintentar={equivalencias.reintentar} nivel={3} />}
+        <ul className={estilos.lista}>
+          {equivalencias.datos?.map((equivalencia, indice) => (
+            <li className={estilos.fila} key={equivalencia.uso_fuente}>
+              <Selector id={`equivalencia-mapa-${indice}`} etiqueta={equivalencia.uso_fuente}
+                valor={equivalencia.tipo_uso_id === null ? '' : String(equivalencia.tipo_uso_id)}
+                opciones={(usos.datos ?? []).filter((tipo) => tipo.activo || tipo.id === equivalencia.tipo_uso_id)
+                  .map((tipo) => ({ valor: String(tipo.id), texto: tipo.nombre }))}
+                opcionTodos="Sin equivalencia" disabled={guardando || !usos.datos}
+                onCambiar={(valor) => void ejecutar(async () => {
+                  await clasificarUsoFuenteMapa(equivalencia.uso_fuente, valor ? Number(valor) : null)
+                  await equivalencias.reintentar()
+                }, 'Equivalencia actualizada.')} />
             </li>
           ))}
         </ul>

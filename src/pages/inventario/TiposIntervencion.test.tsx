@@ -34,6 +34,7 @@ vi.mock('@/services/api/catalogosInventario', () => ({
   crearCuartel: vi.fn(),
   cambiarCuartel: vi.fn(),
 }))
+vi.mock('@/services/api/mapaAsignaciones', () => ({ listarUsosFuenteMapa: async () => [], clasificarUsoFuenteMapa: vi.fn() }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 7 } }) }))
 vi.mock('@/config/permisosCore', () => ({ PERMISOS: { gestionarCatalogos: 'catalogos' }, puede: () => true }))

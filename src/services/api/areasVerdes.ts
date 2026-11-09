@@ -31,6 +31,7 @@ export function registrarAreaVerde(
     tipo_uso_id: number | null
     cuartel_id: number | null
     sector_id: number | null
+    poligono_mapa_id?: string
   },
   signal?: AbortSignal,
 ): Promise<AreaVerde> {

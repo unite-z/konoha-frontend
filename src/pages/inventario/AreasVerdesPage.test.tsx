@@ -42,6 +42,9 @@ vi.mock('@/services/api/catalogosInventario', () => ({
     { id: 22, nombre: 'Deportivo', activo: true },
   ],
 }))
+vi.mock('@/services/api/mapaAsignaciones', () => ({
+  listarPoligonosMapa: async () => [{ id_fuente: 'poligono-1', area_verde_id: 1 }],
+}))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({
   useSesionActiva: () => ({ usuario: { id: 7 }, roles: ['Jefe de sección'] }),
@@ -65,6 +68,9 @@ describe('AreasVerdesPage', () => {
 
     expect(await screen.findByText('Jardín ornamental')).toBeTruthy()
     expect(screen.getByText('Cancha deportiva')).toBeTruthy()
+    const enlace = await screen.findByRole('link', { name: 'Ver en el mapa · Jardín ornamental' })
+    expect(enlace.getAttribute('href')).toMatch(/\/mapa\?area=1$/)
+    expect(screen.queryByRole('link', { name: 'Ver en el mapa · Cancha deportiva' })).toBeNull()
     expect(screen.getAllByText('Ornamental').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Deportivo').length).toBeGreaterThan(0)
 

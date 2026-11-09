@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router'
 import { useState } from 'react'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -10,9 +11,10 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarAreaVerde } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarAreaVerde, rutaMapaAreaVerde } from '@/router/rutasApp'
 import { asignarSectorArea, listarAreasVerdes, listarHistorialSectorArea, type HistorialSectorArea } from '@/services/api/areasVerdes'
 import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/catalogosInventario'
+import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import type { SectorInventario } from '@/types/catalogosInventario'
 import type { AreaVerde } from '@/types/areasVerdes'
 import { PERMISOS, puede } from '@/config/permisosCore'
@@ -83,13 +85,16 @@ export default function AreasVerdesPage() {
   const sesion = useSesionActiva()
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
   const puedeEditar = puede(sesion, PERMISOS.registrarInventario)
-  const [busqueda, setBusqueda] = useState('')
+  const [parametros] = useSearchParams()
+  const [busqueda, setBusqueda] = useState(() => parametros.get('q') ?? '')
   const [sectorId, setSectorId] = useState('')
   const [cuartelId, setCuartelId] = useState('')
   const [tipoUsoId, setTipoUsoId] = useState('')
   const sectores = useConsulta('areas-filtro-sectores', (signal) => listarSectores(false, signal))
   const cuarteles = useConsulta('areas-filtro-cuarteles', (signal) => listarCuarteles(true, signal))
   const tiposUso = useConsulta('areas-filtro-tipos-uso', (signal) => listarTiposUso(false, signal))
+  const poligonos = useConsulta('mapa-poligonos', listarPoligonosMapa)
+  const areasConPoligono = new Set(poligonos.datos?.map((poligono) => poligono.area_verde_id))
   const filtros = { sector_id: sectorId ? Number(sectorId) : undefined, cuartel_id: cuartelId ? Number(cuartelId) : undefined, tipo_uso_id: tipoUsoId ? Number(tipoUsoId) : undefined }
   const consulta = useConsulta(`areas:${busqueda}:${sectorId}:${cuartelId}:${tipoUsoId}`, (signal) => listarAreasVerdes(busqueda, signal, filtros))
 
@@ -133,8 +138,8 @@ export default function AreasVerdesPage() {
         <div className={estilos.tablaAreas}>
           <TablaDatos
             titulo="Áreas verdes"
-            columnas={puedeGestionar || puedeEditar ? [
-              ...COLUMNAS.filter((columna) => columna.clave !== 'sector'),
+            columnas={[
+              ...COLUMNAS.filter((columna) => !puedeGestionar || columna.clave !== 'sector'),
               ...(puedeGestionar ? [{
                 clave: 'sector',
                 titulo: 'Sector y cambios',
@@ -145,12 +150,17 @@ export default function AreasVerdesPage() {
                   alGuardar={() => void consulta.reintentar()}
                 />,
               }] : []),
-              ...(puedeEditar ? [{
+              ...((puedeEditar || poligonos.datos?.some((poligono) => poligono.area_verde_id !== null)) ? [{
                 clave: 'acciones',
                 titulo: 'Acciones',
-                render: (area: AreaVerde) => <BotonEnlace to={rutaEditarAreaVerde(area.id)} variante="secundario" compacto>Editar</BotonEnlace>,
+                render: (area: AreaVerde) => (
+                  <div className={estilos.gestionSector}>
+                    {areasConPoligono.has(area.id) && <BotonEnlace to={rutaMapaAreaVerde(area.id)} variante="secundario" compacto aria-label={`Ver en el mapa · ${area.nombre}`}>Ver en el mapa</BotonEnlace>}
+                    {puedeEditar && <BotonEnlace to={rutaEditarAreaVerde(area.id)} variante="secundario" compacto>Editar</BotonEnlace>}
+                  </div>
+                ),
               }] : []),
-            ] : COLUMNAS}
+            ]}
             filas={consulta.datos.results}
             claveFila={(area) => String(area.id)}
             vacio={{ titulo: 'Aún no hay áreas verdes', descripcion: 'Registra un área para iniciar el inventario del campus.' }}

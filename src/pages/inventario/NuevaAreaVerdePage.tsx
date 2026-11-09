@@ -15,5 +15,6 @@ export default function NuevaAreaVerdePage() {
     return <EstadoError titulo="No tienes permiso para registrar áreas" descripcion="El alta requiere permiso de inventario." onReintentar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} />
   }
 
-  return <AreaVerdeForm modo="crear" alGuardar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} alCancelar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} />
+  return <AreaVerdeForm modo="crear" puedeVincularMapa={puede(sesion, PERMISOS.gestionarCatalogos)}
+    alGuardar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} alCancelar={() => navegar(RUTAS_INVENTARIO.areasVerdes)} />
 }

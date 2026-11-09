@@ -130,6 +130,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  max-width: 48rem;
 }
 
 .avisoFila {

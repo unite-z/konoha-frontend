@@ -15,8 +15,13 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
-import { cambiarEspecie, crearEjemplar, crearEspecie, listarEjemplares, listarEspecies, quitarPlacaAntigua } from '@/services/api/ejemplares'
+import { cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
+import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
+import SelectorPuntoMapa from './SelectorPuntoMapa'
+import HistorialEjemplar from './HistorialEjemplar'
+import SituacionEjemplar from './SituacionEjemplar'
 import estilos from './Catalogos.module.css'
+import estilosMapa from './MapaAreasVerdesPage.module.css'
 
 export default function EjemplaresPage() {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
@@ -27,9 +32,15 @@ export default function EjemplaresPage() {
   const [terminoBusqueda, setTerminoBusqueda] = useState('')
   const [ejemplarSeleccionadoId, setEjemplarSeleccionadoId] = useState<number | null>(null)
   const [abrioFicha, setAbrioFicha] = useState(false)
+  const [alturaFicha, setAlturaFicha] = useState('')
   const consulta = useConsulta(`ejemplares-inventario|${terminoBusqueda}`, (signal) => listarEjemplares(terminoBusqueda, 1, signal))
   const ejemplarSeleccionado = consulta.datos?.find((ejemplar) => ejemplar.id === ejemplarSeleccionadoId)
   const especies = useConsulta('especies-inventario', (signal) => listarEspecies(false, signal))
+  const areas = useConsulta(puedeRegistrar ? 'ejemplares-areas-verdes' : null, listarTodasLasAreasVerdes)
+  const opcionesAreas = (areas.datos ?? []).map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))
+  const [areaId, setAreaId] = useState('')
+  const [areaFicha, setAreaFicha] = useState('')
+  const [mapaAbierto, setMapaAbierto] = useState(false)
   const [codigoPlaca, setCodigoPlaca] = useState('')
   const [especieId, setEspecieId] = useState('')
   const [vegetacion, setVegetacion] = useState('')
@@ -81,7 +92,8 @@ export default function EjemplaresPage() {
       {puedeRegistrar && (
         <Tarjeta titulo="Registrar ejemplar" relleno="amplio">
           {especies.estado === 'error' && <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} nivel={3} />}
-          <form className={estilos.formulario} onSubmit={(evento) => enviar(evento, () => crearEjemplar({
+          {areas.estado === 'error' && <EstadoError titulo="No se pudieron cargar las áreas verdes" descripcion={areas.error?.detalle ?? ''} onReintentar={areas.reintentar} nivel={3} />}
+          <form className={estilosMapa.formularioConMapa} onSubmit={(evento) => enviar(evento, () => crearEjemplar({
             codigo_placa_antigua: codigoPlaca.trim() || null,
             especie_id: especieId ? Number(especieId) : null,
             tipo_vegetacion: vegetacion.trim() || null,
@@ -89,15 +101,36 @@ export default function EjemplaresPage() {
             latitud: latitud || null,
             longitud: longitud || null,
             cantidad: Number(cantidad),
+            area_verde_id: areaId ? Number(areaId) : null,
           }), 'Ejemplar registrado con código nuevo.')}>
-            <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
-            {especies.datos && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especies.datos.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
-            <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
-            <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
-            <div className={estilos.coordenadas}>
-              <CampoFormulario id="latitud-ejemplar" etiqueta="Latitud" type="number" min="-90" max="90" step="any" value={latitud} onChange={(evento) => setLatitud(evento.target.value)} />
-              <CampoFormulario id="longitud-ejemplar" etiqueta="Longitud" type="number" min="-180" max="180" step="any" value={longitud} onChange={(evento) => setLongitud(evento.target.value)} />
-              <CampoFormulario id="cantidad-ejemplar" etiqueta="Cantidad" type="number" min="1" step="1" value={cantidad} onChange={(evento) => setCantidad(evento.target.value)} required />
+            <div className={estilosMapa.distribucionFormulario}>
+              <div className={estilos.formulario}>
+                <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
+                {especies.datos && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especies.datos.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
+                <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
+                <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
+                <Selector id="area-verde-ejemplar" etiqueta="Área verde" valor={areaId} onCambiar={setAreaId}
+                  disabled={!areas.datos} opcionTodos="Sin área vinculada" opciones={opcionesAreas} />
+                <Boton variante="secundario" aria-expanded={mapaAbierto} aria-controls="mapa-alta-ejemplar" onClick={() => setMapaAbierto(!mapaAbierto)}>
+                  {mapaAbierto ? 'Ocultar mapa' : 'Elegir ubicación en el mapa'}
+                </Boton>
+                {latitud && longitud && <p role="status" className={estilos.descripcion}>Ubicación marcada.</p>}
+                <details>
+                  <summary>Introducir coordenadas manualmente</summary>
+                  <div className={estilos.coordenadas}>
+                    <CampoFormulario id="latitud-ejemplar" etiqueta="Latitud" type="number" min="-90" max="90" step="any" value={latitud} onChange={(evento) => setLatitud(evento.target.value)} />
+                    <CampoFormulario id="longitud-ejemplar" etiqueta="Longitud" type="number" min="-180" max="180" step="any" value={longitud} onChange={(evento) => setLongitud(evento.target.value)} />
+                  </div>
+                </details>
+                <CampoFormulario id="cantidad-ejemplar" etiqueta="Cantidad" type="number" min="1" step="1" value={cantidad} onChange={(evento) => setCantidad(evento.target.value)} required />
+              </div>
+              <div id="mapa-alta-ejemplar" className={estilosMapa.mapaFormulario} hidden={!mapaAbierto}>
+                {mapaAbierto && <SelectorPuntoMapa areaId={areaId ? Number(areaId) : null} latitud={latitud} longitud={longitud}
+                  onElegir={(nuevaLatitud, nuevaLongitud) => {
+                    setLatitud(nuevaLatitud.toFixed(7))
+                    setLongitud(nuevaLongitud.toFixed(7))
+                  }} />}
+              </div>
             </div>
             <div className={estilos.pieFormulario}>
               <span className={estilos.descripcion}>El código interno único se genera al guardar.</span>
@@ -153,7 +186,7 @@ export default function EjemplaresPage() {
                       variante="secundario"
                       className={estilos.resultado}
                       aria-pressed={ejemplarSeleccionadoId === ejemplar.id}
-                      onClick={() => { setEjemplarSeleccionadoId(ejemplar.id); setAbrioFicha(false) }}
+                      onClick={() => { setEjemplarSeleccionadoId(ejemplar.id); setAreaFicha(String(ejemplar.area_verde_id ?? '')); setAlturaFicha(String(ejemplar.altura_total_m ?? '')); setAbrioFicha(false) }}
                     >
                       <strong>{ejemplar.codigo} · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'} · {ejemplar.ubicacion ?? 'Sin ubicación'}</strong>
                       <span>{ejemplar.codigo_placa_antigua ?? 'Sin placa antigua'}{ejemplar.advertencia_placa_repetida ? ' · Placa repetida' : ''}</span>
@@ -174,8 +207,40 @@ export default function EjemplaresPage() {
                   <dt>Placa antigua</dt><dd>{ejemplarSeleccionado.codigo_placa_antigua ?? 'Sin placa antigua'}</dd>
                   <dt>Especie</dt><dd>{ejemplarSeleccionado.especie_nombre_comun ?? 'Sin especie asignada'}{ejemplarSeleccionado.especie_nombre_cientifico ? ` · ${ejemplarSeleccionado.especie_nombre_cientifico}` : ''}</dd>
                   <dt>Ubicación</dt><dd>{ejemplarSeleccionado.ubicacion ?? 'Sin ubicación registrada'}</dd>
+                  <dt>Área verde</dt><dd>{ejemplarSeleccionado.area_verde_id === null ? 'Sin área vinculada'
+                    : opcionesAreas.find((area) => area.valor === String(ejemplarSeleccionado.area_verde_id))?.texto ?? 'Área vinculada'}</dd>
                   <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
+                  <dt>Altura registrada</dt><dd>{ejemplarSeleccionado.altura_total_m == null ? 'Pendiente de medir' : `${ejemplarSeleccionado.altura_total_m} m`}</dd>
+                  <dt>Sugerencia de poda</dt><dd>{ejemplarSeleccionado.altura_total_m == null
+                    ? 'Pendiente de medir la altura'
+                    : ejemplarSeleccionado.altura_total_m < 5 ? 'Poda menor · menos de 5 m' : 'Poda de altura mediante proveedor · 5 m o más'}</dd>
                 </dl>
+                {puedeRegistrar && (
+                  <form className={estilos.alta} onSubmit={(evento) => enviar(evento,
+                    () => guardarAlturaEjemplar(ejemplarSeleccionado.id, Number(alturaFicha)), 'Altura actualizada.')}>
+                    <CampoFormulario id="altura-ficha-ejemplar" etiqueta="Altura total (m)" type="number"
+                      min="0.01" max="9999.99" step="0.01" required value={alturaFicha}
+                      onChange={(evento) => setAlturaFicha(evento.target.value)} />
+                    <Boton type="submit" variante="secundario" deshabilitado={guardando}>Guardar altura</Boton>
+                  </form>
+                )}
+                {puedeRegistrar && areas.datos && (
+                  <div className={estilos.alta}>
+                    <Selector id="area-ficha-ejemplar" etiqueta="Área verde del ejemplar" valor={areaFicha} onCambiar={setAreaFicha}
+                      opcionTodos="Selecciona un área verde" opciones={opcionesAreas} disabled={guardando} />
+                    <Boton variante="secundario" deshabilitado={guardando || !areaFicha || Number(areaFicha) === ejemplarSeleccionado.area_verde_id}
+                      onClick={() => void ejecutar(() => vincularEjemplarConArea(ejemplarSeleccionado.id, Number(areaFicha)), 'Área vinculada al ejemplar.')}>
+                      Guardar vínculo
+                    </Boton>
+                  </div>
+                )}
+                <SituacionEjemplar key={`situacion-${ejemplarSeleccionado.id}`} ejemplar={ejemplarSeleccionado}
+                  editable={puedeGestionar} areas={opcionesAreas}
+                  alGuardar={(actualizado) => {
+                    setAreaFicha(String(actualizado.area_verde_id ?? ''))
+                    consulta.reintentar()
+                  }} />
+                <HistorialEjemplar key={ejemplarSeleccionado.id} ejemplarId={ejemplarSeleccionado.id} />
               </Tarjeta>
           )}
         </>
