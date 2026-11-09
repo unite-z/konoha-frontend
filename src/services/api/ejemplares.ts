@@ -3,6 +3,7 @@ import type { EjemplarInventario, EspecieVegetal, SituacionEjemplar } from '@/ty
 import type { FechaIso, InstanteIso } from '@/types/comun'
 
 const BASE = '/api/v1/inventario'
+export const EJEMPLARES_POR_PAGINA = 25
 
 export function listarEjemplares(q = '', page = 1, signal?: AbortSignal, areaVerdeId?: number): Promise<EjemplarInventario[]> {
   return solicitarTercerizados('ejemplares', { parametros: { q, page, area_verde_id: areaVerdeId }, signal, base: BASE })
@@ -14,7 +15,7 @@ export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: Abort
   for (let pagina = 1; ; pagina++) {
     const lote = await listarEjemplares('', pagina, signal, areaVerdeId)
     ejemplares.push(...lote)
-    if (lote.length < 25) return ejemplares
+    if (lote.length < EJEMPLARES_POR_PAGINA) return ejemplares
   }
 }
 

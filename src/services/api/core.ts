@@ -26,7 +26,7 @@ import type {
   UsuarioConContrasena,
   UsuarioResumen,
 } from '@/types/core'
-import { descargarCore, solicitarCore } from './clienteCore'
+import { construirUrlCore, descargarCore, solicitarCore } from './clienteCore'
 
 // --- Sesión (RF-T-001) ------------------------------------------------------------------------------------
 
@@ -177,6 +177,10 @@ export type ListadoExportable = 'actividades' | 'atenciones' | 'ejemplares'
 /** `GET exportaciones/{tipo}/`: el `.xlsx` del listado, con los datos autorizados (RF-T-011). */
 export function exportarListado(listado: ListadoExportable): Promise<Blob> {
   return descargarCore(`exportaciones/${listado}/`)
+}
+
+export function urlContenidoAdjunto(id: number): string {
+  return construirUrlCore(`adjuntos/${id}/contenido/`)
 }
 
 export function descargarAdjunto(id: number): Promise<Blob> {
