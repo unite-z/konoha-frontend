@@ -60,6 +60,42 @@
   gap: var(--space-2);
 }
 
+.selectorColorGrupo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+}
+
+.selectorColorMuestra {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.selectorColor {
+  box-sizing: border-box;
+  width: 2.75rem;
+  height: 2.5rem;
+  padding: 0.2rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+}
+
+.selectorColor::-webkit-color-swatch-wrapper {
+  padding: 0.1rem;
+}
+
+.selectorColor::-webkit-color-swatch,
+.selectorColor::-moz-color-swatch {
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
 .historial {
   display: flex;
   flex-basis: 100%;
@@ -94,6 +130,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  max-width: 48rem;
 }
 
 .avisoFila {

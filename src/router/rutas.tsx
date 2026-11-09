@@ -52,6 +52,7 @@ import ResumenPlanificacionPage from '../pages/planificacion/resumen/ResumenPlan
 import CoberturasPage from '../pages/inventario/CoberturasPage'
 import AreasVerdesPage from '../pages/inventario/AreasVerdesPage'
 import NuevaAreaVerdePage from '../pages/inventario/NuevaAreaVerdePage'
+import EditarAreaVerdePage from '../pages/inventario/EditarAreaVerdePage'
 import CatalogosPage from '../pages/inventario/CatalogosPage'
 import EjemplaresPage from '../pages/inventario/EjemplaresPage'
 import CampanasPodaPage from '../pages/inventario/CampanasPodaPage'
@@ -167,6 +168,7 @@ export const router = createBrowserRouter([
               children: [
                 { index: true, element: <AreasVerdesPage /> },
                 { path: 'nueva', element: <NuevaAreaVerdePage /> },
+                { path: ':id/editar', element: <EditarAreaVerdePage /> },
                 { path: 'coberturas', element: <CoberturasPage /> },
                 { path: 'catalogos', element: <CatalogosPage /> },
                 { path: 'ejemplares', element: <EjemplaresPage /> },

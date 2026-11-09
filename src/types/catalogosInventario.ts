@@ -1,4 +1,4 @@
-export interface ElementoInventario { id: number; nombre: string; activo: boolean }
+export interface ElementoInventario { id: number; nombre: string; activo: boolean; color: string }
 export interface CuartelInventario { id: number; numero: string; nombre: string; estado: 'vigente' | 'desaparecido' }
 export interface SectorInventario {
   id: number

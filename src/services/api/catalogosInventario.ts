@@ -16,10 +16,10 @@ export function cambiarTipoIntervencion(id: number, cambio: { activo: boolean })
 export function listarTiposUso(incluirInactivos = false, signal?: AbortSignal): Promise<ElementoInventario[]> {
   return solicitarTercerizados('tipos-uso', { parametros: { incluir_inactivos: incluirInactivos }, signal, base: BASE })
 }
-export function crearTipoUso(nombre: string): Promise<ElementoInventario> {
-  return solicitarTercerizados('tipos-uso', { metodo: 'POST', cuerpo: { nombre }, base: BASE })
+export function crearTipoUso(nombre: string, color?: string): Promise<ElementoInventario> {
+  return solicitarTercerizados('tipos-uso', { metodo: 'POST', cuerpo: { nombre, ...(color ? { color } : {}) }, base: BASE })
 }
-export function cambiarTipoUso(id: number, cambio: { activo: boolean }): Promise<ElementoInventario> {
+export function cambiarTipoUso(id: number, cambio: { activo?: boolean; color?: string; nombre?: string }): Promise<ElementoInventario> {
   return solicitarTercerizados(`tipos-uso/${id}`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
 }
 export function listarCuarteles(incluirDesaparecidos = false, signal?: AbortSignal): Promise<CuartelInventario[]> {

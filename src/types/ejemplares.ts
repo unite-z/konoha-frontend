@@ -1,3 +1,7 @@
+import type { FechaIso } from './comun'
+
+export type SituacionEjemplar = 'activo' | 'retirado' | 'muerto' | 'reemplazado' | 'trasladado'
+
 export interface EspecieVegetal {
   id: number
   nombre_comun: string | null
@@ -23,5 +27,7 @@ export interface EjemplarInventario {
   cantidad: number
   area_verde_id: number | null
   altura_total_m: number | null
+  situacion: SituacionEjemplar
+  fecha_situacion: FechaIso | null
   advertencia_placa_repetida: boolean
 }

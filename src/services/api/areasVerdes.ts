@@ -17,6 +17,10 @@ export function listarAreasVerdes(q = '', signal?: AbortSignal, filtros: Filtros
   })
 }
 
+export function obtenerAreaVerde(areaId: number, signal?: AbortSignal): Promise<AreaVerde> {
+  return solicitarTercerizados<AreaVerde>(`areas-verdes/${areaId}`, { signal, base: BASE })
+}
+
 export function registrarAreaVerde(
   entrada: {
     nombre: string
@@ -27,12 +31,33 @@ export function registrarAreaVerde(
     tipo_uso_id: number | null
     cuartel_id: number | null
     sector_id: number | null
+    poligono_mapa_id?: string
   },
   signal?: AbortSignal,
 ): Promise<AreaVerde> {
   return solicitarTercerizados<AreaVerde>('areas-verdes/', {
     metodo: 'POST',
     cuerpo: entrada,
+    signal,
+    base: BASE,
+  })
+}
+
+export interface CambioAreaVerde {
+  nombre?: string
+  lugar?: string
+  ubicacion?: string
+  superficie_m2?: string
+  activo?: boolean
+  tipo_cobertura_id?: number
+  tipo_uso_id?: number
+  cuartel_id?: number
+}
+
+export function modificarAreaVerde(areaId: number, cambio: CambioAreaVerde, signal?: AbortSignal): Promise<AreaVerde> {
+  return solicitarTercerizados<AreaVerde>(`areas-verdes/${areaId}`, {
+    metodo: 'PATCH',
+    cuerpo: cambio,
     signal,
     base: BASE,
   })
