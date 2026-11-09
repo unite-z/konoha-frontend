@@ -49,5 +49,6 @@ it('envía clase, fecha de solicitud e incidencia junto con la actividad', async
   await usuario.type(screen.getByLabelText(/^Tiempo empleado/), '90')
   await usuario.click(screen.getByRole('button', { name: 'Registrar y seleccionar operarios' }))
   await waitFor(() => expect(guardado).toHaveBeenCalled())
+  expect(cuerpos.at(-1)?.fecha_hora_actividad).toBe('2026-10-21T08:00:00-05:00')
   expect(cuerpos.at(-1)).toMatchObject({ clase_actividad_id: 3, tipo_actividad_id: 7, area_verde_id: 2, fecha_solicitud: '2026-10-20', incidencia_id: 12, superficie_m2: 12.5, cantidad_solicitada: 10, cantidad_ejecutada: 8, unidad_medida_id: 1, tiempo_minutos: 90 })
 })
