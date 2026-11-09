@@ -137,40 +137,40 @@
   margin-top: var(--space-2);
 }
 
-.resultados {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: 0;
+.seccionesFicha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--space-4);
+}
+
+.seccionFicha {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.seccionFicha h3,
+.seccionFicha h4 {
   margin: 0;
-  list-style: none;
 }
 
-.resultado {
+.cabeceraSeccionFicha {
   display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-2);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--color-success-bg);
-  color: var(--color-text-primary);
-  text-align: left;
-  cursor: pointer;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
-.resultado span {
-  color: var(--color-text-secondary);
-}
-
-.resultado[aria-pressed='true'] {
-  border-color: var(--color-success);
+.tarjetaFicha {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .ficha {
   display: grid;
-  grid-template-columns: minmax(8rem, auto) 1fr;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
   gap: var(--space-2) var(--space-4);
   margin: 0;
 }
@@ -181,4 +181,5 @@
 
 .ficha dd {
   margin: 0;
+  overflow-wrap: anywhere;
 }

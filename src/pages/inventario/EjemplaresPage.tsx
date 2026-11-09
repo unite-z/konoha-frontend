@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -17,9 +17,10 @@ import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
 import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
+import type { EjemplarInventario } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
 import HistorialEjemplar from './HistorialEjemplar'
-import SituacionEjemplar from './SituacionEjemplar'
+import SituacionEjemplar, { EtiquetaSituacionEjemplar } from './SituacionEjemplar'
 import estilos from './Catalogos.module.css'
 import estilosMapa from './MapaAreasVerdesPage.module.css'
 
@@ -31,10 +32,34 @@ export default function EjemplaresPage() {
   const [busqueda, setBusqueda] = useState('')
   const [terminoBusqueda, setTerminoBusqueda] = useState('')
   const [ejemplarSeleccionadoId, setEjemplarSeleccionadoId] = useState<number | null>(null)
-  const [abrioFicha, setAbrioFicha] = useState(false)
+  const ficha = useRef<HTMLDivElement>(null)
+  const botonFicha = useRef<HTMLButtonElement>(null)
   const [alturaFicha, setAlturaFicha] = useState('')
   const consulta = useConsulta(`ejemplares-inventario|${terminoBusqueda}`, (signal) => listarEjemplares(terminoBusqueda, 1, signal))
   const ejemplarSeleccionado = consulta.datos?.find((ejemplar) => ejemplar.id === ejemplarSeleccionadoId)
+  const alturaGuardada = ejemplarSeleccionado?.altura_total_m ?? null
+  const alturaSinGuardar = alturaFicha !== '' && Number(alturaFicha) !== alturaGuardada
+
+  useEffect(() => {
+    if (ejemplarSeleccionadoId !== null) ficha.current?.focus()
+  }, [ejemplarSeleccionadoId])
+
+  function abrirFicha(ejemplar: EjemplarInventario, boton: HTMLButtonElement) {
+    botonFicha.current = boton
+    if (ejemplarSeleccionadoId === ejemplar.id) {
+      ficha.current?.focus()
+      return
+    }
+    setEjemplarSeleccionadoId(ejemplar.id)
+    setAreaFicha(String(ejemplar.area_verde_id ?? ''))
+    setAlturaFicha(String(ejemplar.altura_total_m ?? ''))
+  }
+
+  function cerrarFicha() {
+    setEjemplarSeleccionadoId(null)
+    botonFicha.current?.focus()
+  }
+
   const especies = useConsulta('especies-inventario', (signal) => listarEspecies(false, signal))
   const areas = useConsulta(puedeRegistrar ? 'ejemplares-areas-verdes' : null, listarTodasLasAreasVerdes)
   const opcionesAreas = (areas.datos ?? []).map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))
@@ -85,7 +110,7 @@ export default function EjemplaresPage() {
       <AccionesPagina>
         <ExportarExcel listado="ejemplares" />
       </AccionesPagina>
-      <p className={estilos.descripcion}>Registro de ejemplares del campus con código interno, referencia del catastro y placa antigua independiente.</p>
+      <p className={estilos.descripcion}>Consulta la ficha de cada ejemplar o búscalo por código o placa antigua.</p>
       {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       {aviso && <AvisoEnLinea tono="exito">{aviso}</AvisoEnLinea>}
 
@@ -168,62 +193,78 @@ export default function EjemplaresPage() {
 
       <Tarjeta titulo="Buscar ejemplares" relleno="amplio">
         <p className={estilos.descripcion}>Busca por código nuevo o placa antigua; las placas repetidas muestran cada ejemplar por separado.</p>
-        <form className={estilos.alta} role="search" aria-label="Buscar ejemplares" onSubmit={(evento) => { evento.preventDefault(); setEjemplarSeleccionadoId(null); setAbrioFicha(false); setTerminoBusqueda(busqueda.trim()) }}>
+        <form className={estilos.alta} role="search" aria-label="Buscar ejemplares" onSubmit={(evento) => { evento.preventDefault(); setEjemplarSeleccionadoId(null); setTerminoBusqueda(busqueda.trim()) }}>
           <CampoFormulario id="buscar-ejemplares" etiqueta="Código nuevo o placa antigua" type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} />
           <Boton type="submit" variante="secundario">Buscar</Boton>
         </form>
       </Tarjeta>
 
-      {terminoBusqueda ? (
-        <>
-          <Tarjeta titulo={`Coincidencias (${consulta.datos?.length ?? 0})`} descripcion="Elige por código, especie y ubicación." relleno="amplio">
-            {!consulta.datos || consulta.datos.length === 0 ? <EstadoVacio titulo="Sin coincidencias" descripcion="No se encontró un ejemplar. Comprueba el código o la placa." nivel={3} /> : (
-              <ul className={estilos.resultados}>
-                {consulta.datos.map((ejemplar) => (
-                  <li key={ejemplar.id}>
-                    <Boton
-                      type="button"
-                      variante="secundario"
-                      className={estilos.resultado}
-                      aria-pressed={ejemplarSeleccionadoId === ejemplar.id}
-                      onClick={() => { setEjemplarSeleccionadoId(ejemplar.id); setAreaFicha(String(ejemplar.area_verde_id ?? '')); setAlturaFicha(String(ejemplar.altura_total_m ?? '')); setAbrioFicha(false) }}
-                    >
-                      <strong>{ejemplar.codigo} · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'} · {ejemplar.ubicacion ?? 'Sin ubicación'}</strong>
-                      <span>{ejemplar.codigo_placa_antigua ?? 'Sin placa antigua'}{ejemplar.advertencia_placa_repetida ? ' · Placa repetida' : ''}</span>
-                    </Boton>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Tarjeta>
-          <div className={estilos.accionesFila}>
-            <Boton variante="primario" deshabilitado={ejemplarSeleccionadoId === null} onClick={() => setAbrioFicha(true)}>Abrir ficha</Boton>
-            <Boton variante="secundario" onClick={() => { setBusqueda(''); setTerminoBusqueda(''); setEjemplarSeleccionadoId(null); setAbrioFicha(false) }}>Limpiar</Boton>
-          </div>
-          {abrioFicha && ejemplarSeleccionado && (
-              <Tarjeta titulo={`Ficha de ${ejemplarSeleccionado.codigo}`} relleno="amplio">
+      <Tarjeta
+        titulo={terminoBusqueda ? `Coincidencias (${consulta.datos.length})` : 'Ejemplares'}
+        relleno="amplio"
+        acciones={terminoBusqueda && <Boton variante="secundario" onClick={() => {
+          setBusqueda('')
+          setTerminoBusqueda('')
+          setEjemplarSeleccionadoId(null)
+        }}>Limpiar búsqueda</Boton>}
+      >
+        {consulta.datos.length === 0 ? (
+          terminoBusqueda
+            ? <EstadoVacio titulo="Sin coincidencias" descripcion="No se encontró un ejemplar. Comprueba el código o la placa." nivel={3} />
+            : <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." nivel={3} />
+        ) : (
+          <ul className={estilos.lista}>
+            {consulta.datos.map((ejemplar) => {
+              const datosEspecie = [ejemplar.especie_nombre_cientifico, ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion].filter(Boolean).join(' · ')
+              const datosIdentificacion = [
+                ejemplar.referencia_catastro?.trim() && `Referencia de catastro: ${ejemplar.referencia_catastro}`,
+                ejemplar.codigo_catastro?.trim() && `Código de catastro: ${ejemplar.codigo_catastro}`,
+                ejemplar.codigo_placa_antigua?.trim() && `Placa antigua: ${ejemplar.codigo_placa_antigua}`,
+              ].filter(Boolean).join(' · ')
+              return (
+                <li className={estilos.fila} key={ejemplar.id}>
+                  <div>
+                    <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
+                    {datosEspecie && <div className={estilos.detalle}>{datosEspecie}</div>}
+                    {datosIdentificacion && <div className={estilos.detalle}>{datosIdentificacion}</div>}
+                    <div className={estilos.detalle}>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
+                    {ejemplar.advertencia_placa_repetida && <div className={estilos.avisoFila}><AvisoEnLinea tono="advertencia">Aviso: esta placa antigua también figura en otro ejemplar.</AvisoEnLinea></div>}
+                  </div>
+                  <div className={estilos.accionesFila}>
+                    {!terminoBusqueda && puedeRegistrar && ejemplar.codigo_placa_antigua && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</Boton>}
+                    <Boton variante="secundario" compacto aria-label={`Abrir ficha de ${ejemplar.codigo}`}
+                      aria-expanded={ejemplarSeleccionadoId === ejemplar.id}
+                      onClick={(evento) => abrirFicha(ejemplar, evento.currentTarget)}>Abrir ficha</Boton>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </Tarjeta>
+
+      {ejemplarSeleccionado && (
+        <div ref={ficha} tabIndex={-1} role="group" aria-label={`Ficha de ${ejemplarSeleccionado.codigo}`}>
+          <Tarjeta
+            titulo={`${ejemplarSeleccionado.especie_nombre_comun ?? 'Ejemplar'} · ${ejemplarSeleccionado.codigo}`}
+            descripcion={ejemplarSeleccionado.ubicacion ?? 'Sin ubicación registrada'}
+            junto={<EtiquetaSituacionEjemplar situacion={ejemplarSeleccionado.situacion} />}
+            acciones={<Boton variante="fantasma" compacto onClick={cerrarFicha}>Cerrar ficha</Boton>}
+            className={estilos.tarjetaFicha}
+            relleno="amplio"
+          >
+            <div className={estilos.seccionesFicha}>
+              <section className={estilos.seccionFicha} aria-labelledby="identificacion-ejemplar">
+                <h3 id="identificacion-ejemplar">Identificación y ubicación</h3>
                 <dl className={estilos.ficha}>
-                  <dt>Código nuevo</dt><dd>{ejemplarSeleccionado.codigo}</dd>
-                  <dt>Placa antigua</dt><dd>{ejemplarSeleccionado.codigo_placa_antigua ?? 'Sin placa antigua'}</dd>
-                  <dt>Especie</dt><dd>{ejemplarSeleccionado.especie_nombre_comun ?? 'Sin especie asignada'}{ejemplarSeleccionado.especie_nombre_cientifico ? ` · ${ejemplarSeleccionado.especie_nombre_cientifico}` : ''}</dd>
-                  <dt>Ubicación</dt><dd>{ejemplarSeleccionado.ubicacion ?? 'Sin ubicación registrada'}</dd>
+                  {ejemplarSeleccionado.especie_nombre_cientifico && <><dt>Nombre científico</dt><dd>{ejemplarSeleccionado.especie_nombre_cientifico}</dd></>}
+                  {ejemplarSeleccionado.codigo_placa_antigua && <><dt>Placa antigua</dt><dd>{ejemplarSeleccionado.codigo_placa_antigua}</dd></>}
+                  {ejemplarSeleccionado.referencia_catastro?.trim() && <><dt>Referencia de catastro</dt><dd>{ejemplarSeleccionado.referencia_catastro}</dd></>}
+                  {ejemplarSeleccionado.codigo_catastro?.trim() && <><dt>Código de catastro</dt><dd>{ejemplarSeleccionado.codigo_catastro}</dd></>}
                   <dt>Área verde</dt><dd>{ejemplarSeleccionado.area_verde_id === null ? 'Sin área vinculada'
                     : opcionesAreas.find((area) => area.valor === String(ejemplarSeleccionado.area_verde_id))?.texto ?? 'Área vinculada'}</dd>
                   <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
-                  <dt>Altura registrada</dt><dd>{ejemplarSeleccionado.altura_total_m == null ? 'Pendiente de medir' : `${ejemplarSeleccionado.altura_total_m} m`}</dd>
-                  <dt>Sugerencia de poda</dt><dd>{ejemplarSeleccionado.altura_total_m == null
-                    ? 'Pendiente de medir la altura'
-                    : ejemplarSeleccionado.altura_total_m < 5 ? 'Poda menor · menos de 5 m' : 'Poda de altura mediante proveedor · 5 m o más'}</dd>
                 </dl>
-                {puedeRegistrar && (
-                  <form className={estilos.alta} onSubmit={(evento) => enviar(evento,
-                    () => guardarAlturaEjemplar(ejemplarSeleccionado.id, Number(alturaFicha)), 'Altura actualizada.')}>
-                    <CampoFormulario id="altura-ficha-ejemplar" etiqueta="Altura total (m)" type="number"
-                      min="0.01" max="9999.99" step="0.01" required value={alturaFicha}
-                      onChange={(evento) => setAlturaFicha(evento.target.value)} />
-                    <Boton type="submit" variante="secundario" deshabilitado={guardando}>Guardar altura</Boton>
-                  </form>
-                )}
                 {puedeRegistrar && areas.datos && (
                   <div className={estilos.alta}>
                     <Selector id="area-ficha-ejemplar" etiqueta="Área verde del ejemplar" valor={areaFicha} onCambiar={setAreaFicha}
@@ -234,35 +275,36 @@ export default function EjemplaresPage() {
                     </Boton>
                   </div>
                 )}
-                <SituacionEjemplar key={`situacion-${ejemplarSeleccionado.id}`} ejemplar={ejemplarSeleccionado}
-                  editable={puedeGestionar} areas={opcionesAreas}
-                  alGuardar={(actualizado) => {
-                    setAreaFicha(String(actualizado.area_verde_id ?? ''))
-                    consulta.reintentar()
-                  }} />
-                <HistorialEjemplar key={ejemplarSeleccionado.id} ejemplarId={ejemplarSeleccionado.id} />
-              </Tarjeta>
-          )}
-        </>
-      ) : (
-      <Tarjeta titulo="Ejemplares" relleno="amplio">
-        {consulta.datos.length === 0 ? <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." nivel={3} /> : (
-          <ul className={estilos.lista}>
-            {consulta.datos.map((ejemplar) => (
-              <li className={estilos.fila} key={ejemplar.id}>
-                <div>
-                  <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
-                  <div className={estilos.detalle}>{ejemplar.especie_nombre_cientifico ?? 'Sin nombre científico'} · {ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion ?? 'Sin forma biológica'}</div>
-                  <div className={estilos.detalle}>Referencia: {ejemplar.referencia_catastro ?? '—'} · Código de catastro: {ejemplar.codigo_catastro ?? '—'} · Placa antigua: {ejemplar.codigo_placa_antigua ?? '—'}</div>
-                  <div className={estilos.detalle}>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
-                  {ejemplar.advertencia_placa_repetida && <div className={estilos.avisoFila}><AvisoEnLinea tono="advertencia">Aviso: esta placa antigua también figura en otro ejemplar.</AvisoEnLinea></div>}
-                </div>
-                {puedeRegistrar && ejemplar.codigo_placa_antigua && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</Boton>}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Tarjeta>
+              </section>
+              <section className={estilos.seccionFicha} aria-labelledby="medicion-ejemplar">
+                <h3 id="medicion-ejemplar">Altura y sugerencia de poda</h3>
+                <dl className={estilos.ficha}>
+                  <dt>Altura guardada</dt><dd>{alturaGuardada === null ? 'Pendiente de medir' : `${alturaGuardada} m`}</dd>
+                  <dt>Sugerencia de poda</dt><dd>{alturaGuardada === null
+                    ? 'Pendiente de medir la altura'
+                    : alturaGuardada < 5 ? 'Poda menor · menos de 5 m' : 'Poda de altura mediante proveedor · 5 m o más'}</dd>
+                </dl>
+                {puedeRegistrar && (
+                  <form className={estilos.alta} onSubmit={(evento) => enviar(evento,
+                    () => guardarAlturaEjemplar(ejemplarSeleccionado.id, Number(alturaFicha)), 'Altura actualizada.')}>
+                    <CampoFormulario id="altura-ficha-ejemplar" etiqueta="Altura total (m)" type="number"
+                      min="0.01" max="9999.99" step="0.01" required value={alturaFicha}
+                      onChange={(evento) => setAlturaFicha(evento.target.value)} />
+                    <Boton type="submit" variante="secundario" deshabilitado={guardando || !alturaSinGuardar}>Guardar altura</Boton>
+                  </form>
+                )}
+                {alturaSinGuardar && <p className={estilos.descripcion} role="status">Altura sin guardar. La sugerencia se actualiza al guardar.</p>}
+              </section>
+            </div>
+            <SituacionEjemplar key={`situacion-${ejemplarSeleccionado.id}`} ejemplar={ejemplarSeleccionado}
+              editable={puedeGestionar} areas={opcionesAreas}
+              alGuardar={(actualizado) => {
+                setAreaFicha(String(actualizado.area_verde_id ?? ''))
+                consulta.reintentar()
+              }} />
+            <HistorialEjemplar key={ejemplarSeleccionado.id} ejemplarId={ejemplarSeleccionado.id} />
+          </Tarjeta>
+        </div>
       )}
     </div>
   )

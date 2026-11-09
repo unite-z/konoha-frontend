@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
+import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import Selector, { type OpcionSelector } from '@/components/ui/Selector'
@@ -13,14 +14,19 @@ import { hoyLima } from '@/utils/instanteLima'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
 import estilos from './Catalogos.module.css'
 
-const ETIQUETAS: Record<EstadoEjemplar, string> = {
+const ETIQUETAS_SITUACION: Record<EstadoEjemplar, string> = {
   activo: 'Activo',
   retirado: 'Retirado',
   muerto: 'Muerto',
   reemplazado: 'Reemplazado',
   trasladado: 'Trasladado',
 }
-const SITUACIONES = Object.entries(ETIQUETAS).map(([valor, texto]) => ({ valor, texto }))
+const SITUACIONES = Object.entries(ETIQUETAS_SITUACION).map(([valor, texto]) => ({ valor, texto }))
+
+export function EtiquetaSituacionEjemplar({ situacion }: { situacion: EstadoEjemplar }) {
+  const estado = situacion ?? 'activo'
+  return <Estado tono={estado === 'activo' ? 'exito' : 'neutro'} texto={ETIQUETAS_SITUACION[estado]} />
+}
 
 export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar }: {
   ejemplar: EjemplarInventario
@@ -85,17 +91,20 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
   }
 
   return (
-    <section aria-label="Situación del ejemplar">
-      <h3>Situación del ejemplar</h3>
-      <p><strong>{ETIQUETAS[ejemplar.situacion] ?? 'Activo'}</strong>
-        {ejemplar.fecha_situacion && ` · ${formatearFecha(ejemplar.fecha_situacion)}`}</p>
+    <section className={estilos.seccionFicha} aria-labelledby="situacion-del-ejemplar">
+      <div className={estilos.cabeceraSeccionFicha}>
+        <div>
+          <h3 id="situacion-del-ejemplar">Situación y traslados</h3>
+          {ejemplar.fecha_situacion && <p className={estilos.descripcion}>Último cambio · {formatearFecha(ejemplar.fecha_situacion)}</p>}
+        </div>
+        {editable && !editando && (
+          <Boton variante="secundario" deshabilitado={guardando} onClick={abrirFormulario}>Cambiar situación</Boton>
+        )}
+      </div>
       {aviso && <AvisoEnLinea tono="exito">Situación actualizada.</AvisoEnLinea>}
       {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
-      {editable && !editando && (
-        <Boton variante="secundario" deshabilitado={guardando} onClick={abrirFormulario}>Cambiar situación</Boton>
-      )}
       {editable && editando && (
-        <form onSubmit={guardar}>
+        <form className={estilos.seccionFicha} onSubmit={guardar}>
           <div className={estilos.alta}>
             <Selector id="situacion-ejemplar" etiqueta="Nueva situación" valor={situacion}
               onCambiar={(valor) => setSituacion(valor as EstadoEjemplar | '')}
@@ -108,6 +117,7 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
           </div>
           {situacion === 'trasladado' && (
             <>
+              <p className={estilos.descripcion}>Ubicación actual · {describirUbicacion(ejemplar.ubicacion, ejemplar.latitud, ejemplar.longitud)}</p>
               <div className={estilos.alta}>
                 <CampoFormulario id="ubicacion-traslado" etiqueta="Nueva ubicación" value={ubicacion}
                   ayuda="Escribe una referencia o marca un punto en el mapa."
@@ -135,27 +145,29 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
           </div>
         </form>
       )}
-      <h4>Historial de situación</h4>
-      {historial.estado === 'error' ? (
-        <EstadoError titulo="No pudimos cargar el historial de situación" descripcion={historial.error?.detalle ?? ''}
-          onReintentar={historial.reintentar} nivel={3} />
-      ) : !historial.datos ? <EstadoCarga forma="tabla" texto="Cargando cambios de situación…" /> :
-        historial.datos.length === 0 ? <p>Sin cambios registrados.</p> : (
-          <ul className={estilos.lista}>
-            {historial.datos.map((cambio) => (
-              <li key={cambio.id} className={estilos.fila}>
-                <div>
-                  <strong>{ETIQUETAS[cambio.situacion_anterior]} → {ETIQUETAS[cambio.situacion_nueva]}</strong>
-                  <p>{formatearFecha(cambio.fecha)} · {cambio.autor} · {cambio.motivo}</p>
-                  {cambio.situacion_nueva === 'trasladado' && (
-                    <p>De {describirUbicacion(cambio.ubicacion_anterior, cambio.latitud_anterior, cambio.longitud_anterior)}
-                      {' a '}{describirUbicacion(cambio.ubicacion_nueva, cambio.latitud_nueva, cambio.longitud_nueva)}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div>
+        <h4>Historial de situación</h4>
+        {historial.estado === 'error' ? (
+          <EstadoError titulo="No pudimos cargar el historial de situación" descripcion={historial.error?.detalle ?? ''}
+            onReintentar={historial.reintentar} nivel={3} />
+        ) : !historial.datos ? <EstadoCarga forma="tabla" texto="Cargando cambios de situación…" /> :
+          historial.datos.length === 0 ? <p>Sin cambios registrados.</p> : (
+            <ul className={estilos.lista}>
+              {historial.datos.map((cambio) => (
+                <li key={cambio.id} className={estilos.fila}>
+                  <div>
+                    <strong>{ETIQUETAS_SITUACION[cambio.situacion_anterior]} → {ETIQUETAS_SITUACION[cambio.situacion_nueva]}</strong>
+                    <p>{formatearFecha(cambio.fecha)} · {cambio.autor} · {cambio.motivo}</p>
+                    {cambio.situacion_nueva === 'trasladado' && (
+                      <p>De {describirUbicacion(cambio.ubicacion_anterior, cambio.latitud_anterior, cambio.longitud_anterior)}
+                        {' a '}{describirUbicacion(cambio.ubicacion_nueva, cambio.latitud_nueva, cambio.longitud_nueva)}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+      </div>
     </section>
   )
 }
