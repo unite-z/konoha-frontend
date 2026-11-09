@@ -21,7 +21,7 @@ import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
 import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
-import type { EjemplarInventario } from '@/types/ejemplares'
+import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
 import FotoEjemplar from './FotoEjemplar'
 import HistorialEjemplar from './HistorialEjemplar'
@@ -31,12 +31,42 @@ import estilosMapa from './MapaAreasVerdesPage.module.css'
 
 const PESTANAS = [{ valor: 'ejemplares', texto: 'Ejemplares' }, { valor: 'especies', texto: 'Especies' }]
 
+function nombreEspecie(especie: EspecieVegetal) {
+  return especie.nombre_comun?.trim() || especie.nombre_cientifico?.trim() || 'Especie sin nombre'
+}
+
+function normalizarBusqueda(texto: string) {
+  return texto.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es').trim()
+}
+
+async function listarPaginaDeEspecie(especie: EspecieVegetal, termino: string, pagina: number, signal: AbortSignal) {
+  const consulta = termino || especie.nombre_cientifico?.trim() || especie.nombre_comun?.trim() || ''
+  const desde = (pagina - 1) * EJEMPLARES_POR_PAGINA
+  const ejemplares: EjemplarInventario[] = []
+  let coincidencias = 0
+
+  // La API filtra por texto. El identificador permite distinguir especies con nombres similares.
+  for (let paginaApi = 1; ; paginaApi++) {
+    const lote = await listarEjemplares(consulta, paginaApi, signal)
+    for (const ejemplar of lote) {
+      if (ejemplar.especie_id !== especie.id) continue
+      if (coincidencias++ < desde) continue
+      if (ejemplares.length === EJEMPLARES_POR_PAGINA) return { ejemplares, haySiguiente: true }
+      ejemplares.push(ejemplar)
+    }
+    if (lote.length < EJEMPLARES_POR_PAGINA) return { ejemplares, haySiguiente: false }
+  }
+}
+
 export default function EjemplaresPage() {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
   const sesion = useSesionActiva()
   const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
   const [pestana, setPestana] = useState('ejemplares')
+  const [busquedaEspecie, setBusquedaEspecie] = useState('')
+  const [estadoEspecie, setEstadoEspecie] = useState('activas')
+  const [especieFiltrada, setEspecieFiltrada] = useState<EspecieVegetal | null>(null)
   const [vista, setVista] = useState<'lista' | 'galeria'>('lista')
   const [alta, setAlta] = useState<'ejemplar' | 'especie' | null>(null)
   const [pagina, setPagina] = useState(1)
@@ -47,8 +77,12 @@ export default function EjemplaresPage() {
   const ficha = useRef<HTMLDivElement>(null)
   const botonFicha = useRef<HTMLButtonElement>(null)
   const [alturaFicha, setAlturaFicha] = useState('')
-  const claveListado = `ejemplares-inventario|${pagina}|${terminoBusqueda}`
+  const claveListado = `ejemplares-inventario|${pagina}|${especieFiltrada?.id ?? ""}|${terminoBusqueda}`
   const consulta = useConsulta(pestana === 'ejemplares' ? claveListado : null, async (signal) => {
+    if (especieFiltrada) {
+      const resultado = await listarPaginaDeEspecie(especieFiltrada, terminoBusqueda, pagina, signal)
+      return { clave: claveListado, ...resultado }
+    }
     const ejemplares = await listarEjemplares(terminoBusqueda, pagina, signal)
     const haySiguiente = ejemplares.length === EJEMPLARES_POR_PAGINA
       && (await listarEjemplares(terminoBusqueda, pagina + 1, signal)).length > 0
@@ -79,7 +113,16 @@ export default function EjemplaresPage() {
     botonFicha.current?.focus()
   }
 
-  const especies = useConsulta('especies-inventario', (signal) => listarEspecies(false, signal))
+  const especies = useConsulta(`especies-inventario|${puedeGestionar}`, (signal) => listarEspecies(puedeGestionar, signal))
+  const especiesActivas = especies.datos?.filter((especie) => especie.activo)
+  const terminoEspecie = normalizarBusqueda(busquedaEspecie)
+  const especiesVisibles = especies.datos?.filter((especie) => {
+    if (!puedeGestionar || estadoEspecie !== 'todas') {
+      if (especie.activo !== (!puedeGestionar || estadoEspecie === 'activas')) return false
+    }
+    return [especie.nombre_comun, especie.nombre_cientifico]
+      .some((nombre) => normalizarBusqueda(nombre ?? '').includes(terminoEspecie))
+  })
   const areas = useConsulta(puedeRegistrar ? 'ejemplares-areas-verdes' : null, listarTodasLasAreasVerdes)
   const opcionesAreas = (areas.datos ?? []).map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))
   const [areaId, setAreaId] = useState('')
@@ -125,6 +168,12 @@ export default function EjemplaresPage() {
     cambiarPagina(1)
   }
 
+  function verEjemplaresDeEspecie(especie: EspecieVegetal) {
+    setEspecieFiltrada(especie)
+    setPestana('ejemplares')
+    buscar('')
+  }
+
   function cambiarPagina(nuevaPagina: number) {
     setEjemplarSeleccionadoId(null)
     setPagina(nuevaPagina)
@@ -167,6 +216,7 @@ export default function EjemplaresPage() {
         area_verde_id: areaId ? Number(areaId) : null,
       })
       cerrarAlta()
+      setEspecieFiltrada(null)
       buscar(creado.codigo)
     }, 'Ejemplar registrado. Abre su ficha para añadir una foto.')
   }
@@ -205,7 +255,7 @@ export default function EjemplaresPage() {
           <div className={estilosMapa.distribucionFormulario}>
             <div className={estilos.formulario}>
               <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
-              {especies.datos && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especies.datos.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
+              {especiesActivas && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especiesActivas.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
               <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
               <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
               <Selector id="area-verde-ejemplar" etiqueta="Área verde" valor={areaId} onCambiar={setAreaId}
@@ -258,22 +308,44 @@ export default function EjemplaresPage() {
       >
         {pestana === 'especies' ? (
           <Tarjeta titulo="Catálogo de especies" relleno="amplio">
-            {especies.estado === 'error' ? <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} nivel={3} />
-              : !especies.datos ? <EstadoCarga forma="tabla" texto="Cargando especies…" retrasar />
-                : especies.datos.length === 0 ? <EstadoVacio titulo="Aún no hay especies" nivel={3} />
-                  : (
-                    <ul className={estilos.lista}>
-                      {especies.datos?.map((especie) => (
-                        <li className={estilos.fila} key={especie.id}>
-                          <span className={estilos.dato}>
-                            {especie.nombre_comun ?? especie.nombre_cientifico} · {especie.nombre_cientifico ?? 'Sin nombre científico'} · {especie.forma_biologica ?? 'Sin forma'}
-                            {!especie.activo && <Estado tono="neutro" texto="Inactiva" />}
-                          </span>
-                          {puedeGestionar && especie.activo && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarEspecie(especie.id, { activo: false }), 'Especie desactivada.')}>Desactivar</Boton>}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+            <div className={estilos.alta}>
+              <CampoFormulario id="buscar-especies" etiqueta="Buscar especie" type="search"
+                placeholder="Nombre común o científico" value={busquedaEspecie}
+                onChange={(evento) => setBusquedaEspecie(evento.target.value)} />
+              {puedeGestionar && <Selector id="estado-especie" etiqueta="Estado"
+                valor={estadoEspecie} onCambiar={setEstadoEspecie}
+                opciones={[{ valor: 'activas', texto: 'Activas' }, { valor: 'inactivas', texto: 'Inactivas' }, { valor: 'todas', texto: 'Todas' }]} />}
+            </div>
+            {especies.error?.estado === 403 ? <EstadoSinAcceso nivel={3} />
+              : especies.estado === 'error' ? <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} nivel={3} />
+                : !especiesVisibles ? <EstadoCarga forma="tabla" texto="Cargando especies…" retrasar />
+                  : especiesVisibles.length === 0 ? <EstadoVacio titulo="Sin especies para esta búsqueda" descripcion="Prueba con otro nombre o cambia el filtro de estado." nivel={3} />
+                    : (
+                      <>
+                        <p className={estilos.descripcion} role="status">{especiesVisibles.length} {especiesVisibles.length === 1 ? 'especie' : 'especies'}</p>
+                        <ul className={estilos.lista}>
+                          {especiesVisibles.map((especie) => (
+                            <li className={estilos.fila} key={especie.id}>
+                              <div>
+                                <strong>{nombreEspecie(especie)}</strong>
+                                {especie.nombre_comun && especie.nombre_cientifico &&
+                                  <div className={estilos.detalle}><i>{especie.nombre_cientifico}</i></div>}
+                                <div className={`${estilos.detalle} ${estilos.accionesFila}`}>
+                                  {especie.forma_biologica && <Estado tono="neutro" punto={false} texto={especie.forma_biologica} />}
+                                  {!especie.activo && <Estado tono="neutro" texto="Inactiva" />}
+                                </div>
+                              </div>
+                              <div className={estilos.accionesFila}>
+                                <Boton variante="secundario" compacto aria-label={`Ver ejemplares de ${nombreEspecie(especie)}`}
+                                  onClick={() => verEjemplaresDeEspecie(especie)}>Ver ejemplares</Boton>
+                                {puedeGestionar && especie.activo && <Boton variante="fantasma" compacto deshabilitado={guardando}
+                                  onClick={() => void ejecutar(() => cambiarEspecie(especie.id, { activo: false }), 'Especie desactivada.')}>Desactivar</Boton>}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
           </Tarjeta>
         ) : (
           <div className={estilos.pagina}>
@@ -283,10 +355,19 @@ export default function EjemplaresPage() {
                 <CampoFormulario id="buscar-ejemplares" etiqueta="Código nuevo o placa antigua" type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} />
                 <Boton type="submit" variante="secundario">Buscar</Boton>
               </form>
+              {especieFiltrada && (
+                <div className={estilos.accionesFila}>
+                  <Estado tono="info" punto={false} texto={`Especie: ${nombreEspecie(especieFiltrada)}`} />
+                  <Boton variante="fantasma" compacto onClick={() => {
+                    setEspecieFiltrada(null)
+                    cambiarPagina(1)
+                  }}>Quitar filtro de especie</Boton>
+                </div>
+              )}
             </Tarjeta>
 
             <Tarjeta
-              titulo={terminoBusqueda ? 'Coincidencias' : 'Ejemplares'}
+              titulo={terminoBusqueda || especieFiltrada ? 'Coincidencias' : 'Ejemplares'}
               relleno="amplio"
               acciones={<>
                 {terminoBusqueda && <Boton variante="fantasma" onClick={() => buscar('')}>Limpiar búsqueda</Boton>}
@@ -300,8 +381,8 @@ export default function EjemplaresPage() {
                 : consulta.estado === 'error' ? <EstadoError titulo="No pudimos cargar los ejemplares" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} nivel={3} />
                   : !listado ? <EstadoCarga forma="tabla" texto="Cargando ejemplares…" retrasar />
                     : listado.ejemplares.length === 0 ? (
-                terminoBusqueda
-                  ? <EstadoVacio titulo="Sin coincidencias" descripcion="No se encontró un ejemplar. Comprueba el código o la placa." nivel={3} />
+                terminoBusqueda || especieFiltrada
+                  ? <EstadoVacio titulo="Sin coincidencias" descripcion={especieFiltrada ? 'No hay ejemplares de esta especie que coincidan con la búsqueda.' : 'No se encontró un ejemplar. Comprueba el código o la placa.'} nivel={3} />
                   : <EstadoVacio titulo="Aún no hay ejemplares" descripcion="Los ejemplares registrados aparecerán aquí." nivel={3} />
               ) : (
                 <ul className={vista === 'galeria' ? estilos.galeria : estilos.lista}>

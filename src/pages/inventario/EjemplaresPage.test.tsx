@@ -14,7 +14,11 @@ const { listarEjemplares, alturas } = vi.hoisted(() => {
     { id: 1, codigo: 'ARB-0001', codigo_placa_antigua: 'PLACA-55', especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle', especie_forma_biologica: 'Árbol', referencia_catastro: null, codigo_catastro: null, tipo_vegetacion: null, ubicacion: 'Parque', latitud: -12.1, longitud: -77.1, cantidad: 1, area_verde_id: null, especie_id: 1, advertencia_placa_repetida: true },
     { id: 2, codigo: 'ARB-0002', codigo_placa_antigua: 'PLACA-55', especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle', especie_forma_biologica: 'Árbol', referencia_catastro: 'Plano 2', codigo_catastro: 'CAT-22', tipo_vegetacion: null, ubicacion: 'Parque', latitud: null, longitud: null, cantidad: 1, area_verde_id: null, especie_id: 1, advertencia_placa_repetida: true },
   ]
-    const resultados = q === 'CATALOGO'
+    const resultados = q === 'Schinus molle'
+      ? pagina === 1
+        ? Array.from({ length: 25 }, (_, i) => ({ ...ejemplares[0], id: i + 100, codigo: `OTRO-${i + 1}`, especie_id: 9 }))
+        : pagina === 2 ? [ejemplares[1]] : []
+      : q === 'CATALOGO'
       ? pagina === 1 ? Array.from({ length: 25 }, (_, i) => ({ ...ejemplares[0], id: i + 100, codigo: `CAT-${i + 1}` })) : pagina === 2 ? [ejemplares[1]] : []
       : !q ? [ejemplares[0]] : q === 'PLACA-55' ? ejemplares : []
     return resultados.map((ejemplar) => ({ ...ejemplar, altura_total_m: alturas.get(ejemplar.id) ?? null }))
@@ -24,7 +28,10 @@ const { listarEjemplares, alturas } = vi.hoisted(() => {
 vi.mock('@/services/api/ejemplares', () => ({
   EJEMPLARES_POR_PAGINA: 25,
   listarEjemplares,
-  listarEspecies: async () => [],
+  listarEspecies: async (incluirInactivas: boolean) => [
+    { id: 1, nombre_comun: 'Molle', nombre_cientifico: 'Schinus molle', forma_biologica: 'Árbol', activo: true },
+    ...(incluirInactivas ? [{ id: 3, nombre_comun: 'Ciprés', nombre_cientifico: 'Cupressus sempervirens', forma_biologica: 'Árbol', activo: false }] : []),
+  ],
   crearEjemplar: vi.fn(),
   crearEspecie: vi.fn(),
   cambiarEspecie: vi.fn(),
@@ -107,10 +114,32 @@ describe('EjemplaresPage', () => {
     expect(await screen.findByText('Sin coincidencias')).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Añadir especie' })).toBeNull()
     fireEvent.click(screen.getByRole('tab', { name: 'Especies' }))
-    expect(screen.queryByRole('searchbox')).toBeNull()
+    expect(screen.queryByRole('searchbox', { name: 'Código nuevo o placa antigua' })).toBeNull()
+    expect(screen.getByRole('searchbox', { name: 'Buscar especie' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Añadir especie' }))
     const formulario = await screen.findByRole('dialog', { name: 'Añadir especie' })
     expect(within(formulario).getByLabelText('Nombre científico')).toHaveProperty('required', true)
+  })
+
+  it('filtra el catálogo y abre solo los ejemplares de la especie elegida', async () => {
+    render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('tab', { name: 'Especies' }))
+    expect(await screen.findByText('Schinus molle')).toBeTruthy()
+    expect(screen.queryByText('Ciprés')).toBeNull()
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Estado' }), { target: { value: 'inactivas' } })
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar especie' }), { target: { value: 'cipres' } })
+    expect(screen.getByText('Ciprés')).toBeTruthy()
+    expect(screen.queryByText('Molle')).toBeNull()
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Estado' }), { target: { value: 'activas' } })
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar especie' }), { target: { value: 'schinus' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Ver ejemplares de Molle' }))
+    expect(await screen.findByRole('button', { name: 'Abrir ficha de ARB-0002' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Abrir ficha de OTRO/ })).toBeNull()
+    expect(screen.getByText('Especie: Molle')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar filtro de especie' }))
+    expect(await screen.findByRole('button', { name: 'Abrir ficha de ARB-0001' })).toBeTruthy()
   })
 
   it('pagina las coincidencias y conserva la página al cambiar a galería', async () => {
