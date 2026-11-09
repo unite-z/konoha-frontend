@@ -124,7 +124,11 @@ describe('EjemplaresPage', () => {
   it('filtra el catálogo y abre solo los ejemplares de la especie elegida', async () => {
     render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
     fireEvent.click(screen.getByRole('tab', { name: 'Especies' }))
-    expect(await screen.findByText('Schinus molle')).toBeTruthy()
+    const nombreCientifico = await screen.findByText('Schinus molle')
+    const fichaEspecie = within(screen.getByRole('listitem', { name: '' }))
+    expect(fichaEspecie.getByText('Nombre común').nextElementSibling?.textContent).toBe('Molle')
+    expect(fichaEspecie.getByText('Nombre científico').nextElementSibling).toBe(nombreCientifico.parentElement)
+    expect(fichaEspecie.getByText('Forma biológica').nextElementSibling?.textContent).toBe('Árbol')
     expect(screen.queryByText('Ciprés')).toBeNull()
 
     fireEvent.change(screen.getByRole('combobox', { name: 'Estado' }), { target: { value: 'inactivas' } })

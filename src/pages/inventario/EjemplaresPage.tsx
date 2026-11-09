@@ -326,16 +326,23 @@ export default function EjemplaresPage() {
                         <ul className={estilos.lista}>
                           {especiesVisibles.map((especie) => (
                             <li className={estilos.fila} key={especie.id}>
-                              <div>
-                                <strong>{nombreEspecie(especie)}</strong>
-                                {especie.nombre_comun && especie.nombre_cientifico &&
-                                  <div className={estilos.detalle}><i>{especie.nombre_cientifico}</i></div>}
-                                <div className={`${estilos.detalle} ${estilos.accionesFila}`}>
-                                  {especie.forma_biologica && <Estado tono="neutro" punto={false} texto={especie.forma_biologica} />}
-                                  {!especie.activo && <Estado tono="neutro" texto="Inactiva" />}
+                              <dl className={estilos.datosEspecie}>
+                                <div>
+                                  <dt>Nombre común</dt>
+                                  <dd><strong>{especie.nombre_comun?.trim() || 'Sin registrar'}</strong></dd>
                                 </div>
-                              </div>
+                                <div>
+                                  <dt>Nombre científico</dt>
+                                  <dd>{especie.nombre_cientifico?.trim() ? <i>{especie.nombre_cientifico}</i> : 'Sin registrar'}</dd>
+                                </div>
+                                <div>
+                                  <dt>Forma biológica</dt>
+                                  <dd>{especie.forma_biologica?.trim()
+                                    ? <Estado tono="neutro" punto={false} texto={especie.forma_biologica} /> : 'Sin registrar'}</dd>
+                                </div>
+                              </dl>
                               <div className={estilos.accionesFila}>
+                                {!especie.activo && <Estado tono="neutro" texto="Inactiva" />}
                                 <Boton variante="secundario" compacto aria-label={`Ver ejemplares de ${nombreEspecie(especie)}`}
                                   onClick={() => verEjemplaresDeEspecie(especie)}>Ver ejemplares</Boton>
                                 {puedeGestionar && especie.activo && <Boton variante="fantasma" compacto deshabilitado={guardando}
