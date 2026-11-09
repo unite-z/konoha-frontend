@@ -10,7 +10,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
 import { listarTiposUso } from '@/services/api/catalogosInventario'
-import { asignarPoligonoMapa, clasificarUsoFuenteMapa, listarPoligonosMapa, listarTodasLasAreasVerdes, listarUsosFuenteMapa } from '@/services/api/mapaAsignaciones'
+import { asignarPoligonoMapa, listarPoligonosMapa, listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
 import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
@@ -20,7 +20,6 @@ import { enriquecerGeoJSON, obtenerClasificacionPoligono } from './clasificacion
 
 const ID_CAPA = 'areas-verdes-poligonos'
 const ID_FUENTE = 'areas-verdes-campus'
-const COLORES_MAPA = ['--map-uso-1', '--map-uso-2', '--map-uso-3', '--map-uso-4', '--map-uso-5', '--map-uso-6']
 
 interface UsoMapa {
   nombre: string
@@ -39,24 +38,12 @@ interface LimitesMapa {
 interface PoligonoSeleccionado {
   idFuente: string
   usoFuente: string
-  nombre: string
-  tipoUsoFuenteId: number | null
+  nombrePoligono: string
   tipoUsoEfectivo: string
-  origenClasificacion: 'area-vinculada' | 'uso-original'
   areaVerdeId: number | null
   areaVerdeNombre: string | null
-  areaVerdeTipoUsoNombre: string | null
   superficieRegistradaM2: string | null
-  areaVerdeActiva: boolean | null
   superficieCartografica: string | null
-}
-
-interface HoverMapa {
-  x: number
-  y: number
-  nombre: string
-  usoOriginal: string
-  tipoSistema: string
 }
 
 export default function MapaAreasVerdesPage() {
@@ -66,29 +53,27 @@ export default function MapaAreasVerdesPage() {
   const mapaRef = useRef<MapaMapLibre | null>(null)
   const usoSeleccionadoRef = useRef('')
   const mapa = useConsulta('mapa-areas-verdes', cargarAreasVerdesGeoJSON)
-  const categorias = useConsulta('mapa-usos-fuente', listarUsosFuenteMapa)
   const asignaciones = useConsulta('mapa-poligonos', listarPoligonosMapa)
-  const tiposUso = useConsulta('mapa-tipos-uso', (signal) => listarTiposUso(false, signal))
+  const tiposUso = useConsulta('mapa-tipos-uso', (signal) => listarTiposUso(true, signal))
   const areas = useConsulta('mapa-inventario-areas', listarTodasLasAreasVerdes)
   const [usoSeleccionado, setUsoSeleccionado] = useState('')
   const [seleccion, setSeleccion] = useState<PoligonoSeleccionado | null>(null)
-  const [, setHoverMapa] = useState<HoverMapa | null>(null)
-  const [guardando, setGuardando] = useState<'uso' | 'area' | null>(null)
+  const [guardando, setGuardando] = useState<'area' | null>(null)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
   const [mensajeAccion, setMensajeAccion] = useState<string | null>(null)
   const puedeEditar = puede(sesion, PERMISOS.gestionarCatalogos)
 
-  const consultaConError = [mapa, categorias, asignaciones, tiposUso, areas].find((consulta) => consulta.estado === 'error' && !consulta.datos)
-  const consultaPendiente = [mapa, categorias, asignaciones, tiposUso, areas].some((consulta) => !consulta.datos)
+  const consultaConError = [mapa, asignaciones, tiposUso, areas].find((consulta) => consulta.estado === 'error' && !consulta.datos)
+  const consultaPendiente = [mapa, asignaciones, tiposUso, areas].some((consulta) => !consulta.datos)
 
   const poligonosPorId = useMemo(() => new Map((asignaciones.datos ?? []).map((asignacion) => [asignacion.id_fuente, asignacion])), [asignaciones.datos])
   const mapaEfectivo = useMemo(
-    () => mapa.datos && asignaciones.datos ? enriquecerGeoJSON(mapa.datos, asignaciones.datos) : null,
-    [mapa.datos, asignaciones.datos],
+    () => mapa.datos && asignaciones.datos ? enriquecerGeoJSON(mapa.datos, asignaciones.datos, tiposUso.datos ?? []) : null,
+    [mapa.datos, asignaciones.datos, tiposUso.datos],
   )
   const usos = useMemo(
-    () => mapaEfectivo ? obtenerUsos(mapaEfectivo) : [],
-    [mapaEfectivo],
+    () => mapaEfectivo ? obtenerUsos(mapaEfectivo, tiposUso.datos ?? []) : [],
+    [mapaEfectivo, tiposUso.datos],
   )
 
   useEffect(() => {
@@ -128,7 +113,7 @@ export default function MapaAreasVerdesPage() {
       instancia.addSource(ID_FUENTE, { type: 'geojson', data: mapaEfectivo as AreasVerdesGeoJSON })
       for (const [indice, uso] of usos.entries()) {
         const idCapaUso = `${ID_CAPA}-${indice}`
-        const filtroUso: FilterSpecification = ['==', ['get', 'clasificacion_efectiva'], uso.nombre]
+        const filtroUso: FilterSpecification = ['==', ['coalesce', ['get', 'tipo_uso_efectivo_id'], -1], uso.tipoUsoId ?? -1]
         instancia.addLayer({
           id: idCapaUso,
           type: 'fill',
@@ -151,20 +136,9 @@ export default function MapaAreasVerdesPage() {
         const propiedades = propiedad?.properties
         if (!propiedades) {
           instancia.getCanvas().style.cursor = ''
-          setHoverMapa(null)
           return
         }
-        const usoOriginal = texto(propiedades.Uso)
-        if (!usoOriginal) return
-        const tipoUsoEfectivo = texto(propiedades.clasificacion_efectiva) || usoOriginal
         instancia.getCanvas().style.cursor = 'pointer'
-        setHoverMapa({
-          x: evento.point.x,
-          y: evento.point.y,
-          nombre: texto(propiedades.Nombre) || 'Área verde del campus',
-          usoOriginal,
-          tipoSistema: tipoUsoEfectivo,
-        })
       })
       instancia.fitBounds(
         [[limites.oeste, limites.sur], [limites.este, limites.norte]],
@@ -177,22 +151,20 @@ export default function MapaAreasVerdesPage() {
       if (!propiedades) return
       const idFuente = texto(propiedades.mapa_id)
       const usoFuente = texto(propiedades.Uso)
-      if (!idFuente || !usoFuente) return
+      if (!idFuente) return
       const asignacion = poligonosPorId.get(idFuente)
       const clasificacion = obtenerClasificacionPoligono(usoFuente, asignacion)
-      const tipoUsoFuenteId = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)?.tipo_uso_id ?? null
+      const tipoUsoEfectivo = clasificacion.origenClasificacion === 'area-vinculada'
+        ? tiposUso.datos?.find((tipo) => tipo.id === clasificacion.tipoUsoEfectivoId)?.nombre ?? 'Sin clasificar'
+        : tiposUso.datos?.find((tipo) => tipo.nombre.toLocaleLowerCase('es') === usoFuente.toLocaleLowerCase('es'))?.nombre ?? 'Sin clasificar'
       setSeleccion({
         idFuente,
         usoFuente,
-        nombre: texto(propiedades.Nombre) || 'Área verde del campus',
-        tipoUsoFuenteId,
-        tipoUsoEfectivo: clasificacion.tipoUsoEfectivo,
-        origenClasificacion: clasificacion.origenClasificacion,
+        nombrePoligono: texto(propiedades.Nombre),
+        tipoUsoEfectivo,
         areaVerdeId: asignacion?.area_verde_id ?? null,
         areaVerdeNombre: asignacion?.area_verde_nombre ?? null,
-        areaVerdeTipoUsoNombre: asignacion?.area_verde_tipo_uso_nombre ?? null,
         superficieRegistradaM2: asignacion?.superficie_registrada_m2 ?? null,
-        areaVerdeActiva: asignacion?.area_verde_activa ?? null,
         superficieCartografica: texto(propiedades['Área']) || null,
       })
       setErrorAccion(null)
@@ -200,17 +172,15 @@ export default function MapaAreasVerdesPage() {
       const contenido = document.createElement('div')
       contenido.className = estilos.popup
       const titulo = document.createElement('strong')
-      titulo.textContent = texto(propiedades.Nombre) || 'Área verde del campus'
+      titulo.textContent = asignacion?.area_verde_id
+        ? asignacion.area_verde_nombre ?? (texto(propiedades.Nombre) || 'Área verde vinculada')
+        : texto(propiedades.Nombre) || 'Polígono del mapa'
       contenido.append(titulo)
       for (const [etiqueta, valor] of [
-        ['Uso original', propiedades.Uso],
-        ['Tipo de uso efectivo', clasificacion.tipoUsoEfectivo],
-        ['Origen de la clasificación', clasificacion.origenClasificacion === 'area-vinculada' ? 'Área vinculada' : 'Uso original del GeoJSON'],
-        ['Área del inventario', asignacion?.area_verde_nombre ?? 'Sin vincular'],
-        ['Superficie registrada', asignacion?.superficie_registrada_m2 == null ? null : `${asignacion.superficie_registrada_m2} m²`],
-        ['Código de fuente', propiedades['código']],
-        ['Referencia', propiedades.Referenc_1],
-        ['Superficie de fuente', propiedades['Área'] == null ? null : `${formatearSuperficie(propiedades['Área'])} m²`],
+        ['Tipo de uso', tipoUsoEfectivo],
+        ['Superficie', asignacion?.area_verde_id
+          ? asignacion.superficie_registrada_m2 == null ? 'Sin registro' : `${formatearSuperficie(asignacion.superficie_registrada_m2)} m² (inventario)`
+          : propiedades['Área'] == null ? 'Sin dato' : `${formatearSuperficie(propiedades['Área'])} m² (polígono)`],
       ] as const) {
         const valorTexto = texto(valor)
         if (!valorTexto) continue
@@ -222,11 +192,10 @@ export default function MapaAreasVerdesPage() {
     })
 
     return () => {
-      setHoverMapa(null)
       instancia.remove()
       mapaRef.current = null
     }
-  }, [mapaEfectivo, usos, categorias.datos, poligonosPorId])
+  }, [mapaEfectivo, usos, poligonosPorId])
 
   useEffect(() => {
     usoSeleccionadoRef.current = usoSeleccionado
@@ -249,7 +218,6 @@ export default function MapaAreasVerdesPage() {
           descripcion={consultaConError.error?.detalle ?? ''}
           onReintentar={() => {
             mapa.reintentar()
-            categorias.reintentar()
             asignaciones.reintentar()
             tiposUso.reintentar()
             areas.reintentar()
@@ -258,33 +226,16 @@ export default function MapaAreasVerdesPage() {
       </div>
     )
   }
-  if (consultaPendiente || !mapa.datos || !categorias.datos || !asignaciones.datos || !tiposUso.datos || !areas.datos) {
+  if (consultaPendiente || !mapa.datos || !asignaciones.datos || !tiposUso.datos || !areas.datos) {
     return <EstadoCarga forma="tabla" texto="Cargando mapa del campus…" />
   }
 
-  const catalogoTipos = tiposUso.datos
   const inventarioAreas = areas.datos
   const totalVisible = mapaEfectivo?.features.filter((feature) => {
-    const uso = usos.find((item) => item.nombre === texto(feature.properties?.clasificacion_efectiva))
+    const tipoId = numero(feature.properties?.tipo_uso_efectivo_id)
+    const uso = usos.find((item) => item.tipoUsoId === tipoId)
     return uso ? usoVisible(uso, usoSeleccionado) : false
   }).length ?? 0
-
-  async function guardarClasificacion() {
-    if (!seleccion) return
-    setGuardando('uso')
-    setErrorAccion(null)
-    setMensajeAccion(null)
-    try {
-      const respuesta = await clasificarUsoFuenteMapa(seleccion.usoFuente, seleccion.tipoUsoFuenteId)
-      setMensajeAccion('Se actualizó la equivalencia cartográfica del Uso original. No cambia la clasificación efectiva de áreas vinculadas.')
-      setSeleccion((actual) => actual ? { ...actual, tipoUsoFuenteId: respuesta.tipo_uso_id } : null)
-      categorias.reintentar()
-    } catch (causa) {
-      setErrorAccion(causa instanceof Error ? causa.message : 'No se pudo guardar la clasificación.')
-    } finally {
-      setGuardando(null)
-    }
-  }
 
   async function guardarVinculo() {
     if (!seleccion) return
@@ -293,17 +244,17 @@ export default function MapaAreasVerdesPage() {
     setMensajeAccion(null)
     try {
       const respuesta = await asignarPoligonoMapa(seleccion.idFuente, seleccion.areaVerdeId)
-      setMensajeAccion(respuesta.area_verde_id ? `Vinculado con ${respuesta.area_verde_nombre}.` : 'Se quitó el vínculo con el inventario.')
+      setMensajeAccion(respuesta.area_verde_id ? 'Vínculo guardado.' : 'Se quitó el vínculo con el inventario.')
       const clasificacion = obtenerClasificacionPoligono(seleccion.usoFuente, respuesta)
+      const tipoUsoEfectivo = clasificacion.origenClasificacion === 'area-vinculada'
+        ? tiposUso.datos.find((tipo) => tipo.id === clasificacion.tipoUsoEfectivoId)?.nombre ?? 'Sin clasificar'
+        : tiposUso.datos.find((tipo) => tipo.nombre.toLocaleLowerCase('es') === seleccion.usoFuente.toLocaleLowerCase('es'))?.nombre ?? 'Sin clasificar'
       setSeleccion((actual) => actual ? {
         ...actual,
         areaVerdeId: respuesta.area_verde_id,
         areaVerdeNombre: respuesta.area_verde_nombre,
-        areaVerdeTipoUsoNombre: respuesta.area_verde_tipo_uso_nombre,
         superficieRegistradaM2: respuesta.superficie_registrada_m2,
-        areaVerdeActiva: respuesta.area_verde_activa,
-        tipoUsoEfectivo: clasificacion.tipoUsoEfectivo,
-        origenClasificacion: clasificacion.origenClasificacion,
+        tipoUsoEfectivo,
       } : null)
       asignaciones.reintentar()
     } catch (causa) {
@@ -317,11 +268,10 @@ export default function MapaAreasVerdesPage() {
     <div className={estilos.pagina}>
       <BotonEnlace to={RUTAS_INVENTARIO.areasVerdes} className={estilos.volver}>Volver al inventario</BotonEnlace>
       <div className={estilos.encabezado}>
-        <p>Las categorías originales se conservan; sus equivalencias y vínculos con el inventario se administran aquí.</p>
         <div className={estilos.filtrosMapa}>
           <Selector
             id="filtro-uso-mapa"
-            etiqueta="Filtrar por uso"
+            etiqueta="Filtrar por tipo de uso"
             valor={usoSeleccionado}
             onCambiar={setUsoSeleccionado}
             opcionTodos="Todos los usos"
@@ -339,22 +289,20 @@ export default function MapaAreasVerdesPage() {
             const propiedades = feature.properties
             const idFuente = texto(propiedades.mapa_id)
             const usoFuente = texto(propiedades.Uso)
-            if (!idFuente || !usoFuente) return
+            if (!idFuente) return
             const asignacion = poligonosPorId.get(idFuente)
             const clasificacion = obtenerClasificacionPoligono(usoFuente, asignacion)
-            const tipoUsoFuenteId = categorias.datos?.find((uso) => uso.uso_fuente === usoFuente)?.tipo_uso_id ?? null
+            const tipoUsoEfectivo = clasificacion.origenClasificacion === 'area-vinculada'
+              ? tiposUso.datos?.find((tipo) => tipo.id === clasificacion.tipoUsoEfectivoId)?.nombre ?? 'Sin clasificar'
+              : tiposUso.datos?.find((tipo) => tipo.nombre.toLocaleLowerCase('es') === usoFuente.toLocaleLowerCase('es'))?.nombre ?? 'Sin clasificar'
             setSeleccion({
               idFuente,
               usoFuente,
-              nombre: texto(propiedades.Nombre) || 'Área verde del campus',
-              tipoUsoFuenteId,
-              tipoUsoEfectivo: clasificacion.tipoUsoEfectivo,
-              origenClasificacion: clasificacion.origenClasificacion,
+              nombrePoligono: texto(propiedades.Nombre),
+              tipoUsoEfectivo,
               areaVerdeId: asignacion?.area_verde_id ?? null,
               areaVerdeNombre: asignacion?.area_verde_nombre ?? null,
-              areaVerdeTipoUsoNombre: asignacion?.area_verde_tipo_uso_nombre ?? null,
               superficieRegistradaM2: asignacion?.superficie_registrada_m2 ?? null,
-              areaVerdeActiva: asignacion?.area_verde_activa ?? null,
               superficieCartografica: texto(propiedades['Área']) || null,
             })
             setErrorAccion(null)
@@ -362,12 +310,12 @@ export default function MapaAreasVerdesPage() {
           }}
         />
         <div className={estilos.panelFlotante}>
-          <h2>Usos</h2>
+          <h2>Tipos de uso</h2>
           <ul className={estilos.leyenda}>
             {usos.map((uso) => (
-              <li key={uso.nombre}>
+              <li key={uso.tipoUsoId ?? 'sin-clasificar'}>
                 <span className={estilos.muestraColor} style={{ backgroundColor: uso.color }} aria-hidden="true" /> {/* estilo-calculado: color del uso */}
-                <span>{uso.nombre}{uso.tipoUsoId !== null && <small> · {catalogoTipos.find((tipo) => tipo.id === uso.tipoUsoId)?.nombre ?? 'tipo inactivo'}</small>}</span>
+                <span>{uso.nombre}</span>
                 <span className={estilos.cantidad}>{uso.cantidad}</span>
               </li>
             ))}
@@ -375,36 +323,34 @@ export default function MapaAreasVerdesPage() {
           <p className={estilos.resumen}>{totalVisible} polígonos visibles de {mapaEfectivo?.features.length ?? 0}</p>
           {seleccion && (
             <div className={estilos.edicion}>
-              <h3>{seleccion.nombre}</h3>
-              <p>Uso original: <strong>{seleccion.usoFuente}</strong></p>
-              <p>Tipo de uso efectivo: <strong>{seleccion.tipoUsoEfectivo}</strong></p>
-              <p>Origen de la clasificación: <strong>{seleccion.origenClasificacion === 'area-vinculada' ? 'Área vinculada' : 'Uso original del GeoJSON'}</strong></p>
-              <p>Área vinculada: <strong>{seleccion.areaVerdeNombre ?? 'Sin vincular'}</strong></p>
-              <p>Superficie registrada: <strong>{seleccion.superficieRegistradaM2 ? `${seleccion.superficieRegistradaM2} m²` : 'Sin registro'}</strong></p>
-              <p>Superficie cartográfica: <strong>{seleccion.superficieCartografica ? `${seleccion.superficieCartografica} m²` : 'Sin dato'}</strong></p>
+              <h3>{seleccion.areaVerdeId ? seleccion.areaVerdeNombre ?? (seleccion.nombrePoligono || 'Área verde vinculada') : seleccion.nombrePoligono || 'Polígono del mapa'}</h3>
+              <p>Tipo de uso: <strong>{seleccion.tipoUsoEfectivo}</strong></p>
+              <p>Superficie: <strong>{seleccion.areaVerdeId
+                ? seleccion.superficieRegistradaM2 ? `${formatearSuperficie(seleccion.superficieRegistradaM2)} m² (inventario)` : 'Sin registro en inventario'
+                : seleccion.superficieCartografica ? `${formatearSuperficie(seleccion.superficieCartografica)} m² (polígono)` : 'Sin dato del polígono'}</strong></p>
               {puedeEditar ? (
                 <>
                   <Selector
-                    id="tipo-uso-poligono"
-                    etiqueta="Tipo del catálogo"
-                    compacto
-                    valor={seleccion.tipoUsoFuenteId === null ? '' : String(seleccion.tipoUsoFuenteId)}
-                    disabled={guardando !== null}
-                    onCambiar={(valor) => setSeleccion({ ...seleccion, tipoUsoFuenteId: valor ? Number(valor) : null })}
-                    opcionTodos="Sin clasificar"
-                    opciones={catalogoTipos.map((tipo) => ({ valor: String(tipo.id), texto: tipo.nombre }))}
-                  />
-                  <Boton variante="secundario" compacto cargando={guardando === 'uso'} deshabilitado={guardando !== null} onClick={() => void guardarClasificacion()}>
-                    Guardar clasificación
-                  </Boton>
-                  <p className={estilos.ayuda}>Se conserva como equivalencia cartográfica; la clasificación efectiva depende del área vinculada.</p>
-                  <Selector
                     id="area-poligono"
-                    etiqueta="Área del inventario vinculada"
+                    etiqueta="Cambiar área vinculada"
                     compacto
                     valor={seleccion.areaVerdeId === null ? '' : String(seleccion.areaVerdeId)}
                     disabled={guardando !== null}
-                    onCambiar={(valor) => setSeleccion({ ...seleccion, areaVerdeId: valor ? Number(valor) : null })}
+                    onCambiar={(valor) => {
+                      const area = valor ? inventarioAreas.find((elemento) => elemento.id === Number(valor)) : null
+                      const tipoUso = area?.tipo_uso_id
+                        ? tiposUso.datos.find((tipo) => tipo.id === area.tipo_uso_id)
+                        : null
+                      setSeleccion({
+                        ...seleccion,
+                        areaVerdeId: area?.id ?? null,
+                        areaVerdeNombre: area?.nombre ?? null,
+                        superficieRegistradaM2: area?.superficie_m2 ?? null,
+                        tipoUsoEfectivo: tipoUso?.nombre ?? tiposUso.datos.find(
+                          (tipo) => tipo.nombre.toLocaleLowerCase('es') === seleccion.usoFuente.toLocaleLowerCase('es'),
+                        )?.nombre ?? 'Sin clasificar',
+                      })
+                    }}
                     opcionTodos="Sin vincular"
                     opciones={inventarioAreas.map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))}
                   />
@@ -413,7 +359,7 @@ export default function MapaAreasVerdesPage() {
                   </Boton>
                 </>
               ) : (
-                <p>Solo el jefe de sección puede editar la clasificación y el vínculo con el inventario.</p>
+                <p>Solo el jefe de sección puede modificar el vínculo con el inventario.</p>
               )}
               {errorAccion && <AvisoEnLinea tono="error">{errorAccion}</AvisoEnLinea>}
               {mensajeAccion && <AvisoEnLinea tono="exito">{mensajeAccion}</AvisoEnLinea>}
@@ -421,32 +367,33 @@ export default function MapaAreasVerdesPage() {
           )}
         </div>
       </section>
-      <p className={estilos.fuente}>Fuente: geometrías del mapa proporcionado por el cliente; equivalencias y vínculos gestionados en el inventario. Fondo cartográfico estático local basado en OpenStreetMap © OpenStreetMap contributors.</p>
+      <p className={estilos.fuente}>Fuente: geometrías del mapa proporcionado por el cliente; vínculos gestionados en el inventario. Fondo cartográfico estático local basado en OpenStreetMap © OpenStreetMap contributors.</p>
     </div>
   )
 }
 
-function obtenerUsos(geojson: AreasVerdesGeoJSON): UsoMapa[] {
-  const cantidades = new Map<string, number>()
+function obtenerUsos(geojson: AreasVerdesGeoJSON, tiposUso: { id: number; nombre: string }[]): UsoMapa[] {
+  const cantidades = new Map<number | null, number>()
   for (const feature of geojson.features) {
-    const uso = texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso)
-    if (uso) cantidades.set(uso, (cantidades.get(uso) ?? 0) + 1)
+    const tipoUsoId = numero(feature.properties?.tipo_uso_efectivo_id)
+    cantidades.set(tipoUsoId, (cantidades.get(tipoUsoId) ?? 0) + 1)
   }
-  const estilosRaiz = getComputedStyle(document.documentElement)
   return [...cantidades.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, 'es'))
-    .map(([nombre, cantidad], indice) => ({
-      nombre,
-      cantidad,
-      color: estilosRaiz.getPropertyValue(COLORES_MAPA[indice % COLORES_MAPA.length]).trim(),
-      tipoUsoId: geojson.features
-        .find((feature) => (texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso)) === nombre)
-        ?.properties?.tipo_uso_efectivo_id as number | null ?? null,
-    }))
+    .map(([tipoUsoId, cantidad]) => {
+      const nombre = tipoUsoId === null ? 'Sin clasificar' : tiposUso.find((tipo) => tipo.id === tipoUsoId)?.nombre ?? 'Sin clasificar'
+      const tipo = tipoUsoId === null ? null : tiposUso.find((elemento) => elemento.id === tipoUsoId)
+      return {
+        nombre: tipoUsoId === null ? `${nombre} (sin tipo vinculado)` : nombre,
+        cantidad,
+        color: tipo?.color ?? '#455A64',
+        tipoUsoId,
+      }
+    })
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
 }
 
 function usoVisible(uso: UsoMapa, filtroFuente: string): boolean {
-  return !filtroFuente || uso.nombre === filtroFuente
+  return !filtroFuente || uso.nombre === filtroFuente || (filtroFuente === 'Sin clasificar' && uso.nombre.startsWith('Sin clasificar'))
 }
 
 function obtenerLimites(geojson: AreasVerdesGeoJSON): LimitesMapa | null {
@@ -480,6 +427,11 @@ function texto(valor: unknown): string {
   if (typeof valor === 'string') return valor.trim()
   if (typeof valor === 'number') return String(valor)
   return ''
+}
+
+function numero(valor: unknown): number | null {
+  const resultado = typeof valor === 'number' ? valor : typeof valor === 'string' ? Number(valor) : Number.NaN
+  return Number.isFinite(resultado) ? resultado : null
 }
 
 function formatearSuperficie(valor: unknown): string {

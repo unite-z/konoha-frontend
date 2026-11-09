@@ -164,12 +164,6 @@
 
 /* Colores de los mapas (maplibre). Fuera del sistema de diseño de Figma. */
 :root {
-  --map-uso-1: #1B5E20;
-  --map-uso-2: #1565C0;
-  --map-uso-3: #9A6700;
-  --map-uso-4: #6A1B9A;
-  --map-uso-5: #00838F;
-  --map-uso-6: #AD3A16;
   --map-grid-color: #E7EEE9;
   --map-outline-color: #C7D5CC;
   --map-label-color: #84928A;

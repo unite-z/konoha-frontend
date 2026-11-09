@@ -31,6 +31,7 @@ export default function CatalogosPage() {
   const capataces = useConsulta('capataces', listarCapataces)
   const intervenciones = useConsulta('tipos-intervencion-todos', (signal) => listarTiposIntervencion(true, signal))
   const [tipoNombre, setTipoNombre] = useState('')
+  const [tipoColor, setTipoColor] = useState('#1B5E20')
   const [intervencionNombre, setIntervencionNombre] = useState('')
   const [intervencionAlcance, setIntervencionAlcance] = useState('')
   const [intervencionEsPoda, setIntervencionEsPoda] = useState(false)
@@ -90,8 +91,19 @@ export default function CatalogosPage() {
       {aviso && <AvisoEnLinea tono="exito">{aviso}</AvisoEnLinea>}
 
       <Tarjeta titulo="Tipos de uso" descripcion="Se usan para clasificar y filtrar áreas. Desactivar conserva la referencia histórica." relleno="amplio">
-        <form className={estilos.alta} onSubmit={(e) => enviar(e, () => crearTipoUso(tipoNombre.trim()), 'Tipo de uso creado.')}>
+        <form className={estilos.alta} onSubmit={(e) => {
+          e.preventDefault()
+          void ejecutar(async () => {
+            await crearTipoUso(tipoNombre.trim(), tipoColor)
+            setTipoNombre('')
+          }, 'Tipo de uso creado.')
+        }}>
           <CampoFormulario id="nuevo-tipo-uso" etiqueta="Añadir tipo de uso" value={tipoNombre} onChange={(e) => setTipoNombre(e.target.value)} maxLength={120} required />
+          <label className={estilos.selectorColorGrupo} htmlFor="color-nuevo-tipo-uso">
+            <span>Color del tipo</span>
+            <input id="color-nuevo-tipo-uso" className={estilos.selectorColor} type="color" value={tipoColor} onChange={(e) => setTipoColor(e.target.value)} />
+            <span className={estilos.detalle}>{tipoColor.toUpperCase()}</span>
+          </label>
           <Boton type="submit" variante="secundario" deshabilitado={guardando}>Añadir</Boton>
         </form>
         {usos.estado === 'cargando' && <EstadoCarga forma="tabla" filas={2} texto="Cargando tipos de uso…" retrasar />}
@@ -103,9 +115,23 @@ export default function CatalogosPage() {
                 {uso.nombre}
                 {!uso.activo && <Estado tono="neutro" texto="Inactivo" />}
               </span>
-              <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarTipoUso(uso.id, { activo: !uso.activo }), uso.activo ? 'Tipo de uso desactivado.' : 'Tipo de uso activado.')}>
-                {uso.activo ? 'Desactivar' : 'Activar'}
-              </Boton>
+              <div className={estilos.accionesFila}>
+                <CampoColorTipoUso
+                  id={`color-tipo-uso-${uso.id}`}
+                  etiqueta={`Color de ${uso.nombre}`}
+                  color={uso.color}
+                  deshabilitado={guardando}
+                  onGuardar={(color) => {
+                    void ejecutar(
+                      () => cambiarTipoUso(uso.id, { color }),
+                      `Color de ${uso.nombre} actualizado.`,
+                    )
+                  }}
+                />
+                <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarTipoUso(uso.id, { activo: !uso.activo }), uso.activo ? 'Tipo de uso desactivado.' : 'Tipo de uso activado.')}>
+                  {uso.activo ? 'Desactivar' : 'Activar'}
+                </Boton>
+              </div>
             </li>
           ))}
         </ul>
@@ -211,6 +237,46 @@ export default function CatalogosPage() {
           ))}
         </ul>
       </Tarjeta>
+    </div>
+  )
+}
+
+function CampoColorTipoUso({
+  id,
+  etiqueta,
+  color,
+  deshabilitado,
+  onGuardar,
+}: {
+  id: string
+  etiqueta: string
+  color: string
+  deshabilitado: boolean
+  onGuardar: (color: string) => void
+}) {
+  const [valor, setValor] = useState(color)
+  const cambioPendiente = valor.toUpperCase() !== color.toUpperCase()
+
+  return (
+    <div className={estilos.accionesFila}>
+      <input
+        id={id}
+        type="color"
+        aria-label={etiqueta}
+        className={estilos.selectorColor}
+        value={valor}
+        disabled={deshabilitado}
+        onChange={(evento) => setValor(evento.target.value)}
+      />
+      <span className={estilos.detalle}>{valor.toUpperCase()}</span>
+      <Boton
+        variante="secundario"
+        compacto
+        deshabilitado={deshabilitado || !cambioPendiente}
+        onClick={() => onGuardar(valor)}
+      >
+        Guardar color
+      </Boton>
     </div>
   )
 }

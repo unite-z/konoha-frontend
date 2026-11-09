@@ -129,9 +129,7 @@ export default function MapaVectorialLocal({ datos, usos, usoSeleccionado, onSel
       {hover && (
         <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
           <strong>{texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
-          <span>Uso original: {texto(hover.feature.properties?.Uso) || 'Sin uso'}</span>
-          <span>Tipo de uso efectivo: {texto(hover.feature.properties?.clasificacion_efectiva) || 'Sin clasificar'}</span>
-          <span>Origen: {texto(hover.feature.properties?.origen_clasificacion) === 'area-vinculada' ? 'Área vinculada' : 'Uso original'}</span>
+          <span>Tipo de uso: {texto(hover.feature.properties?.clasificacion_efectiva) || 'Sin clasificar'}</span>
           <span>Superficie: {formatearSuperficie(hover.feature.properties?.['Área'])}</span>
         </div>
       )}

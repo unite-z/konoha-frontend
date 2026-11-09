@@ -124,12 +124,21 @@ export default function AreaVerdeForm({ modo, area, alGuardar, alCancelar }: Pro
         <Selector id="uso-area" etiqueta="Tipo de uso" valor={valores.uso} onCambiar={(valor) => cambiar('uso', valor)} opcionTodos="Sin tipo de uso" opciones={usos.datos.map((uso) => ({ valor: String(uso.id), texto: uso.nombre }))} />
         <Selector id="cobertura-area" etiqueta="Cobertura" valor={valores.cobertura} onCambiar={(valor) => cambiar('cobertura', valor)} opcionTodos="Sin cobertura" opciones={coberturas.datos.map((cobertura) => ({ valor: String(cobertura.id), texto: cobertura.nombre }))} />
         <Selector id="cuartel-area" etiqueta="Cuartel histórico (opcional)" valor={valores.cuartel} onCambiar={(valor) => cambiar('cuartel', valor)} opcionTodos="Sin cuartel asociado" opciones={cuarteles.datos.map((cuartel) => ({ valor: String(cuartel.id), texto: `${cuartel.numero} · ${cuartel.nombre}${cuartel.estado === 'desaparecido' ? ' (desaparecido)' : ''}` }))} />
-        {modo === 'editar' && <Selector id="estado-area" etiqueta="Estado" valor={valores.activo} onCambiar={(valor) => cambiar('activo', valor)} opciones={[{ valor: 'true', texto: 'Activa' }, { valor: 'false', texto: 'De baja' }]} />}
-        {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
-        <div className={estilos.acciones}>
-          <Boton type="button" variante="fantasma" onClick={alCancelar}>Cancelar</Boton>
-          <Boton type="submit" variante="primario" cargando={guardando}>{modo === 'crear' ? 'Guardar área' : 'Guardar cambios'}</Boton>
-        </div>
+        {error && <div className={estilos.errorFormulario}><AvisoEnLinea tono="error">{error}</AvisoEnLinea></div>}
+        {modo === 'editar' ? (
+          <div className={estilos.pieEdicion}>
+            <Selector id="estado-area" etiqueta="Estado" valor={valores.activo} onCambiar={(valor) => cambiar('activo', valor)} opciones={[{ valor: 'true', texto: 'Activa' }, { valor: 'false', texto: 'De baja' }]} />
+            <div className={estilos.acciones}>
+              <Boton type="button" variante="fantasma" onClick={alCancelar}>Cancelar</Boton>
+              <Boton type="submit" variante="primario" cargando={guardando}>Guardar cambios</Boton>
+            </div>
+          </div>
+        ) : (
+          <div className={estilos.acciones}>
+            <Boton type="button" variante="fantasma" onClick={alCancelar}>Cancelar</Boton>
+            <Boton type="submit" variante="primario" cargando={guardando}>Guardar área</Boton>
+          </div>
+        )}
       </form>
     </Tarjeta>
   )

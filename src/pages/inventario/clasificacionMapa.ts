@@ -11,6 +11,12 @@ export interface ClasificacionPoligono {
   areaVinculada: PoligonoMapaAsignado | null
 }
 
+export interface TipoUsoMapa {
+  id: number
+  nombre: string
+  color: string
+}
+
 export function construirIndicePoligonos(asignaciones: PoligonoMapaAsignado[]) {
   return new Map(asignaciones.map((asignacion) => [asignacion.id_fuente, asignacion]))
 }
@@ -37,22 +43,34 @@ export function obtenerClasificacionPoligono(
 export function enriquecerGeoJSON(
   geojson: AreasVerdesGeoJSON,
   asignaciones: PoligonoMapaAsignado[],
+  tiposUso?: TipoUsoMapa[],
 ): AreasVerdesGeoJSON {
   const indice = construirIndicePoligonos(asignaciones)
   return {
     ...geojson,
     features: geojson.features.map((feature) => {
       const idFuente = texto(feature.properties?.mapa_id)
+      const usoFuente = texto(feature.properties?.Uso)
       const clasificacion = obtenerClasificacionPoligono(
-        texto(feature.properties?.Uso) || 'Sin uso',
+        usoFuente || 'Sin uso',
         idFuente ? indice.get(idFuente) : undefined,
       )
+      const tipoFuente = tiposUso?.find(
+        (tipo) => tipo.nombre.toLocaleLowerCase('es') === usoFuente.toLocaleLowerCase('es'),
+      )
+      const areaVinculadaConTipo = clasificacion.origenClasificacion === 'area-vinculada'
+      const tipoUsoEfectivoId = areaVinculadaConTipo
+        ? clasificacion.tipoUsoEfectivoId
+        : tiposUso ? tipoFuente?.id ?? null : clasificacion.tipoUsoEfectivoId
+      const tipoUsoEfectivo = areaVinculadaConTipo
+        ? clasificacion.tipoUsoEfectivo
+        : tiposUso ? tipoFuente?.nombre ?? 'Sin clasificar' : clasificacion.tipoUsoEfectivo
       return {
         ...feature,
         properties: {
           ...feature.properties,
-          clasificacion_efectiva: clasificacion.tipoUsoEfectivo,
-          tipo_uso_efectivo_id: clasificacion.tipoUsoEfectivoId,
+          clasificacion_efectiva: tipoUsoEfectivo,
+          tipo_uso_efectivo_id: tipoUsoEfectivoId,
           origen_clasificacion: clasificacion.origenClasificacion,
         },
       }

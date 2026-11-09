@@ -41,18 +41,51 @@
 }
 
 .formulario {
-  max-width: 42rem;
+  width: 100%;
+  max-width: none;
 }
 
 .campos {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
 .acciones {
   display: flex;
   flex-wrap: wrap;
+  grid-column: 1 / -1;
   justify-content: flex-end;
   gap: var(--space-3);
+}
+
+.errorFormulario {
+  grid-column: 1 / -1;
+}
+
+.pieEdicion {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(12rem, 1fr) auto;
+  align-items: end;
+  gap: var(--space-4);
+}
+
+.pieEdicion .acciones {
+  grid-column: auto;
+}
+
+@media (max-width: 640px) {
+  .campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .acciones,
+  .pieEdicion {
+    grid-column: auto;
+  }
+
+  .pieEdicion {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
