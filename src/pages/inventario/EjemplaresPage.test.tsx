@@ -5,11 +5,12 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import EjemplaresPage from './EjemplaresPage'
 import { listarAdjuntos, subirAdjunto } from '@/services/api/core'
 import type { Adjunto } from '@/types/core'
-import { cambiarSituacionEjemplar, guardarAlturaEjemplar, listarHistorialEjemplar, vincularEjemplarConArea } from '@/services/api/ejemplares'
+import { cambiarSituacionEjemplar, corregirUbicacionEjemplar, guardarAlturaEjemplar, listarHistorialEjemplar, vincularEjemplarConArea } from '@/services/api/ejemplares'
 
-const { listarEjemplares, alturas } = vi.hoisted(() => {
+const { listarEjemplares, alturas, ubicaciones } = vi.hoisted(() => {
   const alturas = new Map<number, number>()
-  return { alturas, listarEjemplares: vi.fn(async (q = '', pagina = 1) => {
+  const ubicaciones = new Map<number, { latitud: number; longitud: number }>()
+  return { alturas, ubicaciones, listarEjemplares: vi.fn(async (q = '', pagina = 1) => {
   const ejemplares = [
     { id: 1, codigo: 'ARB-0001', codigo_placa_antigua: 'PLACA-55', especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle', especie_forma_biologica: 'Árbol', referencia_catastro: null, codigo_catastro: null, tipo_vegetacion: null, ubicacion: 'Parque', latitud: -12.1, longitud: -77.1, cantidad: 1, area_verde_id: null, especie_id: 1, advertencia_placa_repetida: true },
     { id: 2, codigo: 'ARB-0002', codigo_placa_antigua: 'PLACA-55', especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle', especie_forma_biologica: 'Árbol', referencia_catastro: 'Plano 2', codigo_catastro: 'CAT-22', tipo_vegetacion: null, ubicacion: 'Parque', latitud: null, longitud: null, cantidad: 1, area_verde_id: null, especie_id: 1, advertencia_placa_repetida: true },
@@ -21,7 +22,7 @@ const { listarEjemplares, alturas } = vi.hoisted(() => {
       : q === 'CATALOGO'
       ? pagina === 1 ? Array.from({ length: 25 }, (_, i) => ({ ...ejemplares[0], id: i + 100, codigo: `CAT-${i + 1}` })) : pagina === 2 ? [ejemplares[1]] : []
       : !q ? [ejemplares[0]] : q === 'PLACA-55' ? ejemplares : []
-    return resultados.map((ejemplar) => ({ ...ejemplar, altura_total_m: alturas.get(ejemplar.id) ?? null }))
+    return resultados.map((ejemplar) => ({ ...ejemplar, ...ubicaciones.get(ejemplar.id), altura_total_m: alturas.get(ejemplar.id) ?? null }))
   }) }
 })
 
@@ -37,6 +38,7 @@ vi.mock('@/services/api/ejemplares', () => ({
   cambiarEspecie: vi.fn(),
   quitarPlacaAntigua: vi.fn(),
   vincularEjemplarConArea: vi.fn(),
+  corregirUbicacionEjemplar: vi.fn(async (id: number, punto: { latitud: number; longitud: number }) => { ubicaciones.set(id, punto) }),
   listarHistorialEjemplar: vi.fn(async () => []),
   listarHistorialSituacionEjemplar: async () => [],
   cambiarSituacionEjemplar: vi.fn(async () => ({ area_verde_id: null })),
@@ -50,6 +52,7 @@ vi.mock('@/services/api/core', async (importOriginal) => ({
 vi.mock('@/services/api/mapaAsignaciones', () => ({
   listarTodasLasAreasVerdes: async () => [{ id: 42, nombre: 'Bosque Húmedo', lugar: 'Campus' }],
 }))
+vi.mock('./SelectorPuntoMapa', () => ({ default: () => null }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 7 }, roles: ['Jefe de sección'] }) }))
 vi.mock('@/config/permisosCore', () => ({ PERMISOS: { registrarInventario: 'registrar', gestionarCatalogos: 'gestionar' }, puede: () => true }))
@@ -64,6 +67,8 @@ afterEach(() => {
   cleanup()
   listarEjemplares.mockClear()
   alturas.clear()
+  ubicaciones.clear()
+  vi.mocked(cambiarSituacionEjemplar).mockClear()
   vi.mocked(listarAdjuntos).mockReset()
   vi.mocked(listarAdjuntos).mockResolvedValue([])
 })
@@ -204,6 +209,26 @@ describe('EjemplaresPage', () => {
       expect(await screen.findByText(`${altura} m`)).toBeTruthy()
       expect(screen.getByText(sugerencia)).toBeTruthy()
     }
+  })
+
+  it('corrige las coordenadas desde la ficha sin registrar un traslado', async () => {
+    render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
+    fireEvent.click(await screen.findByRole('button', { name: 'Abrir ficha de ARB-0001' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Editar ubicación' }))
+    const editor = within(await screen.findByRole('dialog', { name: 'Editar ubicación' }))
+    expect(editor.getByText(/Punto actual · -12.1, -77.1/)).toBeTruthy()
+    expect(editor.getByText(/Situación y traslados para conservar el historial/)).toBeTruthy()
+    const guardar = editor.getByRole('button', { name: 'Guardar ubicación' })
+    expect(guardar.getAttribute('aria-disabled')).toBe('true')
+
+    fireEvent.change(editor.getByLabelText('Latitud nueva'), { target: { value: '-12.069' } })
+    fireEvent.change(editor.getByLabelText('Longitud nueva'), { target: { value: '-77.079' } })
+    expect(editor.getByText(/Punto nuevo · -12.069, -77.079/)).toBeTruthy()
+    fireEvent.click(guardar)
+
+    expect(corregirUbicacionEjemplar).toHaveBeenCalledWith(1, { latitud: -12.069, longitud: -77.079 })
+    expect(cambiarSituacionEjemplar).not.toHaveBeenCalled()
+    expect(await within(screen.getByRole('group', { name: 'Ficha de ARB-0001' })).findByText('-12.069, -77.079')).toBeTruthy()
   })
 
   it('pide el destino para trasladar desde la ficha', async () => {

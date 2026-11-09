@@ -32,6 +32,10 @@ export function vincularEjemplarConArea(id: number, areaVerdeId: number): Promis
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { area_verde_id: areaVerdeId }, base: BASE })
 }
 
+export function corregirUbicacionEjemplar(id: number, punto: { latitud: number; longitud: number }): Promise<EjemplarInventario> {
+  return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: punto, base: BASE })
+}
+
 export function guardarAlturaEjemplar(id: number, altura: number): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { altura_total_m: altura }, base: BASE })
 }

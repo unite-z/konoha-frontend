@@ -23,6 +23,7 @@ import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, gua
 import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
 import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
+import EditarUbicacionEjemplar from './EditarUbicacionEjemplar'
 import FotoEjemplar from './FotoEjemplar'
 import HistorialEjemplar from './HistorialEjemplar'
 import SituacionEjemplar, { EtiquetaSituacionEjemplar } from './SituacionEjemplar'
@@ -454,6 +455,11 @@ export default function EjemplaresPage() {
                           : opcionesAreas.find((area) => area.valor === String(ejemplarSeleccionado.area_verde_id))?.texto ?? 'Área vinculada'}</dd>
                         <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
                       </dl>
+                      {puedeRegistrar && <EditarUbicacionEjemplar key={ejemplarSeleccionado.id}
+                        ejemplar={ejemplarSeleccionado} alGuardar={() => {
+                          setAviso('Ubicación actualizada.')
+                          consulta.reintentar()
+                        }} />}
                       {puedeRegistrar && areas.datos && (
                         <div className={estilos.alta}>
                           <Selector id="area-ficha-ejemplar" etiqueta="Área verde del ejemplar" valor={areaFicha} onCambiar={setAreaFicha}

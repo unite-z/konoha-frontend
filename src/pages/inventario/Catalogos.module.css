@@ -260,3 +260,24 @@
   margin: var(--space-1) 0 0;
   overflow-wrap: anywhere;
 }
+
+.puntoActual,
+.puntoNuevo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.puntoActual::before,
+.puntoNuevo::before {
+  width: 0.625rem;
+  height: 0.625rem;
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--color-text-primary);
+  content: '';
+}
+
+.puntoNuevo::before {
+  background: var(--color-action-primary);
+}
