@@ -46,8 +46,10 @@ describe('DialogoPodaMenor', () => {
     const guardado = vi.fn()
     render(<DialogoPodaMenor onCerrar={vi.fn()} onGuardado={guardado} onIncidencia={vi.fn()} />)
     const usuario = await seleccionarBase()
+    const fecha = (screen.getByLabelText(/^Fecha/) as HTMLInputElement).value
     await usuario.click(screen.getByRole('button', { name: 'Registrar poda y añadir foto' }))
     await waitFor(() => expect(guardado).toHaveBeenCalled())
+    expect(cuerpos[0].fecha_hora_actividad).toBe(`${fecha}T08:00:00-05:00`)
     expect(cuerpos[0]).toMatchObject({ parte_id: 30, tipo_actividad_id: 7, area_verde_id: 2, ejemplar_id: 9, pendiente_vinculacion: false })
   })
 
