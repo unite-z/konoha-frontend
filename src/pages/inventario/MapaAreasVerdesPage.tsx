@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
@@ -12,8 +13,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
 import { listarTiposUso } from '@/services/api/catalogosInventario'
-import { listarEjemplaresDeArea } from '@/services/api/ejemplares'
-import { asignarPoligonoMapa, listarPoligonosMapa, listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
+import { asignarPoligonoMapa, listarEjemplaresDePoligono, listarPoligonosMapa, listarTodasLasAreasVerdes, revisarImpactoPoligono, type ImpactoPoligono } from '@/services/api/mapaAsignaciones'
 import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { AreaVerde } from '@/types/areasVerdes'
@@ -156,9 +156,10 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
   const [mostrarEjemplares, setMostrarEjemplares] = useState(false)
   const [ejemplarId, setEjemplarId] = useState<number | null>(null)
   const areaId = vinculo?.area_verde_id ?? null
-  const consulta = useConsulta(mostrarEjemplares && areaId !== null ? 'ejemplares-mapa:' + areaId : null,
-    (signal) => areaId === null ? Promise.resolve([]) : listarEjemplaresDeArea(areaId, signal))
-  const puntos = useMemo<PuntoEjemplar[]>(() => {
+  const poligonoId = seleccionado ? idPoligono(seleccionado) : ''
+  const consulta = useConsulta(mostrarEjemplares && poligonoId ? 'ejemplares-mapa:' + poligonoId : null,
+    (signal) => listarEjemplaresDePoligono(poligonoId, signal))
+  const puntos = useMemo<(PuntoEjemplar & { avisoVinculo: string })[]>(() => {
     if (consulta.estado !== 'exito') return []
     return (consulta.datos ?? []).flatMap((ejemplar) => {
       const { latitud, longitud } = ejemplar
@@ -166,10 +167,12 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
         || Math.abs(latitud) > 90 || Math.abs(longitud) > 180) return []
       return [{
         id: ejemplar.id, codigo: ejemplar.codigo, latitud, longitud,
+        avisoVinculo: ejemplar.area_verde_id == null ? 'Sin área vinculada'
+          : ejemplar.area_verde_id !== areaId ? 'Vinculado a otra área' : '',
         especie: ejemplar.especie_nombre_comun ?? ejemplar.especie_nombre_cientifico ?? 'Especie sin registrar',
       }]
     })
-  }, [consulta.datos, consulta.estado])
+  }, [consulta.datos, consulta.estado, areaId])
   const ejemplar = puntos.find((punto) => punto.id === ejemplarId)
 
   return (
@@ -193,14 +196,15 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
               </BotonEnlace>
             </>
           )}
-          {puedeEditar && <EditorVinculo seleccionado={seleccionado} vinculo={vinculo} areas={areas} alGuardar={alGuardar} />}
-          {areaId !== null && (
-            <Boton className={estilos.volver} variante="secundario" aria-pressed={mostrarEjemplares}
-              onClick={() => {
-                setEjemplarId(null)
-                setMostrarEjemplares(!mostrarEjemplares)
-              }}>{mostrarEjemplares ? 'Ocultar ejemplares' : 'Mostrar ejemplares'}</Boton>
-          )}
+          {puedeEditar && <EditorVinculo seleccionado={seleccionado} vinculo={vinculo} areas={areas} alGuardar={() => {
+            alGuardar()
+            if (mostrarEjemplares) consulta.reintentar()
+          }} />}
+          <Boton className={estilos.volver} variante="secundario" aria-pressed={mostrarEjemplares}
+            onClick={() => {
+              setEjemplarId(null)
+              setMostrarEjemplares(!mostrarEjemplares)
+            }}>{mostrarEjemplares ? 'Ocultar ejemplares' : 'Mostrar ejemplares'}</Boton>
           {consulta.estado === 'cargando' && <EstadoCarga forma="tabla" texto="Cargando ejemplares…" />}
           {consulta.error?.estado === 403 ? <EstadoSinAcceso /> : consulta.estado === 'error' && (
             <EstadoError titulo="No pudimos cargar los ejemplares" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
@@ -208,9 +212,9 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
           {consulta.estado === 'exito' && (puntos.length ? (
             <Selector id="ejemplar-mapa" etiqueta="Ejemplares con coordenadas" valor={ejemplar ? String(ejemplar.id) : ''}
               opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
-              opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
-          ) : <p role="status">Esta área no tiene ejemplares con coordenadas válidas.</p>)}
-          {ejemplar && <p role="status">{ejemplar.codigo} · {ejemplar.especie}</p>}
+              opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: [punto.codigo, punto.especie, punto.avisoVinculo].filter(Boolean).join(' · ') }))} />
+          ) : <p role="status">No hay ejemplares ubicados dentro de este polígono.</p>)}
+          {ejemplar && <p role="status">{[ejemplar.codigo, ejemplar.especie, ejemplar.avisoVinculo].filter(Boolean).join(' · ')}</p>}
         </section>
       )}
     </div>
@@ -225,18 +229,33 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
 }) {
   const [borrador, setBorrador] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const [impacto, setImpacto] = useState<ImpactoPoligono | null>(null)
   const [aviso, setAviso] = useState<{ tono: 'exito' | 'error'; texto: string } | null>(null)
   const valor = borrador ?? (vinculo?.area_verde_id == null ? '' : String(vinculo.area_verde_id))
 
-  async function guardar() {
+  async function guardar(confirmado?: ImpactoPoligono) {
     setGuardando(true)
     setAviso(null)
     try {
-      const respuesta = await asignarPoligonoMapa(idPoligono(seleccionado), valor ? Number(valor) : null)
+      const id = idPoligono(seleccionado)
+      const destino = valor ? Number(valor) : null
+      const revision = confirmado ?? await revisarImpactoPoligono(id, destino)
+      if (revision.conflictos.length) {
+        const codigos = revision.conflictos.map(({ codigo }) => codigo).join(', ')
+        setAviso({ tono: 'error', texto: 'Revisa el área vinculada o la ubicación de estos ejemplares antes de guardar: ' + codigos })
+        return
+      }
+      if (!confirmado && revision.reasignables.length) {
+        setImpacto(revision)
+        return
+      }
+      const respuesta = await asignarPoligonoMapa(id, destino, revision)
+      setImpacto(null)
       setBorrador(respuesta.area_verde_id === null ? '' : String(respuesta.area_verde_id))
       setAviso({ tono: 'exito', texto: respuesta.area_verde_id ? 'Vínculo guardado.' : 'Se quitó el vínculo con el inventario.' })
       alGuardar()
     } catch (causa) {
+      setImpacto(null)
       setAviso({ tono: 'error', texto: causa instanceof Error ? causa.message : 'No se pudo guardar el vínculo.' })
     } finally {
       setGuardando(false)
@@ -250,6 +269,13 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
         opciones={areas.map((area) => ({ valor: String(area.id), texto: area.nombre + ' · ' + area.lugar }))} />
       <Boton className={estilos.volver} variante="secundario" cargando={guardando} onClick={() => void guardar()}>Guardar vínculo</Boton>
       {aviso && <AvisoEnLinea tono={aviso.tono}>{aviso.texto}</AvisoEnLinea>}
+      <DialogoConfirmacion abierto={impacto !== null} titulo="Reasignar polígono y ejemplares"
+        consecuencia="Los ejemplares indicados quedarán vinculados a la nueva área y conservarán sus coordenadas."
+        textoConfirmar="Confirmar reasignación" cargando={guardando}
+        onConfirmar={() => { if (impacto) void guardar(impacto) }}
+        onCancelar={() => setImpacto(null)}>
+        {impacto && <ul>{impacto.reasignables.map(({ id, codigo }) => <li key={id}>{codigo}</li>)}</ul>}
+      </DialogoConfirmacion>
     </>
   )
 }

@@ -24,6 +24,8 @@ import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
 import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
 import EditarUbicacionEjemplar from './EditarUbicacionEjemplar'
+import ValidacionUbicacion from './ValidacionUbicacion'
+import { useUbicacionEnMapa } from './useUbicacionEnMapa'
 import FotoEjemplar from './FotoEjemplar'
 import HistorialEjemplar from './HistorialEjemplar'
 import SituacionEjemplar, { EtiquetaSituacionEjemplar } from './SituacionEjemplar'
@@ -142,6 +144,14 @@ export default function EjemplaresPage() {
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const ubicacionAlta = useUbicacionEnMapa(latitud, longitud, areaId, true)
+  const cambioArea = Boolean(areaFicha && Number(areaFicha) !== ejemplarSeleccionado?.area_verde_id)
+  const areaPorComprobar = cambioArea ? areaFicha : String(ejemplarSeleccionado?.area_verde_id ?? '')
+  const ubicacionVinculo = useUbicacionEnMapa(
+    areaPorComprobar ? String(ejemplarSeleccionado?.latitud ?? '') : '',
+    areaPorComprobar ? String(ejemplarSeleccionado?.longitud ?? '') : '',
+    areaPorComprobar,
+  )
 
   async function ejecutar(accion: () => Promise<unknown>, mensaje: string) {
     setError(null)
@@ -214,7 +224,7 @@ export default function EjemplaresPage() {
         latitud: latitud || null,
         longitud: longitud || null,
         cantidad: Number(cantidad),
-        area_verde_id: areaId ? Number(areaId) : null,
+        area_verde_id: ubicacionAlta.area ? Number(ubicacionAlta.area) : null,
       })
       cerrarAlta()
       setEspecieFiltrada(null)
@@ -249,7 +259,8 @@ export default function EjemplaresPage() {
           descripcion="El código interno se genera al guardar. Después puedes adjuntar una foto en la ficha."
           textoConfirmar="Registrar ejemplar" enviando={guardando} error={errorAlta}
           hayCambios={Boolean(codigoPlaca || especieId || vegetacion || ubicacion || areaId || latitud || longitud || cantidad !== '1')}
-          envioDeshabilitado={!Number.isInteger(Number(cantidad)) || Number(cantidad) < 1}
+          envioDeshabilitado={!Number.isInteger(Number(cantidad)) || Number(cantidad) < 1
+            || ubicacionAlta.cargando || ubicacionAlta.fuera || ubicacionAlta.ambiguo}
           onCerrar={cerrarAlta} onEnviar={guardarEjemplar}>
           {especies.estado === 'error' && <EstadoError titulo="No se pudieron cargar las especies" descripcion={especies.error?.detalle ?? ''} onReintentar={especies.reintentar} nivel={3} />}
           {areas.estado === 'error' && <EstadoError titulo="No se pudieron cargar las áreas verdes" descripcion={areas.error?.detalle ?? ''} onReintentar={areas.reintentar} nivel={3} />}
@@ -259,8 +270,9 @@ export default function EjemplaresPage() {
               {especiesActivas && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especiesActivas.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
               <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
               <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
-              <Selector id="area-verde-ejemplar" etiqueta="Área verde" valor={areaId} onCambiar={setAreaId}
+              <Selector id="area-verde-ejemplar" etiqueta="Área verde" valor={ubicacionAlta.area} onCambiar={setAreaId}
                 disabled={!areas.datos} opcionTodos="Sin área vinculada" opciones={opcionesAreas} />
+              <ValidacionUbicacion ubicacion={ubicacionAlta} />
               <Boton variante="secundario" aria-expanded={mapaAbierto} aria-controls="mapa-alta-ejemplar" onClick={() => setMapaAbierto(!mapaAbierto)}>
                 {mapaAbierto ? 'Ocultar mapa' : 'Elegir ubicación en el mapa'}
               </Boton>
@@ -456,7 +468,8 @@ export default function EjemplaresPage() {
                         <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
                       </dl>
                       {puedeRegistrar && <EditarUbicacionEjemplar key={ejemplarSeleccionado.id}
-                        ejemplar={ejemplarSeleccionado} alGuardar={() => {
+                        ejemplar={ejemplarSeleccionado} areas={opcionesAreas} alGuardar={(actualizado) => {
+                          setAreaFicha(String(actualizado.area_verde_id ?? ''))
                           setAviso('Ubicación actualizada.')
                           consulta.reintentar()
                         }} />}
@@ -464,12 +477,13 @@ export default function EjemplaresPage() {
                         <div className={estilos.alta}>
                           <Selector id="area-ficha-ejemplar" etiqueta="Área verde del ejemplar" valor={areaFicha} onCambiar={setAreaFicha}
                             opcionTodos="Selecciona un área verde" opciones={opcionesAreas} disabled={guardando} />
-                          <Boton variante="secundario" deshabilitado={guardando || !areaFicha || Number(areaFicha) === ejemplarSeleccionado.area_verde_id}
+                          <Boton variante="secundario" deshabilitado={guardando || !cambioArea || ubicacionVinculo.fuera || ubicacionVinculo.cargando}
                             onClick={() => void ejecutar(() => vincularEjemplarConArea(ejemplarSeleccionado.id, Number(areaFicha)), 'Área vinculada al ejemplar.')}>
                             Guardar vínculo
                           </Boton>
                         </div>
                       )}
+                      {areaPorComprobar && <ValidacionUbicacion ubicacion={ubicacionVinculo} guardada={!cambioArea} />}
                     </section>
                     <section className={estilos.seccionFicha} aria-labelledby="medicion-ejemplar">
                       <h3 id="medicion-ejemplar">Altura y sugerencia de poda</h3>

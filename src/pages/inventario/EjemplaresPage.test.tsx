@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import EjemplaresPage from './EjemplaresPage'
@@ -38,7 +38,10 @@ vi.mock('@/services/api/ejemplares', () => ({
   cambiarEspecie: vi.fn(),
   quitarPlacaAntigua: vi.fn(),
   vincularEjemplarConArea: vi.fn(),
-  corregirUbicacionEjemplar: vi.fn(async (id: number, punto: { latitud: number; longitud: number }) => { ubicaciones.set(id, punto) }),
+  corregirUbicacionEjemplar: vi.fn(async (id: number, punto: { latitud: number; longitud: number; area_verde_id?: number }) => {
+    ubicaciones.set(id, { latitud: punto.latitud, longitud: punto.longitud })
+    return { ...punto, area_verde_id: punto.area_verde_id ?? null }
+  }),
   listarHistorialEjemplar: vi.fn(async () => []),
   listarHistorialSituacionEjemplar: async () => [],
   cambiarSituacionEjemplar: vi.fn(async () => ({ area_verde_id: null })),
@@ -50,6 +53,10 @@ vi.mock('@/services/api/core', async (importOriginal) => ({
   subirAdjunto: vi.fn(),
 }))
 vi.mock('@/services/api/mapaAsignaciones', () => ({
+  consultarUbicacionEnMapa: async (latitud: number, longitud: number) => ({
+    areas: latitud === -12.069 && longitud === -77.079 ? [{ id: 42, nombre: 'Bosque Húmedo' }] : [],
+    estado: 'pendiente',
+  }),
   listarTodasLasAreasVerdes: async () => [{ id: 42, nombre: 'Bosque Húmedo', lugar: 'Campus' }],
 }))
 vi.mock('./SelectorPuntoMapa', () => ({ default: () => null }))
@@ -211,7 +218,7 @@ describe('EjemplaresPage', () => {
     }
   })
 
-  it('corrige las coordenadas desde la ficha sin registrar un traslado', async () => {
+  it('corrige las coordenadas, vincula el área detectada y omite el traslado', async () => {
     render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
     fireEvent.click(await screen.findByRole('button', { name: 'Abrir ficha de ARB-0001' }))
     fireEvent.click(screen.getByRole('button', { name: 'Editar ubicación' }))
@@ -224,9 +231,12 @@ describe('EjemplaresPage', () => {
     fireEvent.change(editor.getByLabelText('Latitud nueva'), { target: { value: '-12.069' } })
     fireEvent.change(editor.getByLabelText('Longitud nueva'), { target: { value: '-77.079' } })
     expect(editor.getByText(/Punto nuevo · -12.069, -77.079/)).toBeTruthy()
+    expect(await editor.findByText('Área detectada · Bosque Húmedo')).toBeTruthy()
+    expect(editor.getByRole('combobox', { name: 'Área verde' })).toHaveProperty('value', '42')
+    await waitFor(() => expect(guardar.getAttribute('aria-disabled')).not.toBe('true'))
     fireEvent.click(guardar)
 
-    expect(corregirUbicacionEjemplar).toHaveBeenCalledWith(1, { latitud: -12.069, longitud: -77.079 })
+    expect(corregirUbicacionEjemplar).toHaveBeenCalledWith(1, { latitud: -12.069, longitud: -77.079, area_verde_id: 42 })
     expect(cambiarSituacionEjemplar).not.toHaveBeenCalled()
     expect(await within(screen.getByRole('group', { name: 'Ficha de ARB-0001' })).findByText('-12.069, -77.079')).toBeTruthy()
   })

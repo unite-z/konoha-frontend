@@ -32,7 +32,7 @@ export function vincularEjemplarConArea(id: number, areaVerdeId: number): Promis
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { area_verde_id: areaVerdeId }, base: BASE })
 }
 
-export function corregirUbicacionEjemplar(id: number, punto: { latitud: number; longitud: number }): Promise<EjemplarInventario> {
+export function corregirUbicacionEjemplar(id: number, punto: { latitud: number; longitud: number; area_verde_id?: number }): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: punto, base: BASE })
 }
 

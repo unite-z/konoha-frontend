@@ -11,6 +11,8 @@ import { cambiarSituacionEjemplar, listarHistorialSituacionEjemplar } from '@/se
 import type { EjemplarInventario, SituacionEjemplar as EstadoEjemplar } from '@/types/ejemplares'
 import { formatearFecha } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
+import ValidacionUbicacion from './ValidacionUbicacion'
+import { useUbicacionEnMapa } from './useUbicacionEnMapa'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
 import estilos from './Catalogos.module.css'
 
@@ -47,6 +49,10 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState(false)
+  const trasladando = editando && situacion === 'trasladado'
+  const destino = useUbicacionEnMapa(trasladando ? punto?.latitud ?? '' : '',
+    trasladando ? punto?.longitud ?? '' : '', area, true)
+  const destinoInvalido = trasladando && (destino.fuera || destino.cargando || destino.ambiguo)
 
   function abrirFormulario() {
     setSituacion('')
@@ -63,7 +69,7 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
 
   async function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    if (!situacion || guardando) return
+    if (!situacion || guardando || destinoInvalido) return
     if (situacion === 'trasladado' && !ubicacion.trim() && !punto) {
       setError('Escribe la nueva ubicación o elige un punto en el mapa.')
       return
@@ -75,7 +81,7 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
         situacion, fecha, motivo: motivo.trim(),
         ...(situacion === 'trasladado' && {
           ubicacion: ubicacion.trim() || undefined,
-          area_verde_id: area ? Number(area) : undefined,
+          area_verde_id: destino.area ? Number(destino.area) : undefined,
           ...punto,
         }),
       })
@@ -122,12 +128,13 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
                 <CampoFormulario id="ubicacion-traslado" etiqueta="Nueva ubicación" value={ubicacion}
                   ayuda="Escribe una referencia o marca un punto en el mapa."
                   maxLength={200} onChange={(evento) => setUbicacion(evento.target.value)} />
-                <Selector id="area-traslado" etiqueta="Área verde de destino" valor={area}
+                <Selector id="area-traslado" etiqueta="Área verde de destino" valor={destino.area}
                   onCambiar={setArea} opciones={areas} opcionTodos="Sin área vinculada" />
                 <Boton variante="secundario" aria-expanded={mapaAbierto} onClick={() => setMapaAbierto(!mapaAbierto)}>
                   {mapaAbierto ? 'Ocultar mapa' : 'Elegir destino en el mapa'}
                 </Boton>
               </div>
+              <ValidacionUbicacion ubicacion={destino} />
               {mapaAbierto && (
                 <SelectorPuntoMapa areaId={area ? Number(area) : null}
                   latitud={punto?.latitud ?? ''} longitud={punto?.longitud ?? ''}
@@ -139,7 +146,7 @@ export default function SituacionEjemplar({ ejemplar, editable, areas, alGuardar
             </>
           )}
           <div className={estilos.accionesFila}>
-            <Boton type="submit" variante="primario" deshabilitado={guardando || !motivo.trim()}>Guardar situación</Boton>
+            <Boton type="submit" variante="primario" deshabilitado={guardando || !motivo.trim() || destinoInvalido}>Guardar situación</Boton>
             <Boton variante="secundario" deshabilitado={guardando}
               onClick={() => { setEditando(false); setError(null) }}>Cancelar</Boton>
           </div>
