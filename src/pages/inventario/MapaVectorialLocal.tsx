@@ -2,10 +2,11 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
+import { nombreUsoMapa } from './clasificacionMapa'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
-type UsoMapaLocal = { id?: string; nombre: string; color: string }
+type UsoMapaLocal = { nombre: string; color: string }
 
 export interface PuntoEjemplar {
   id: number
@@ -55,11 +56,11 @@ export default function MapaVectorialLocal({
   const [hover, setHover] = useState<Hover | null>(null)
   const trazos = useMemo(() => datos.features.map((feature) => ({
     feature,
-    idUso: texto(feature.properties.clasificacion_mapa_id) || texto(feature.properties.Uso) || 'Sin uso',
+    uso: nombreUsoMapa(feature),
     trazo: ruta(feature.geometry, limites),
   })), [datos.features, limites])
-  const visibles = trazos.filter(({ idUso }) => !usoSeleccionado || idUso === usoSeleccionado)
-  const colores = new Map(usos.map((uso) => [uso.id ?? uso.nombre, uso.color]))
+  const visibles = trazos.filter(({ uso }) => !usoSeleccionado || uso === usoSeleccionado)
+  const colores = new Map(usos.map((uso) => [uso.nombre, uso.color]))
   const viewWidth = 1000 / vista.zoom
   const viewHeight = 700 / vista.zoom
 
@@ -162,11 +163,11 @@ export default function MapaVectorialLocal({
           <rect x="38" y="640" width="100" height="7" />
           <text x="38" y="632">Escala relativa</text>
         </g>
-        {visibles.map(({ feature, idUso, trazo }, indice) => {
+        {visibles.map(({ feature, uso, trazo }, indice) => {
           const bloqueado = poligonosBloqueados?.has(texto(feature.properties.mapa_id)) ?? false
           const color = poligonosBloqueados
             ? bloqueado ? 'var(--color-text-secondary)' : 'var(--color-action-primary)'
-            : colores.get(idUso) ?? 'var(--color-text-secondary)'
+            : colores.get(uso) ?? 'var(--color-text-secondary)'
           const activo = hover?.feature === feature || seleccionado === feature
           return (
             <path

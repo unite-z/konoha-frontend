@@ -46,7 +46,7 @@ afterEach(() => {
   listarEjemplaresDeArea.mockClear()
 })
 
-it('abre un jardín enlazado, carga sus ejemplares y filtra incluso los polígonos sin clasificar', async () => {
+it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar los ejemplares', async () => {
   const usuario = userEvent.setup()
   render(<MemoryRouter initialEntries={['/mapa?area=42']}><MapaAreasVerdesPage /></MemoryRouter>)
 
@@ -60,14 +60,11 @@ it('abre un jardín enlazado, carga sus ejemplares y filtra incluso los polígon
   expect(within(ejemplares).queryByRole('option', { name: /AR-02/ })).toBeNull()
   expect(screen.getByRole('link', { name: 'Buscar ficha en el inventario' }).getAttribute('href')).toContain('q=Bosque+H%C3%BAmedo')
 
-  const inventario = screen.getByRole('button', { name: 'Recreación · Inventario 1' })
-  const fuente = screen.getByRole('button', { name: 'Recreación · Mapa 1' })
-  fireEvent.click(inventario)
-  expect(inventario.getAttribute('aria-pressed')).toBe('true')
-  expect(screen.getByRole('img', { name: '1 polígonos visibles' })).toBeTruthy()
-  fireEvent.click(fuente)
-  expect(fuente.getAttribute('aria-pressed')).toBe('true')
-  expect(inventario.getAttribute('aria-pressed')).toBe('false')
+  const recreacion = screen.getByRole('button', { name: 'Recreación 2' })
+  fireEvent.click(recreacion)
+  expect(recreacion.getAttribute('aria-pressed')).toBe('true')
+  expect(screen.getByRole('img', { name: '2 polígonos visibles' })).toBeTruthy()
+  expect(screen.getByText('Origen del tipo de uso · Ficha del inventario')).toBeTruthy()
 
   fireEvent.click(screen.getByRole('button', { name: 'Sin catalogar 1' }))
   expect(screen.getByRole('img', { name: '1 polígonos visibles' })).toBeTruthy()
@@ -76,8 +73,10 @@ it('abre un jardín enlazado, carga sus ejemplares y filtra incluso los polígon
   fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar jardín' }), { target: { value: 'jardin central' } })
   const resultados = screen.getByRole('list', { name: 'Jardines encontrados' })
   expect(within(resultados).getAllByRole('button')).toHaveLength(3)
+  fireEvent.click(recreacion)
   within(resultados).getByRole('button', { name: /200 m²/ }).focus()
   await usuario.keyboard('{Enter}')
   expect(screen.getByRole('heading', { name: 'Jardín Central' })).toBeTruthy()
-  expect(screen.getByRole('img', { name: '3 polígonos visibles' })).toBeTruthy()
+  expect(screen.getByText('Origen del tipo de uso · Mapa original')).toBeTruthy()
+  expect(screen.getByRole('img', { name: '2 polígonos visibles' })).toBeTruthy()
 })
