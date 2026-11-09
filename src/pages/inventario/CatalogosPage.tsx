@@ -33,7 +33,9 @@ export default function CatalogosPage() {
   const capataces = useConsulta('capataces', listarCapataces)
   const intervenciones = useConsulta('tipos-intervencion-todos', (signal) => listarTiposIntervencion(true, signal))
   const [tipoNombre, setTipoNombre] = useState('')
-  const [tipoColor, setTipoColor] = useState('#1B5E20')
+  const [tipoColor, setTipoColor] = useState(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--map-uso-predeterminado').trim(),
+  )
   const [intervencionNombre, setIntervencionNombre] = useState('')
   const [intervencionAlcance, setIntervencionAlcance] = useState('')
   const [intervencionEsPoda, setIntervencionEsPoda] = useState(false)
@@ -96,13 +98,14 @@ export default function CatalogosPage() {
         <form className={estilos.alta} onSubmit={(e) => {
           e.preventDefault()
           void ejecutar(async () => {
-            await crearTipoUso(tipoNombre.trim(), tipoColor)
+            await crearTipoUso(tipoNombre.trim(), tipoColor || undefined)
             setTipoNombre('')
           }, 'Tipo de uso creado.')
         }}>
           <CampoFormulario id="nuevo-tipo-uso" etiqueta="Añadir tipo de uso" value={tipoNombre} onChange={(e) => setTipoNombre(e.target.value)} maxLength={120} required />
           <label className={estilos.selectorColorGrupo} htmlFor="color-nuevo-tipo-uso">
             <span>Color del tipo</span>
+            {/* Excepción al sistema (AV-351): el selector nativo captura un color del catálogo. */}
             <input id="color-nuevo-tipo-uso" className={estilos.selectorColor} type="color" value={tipoColor} onChange={(e) => setTipoColor(e.target.value)} />
             <span className={estilos.detalle}>{tipoColor.toUpperCase()}</span>
           </label>
