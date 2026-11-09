@@ -18,12 +18,11 @@ import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '@/services/ap
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { AreaVerde } from '@/types/areasVerdes'
 import type { PoligonoMapaAsignado } from '@/types/mapaInventario'
-import { construirIndicePoligonos, enriquecerGeoJSON, type TipoUsoMapa } from './clasificacionMapa'
+import { construirIndicePoligonos, enriquecerGeoJSON, nombreUsoMapa, type TipoUsoMapa } from './clasificacionMapa'
 import MapaVectorialLocal, { type PuntoEjemplar } from './MapaVectorialLocal'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type Poligono = AreasVerdesGeoJSON['features'][number]
-const SIN_CLASIFICAR = 'Sin clasificar'
 
 export default function MapaAreasVerdesPage() {
   usePaginaActual('Mapa del campus', [MIGAS_INVENTARIO.areasVerdes, MIGAS_INVENTARIO.mapa])
@@ -77,19 +76,19 @@ function MapaInventario({ datos, asignaciones, tiposUso, areas, puedeEditar, alG
   const solicitado = poligonoEnlace
     ? mapa.features.find((poligono) => idPoligono(poligono) === poligonoEnlace)
     : areaEnlace ? mapa.features.find((poligono) => String(indice.get(idPoligono(poligono))?.area_verde_id) === areaEnlace) : undefined
-  const seleccionado = solicitado && (!uso || claveUso(solicitado) === uso) ? solicitado : undefined
+  const seleccionado = solicitado && (!uso || nombreUsoMapa(solicitado) === uso) ? solicitado : undefined
   const vinculo = seleccionado ? indice.get(idPoligono(seleccionado)) : undefined
   const termino = normalizar(busqueda)
   const resultados = termino ? mapa.features.filter((poligono) => {
     const nombreInventario = indice.get(idPoligono(poligono))?.area_verde_nombre ?? ''
     return idPoligono(poligono) && [nombreInventario, texto(poligono.properties.Nombre)].some((nombre) => normalizar(nombre).includes(termino))
   }) : []
-  const totalVisible = uso ? usos.find((tipo) => tipo.id === uso)?.cantidad ?? 0 : mapa.features.length
+  const totalVisible = uso ? usos.find((tipo) => tipo.nombre === uso)?.cantidad ?? 0 : mapa.features.length
 
   function seleccionar(poligono: Poligono) {
     const id = idPoligono(poligono)
     if (!id) return
-    if (uso && claveUso(poligono) !== uso) setUso('')
+    if (uso && nombreUsoMapa(poligono) !== uso) setUso('')
     setParametros({ poligono: id }, { replace: true })
   }
 
@@ -109,7 +108,7 @@ function MapaInventario({ datos, asignaciones, tiposUso, areas, puedeEditar, alG
                 return (
                   <li key={id}>
                     <Boton variante="fantasma" aria-pressed={seleccionado === poligono} onClick={() => seleccionar(poligono)}>
-                      {nombre} · {usoPoligono(poligono)} · {formatearSuperficie(superficie)}
+                      {nombre} · {nombreUsoMapa(poligono)} · {formatearSuperficie(superficie)}
                     </Boton>
                   </li>
                 )
@@ -123,12 +122,12 @@ function MapaInventario({ datos, asignaciones, tiposUso, areas, puedeEditar, alG
             <h2>Tipos de uso</h2>
             <Boton variante="fantasma" aria-pressed={!uso} onClick={() => setUso('')}>Todos los usos</Boton>
             {usos.map((tipo) => (
-              <Boton key={tipo.id} variante="fantasma" aria-pressed={uso === tipo.id}
-                onClick={() => setUso(uso === tipo.id ? '' : tipo.id)}>
+              <Boton key={tipo.nombre} variante="fantasma" aria-pressed={uso === tipo.nombre}
+                onClick={() => setUso(uso === tipo.nombre ? '' : tipo.nombre)}>
                 <svg className={estilos.muestraColor} viewBox="0 0 16 16" aria-hidden="true">
                   <rect width="16" height="16" fill={tipo.color} />
                 </svg>
-                {tipo.nombre}{usos.some((otro) => otro.id !== tipo.id && otro.nombre === tipo.nombre) && (tipo.id.startsWith('tipo:') ? ' · Inventario' : ' · Mapa')} <span className={estilos.cantidad}>{tipo.cantidad}</span>
+                {tipo.nombre} <span className={estilos.cantidad}>{tipo.cantidad}</span>
               </Boton>
             ))}
             <p className={estilos.resumen} role="status">{totalVisible} de {mapa.features.length} polígonos visibles</p>
@@ -182,7 +181,8 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
       {seleccionado && (
         <section className={estilos.edicion} aria-label="Detalle del área seleccionada">
           <h2>{nombrePoligono(seleccionado, vinculo)}</h2>
-          <p>Tipo de uso · {usoPoligono(seleccionado)}</p>
+          <p>Tipo de uso · {nombreUsoMapa(seleccionado)}</p>
+          <p>Origen del tipo de uso · {seleccionado.properties.origen_clasificacion === 'area-vinculada' ? 'Ficha del inventario' : 'Mapa original'}</p>
           <p>Superficie cartográfica · {formatearSuperficie(seleccionado.properties['Área'])}</p>
           {areaId !== null && (
             <>
@@ -255,34 +255,21 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
 }
 
 function obtenerUsos(mapa: AreasVerdesGeoJSON, tiposUso: TipoUsoMapa[]) {
-  const grupos = new Map<string, { id: string; nombre: string; cantidad: number; color: string }>()
-  const colores = new Map(tiposUso.map((tipo) => [tipo.id, tipo.color]))
-  const coloresDeReferencia = new Map(tiposUso.map((tipo) => [tipo.nombre.toLocaleLowerCase('es'), tipo.color]))
+  const grupos = new Map<string, number>()
+  const colores = new Map(tiposUso.map((tipo) => [tipo.nombre.toLocaleLowerCase('es'), tipo.color]))
   for (const poligono of mapa.features) {
-    const id = claveUso(poligono)
-    const grupo = grupos.get(id)
-    if (grupo) {
-      grupo.cantidad++
-    } else {
-      const tipoId = Number(poligono.properties.tipo_uso_efectivo_id)
-      const nombre = usoPoligono(poligono)
-      const color = id.startsWith('tipo:') ? colores.get(tipoId) : coloresDeReferencia.get(nombre.toLocaleLowerCase('es'))
-      grupos.set(id, { id, nombre, cantidad: 1, color: color ?? 'var(--color-text-secondary)' })
-    }
+    const nombre = nombreUsoMapa(poligono)
+    grupos.set(nombre, (grupos.get(nombre) ?? 0) + 1)
   }
-  return [...grupos.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-}
-
-function claveUso(poligono: Poligono) {
-  return texto(poligono.properties.clasificacion_mapa_id)
+  return [...grupos].map(([nombre, cantidad]) => ({
+    nombre,
+    cantidad,
+    color: colores.get(nombre.toLocaleLowerCase('es')) ?? 'var(--color-text-secondary)',
+  })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
 }
 
 function idPoligono(poligono: Poligono) {
   return texto(poligono.properties.mapa_id)
-}
-
-function usoPoligono(poligono: Poligono) {
-  return texto(poligono.properties.clasificacion_efectiva) || SIN_CLASIFICAR
 }
 
 function nombrePoligono(poligono: Poligono, vinculo?: PoligonoMapaAsignado) {

@@ -59,9 +59,6 @@ export function enriquecerGeoJSON(
         properties: {
           ...feature.properties,
           clasificacion_efectiva: clasificacion.tipoUsoEfectivo,
-          clasificacion_mapa_id: clasificacion.tipoUsoEfectivoId === null
-            ? `origen:${clasificacion.usoOriginal}` : `tipo:${clasificacion.tipoUsoEfectivoId}`,
-          tipo_uso_efectivo_id: clasificacion.tipoUsoEfectivoId,
           origen_clasificacion: clasificacion.origenClasificacion,
         },
       }
@@ -73,6 +70,10 @@ export function obtenerTiposEfectivos(geojson: AreasVerdesGeoJSON): string[] {
   return [...new Set(geojson.features
     .map((feature) => texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso))
     .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
+}
+
+export function nombreUsoMapa(poligono: AreasVerdesGeoJSON['features'][number]) {
+  return texto(poligono.properties.clasificacion_efectiva) || texto(poligono.properties.Uso) || 'Sin uso'
 }
 
 function texto(valor: unknown): string {
