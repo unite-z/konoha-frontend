@@ -488,7 +488,7 @@ export default function EjemplaresPage() {
                   <section key={`fotos-${ejemplarSeleccionado.id}`} className={estilos.seccionFicha} aria-labelledby="foto-del-ejemplar">
                     <h3 id="foto-del-ejemplar">Fotografía del ejemplar</h3>
                     <FotoEjemplar ejemplar={ejemplarSeleccionado} revision={revisionFotos[ejemplarSeleccionado.id] ?? 0} />
-                    <Adjuntos entidad="ejemplar" registroId={ejemplarSeleccionado.id}
+                    <Adjuntos entidad="ejemplar" registroId={ejemplarSeleccionado.id} presentacion="foto"
                       puedeAdjuntar={puedeRegistrar} tiposAceptados=".jpg,.jpeg,.png" ayudaCarga="Fotografías JPEG o PNG, de hasta 20 MB."
                       prepararArchivo={(archivo) => archivo.type === 'image/jpeg' || archivo.type === 'image/png'
                         ? Promise.resolve(archivo) : Promise.reject(new Error('Selecciona una fotografía JPEG o PNG.'))}
