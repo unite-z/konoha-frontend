@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
-import { nombreUsoMapa } from './clasificacionMapa'
+import { nombrePoligonoMapa, nombreUsoMapa } from './clasificacionMapa'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
@@ -89,6 +89,19 @@ export default function MapaVectorialLocal({
     svg.addEventListener('wheel', acercarConRueda, { passive: false })
     return () => svg.removeEventListener('wheel', acercarConRueda)
   }, [])
+
+  const ejemplar = puntos.find((punto) => punto.id === ejemplarId)
+  const latitudEnfocada = ejemplar?.latitud
+  const longitudEnfocada = ejemplar?.longitud
+  useEffect(() => {
+    if (latitudEnfocada === undefined || longitudEnfocada === undefined) return
+    const [x, y] = proyectar(longitudEnfocada, latitudEnfocada, limites)
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return
+    const cuadro = requestAnimationFrame(() => {
+      setVista((actual) => ajustarVista(x, y, Math.max(3, actual.zoom)))
+    })
+    return () => cancelAnimationFrame(cuadro)
+  }, [ejemplarId, latitudEnfocada, longitudEnfocada, limites])
 
   function cambiarZoom(factor: number) {
     setVista((actual) => ajustarVista(actual.x, actual.y, limitar(actual.zoom * factor, 1, 8)))
@@ -185,7 +198,7 @@ export default function MapaVectorialLocal({
               onClick={() => { if (modo === 'seleccionar' && !bloqueado) onSeleccionar?.(feature) }}
             >
               {poligonosBloqueados && (
-                <title>{texto(feature.properties.Nombre) || 'Polígono del campus'} · {bloqueado ? 'Ya vinculado' : 'Disponible'}</title>
+                <title>{nombrePoligonoMapa(feature)} · {bloqueado ? 'Ya vinculado' : 'Disponible'}</title>
               )}
             </path>
           )
@@ -210,7 +223,7 @@ export default function MapaVectorialLocal({
       <p className={estilos.instruccionZoom}>Ctrl o ⌘ + rueda para cambiar el zoom</p>
       {hover && (
         <div className={estilos.tooltipMapa} role="status" style={{ left: hover.x, top: hover.y }}> {/* estilo-calculado: posición del mapa */}
-          <strong>{texto(hover.feature.properties?.Nombre) || 'Área verde del campus'}</strong>
+          <strong>{nombrePoligonoMapa(hover.feature)}</strong>
           <span>Tipo de uso: {texto(hover.feature.properties?.clasificacion_efectiva) || 'Sin clasificar'}</span>
           <span>Superficie: {formatearSuperficie(hover.feature.properties?.['Área'])}</span>
         </div>

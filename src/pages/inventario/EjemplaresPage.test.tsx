@@ -29,6 +29,10 @@ const { listarEjemplares, alturas, ubicaciones } = vi.hoisted(() => {
 vi.mock('@/services/api/ejemplares', () => ({
   EJEMPLARES_POR_PAGINA: 25,
   listarEjemplares,
+  listarEjemplarPorCodigo: async (codigo: string) => (await listarEjemplares('PLACA-55')).map((ejemplar) => ({
+    ...ejemplar,
+    ...(ejemplar.codigo === codigo ? { nombre_poligono: 'Jardín Rosales' } : {}),
+  })),
   listarEspecies: async (incluirInactivas: boolean) => [
     { id: 1, nombre_comun: 'Molle', nombre_cientifico: 'Schinus molle', forma_biologica: 'Árbol', activo: true },
     ...(incluirInactivas ? [{ id: 3, nombre_comun: 'Ciprés', nombre_cientifico: 'Cupressus sempervirens', forma_biologica: 'Árbol', activo: false }] : []),
@@ -81,6 +85,15 @@ afterEach(() => {
 })
 
 describe('EjemplaresPage', () => {
+  it('abre la ficha exacta desde el mapa y muestra el nombre cartográfico sin asignar un área', async () => {
+    render(<MemoryRouter initialEntries={['/areas-verdes/ejemplares?ejemplar=ARB-0001']}><EjemplaresPage /></MemoryRouter>)
+    const ficha = await screen.findByRole('group', { name: 'Ficha de ARB-0001' })
+    expect(within(ficha).getByText('Jardín Rosales · Sin área vinculada')).toBeTruthy()
+    expect(within(ficha).getByText('Referencia de ubicación')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Abrir ficha de ARB-0002' })).toBeNull()
+    expect(vincularEjemplarConArea).not.toHaveBeenCalled()
+  })
+
   it('abre y cierra la ficha desde el listado inicial sin buscar y omite datos de catastro vacíos', async () => {
     render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
     const abrir = await screen.findByRole('button', { name: 'Abrir ficha de ARB-0001' })

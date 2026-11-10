@@ -50,14 +50,13 @@ export function enriquecerGeoJSON(
     features: geojson.features.map((feature) => {
       const idFuente = texto(feature.properties?.mapa_id)
       const usoFuente = texto(feature.properties?.Uso)
-      const clasificacion = obtenerClasificacionPoligono(
-        usoFuente || 'Sin uso',
-        idFuente ? indice.get(idFuente) : undefined,
-      )
+      const asignacion = indice.get(idFuente)
+      const clasificacion = obtenerClasificacionPoligono(usoFuente || 'Sin uso', asignacion)
       return {
         ...feature,
         properties: {
           ...feature.properties,
+          nombre_visible: asignacion?.area_verde_nombre || texto(feature.properties?.Nombre),
           clasificacion_efectiva: clasificacion.tipoUsoEfectivo,
           origen_clasificacion: clasificacion.origenClasificacion,
         },
@@ -70,6 +69,10 @@ export function obtenerTiposEfectivos(geojson: AreasVerdesGeoJSON): string[] {
   return [...new Set(geojson.features
     .map((feature) => texto(feature.properties?.clasificacion_efectiva) || texto(feature.properties?.Uso))
     .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
+}
+
+export function nombrePoligonoMapa(poligono: AreasVerdesGeoJSON['features'][number]) {
+  return texto(poligono.properties.nombre_visible) || texto(poligono.properties.Nombre) || 'Área verde del campus'
 }
 
 export function nombreUsoMapa(poligono: AreasVerdesGeoJSON['features'][number]) {

@@ -26,6 +26,9 @@ export interface EjemplarInventario {
   longitud: number | null
   cantidad: number
   area_verde_id: number | null
+  area_verde_nombre?: string | null
+  nombre_poligono?: string | null
+  varios_poligonos?: boolean
   altura_total_m: number | null
   situacion: SituacionEjemplar
   fecha_situacion: FechaIso | null

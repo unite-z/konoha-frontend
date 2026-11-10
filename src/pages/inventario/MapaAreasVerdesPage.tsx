@@ -18,7 +18,7 @@ import { cargarAreasVerdesGeoJSON, type AreasVerdesGeoJSON } from '@/services/ap
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { AreaVerde } from '@/types/areasVerdes'
 import type { PoligonoMapaAsignado } from '@/types/mapaInventario'
-import { construirIndicePoligonos, enriquecerGeoJSON, nombreUsoMapa, type TipoUsoMapa } from './clasificacionMapa'
+import { construirIndicePoligonos, enriquecerGeoJSON, nombrePoligonoMapa, nombreUsoMapa, type TipoUsoMapa } from './clasificacionMapa'
 import MapaVectorialLocal, { type PuntoEjemplar } from './MapaVectorialLocal'
 import estilos from './MapaAreasVerdesPage.module.css'
 
@@ -103,7 +103,7 @@ function MapaInventario({ datos, asignaciones, tiposUso, areas, puedeEditar, alG
               {resultados.map((poligono) => {
                 const id = idPoligono(poligono)
                 const area = indice.get(id)
-                const nombre = nombrePoligono(poligono, area)
+                const nombre = nombrePoligonoMapa(poligono)
                 const superficie = area?.superficie_registrada_m2 ?? poligono.properties['Área']
                 return (
                   <li key={id}>
@@ -159,7 +159,7 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
   const poligonoId = seleccionado ? idPoligono(seleccionado) : ''
   const consulta = useConsulta(mostrarEjemplares && poligonoId ? 'ejemplares-mapa:' + poligonoId : null,
     (signal) => listarEjemplaresDePoligono(poligonoId, signal))
-  const puntos = useMemo<(PuntoEjemplar & { avisoVinculo: string })[]>(() => {
+  const puntos = useMemo<(PuntoEjemplar & { nombreArea: string; avisoVinculo: string })[]>(() => {
     if (consulta.estado !== 'exito') return []
     return (consulta.datos ?? []).flatMap((ejemplar) => {
       const { latitud, longitud } = ejemplar
@@ -167,55 +167,74 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
         || Math.abs(latitud) > 90 || Math.abs(longitud) > 180) return []
       return [{
         id: ejemplar.id, codigo: ejemplar.codigo, latitud, longitud,
+        nombreArea: ejemplar.area_verde_nombre ?? areas.find((area) => area.id === ejemplar.area_verde_id)?.nombre ?? '',
         avisoVinculo: ejemplar.area_verde_id == null ? 'Sin área vinculada'
           : ejemplar.area_verde_id !== areaId ? 'Vinculado a otra área' : '',
         especie: ejemplar.especie_nombre_comun ?? ejemplar.especie_nombre_cientifico ?? 'Especie sin registrar',
       }]
     })
-  }, [consulta.datos, consulta.estado, areaId])
-  const ejemplar = puntos.find((punto) => punto.id === ejemplarId)
+  }, [consulta.datos, consulta.estado, areaId, areas])
+  const ejemplar = puntos.length === 1 ? puntos[0] : puntos.find((punto) => punto.id === ejemplarId)
 
   return (
     <div className={estilos.columnaMapa}>
       <section className={estilos.panelMapa} aria-label="Mapa interactivo de áreas verdes del campus">
         <MapaVectorialLocal datos={mapa} usos={usos} usoSeleccionado={uso} seleccionado={seleccionado}
-          onSeleccionar={onSeleccionar} puntos={puntos} ejemplarId={ejemplarId} onEjemplar={setEjemplarId} />
+          onSeleccionar={onSeleccionar} puntos={puntos} ejemplarId={ejemplar?.id} onEjemplar={setEjemplarId} />
       </section>
       {seleccionado && (
-        <section className={estilos.edicion} aria-label="Detalle del área seleccionada">
-          <h2>{nombrePoligono(seleccionado, vinculo)}</h2>
-          <p>Tipo de uso · {nombreUsoMapa(seleccionado)}</p>
-          <p>Origen del tipo de uso · {seleccionado.properties.origen_clasificacion === 'area-vinculada' ? 'Ficha del inventario' : 'Mapa original'}</p>
-          <p>Superficie cartográfica · {formatearSuperficie(seleccionado.properties['Área'])}</p>
-          {areaId !== null && (
-            <>
-              <p>Superficie registrada · {formatearSuperficie(vinculo?.superficie_registrada_m2)}</p>
-              <BotonEnlace className={estilos.volver} variante="enlace"
-                to={`${RUTAS_INVENTARIO.areasVerdes}?${new URLSearchParams({ q: vinculo?.area_verde_nombre ?? '' })}`}>
-                Buscar ficha en el inventario
-              </BotonEnlace>
-            </>
-          )}
-          {puedeEditar && <EditorVinculo seleccionado={seleccionado} vinculo={vinculo} areas={areas} alGuardar={() => {
-            alGuardar()
-            if (mostrarEjemplares) consulta.reintentar()
-          }} />}
-          <Boton className={estilos.volver} variante="secundario" aria-pressed={mostrarEjemplares}
-            onClick={() => {
-              setEjemplarId(null)
-              setMostrarEjemplares(!mostrarEjemplares)
-            }}>{mostrarEjemplares ? 'Ocultar ejemplares' : 'Mostrar ejemplares'}</Boton>
-          {consulta.estado === 'cargando' && <EstadoCarga forma="tabla" texto="Cargando ejemplares…" />}
-          {consulta.error?.estado === 403 ? <EstadoSinAcceso /> : consulta.estado === 'error' && (
-            <EstadoError titulo="No pudimos cargar los ejemplares" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
-          )}
-          {consulta.estado === 'exito' && (puntos.length ? (
-            <Selector id="ejemplar-mapa" etiqueta="Ejemplares con coordenadas" valor={ejemplar ? String(ejemplar.id) : ''}
-              opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
-              opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: [punto.codigo, punto.especie, punto.avisoVinculo].filter(Boolean).join(' · ') }))} />
-          ) : <p role="status">No hay ejemplares ubicados dentro de este polígono.</p>)}
-          {ejemplar && <p role="status">{[ejemplar.codigo, ejemplar.especie, ejemplar.avisoVinculo].filter(Boolean).join(' · ')}</p>}
-        </section>
+        <div className={estilos.panelDetalle}>
+          <section className={estilos.edicion} aria-label="Detalle del área seleccionada">
+            <h2>{nombrePoligonoMapa(seleccionado)}</h2>
+            <p>Tipo de uso · {nombreUsoMapa(seleccionado)}</p>
+            <p>Origen del tipo de uso · {seleccionado.properties.origen_clasificacion === 'area-vinculada' ? 'Ficha del inventario' : 'Mapa original'}</p>
+            <p>Superficie cartográfica · {formatearSuperficie(seleccionado.properties['Área'])}</p>
+            {areaId !== null && (
+              <>
+                <p>Superficie registrada · {formatearSuperficie(vinculo?.superficie_registrada_m2)}</p>
+                <BotonEnlace className={estilos.volver} variante="enlace"
+                  to={`${RUTAS_INVENTARIO.areasVerdes}?${new URLSearchParams({ q: vinculo?.area_verde_nombre ?? '' })}`}>
+                  Ver área en el inventario
+                </BotonEnlace>
+              </>
+            )}
+            {puedeEditar && <EditorVinculo seleccionado={seleccionado} vinculo={vinculo} areas={areas} alGuardar={() => {
+              alGuardar()
+              if (mostrarEjemplares) consulta.reintentar()
+            }} />}
+          </section>
+          <section className={estilos.edicion} aria-label="Ejemplares del polígono">
+            <div className={estilos.cabeceraDetalle}>
+              <h2>Ejemplares</h2>
+              <Boton variante="secundario" compacto aria-pressed={mostrarEjemplares}
+                onClick={() => {
+                  setEjemplarId(null)
+                  setMostrarEjemplares(!mostrarEjemplares)
+                }}>{mostrarEjemplares ? 'Ocultar ejemplares' : 'Mostrar ejemplares'}</Boton>
+            </div>
+            {consulta.estado === 'cargando' && <EstadoCarga forma="tabla" texto="Cargando ejemplares…" />}
+            {consulta.error?.estado === 403 ? <EstadoSinAcceso /> : consulta.estado === 'error' && (
+              <EstadoError titulo="No pudimos cargar los ejemplares" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+            )}
+            {puntos.length > 1 && (
+              <Selector id="ejemplar-mapa" etiqueta="Ejemplares con coordenadas" valor={ejemplar ? String(ejemplar.id) : ''}
+                opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
+                opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
+            )}
+            {consulta.estado === 'exito' && !puntos.length && <p role="status">No hay ejemplares ubicados dentro de este polígono.</p>}
+            {ejemplar && (
+              <div className={estilos.detalleEjemplar}>
+                <strong>{ejemplar.codigo} · {ejemplar.especie}</strong>
+                <p>{ejemplar.nombreArea || ejemplar.avisoVinculo || 'Área vinculada'}</p>
+                {ejemplar.nombreArea && ejemplar.avisoVinculo && <p>{ejemplar.avisoVinculo}</p>}
+                <BotonEnlace variante="secundario" compacto
+                  to={`${RUTAS_INVENTARIO.ejemplares}?${new URLSearchParams({ ejemplar: ejemplar.codigo })}`}>
+                  Abrir ficha
+                </BotonEnlace>
+              </div>
+            )}
+          </section>
+        </div>
       )}
     </div>
   )
@@ -231,9 +250,11 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
   const [guardando, setGuardando] = useState(false)
   const [impacto, setImpacto] = useState<ImpactoPoligono | null>(null)
   const [aviso, setAviso] = useState<{ tono: 'exito' | 'error'; texto: string } | null>(null)
-  const valor = borrador ?? (vinculo?.area_verde_id == null ? '' : String(vinculo.area_verde_id))
+  const vigente = String(vinculo?.area_verde_id ?? '')
+  const valor = borrador ?? vigente
 
   async function guardar(confirmado?: ImpactoPoligono) {
+    if (valor === vigente) return
     setGuardando(true)
     setAviso(null)
     try {
@@ -264,10 +285,12 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
 
   return (
     <>
-      <Selector id="area-poligono" etiqueta="Cambiar área vinculada" valor={valor} disabled={guardando}
-        onCambiar={setBorrador} opcionTodos="Sin vincular"
-        opciones={areas.map((area) => ({ valor: String(area.id), texto: area.nombre + ' · ' + area.lugar }))} />
-      <Boton className={estilos.volver} variante="secundario" cargando={guardando} onClick={() => void guardar()}>Guardar vínculo</Boton>
+      <div className={estilos.filaVinculo}>
+        <Selector id="area-poligono" etiqueta="Cambiar área vinculada" valor={valor} disabled={guardando}
+          onCambiar={setBorrador} opcionTodos="Sin vincular"
+          opciones={areas.map((area) => ({ valor: String(area.id), texto: area.nombre + ' · ' + area.lugar }))} />
+        <Boton variante="secundario" cargando={guardando} deshabilitado={valor === vigente} onClick={() => void guardar()}>Guardar vínculo</Boton>
+      </div>
       {aviso && <AvisoEnLinea tono={aviso.tono}>{aviso.texto}</AvisoEnLinea>}
       <DialogoConfirmacion abierto={impacto !== null} titulo="Reasignar polígono y ejemplares"
         consecuencia="Los ejemplares indicados quedarán vinculados a la nueva área y conservarán sus coordenadas."
@@ -296,10 +319,6 @@ function obtenerUsos(mapa: AreasVerdesGeoJSON, tiposUso: TipoUsoMapa[]) {
 
 function idPoligono(poligono: Poligono) {
   return texto(poligono.properties.mapa_id)
-}
-
-function nombrePoligono(poligono: Poligono, vinculo?: PoligonoMapaAsignado) {
-  return vinculo?.area_verde_nombre || texto(poligono.properties.Nombre) || 'Área verde del campus'
 }
 
 function texto(valor: string | number | null | undefined) {
