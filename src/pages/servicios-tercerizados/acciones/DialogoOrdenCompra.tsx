@@ -9,6 +9,7 @@ import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import { registrarOrdenCompra } from '@/services/api/tercerizados'
 import type { Atencion } from '@/types/tercerizados'
+import { textoOrden } from '@/utils/estadosTercerizados'
 import { LARGO_MAXIMO_OC, validarOrdenCompra, type ErroresOrdenCompra } from '@/utils/validacionTercerizados'
 import { useOperacionAtencion } from './useOperacionAtencion'
 
@@ -33,6 +34,7 @@ function erroresServidor(campos: string[]): ErroresOrdenCompra {
 
 function Formulario({ atencion, onCerrar, onActualizada, onExito }: Omit<DialogoOrdenCompraProps, 'abierto'>) {
   const tieneOc = Boolean(atencion.numero_orden_compra)
+  const orden = textoOrden(atencion.clase)
   const [numero, setNumero] = useState(tieneOc ? atencion.numero_orden_compra : '')
   const [motivo, setMotivo] = useState('')
   const [errores, setErrores] = useState<ErroresOrdenCompra>({})
@@ -42,7 +44,7 @@ function Formulario({ atencion, onCerrar, onActualizada, onExito }: Omit<Dialogo
   const servidor = erroresServidor(error?.campos ?? [])
 
   async function registrar() {
-    const nuevos = validarOrdenCompra({ numero, motivo }, tieneOc, atencion.numero_orden_compra)
+    const nuevos = validarOrdenCompra({ numero, motivo }, tieneOc, atencion.numero_orden_compra, orden)
     setErrores(nuevos)
     if (nuevos.numero || nuevos.motivo) {
       document.getElementById(nuevos.numero ? ID_NUMERO : ID_MOTIVO)?.focus()
@@ -54,15 +56,15 @@ function Formulario({ atencion, onCerrar, onActualizada, onExito }: Omit<Dialogo
         registrarOrdenCompra(atencion.id, tieneOc ? { numero_orden_compra: valor, motivo: motivo.trim() } : { numero_orden_compra: valor }),
       aplicada: (actual) => actual.numero_orden_compra === valor,
     })
-    if (ok) onExito(tieneOc ? 'Orden de compra corregida' : 'Orden de compra registrada')
+    if (ok) onExito(`${textoOrden(atencion.clase, true)} ${tieneOc ? 'corregida' : 'registrada'}`)
   }
 
   return (
     <DialogoFormulario
       abierto
-      titulo={tieneOc ? 'Corregir orden de compra' : 'Registrar orden de compra'}
-      descripcion="Registra el número de la orden emitida por Logística. El sistema no emite ni aprueba órdenes."
-      textoConfirmar={tieneOc ? 'Corregir orden de compra' : 'Registrar orden de compra'}
+      titulo={`${tieneOc ? 'Corregir' : 'Registrar'} ${orden}`}
+      descripcion={`Registra el número de la ${orden} emitida por Logística. El sistema no emite ni aprueba órdenes.`}
+      textoConfirmar={`${tieneOc ? 'Corregir' : 'Registrar'} ${orden}`}
       enviando={enviando}
       hayCambios={hayCambios}
       error={error}
@@ -71,7 +73,7 @@ function Formulario({ atencion, onCerrar, onActualizada, onExito }: Omit<Dialogo
     >
       <CampoFormulario
         id={ID_NUMERO}
-        etiqueta="Número de la orden de compra"
+        etiqueta={`Número de la ${orden}`}
         obligatorio
         ayuda={tieneOc ? `Registrada: ${atencion.numero_orden_compra}` : 'Por ejemplo, OC-2026-001'}
         maxLength={LARGO_MAXIMO_OC}

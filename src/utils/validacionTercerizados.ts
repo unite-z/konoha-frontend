@@ -23,13 +23,14 @@ export function validarOrdenCompra(
   valores: { numero: string; motivo: string },
   tieneOc: boolean,
   actual = '',
+  orden = 'orden de compra',
 ): ErroresOrdenCompra {
   const errores: ErroresOrdenCompra = {}
   const numero = valores.numero.trim()
-  if (!numero) errores.numero = 'Escribe el número de la orden de compra emitida por Logística'
+  if (!numero) errores.numero = `Escribe el número de la ${orden} emitida por Logística`
   else if (numero.length > LARGO_MAXIMO_OC) errores.numero = `Usa como máximo ${LARGO_MAXIMO_OC} caracteres`
   else if (tieneOc && numero === actual.trim()) errores.numero = 'Escribe el número corregido; es igual al registrado'
-  if (tieneOc && !valores.motivo.trim()) errores.motivo = 'Explica por qué se corrige la orden de compra'
+  if (tieneOc && !valores.motivo.trim()) errores.motivo = `Explica por qué se corrige la ${orden}`
   return errores
 }
 

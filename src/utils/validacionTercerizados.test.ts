@@ -6,6 +6,11 @@ describe('validarOrdenCompra', () => {
     expect(validarOrdenCompra({ numero: '  ', motivo: '' }, false).numero).toMatch(/número/)
   })
 
+  it('nombra la orden de servicio en la extraordinaria', () => {
+    expect(validarOrdenCompra({ numero: '', motivo: '' }, false, '', 'orden de servicio').numero).toMatch(/orden de servicio/)
+    expect(validarOrdenCompra({ numero: 'OS-2', motivo: '' }, true, 'OS-1', 'orden de servicio').motivo).toMatch(/orden de servicio/)
+  })
+
   it('acepta una OC nueva sin motivo', () => {
     expect(validarOrdenCompra({ numero: ' OC-2026-001 ', motivo: '' }, false)).toEqual({})
   })

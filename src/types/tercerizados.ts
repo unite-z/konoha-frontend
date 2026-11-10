@@ -34,6 +34,9 @@ export type EstadoAtencion =
 
 export type OrigenAtencion = 'Demanda' | 'ProgramacionEstacional' | 'SolicitudUnidad'
 
+/** Modalidad (RF-SER-008): programada según contrato, o extraordinaria, que se tramita con orden de servicio. */
+export type ClaseAtencion = 'ProgramadaContrato' | 'Extraordinaria'
+
 export type CategoriaDocumento =
   | 'InformeFinal'
   | 'Metrado'
@@ -112,7 +115,7 @@ export interface Atencion {
   proveedor_nombre: string | null
   tipo_servicio_id: number
   tipo_servicio_nombre: string | null
-  clase: string
+  clase: ClaseAtencion
   descripcion: string
   origen: OrigenAtencion
   unidad_solicitante_id: number | null
@@ -198,6 +201,8 @@ export interface CrearAtencionEntrada extends OrigenEntrada {
   contrato_id: number
   descripcion: string
   es_riesgo?: boolean
+  /** Se omite en la programada según contrato. */
+  clase?: ClaseAtencion
   alcances: AlcanceEntrada[]
   productos?: ProductoAplicadoEntrada[]
   /** Ids del catálogo de plagas (RF-FIT-004). */
@@ -244,6 +249,7 @@ export interface FiltrosAtenciones {
   q?: string
   estado?: EstadoAtencion
   origen?: OrigenAtencion
+  clase?: ClaseAtencion
   contrato_id?: number
 }
 

@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import type { CambioEstado } from '../types/tercerizados'
-import { ESTADOS_ATENCION, fechasPorEstado, haTerminado, indiceEstado, insigniaEstado, pasosCiclo } from './estadosTercerizados'
+import {
+  ESTADOS_ATENCION,
+  OPCIONES_CLASE,
+  fechasPorEstado,
+  haTerminado,
+  indiceEstado,
+  insigniaEstado,
+  pasosCiclo,
+  textoClase,
+  textoOrden,
+} from './estadosTercerizados'
 
 describe('ciclo de la atención', () => {
   it('la línea de estados termina en «Conforme / cerrado» y solo incluye «Observado» mientras dura', () => {
@@ -44,5 +54,19 @@ describe('ciclo de la atención', () => {
       cambio('Reporte adjunto', '2026-11-03T10:00:00-05:00'),
     ])
     expect(fechas['Reporte adjunto']).toBe('2026-11-03T10:00:00-05:00')
+  })
+})
+
+describe('modalidad de la atención', () => {
+  it('ofrece la programada según contrato y la extraordinaria', () => {
+    expect(OPCIONES_CLASE.map((o) => o.valor)).toEqual(['ProgramadaContrato', 'Extraordinaria'])
+    expect(textoClase('ProgramadaContrato')).toBe('Programada según contrato')
+    expect(textoClase('Extraordinaria')).toBe('Extraordinaria')
+  })
+
+  it('la extraordinaria se tramita con orden de servicio y la programada con orden de compra', () => {
+    expect(textoOrden('Extraordinaria')).toBe('orden de servicio')
+    expect(textoOrden('ProgramadaContrato')).toBe('orden de compra')
+    expect(textoOrden('Extraordinaria', true)).toBe('Orden de servicio')
   })
 })

@@ -6,6 +6,7 @@
  */
 import type {
   AlcanceEntrada,
+  ClaseAtencion,
   Contrato,
   CrearAtencionEntrada,
   OrigenAtencion,
@@ -54,6 +55,7 @@ export interface BorradorAtencion {
   contrato: Contrato | null
   descripcion: string
   es_riesgo: boolean
+  clase: ClaseAtencion
   origen: OrigenAtencion | ''
   /** Solo para «Solicitud de una unidad». */
   unidadModo: 'existente' | 'provisional'
@@ -68,6 +70,7 @@ export const BORRADOR_VACIO: BorradorAtencion = {
   contrato: null,
   descripcion: '',
   es_riesgo: false,
+  clase: 'ProgramadaContrato',
   origen: '',
   unidadModo: 'existente',
   unidad: null,
@@ -97,6 +100,7 @@ export function hayCambiosBorrador(b: BorradorAtencion): boolean {
     b.contrato ||
       b.descripcion.trim() ||
       b.es_riesgo ||
+      b.clase !== 'ProgramadaContrato' ||
       b.origen ||
       b.unidad ||
       b.unidadProvisional.trim() ||
@@ -205,6 +209,7 @@ export function construirEntrada(b: BorradorAtencion): CrearAtencionEntrada {
     }),
   }
   if (b.es_riesgo) entrada.es_riesgo = true
+  if (b.clase === 'Extraordinaria') entrada.clase = b.clase
   if (b.origen === 'SolicitudUnidad') {
     if (b.unidadModo === 'existente' && b.unidad) entrada.unidad_solicitante_id = b.unidad.id
     else entrada.unidad_provisional = b.unidadProvisional.trim()
