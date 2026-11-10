@@ -9,6 +9,10 @@ export function listarEjemplares(q = '', page = 1, signal?: AbortSignal, areaVer
   return solicitarTercerizados('ejemplares', { parametros: { q, page, area_verde_id: areaVerdeId }, signal, base: BASE })
 }
 
+export function listarEjemplarPorCodigo(codigo: string, signal?: AbortSignal): Promise<EjemplarInventario[]> {
+  return solicitarTercerizados('ejemplares', { parametros: { codigo }, signal, base: BASE })
+}
+
 export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: AbortSignal): Promise<EjemplarInventario[]> {
   // El listado de ejemplares usa páginas de 25 y devuelve un array sin metadatos.
   const ejemplares: EjemplarInventario[] = []

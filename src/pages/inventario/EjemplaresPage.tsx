@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
@@ -19,7 +20,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
-import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
+import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplarPorCodigo, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
 import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
 import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
@@ -61,7 +62,26 @@ async function listarPaginaDeEspecie(especie: EspecieVegetal, termino: string, p
   }
 }
 
+function nombreAreaEjemplar(ejemplar: EjemplarInventario) {
+  return ejemplar.area_verde_nombre?.trim() || (ejemplar.area_verde_id === null ? '' : 'Área vinculada')
+}
+
+function ubicacionVisible(ejemplar: EjemplarInventario) {
+  const area = nombreAreaEjemplar(ejemplar)
+  if (area) return area
+  if (ejemplar.varios_poligonos) return 'Punto en varios polígonos · Sin área vinculada'
+  if (ejemplar.nombre_poligono?.trim()) return ejemplar.nombre_poligono.trim() + ' · Sin área vinculada'
+  if (ejemplar.latitud !== null && ejemplar.longitud !== null) return 'Ubicación marcada en el mapa'
+  return ejemplar.ubicacion?.trim() || 'Sin ubicación registrada'
+}
+
 export default function EjemplaresPage() {
+  const [parametros] = useSearchParams()
+  const codigoEnlace = (parametros.get('ejemplar') ?? '').trim().slice(0, 40)
+  return <CatastroEjemplares key={codigoEnlace} codigoEnlace={codigoEnlace} />
+}
+
+function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
   const sesion = useSesionActiva()
   const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
@@ -74,14 +94,19 @@ export default function EjemplaresPage() {
   const [alta, setAlta] = useState<'ejemplar' | 'especie' | null>(null)
   const [pagina, setPagina] = useState(1)
   const [revisionFotos, setRevisionFotos] = useState<Record<number, number>>({})
-  const [busqueda, setBusqueda] = useState('')
-  const [terminoBusqueda, setTerminoBusqueda] = useState('')
-  const [ejemplarSeleccionadoId, setEjemplarSeleccionadoId] = useState<number | null>(null)
+  const [busqueda, setBusqueda] = useState(codigoEnlace)
+  const [terminoBusqueda, setTerminoBusqueda] = useState(codigoEnlace)
+  const [busquedaExacta, setBusquedaExacta] = useState(Boolean(codigoEnlace))
+  const [codigoSeleccionado, setCodigoSeleccionado] = useState(codigoEnlace)
   const ficha = useRef<HTMLDivElement>(null)
   const botonFicha = useRef<HTMLButtonElement>(null)
-  const [alturaFicha, setAlturaFicha] = useState('')
-  const claveListado = `ejemplares-inventario|${pagina}|${especieFiltrada?.id ?? ""}|${terminoBusqueda}`
+  const [borradorAltura, setAlturaFicha] = useState<string | null>(null)
+  const claveListado = `ejemplares-inventario|${pagina}|${especieFiltrada?.id ?? ""}|${terminoBusqueda}|${busquedaExacta}`
   const consulta = useConsulta(pestana === 'ejemplares' ? claveListado : null, async (signal) => {
+    if (busquedaExacta) {
+      const ejemplares = await listarEjemplarPorCodigo(terminoBusqueda, signal)
+      return { clave: claveListado, ejemplares: ejemplares.filter(({ codigo }) => codigo === terminoBusqueda), haySiguiente: false }
+    }
     if (especieFiltrada) {
       const resultado = await listarPaginaDeEspecie(especieFiltrada, terminoBusqueda, pagina, signal)
       return { clave: claveListado, ...resultado }
@@ -92,27 +117,29 @@ export default function EjemplaresPage() {
     return { clave: claveListado, ejemplares, haySiguiente }
   })
   const listado = consulta.datos?.clave === claveListado ? consulta.datos : null
-  const ejemplarSeleccionado = listado?.ejemplares.find((ejemplar) => ejemplar.id === ejemplarSeleccionadoId)
+  const ejemplarSeleccionado = listado?.ejemplares.find((ejemplar) => ejemplar.codigo === codigoSeleccionado)
   const alturaGuardada = ejemplarSeleccionado?.altura_total_m ?? null
+  const alturaFicha = borradorAltura ?? String(alturaGuardada ?? '')
   const alturaSinGuardar = alturaFicha !== '' && Number(alturaFicha) !== alturaGuardada
 
+  const idFichaAbierta = ejemplarSeleccionado?.id
   useEffect(() => {
-    if (ejemplarSeleccionadoId !== null) ficha.current?.focus()
-  }, [ejemplarSeleccionadoId])
+    if (pestana === 'ejemplares' && idFichaAbierta !== undefined) ficha.current?.focus()
+  }, [idFichaAbierta, pestana])
 
   function abrirFicha(ejemplar: EjemplarInventario, boton: HTMLButtonElement) {
     botonFicha.current = boton
-    if (ejemplarSeleccionadoId === ejemplar.id) {
+    if (codigoSeleccionado === ejemplar.codigo) {
       ficha.current?.focus()
       return
     }
-    setEjemplarSeleccionadoId(ejemplar.id)
+    setCodigoSeleccionado(ejemplar.codigo)
     setAreaFicha(String(ejemplar.area_verde_id ?? ''))
     setAlturaFicha(String(ejemplar.altura_total_m ?? ''))
   }
 
   function cerrarFicha() {
-    setEjemplarSeleccionadoId(null)
+    setCodigoSeleccionado('')
     botonFicha.current?.focus()
   }
 
@@ -129,7 +156,8 @@ export default function EjemplaresPage() {
   const areas = useConsulta(puedeRegistrar ? 'ejemplares-areas-verdes' : null, listarTodasLasAreasVerdes)
   const opcionesAreas = (areas.datos ?? []).map((area) => ({ valor: String(area.id), texto: `${area.nombre} · ${area.lugar}` }))
   const [areaId, setAreaId] = useState('')
-  const [areaFicha, setAreaFicha] = useState('')
+  const [borradorArea, setAreaFicha] = useState<string | null>(null)
+  const areaFicha = borradorArea ?? String(ejemplarSeleccionado?.area_verde_id ?? '')
   const [mapaAbierto, setMapaAbierto] = useState(false)
   const [codigoPlaca, setCodigoPlaca] = useState('')
   const [especieId, setEspecieId] = useState('')
@@ -174,6 +202,7 @@ export default function EjemplaresPage() {
   }
 
   function buscar(termino: string) {
+    setBusquedaExacta(false)
     setBusqueda(termino)
     setTerminoBusqueda(termino.trim())
     cambiarPagina(1)
@@ -186,7 +215,7 @@ export default function EjemplaresPage() {
   }
 
   function cambiarPagina(nuevaPagina: number) {
-    setEjemplarSeleccionadoId(null)
+    setCodigoSeleccionado('')
     setPagina(nuevaPagina)
   }
 
@@ -269,7 +298,7 @@ export default function EjemplaresPage() {
               <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
               {especiesActivas && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especiesActivas.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
               <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
-              <CampoFormulario id="ubicacion-ejemplar" etiqueta="Ubicación" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
+              <CampoFormulario id="ubicacion-ejemplar" etiqueta="Referencia de ubicación (opcional)" value={ubicacion} onChange={(evento) => setUbicacion(evento.target.value)} maxLength={200} />
               <Selector id="area-verde-ejemplar" etiqueta="Área verde" valor={ubicacionAlta.area} onCambiar={setAreaId}
                 disabled={!areas.datos} opcionTodos="Sin área vinculada" opciones={opcionesAreas} />
               <ValidacionUbicacion ubicacion={ubicacionAlta} />
@@ -313,7 +342,7 @@ export default function EjemplaresPage() {
       <Pestanas etiqueta="Catastro del campus" pestanas={PESTANAS} valor={pestana}
         onCambiar={(valor) => {
           setPestana(valor)
-          setEjemplarSeleccionadoId(null)
+          setCodigoSeleccionado('')
         }}
         derecha={pestana === 'ejemplares'
           ? puedeRegistrar && <Boton onClick={() => { setError(null); setAlta('ejemplar') }}>Registrar ejemplar</Boton>
@@ -407,6 +436,8 @@ export default function EjemplaresPage() {
               ) : (
                 <ul className={vista === 'galeria' ? estilos.galeria : estilos.lista}>
                   {listado.ejemplares.map((ejemplar) => {
+                    const ubicacionEjemplar = ubicacionVisible(ejemplar)
+                    const referenciaUbicacion = ejemplar.ubicacion?.trim()
                     const datosEspecie = [ejemplar.especie_nombre_cientifico, ejemplar.especie_forma_biologica ?? ejemplar.tipo_vegetacion].filter(Boolean).join(' · ')
                     const datosIdentificacion = [
                       ejemplar.referencia_catastro?.trim() && `Referencia de catastro: ${ejemplar.referencia_catastro}`,
@@ -420,13 +451,15 @@ export default function EjemplaresPage() {
                           <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
                           {datosEspecie && <div className={estilos.detalle}>{datosEspecie}</div>}
                           {datosIdentificacion && <div className={estilos.detalle}>{datosIdentificacion}</div>}
-                          <div className={estilos.detalle}>{ejemplar.ubicacion ?? 'Sin ubicación'}{ejemplar.latitud !== null && ejemplar.longitud !== null ? ` · ${ejemplar.latitud}, ${ejemplar.longitud}` : ''}</div>
+                          <div className={estilos.detalle}>{ubicacionEjemplar}</div>
+                          {referenciaUbicacion && referenciaUbicacion !== ubicacionEjemplar
+                            && <div className={estilos.detalle}>Referencia de ubicación · {referenciaUbicacion}</div>}
                           {ejemplar.advertencia_placa_repetida && <div className={estilos.avisoFila}><AvisoEnLinea tono="advertencia">Aviso: esta placa antigua también figura en otro ejemplar.</AvisoEnLinea></div>}
                         </div>
                         <div className={estilos.accionesFila}>
                           {!terminoBusqueda && puedeRegistrar && ejemplar.codigo_placa_antigua && <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => quitarPlacaAntigua(ejemplar.id), 'Placa antigua quitada.')}>Quitar placa</Boton>}
                           <Boton variante="secundario" compacto aria-label={`Abrir ficha de ${ejemplar.codigo}`}
-                            aria-expanded={ejemplarSeleccionadoId === ejemplar.id}
+                            aria-expanded={codigoSeleccionado === ejemplar.codigo}
                             onClick={(evento) => abrirFicha(ejemplar, evento.currentTarget)}>Abrir ficha</Boton>
                         </div>
                       </li>
@@ -449,7 +482,7 @@ export default function EjemplaresPage() {
               <div ref={ficha} tabIndex={-1} role="group" aria-label={`Ficha de ${ejemplarSeleccionado.codigo}`}>
                 <Tarjeta
                   titulo={`${ejemplarSeleccionado.especie_nombre_comun ?? 'Ejemplar'} · ${ejemplarSeleccionado.codigo}`}
-                  descripcion={ejemplarSeleccionado.ubicacion ?? 'Sin ubicación registrada'}
+                  descripcion={ubicacionVisible(ejemplarSeleccionado)}
                   junto={<EtiquetaSituacionEjemplar situacion={ejemplarSeleccionado.situacion} />}
                   acciones={<Boton variante="fantasma" compacto onClick={cerrarFicha}>Cerrar ficha</Boton>}
                   className={estilos.tarjetaFicha}
@@ -463,8 +496,8 @@ export default function EjemplaresPage() {
                         {ejemplarSeleccionado.codigo_placa_antigua && <><dt>Placa antigua</dt><dd>{ejemplarSeleccionado.codigo_placa_antigua}</dd></>}
                         {ejemplarSeleccionado.referencia_catastro?.trim() && <><dt>Referencia de catastro</dt><dd>{ejemplarSeleccionado.referencia_catastro}</dd></>}
                         {ejemplarSeleccionado.codigo_catastro?.trim() && <><dt>Código de catastro</dt><dd>{ejemplarSeleccionado.codigo_catastro}</dd></>}
-                        <dt>Área verde</dt><dd>{ejemplarSeleccionado.area_verde_id === null ? 'Sin área vinculada'
-                          : opcionesAreas.find((area) => area.valor === String(ejemplarSeleccionado.area_verde_id))?.texto ?? 'Área vinculada'}</dd>
+                        <dt>Área verde</dt><dd>{nombreAreaEjemplar(ejemplarSeleccionado) || 'Sin área vinculada'}</dd>
+                        {ejemplarSeleccionado.ubicacion?.trim() && <><dt>Referencia de ubicación</dt><dd>{ejemplarSeleccionado.ubicacion}</dd></>}
                         <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
                       </dl>
                       {puedeRegistrar && <EditarUbicacionEjemplar key={ejemplarSeleccionado.id}

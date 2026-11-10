@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
@@ -72,12 +72,22 @@ it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar
   expect(await screen.findByRole('heading', { name: 'Bosque Húmedo' })).toBeTruthy()
   expect(screen.getByRole('img', { name: '3 polígonos visibles' }).getAttribute('viewBox')).not.toBe('0 0 1000 700')
   expect(listarEjemplaresDePoligono).not.toHaveBeenCalled()
+  const mapa = screen.getByRole('img', { name: '3 polígonos visibles' })
+  const vistaArea = mapa.getAttribute('viewBox')
+  const poligono = mapa.querySelector('path[fill-rule="evenodd"]')
+  if (!poligono) throw new Error('Falta el polígono')
+  fireEvent.mouseEnter(poligono)
+  const tooltip = screen.getAllByRole('status').find((estado) => estado.textContent?.includes('Tipo de uso:'))
+  expect(tooltip?.textContent).toContain('Bosque Húmedo')
+  fireEvent.mouseLeave(mapa)
   fireEvent.click(screen.getByRole('button', { name: 'Mostrar ejemplares' }))
-  const ejemplares = await screen.findByRole('combobox', { name: 'Ejemplares con coordenadas' })
+  const panel = within(screen.getByRole('region', { name: 'Ejemplares del polígono' }))
+  expect((await panel.findByRole('link', { name: 'Abrir ficha' })).getAttribute('href')).toContain('ejemplar=AR-01')
   expect(listarEjemplaresDePoligono).toHaveBeenCalledWith('p-1', expect.any(AbortSignal))
-  expect(within(ejemplares).getByRole('option', { name: 'AR-01 · Molle · Sin área vinculada' })).toBeTruthy()
-  expect(within(ejemplares).queryByRole('option', { name: /AR-02/ })).toBeNull()
-  expect(screen.getByRole('link', { name: 'Buscar ficha en el inventario' }).getAttribute('href')).toContain('q=Bosque+H%C3%BAmedo')
+  expect(panel.getByText('Sin área vinculada')).toBeTruthy()
+  expect(panel.queryByRole('combobox')).toBeNull()
+  await waitFor(() => expect(mapa.getAttribute('viewBox')).not.toBe(vistaArea))
+  expect(screen.getByRole('link', { name: 'Ver área en el inventario' }).getAttribute('href')).toContain('q=Bosque+H%C3%BAmedo')
 
   const recreacion = screen.getByRole('button', { name: 'Recreación 2' })
   fireEvent.click(recreacion)
@@ -105,6 +115,7 @@ it('muestra los ejemplares afectados antes de confirmar el cambio de área', asy
   render(<MemoryRouter initialEntries={['/mapa?poligono=p-1']}><MapaAreasVerdesPage /></MemoryRouter>)
 
   const selector = await screen.findByRole('combobox', { name: 'Cambiar área vinculada' })
+  expect(screen.getByRole('button', { name: 'Guardar vínculo' }).getAttribute('aria-disabled')).toBe('true')
   fireEvent.change(selector, { target: { value: '43' } })
   fireEvent.click(screen.getByRole('button', { name: 'Guardar vínculo' }))
   const dialogo = within(await screen.findByRole('dialog', { name: 'Reasignar polígono y ejemplares' }))
@@ -117,4 +128,23 @@ it('muestra los ejemplares afectados antes de confirmar el cambio de área', asy
   expect(asignarPoligonoMapa).toHaveBeenCalledWith('p-1', 43, {
     area_anterior_id: 42, reasignables: [{ id: 1, codigo: 'AR-01' }], conflictos: [],
   })
+})
+
+it('sincroniza el selector con los marcadores cuando hay varios ejemplares', async () => {
+  listarEjemplaresDePoligono.mockResolvedValueOnce([
+    { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle' },
+    { id: 2, codigo: 'AR-02', latitud: -12.0005, longitud: -77.001, especie_nombre_comun: 'Tara' },
+  ])
+  render(<MemoryRouter initialEntries={['/mapa?poligono=p-1']}><MapaAreasVerdesPage /></MemoryRouter>)
+  fireEvent.click(await screen.findByRole('button', { name: 'Mostrar ejemplares' }))
+  const panel = within(screen.getByRole('region', { name: 'Ejemplares del polígono' }))
+  const selector = await panel.findByRole('combobox')
+  expect(panel.queryByRole('link', { name: 'Abrir ficha' })).toBeNull()
+  fireEvent.change(selector, { target: { value: '2' } })
+  expect(panel.getByRole('link', { name: 'Abrir ficha' }).getAttribute('href')).toContain('ejemplar=AR-02')
+  const primerMarcador = screen.getByRole('img').querySelector('circle')
+  if (!primerMarcador) throw new Error('Falta el marcador')
+  fireEvent.click(primerMarcador)
+  expect(selector).toHaveProperty('value', '1')
+  expect(panel.getByRole('link', { name: 'Abrir ficha' }).getAttribute('href')).toContain('ejemplar=AR-01')
 })

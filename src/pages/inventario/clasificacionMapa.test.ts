@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import type { PoligonoMapaAsignado } from '@/types/mapaInventario'
-import { enriquecerGeoJSON, obtenerClasificacionPoligono, obtenerTiposEfectivos } from './clasificacionMapa'
+import { enriquecerGeoJSON, nombrePoligonoMapa, obtenerClasificacionPoligono, obtenerTiposEfectivos } from './clasificacionMapa'
 
 const geojson: AreasVerdesGeoJSON = {
   type: 'FeatureCollection',
@@ -25,6 +25,14 @@ function asignacion(id: string, areaId: number, nombre: string, tipoId: number |
 }
 
 describe('clasificación efectiva del mapa', () => {
+  it('prioriza el nombre del área, el nombre original y el nombre genérico', () => {
+    const conNombres = { ...geojson, features: geojson.features.map((feature, indice) => ({
+      ...feature, properties: { ...feature.properties, Nombre: ['Nombre anterior', 'Jardín Rosales', ''][indice] },
+    })) }
+    const mapa = enriquecerGeoJSON(conNombres, [asignacion('a', 1, 'Bosque Húmedo', null, null)])
+    expect(mapa.features.map(nombrePoligonoMapa)).toEqual(['Bosque Húmedo', 'Jardín Rosales', 'Área verde del campus'])
+  })
+
   it('prioriza el tipo del área y usa el Uso original sin vínculo o con área inactiva', () => {
     expect(obtenerClasificacionPoligono('Jardín', asignacion('a', 1, 'A', 10, 'Ornamental'))).toMatchObject({
       tipoUsoEfectivo: 'Ornamental',
