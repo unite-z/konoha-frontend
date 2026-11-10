@@ -40,8 +40,8 @@ export function crearSector(entrada: { nombre: string; atencion_demanda: boolean
 export function cambiarSector(id: number, cambio: { activo: boolean }): Promise<SectorInventario> {
   return solicitarTercerizados(`sectores/${id}`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
 }
-export function asignarCapataz(sectorId: number, capatazId: number | null): Promise<SectorInventario> {
-  return solicitarTercerizados(`sectores/${sectorId}/capataz`, { metodo: 'PATCH', cuerpo: { capataz_id: capatazId }, base: BASE })
+export function asignarCapataz(sectorId: number, capatazId: number | null, fechaInicio?: string, motivo?: string): Promise<SectorInventario> {
+  return solicitarTercerizados(`sectores/${sectorId}/capataz`, { metodo: 'PATCH', cuerpo: { capataz_id: capatazId, fecha_inicio: fechaInicio, motivo }, base: BASE })
 }
 export function listarCapataces(signal?: AbortSignal): Promise<PersonaInventario[]> {
   return solicitarTercerizados('capataces', { signal, base: BASE })

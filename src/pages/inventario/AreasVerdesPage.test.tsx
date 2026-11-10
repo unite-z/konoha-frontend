@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import AreasVerdesPage from './AreasVerdesPage'
 
-const { listarAreasVerdes } = vi.hoisted(() => ({
+const { listarAreasVerdes, asignarSectorArea, puede } = vi.hoisted(() => ({
+  asignarSectorArea: vi.fn().mockResolvedValue(undefined),
+  puede: vi.fn(() => false),
   listarAreasVerdes: vi.fn(async (_q = '', _signal?: AbortSignal, filtros?: { tipo_uso_id?: number }) => {
     const area = (id: number, nombre: string, tipoUsoId: number, tipoUsoNombre: string) => ({
       id,
@@ -17,6 +19,8 @@ const { listarAreasVerdes } = vi.hoisted(() => ({
       tipo_uso_id: tipoUsoId,
       tipo_uso_nombre: tipoUsoNombre,
       activo: true,
+      sector_id: id === 1 ? 1 : null,
+      sector_nombre: id === 1 ? 'Sector A' : null,
     })
     const areas = [
       area(1, 'Jardín ornamental', 11, 'Ornamental'),
@@ -31,11 +35,11 @@ const { listarAreasVerdes } = vi.hoisted(() => ({
 
 vi.mock('@/services/api/areasVerdes', () => ({
   listarAreasVerdes,
-  asignarSectorArea: vi.fn(),
+  asignarSectorArea,
   listarHistorialSectorArea: vi.fn(),
 }))
 vi.mock('@/services/api/catalogosInventario', () => ({
-  listarSectores: async () => [],
+  listarSectores: async () => [{ id: 1, nombre: 'Sector A' }, { id: 2, nombre: 'Sector B' }],
   listarCuarteles: async () => [],
   listarTiposUso: async () => [
     { id: 11, nombre: 'Ornamental', activo: true },
@@ -51,18 +55,42 @@ vi.mock('@/sesion/ContextoSesion', () => ({
 }))
 vi.mock('@/config/permisosCore', () => ({
   PERMISOS: { gestionarCatalogos: 'gestionar' },
-  puede: () => false,
+  puede,
 }))
 vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.open = true }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.open = false }
+})
+
 afterEach(() => {
   cleanup()
-  listarAreasVerdes.mockClear()
+  vi.clearAllMocks()
+  puede.mockReturnValue(false)
 })
 
 describe('AreasVerdesPage', () => {
+  it('pide confirmar antes de guardar un traspaso entre sectores', async () => {
+    puede.mockReturnValue(true)
+    render(<MemoryRouter><AreasVerdesPage /></MemoryRouter>)
+    const selector = await screen.findByRole('combobox', { name: 'Sector de Jardín ornamental' })
+    const fila = screen.getByRole('row', { name: /Jardín ornamental/ })
+    fireEvent.change(selector, { target: { value: '2' } })
+    const guardar = within(fila).getByRole('button', { name: 'Guardar' })
+    fireEvent.click(guardar)
+    const dialogo = screen.getByRole('dialog', { name: 'Confirmar traspaso de área' })
+    expect(within(dialogo).getByText(/de Sector A a Sector B/)).toBeTruthy()
+    expect(asignarSectorArea).not.toHaveBeenCalled()
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Volver' }))
+    expect(asignarSectorArea).not.toHaveBeenCalled()
+    fireEvent.click(guardar)
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar traspaso' }))
+    await waitFor(() => expect(asignarSectorArea).toHaveBeenCalledExactlyOnceWith(1, 2))
+  })
+
   it('aplica el tipo de uso elegido en la consulta y muestra la clasificación de cada resultado', async () => {
     render(<MemoryRouter><AreasVerdesPage /></MemoryRouter>)
 
