@@ -2,6 +2,13 @@
 
 Operación de campo: `CuadrillasPage`, `EncargosPage` y `ParticipantesPage`, con `DialogoNuevaActividad`, piezas comunes en `ComponentesCampo.tsx` y el hook del módulo `useCampo.ts`.
 
+`ActividadesPage` (AV-316) consulta el parte real por cuadrilla y fecha del parte,
+con paginación, actualización y estados de carga, vacío y error. Muestra por
+separado la hora de ejecución y la de registro en Lima. El listado recibe
+`fecha_hora_registro` de la auditoría de alta de la actividad. Para registros
+históricos sin esa auditoría muestra «Sin hora registrada». Los permisos y el
+aislamiento de cuadrillas se comprueban en el backend.
+
 `DialogoPodaMenor` implementa AV-315 sobre el parte diario: vincula ejemplares de menos de 5 m, deja los árboles sin catastro pendientes de vinculación y deriva los ejemplares de 5 m o más al flujo existente de incidencias. Tras registrar abre las evidencias de AV-82. La altura procede de MOD-02 y debe coordinarse con AV-133.
 
 | Qué | Dónde |
