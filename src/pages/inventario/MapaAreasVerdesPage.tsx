@@ -155,11 +155,12 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
 }) {
   const [mostrarEjemplares, setMostrarEjemplares] = useState(false)
   const [ejemplarId, setEjemplarId] = useState<number | null>(null)
+  const [busquedaEjemplar, setBusquedaEjemplar] = useState('')
   const areaId = vinculo?.area_verde_id ?? null
   const poligonoId = seleccionado ? idPoligono(seleccionado) : ''
   const consulta = useConsulta(mostrarEjemplares && poligonoId ? 'ejemplares-mapa:' + poligonoId : null,
     (signal) => listarEjemplaresDePoligono(poligonoId, signal))
-  const puntos = useMemo<(PuntoEjemplar & { nombreArea: string; avisoVinculo: string })[]>(() => {
+  const puntos = useMemo<(PuntoEjemplar & { nombreArea: string; avisoVinculo: string; nombreCientifico: string })[]>(() => {
     if (consulta.estado !== 'exito') return []
     return (consulta.datos ?? []).flatMap((ejemplar) => {
       const { latitud, longitud } = ejemplar
@@ -171,16 +172,21 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
         avisoVinculo: ejemplar.area_verde_id == null ? 'Sin área vinculada'
           : ejemplar.area_verde_id !== areaId ? 'Vinculado a otra área' : '',
         especie: ejemplar.especie_nombre_comun ?? ejemplar.especie_nombre_cientifico ?? 'Especie sin registrar',
+        nombreCientifico: ejemplar.especie_nombre_cientifico ?? '',
       }]
     })
   }, [consulta.datos, consulta.estado, areaId, areas])
-  const ejemplar = puntos.length === 1 ? puntos[0] : puntos.find((punto) => punto.id === ejemplarId)
+  const terminoEjemplar = normalizar(busquedaEjemplar)
+  const puntosVisibles = terminoEjemplar ? puntos.filter((punto) =>
+    [punto.codigo, punto.especie, punto.nombreCientifico].some((dato) => normalizar(dato).includes(terminoEjemplar)),
+  ) : puntos
+  const ejemplar = puntosVisibles.length === 1 ? puntosVisibles[0] : puntosVisibles.find((punto) => punto.id === ejemplarId)
 
   return (
     <div className={estilos.columnaMapa}>
       <section className={estilos.panelMapa} aria-label="Mapa interactivo de áreas verdes del campus">
         <MapaVectorialLocal datos={mapa} usos={usos} usoSeleccionado={uso} seleccionado={seleccionado}
-          onSeleccionar={onSeleccionar} puntos={puntos} ejemplarId={ejemplar?.id} onEjemplar={setEjemplarId} />
+          onSeleccionar={onSeleccionar} puntos={puntosVisibles} ejemplarId={ejemplar?.id} onEjemplar={setEjemplarId} />
       </section>
       {seleccionado && (
         <div className={estilos.panelDetalle}>
@@ -209,6 +215,7 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
               <Boton variante="secundario" compacto aria-pressed={mostrarEjemplares}
                 onClick={() => {
                   setEjemplarId(null)
+                  setBusquedaEjemplar('')
                   setMostrarEjemplares(!mostrarEjemplares)
                 }}>{mostrarEjemplares ? 'Ocultar ejemplares' : 'Mostrar ejemplares'}</Boton>
             </div>
@@ -217,9 +224,18 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
               <EstadoError titulo="No pudimos cargar los ejemplares" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
             )}
             {puntos.length > 1 && (
+              <CampoFormulario id="buscar-ejemplar-mapa" etiqueta="Buscar ejemplares en esta área" type="search"
+                value={busquedaEjemplar} placeholder="Código o nombre de especie"
+                onChange={(evento) => setBusquedaEjemplar(evento.target.value)} />
+            )}
+            {terminoEjemplar && puntos.length > 1 && (
+              <p role="status">{puntosVisibles.length === 0 ? 'No hay ejemplares que coincidan con la búsqueda.'
+                : puntosVisibles.length === 1 ? '1 ejemplar encontrado' : puntosVisibles.length + ' ejemplares encontrados'}</p>
+            )}
+            {puntosVisibles.length > 1 && (
               <Selector id="ejemplar-mapa" etiqueta="Ejemplares con coordenadas" valor={ejemplar ? String(ejemplar.id) : ''}
                 opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
-                opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
+                opciones={puntosVisibles.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
             )}
             {consulta.estado === 'exito' && !puntos.length && <p role="status">No hay ejemplares con coordenadas dentro de esta área del mapa.</p>}
             {ejemplar && (

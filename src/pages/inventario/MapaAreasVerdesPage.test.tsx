@@ -13,8 +13,8 @@ const { listarEjemplaresDePoligono, revisarImpactoPoligono, asignarPoligonoMapa,
   })),
   asignarPoligonoMapa: vi.fn(async () => ({ area_verde_id: 43 })),
   listarEjemplaresDePoligono: vi.fn(async () => [
-    { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle' },
-    { id: 2, codigo: 'AR-02', latitud: null, longitud: -77.002, especie_nombre_comun: 'Tara' },
+    { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle' },
+    { id: 2, codigo: 'AR-02', latitud: null, longitud: -77.002, especie_nombre_comun: 'Tara', especie_nombre_cientifico: 'Tara spinosa' },
   ]),
 }))
 
@@ -86,6 +86,7 @@ it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar
   expect(listarEjemplaresDePoligono).toHaveBeenCalledWith('p-1', expect.any(AbortSignal))
   expect(panel.getByText('Sin área vinculada')).toBeTruthy()
   expect(panel.queryByRole('combobox')).toBeNull()
+  expect(panel.queryByRole('searchbox')).toBeNull()
   await waitFor(() => expect(mapa.getAttribute('viewBox')).not.toBe(vistaArea))
   expect(screen.getByRole('link', { name: 'Ver área en el inventario' }).getAttribute('href')).toContain('q=Bosque+H%C3%BAmedo')
 
@@ -132,8 +133,8 @@ it('muestra los ejemplares afectados antes de confirmar el cambio de área', asy
 
 it('sincroniza el selector con los marcadores cuando hay varios ejemplares', async () => {
   listarEjemplaresDePoligono.mockResolvedValueOnce([
-    { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle' },
-    { id: 2, codigo: 'AR-02', latitud: -12.0005, longitud: -77.001, especie_nombre_comun: 'Tara' },
+    { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle', especie_nombre_cientifico: 'Schinus molle' },
+    { id: 2, codigo: 'AR-02', latitud: -12.0005, longitud: -77.001, especie_nombre_comun: 'Tara', especie_nombre_cientifico: 'Tara spinosa' },
   ])
   render(<MemoryRouter initialEntries={['/mapa?poligono=p-1']}><MapaAreasVerdesPage /></MemoryRouter>)
   fireEvent.click(await screen.findByRole('button', { name: 'Mostrar ejemplares' }))
@@ -147,4 +148,22 @@ it('sincroniza el selector con los marcadores cuando hay varios ejemplares', asy
   fireEvent.click(primerMarcador)
   expect(selector).toHaveProperty('value', '1')
   expect(panel.getByRole('link', { name: 'Abrir ficha' }).getAttribute('href')).toContain('ejemplar=AR-01')
+
+  const buscar = panel.getByRole('searchbox', { name: 'Buscar ejemplares en esta área' })
+  const mapa = screen.getByRole('img')
+  for (const [termino, codigo] of [['ar-02', 'AR-02'], ['MÓLLE', 'AR-01'], ['spinosa', 'AR-02']]) {
+    fireEvent.change(buscar, { target: { value: termino } })
+    expect(mapa.querySelectorAll('circle')).toHaveLength(1)
+    expect(panel.getByText('1 ejemplar encontrado')).toBeTruthy()
+    expect(panel.getByRole('link', { name: 'Abrir ficha' }).getAttribute('href')).toContain('ejemplar=' + codigo)
+  }
+  fireEvent.change(buscar, { target: { value: 'Sin coincidencia' } })
+  expect(panel.getByText('No hay ejemplares que coincidan con la búsqueda.')).toBeTruthy()
+  expect(panel.queryByRole('link', { name: 'Abrir ficha' })).toBeNull()
+  expect(mapa.querySelectorAll('circle')).toHaveLength(0)
+
+  fireEvent.change(buscar, { target: { value: '' } })
+  expect(panel.getByRole('combobox')).toBeTruthy()
+  expect(mapa.querySelectorAll('circle')).toHaveLength(2)
+  expect(listarEjemplaresDePoligono).toHaveBeenCalledTimes(1)
 })
