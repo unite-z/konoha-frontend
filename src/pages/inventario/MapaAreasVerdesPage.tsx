@@ -225,7 +225,7 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
             )}
             {puntos.length > 1 && (
               <CampoFormulario id="buscar-ejemplar-mapa" etiqueta="Buscar ejemplares en esta área" type="search"
-                value={busquedaEjemplar} placeholder="Código o nombre de especie"
+                value={busquedaEjemplar} placeholder="Código, nombre común o científico"
                 onChange={(evento) => setBusquedaEjemplar(evento.target.value)} />
             )}
             {terminoEjemplar && puntos.length > 1 && (
