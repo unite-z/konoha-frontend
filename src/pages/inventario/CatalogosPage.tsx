@@ -44,6 +44,7 @@ export default function CatalogosPage() {
   const [cuartelNumero, setCuartelNumero] = useState('')
   const [cuartelNombre, setCuartelNombre] = useState('')
   const [seleccionCapataz, setSeleccionCapataz] = useState<Record<number, string>>({})
+  const [datosAsignacion, setDatosAsignacion] = useState<Record<number, { fecha: string; motivo: string }>>({})
   const [historiales, setHistoriales] = useState<Record<number, AsignacionCapataz[]>>({})
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -67,6 +68,20 @@ export default function CatalogosPage() {
   function enviar(evento: FormEvent<HTMLFormElement>, accion: () => Promise<unknown>, mensaje: string) {
     evento.preventDefault()
     void ejecutar(accion, mensaje)
+  }
+
+  async function guardarCapataz(sectorId: number) {
+    const seleccion = seleccionCapataz[sectorId]
+    const datos = datosAsignacion[sectorId]
+    await asignarCapataz(sectorId, seleccion === '0' ? null : Number(seleccion),
+      seleccion === '0' ? undefined : datos.fecha, seleccion === '0' ? undefined : datos.motivo.trim())
+    setSeleccionCapataz((actual) => ({ ...actual, [sectorId]: '' }))
+    setDatosAsignacion((actual) => ({ ...actual, [sectorId]: { fecha: '', motivo: '' } }))
+    setHistoriales((actual) => {
+      const copia = { ...actual }
+      delete copia[sectorId]
+      return copia
+    })
   }
 
   async function alternarHistorial(sectorId: number) {
@@ -192,13 +207,41 @@ export default function CatalogosPage() {
                   opcionTodos="Sin cambio de asignación"
                   opciones={[{ valor: '0', texto: 'Quitar capataz' }, ...(capataces.datos ?? []).map((persona) => ({ valor: String(persona.id), texto: persona.nombre }))]}
                 />
-                <Boton variante="secundario" compacto deshabilitado={guardando || !seleccionCapataz[sector.id]} onClick={() => { const value = seleccionCapataz[sector.id]; void ejecutar(() => asignarCapataz(sector.id, value === '0' ? null : Number(value)), 'Asignación de capataz actualizada.') }}>Asignar</Boton>
+                {seleccionCapataz[sector.id] && seleccionCapataz[sector.id] !== '0' && (
+                  <>
+                    <CampoFormulario id={`fecha-capataz-${sector.id}`} etiqueta="Fecha de inicio" type="date"
+                      value={datosAsignacion[sector.id]?.fecha ?? ''}
+                      onChange={(e) => {
+                        const fecha = e.target.value
+                        setDatosAsignacion((actual) => ({ ...actual, [sector.id]: { fecha, motivo: actual[sector.id]?.motivo ?? '' } }))
+                      }} />
+                    <CampoFormulario id={`motivo-capataz-${sector.id}`} etiqueta="Motivo" maxLength={300}
+                      value={datosAsignacion[sector.id]?.motivo ?? ''}
+                      onChange={(e) => {
+                        const motivo = e.target.value
+                        setDatosAsignacion((actual) => ({ ...actual, [sector.id]: { fecha: actual[sector.id]?.fecha ?? '', motivo } }))
+                      }} />
+                  </>
+                )}
+                <Boton variante="secundario" compacto
+                  deshabilitado={guardando || !seleccionCapataz[sector.id] || (seleccionCapataz[sector.id] !== '0' &&
+                    (!datosAsignacion[sector.id]?.fecha || !datosAsignacion[sector.id]?.motivo.trim()))}
+                  onClick={() => void ejecutar(() => guardarCapataz(sector.id), 'Asignación de capataz actualizada.')}>Asignar</Boton>
                 <Boton variante="fantasma" compacto deshabilitado={guardando} onClick={() => void ejecutar(() => cambiarSector(sector.id, { activo: !sector.activo }), 'Sector actualizado.')}>{sector.activo ? 'Desactivar' : 'Activar'}</Boton>
                 <Boton variante="fantasma" compacto onClick={() => void alternarHistorial(sector.id)}>{Object.hasOwn(historiales, sector.id) ? 'Ocultar historial' : 'Ver historial'}</Boton>
               </div>
               {Object.hasOwn(historiales, sector.id) && (
                 <div className={estilos.historial} aria-label={`Historial de capataces de ${sector.nombre}`}>
-                  {historiales[sector.id]?.length ? historiales[sector.id]?.map((asignacion) => <p key={asignacion.id}>{asignacion.capataz_nombre} · desde {fechaLimaDeInstante(asignacion.fecha_inicio as InstanteIso) ?? asignacion.fecha_inicio}{asignacion.fecha_fin ? ` · hasta ${fechaLimaDeInstante(asignacion.fecha_fin as InstanteIso) ?? asignacion.fecha_fin}` : ' · vigente'}</p>) : <p>Sin asignaciones anteriores.</p>}
+                  {historiales[sector.id]?.length ? historiales[sector.id].map((asignacion) => (
+                    <p key={asignacion.id}>
+                      {asignacion.capataz_anterior_nombre ? `${asignacion.capataz_anterior_nombre} → ` : ''}{asignacion.capataz_nombre}
+                      {' · desde '}{fechaLimaDeInstante(asignacion.fecha_inicio as InstanteIso) ?? asignacion.fecha_inicio}
+                      {asignacion.fecha_fin ? ` · hasta ${fechaLimaDeInstante(asignacion.fecha_fin as InstanteIso) ?? asignacion.fecha_fin}` : ''}
+                      {asignacion.vigente || (asignacion.vigente === undefined && !asignacion.fecha_fin) ? ' · vigente' : ''}
+                      {asignacion.vigente === false && !asignacion.fecha_fin ? ' · programada' : ''}
+                      {' · Motivo: '}{asignacion.motivo ?? 'Sin motivo registrado'}
+                    </p>
+                  )) : <p>Sin asignaciones anteriores.</p>}
                 </div>
               )}
             </li>

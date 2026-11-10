@@ -27,4 +27,7 @@ export interface AsignacionCapataz {
   capataz_nombre: string
   fecha_inicio: string
   fecha_fin: string | null
+  motivo?: string | null
+  capataz_anterior_nombre?: string | null
+  vigente?: boolean
 }

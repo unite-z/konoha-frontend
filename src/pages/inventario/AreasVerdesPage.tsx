@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router'
 import { useState } from 'react'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
@@ -42,12 +43,16 @@ function GestionSectorArea({ area, sectores, editable, alGuardar }: {
   const [historial, setHistorial] = useState<HistorialSectorArea[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const [confirmarTraspaso, setConfirmarTraspaso] = useState(false)
+  const destino = sectores.find((sector) => String(sector.id) === sectorId)
 
   async function guardarSector() {
     setError(null)
     setGuardando(true)
     try {
       await asignarSectorArea(area.id, sectorId ? Number(sectorId) : null)
+      setConfirmarTraspaso(false)
+      setHistorial(null)
       alGuardar()
     } catch (causa) {
       setError(causa instanceof Error ? causa.message : 'No se pudo cambiar el sector.')
@@ -69,10 +74,19 @@ function GestionSectorArea({ area, sectores, editable, alGuardar }: {
     <div className={estilos.gestionSector}>
       {editable ? <>
         <Selector id={`sector-actual-${area.id}`} etiqueta={`Sector de ${area.nombre}`} etiquetaOculta compacto valor={sectorId} onCambiar={setSectorId} opcionTodos="Sin sector" opciones={sectores.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))} />
-        <Boton variante="secundario" compacto deshabilitado={guardando || sectorId === (area.sector_id ? String(area.sector_id) : '')} onClick={() => void guardarSector()}>Guardar</Boton>
+        <Boton variante="secundario" compacto deshabilitado={guardando || sectorId === (area.sector_id ? String(area.sector_id) : '')} onClick={() => {
+          if (area.sector_id && destino) setConfirmarTraspaso(true)
+          else void guardarSector()
+        }}>Guardar</Boton>
       </> : <span>{area.sector_nombre ?? 'Sin sector'}</span>}
       <Boton variante="fantasma" compacto onClick={() => void mostrarHistorial()}>Historial</Boton>
-      {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
+      <DialogoConfirmacion abierto={confirmarTraspaso} titulo="Confirmar traspaso de área"
+        consecuencia={`Se trasladará ${area.nombre} de ${area.sector_nombre} a ${destino?.nombre}. El cambio quedará en el historial.`}
+        textoConfirmar="Confirmar traspaso" cargando={guardando}
+        onConfirmar={() => void guardarSector()} onCancelar={() => setConfirmarTraspaso(false)}>
+        {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
+      </DialogoConfirmacion>
+      {!confirmarTraspaso && error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       {historial && <ul className={estilos.historialSector}>{historial.length ? historial.map((registro) => (
         <li key={registro.id}>{registro.sector_nombre} · {registro.fecha_inicio}{registro.fecha_fin ? ` – ${registro.fecha_fin}` : ' · vigente'}</li>
       )) : <li>Sin asignaciones anteriores.</li>}</ul>}
