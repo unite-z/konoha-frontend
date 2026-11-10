@@ -19,7 +19,7 @@ export async function cargarAreasVerdesGeoJSON(signal?: AbortSignal): Promise<Ar
   }
 
   if (!respuesta.ok) {
-    throw new ErrorApi(respuesta.status, null, 'No pudimos cargar los polígonos del campus.')
+    throw new ErrorApi(respuesta.status, null, 'No pudimos cargar las áreas del mapa del campus.')
   }
 
   try {

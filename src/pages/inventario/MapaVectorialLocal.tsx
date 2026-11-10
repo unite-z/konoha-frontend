@@ -120,7 +120,7 @@ export default function MapaVectorialLocal({
         className={`${estilos.mapaLocalSvg} ${modo === 'mover' ? estilos.modoMover : estilos.modoSeleccionar}`}
         viewBox={`${vista.x - viewWidth / 2} ${vista.y - viewHeight / 2} ${viewWidth} ${viewHeight}`}
         role="img"
-        aria-label={`${visibles.length} polígonos visibles`}
+        aria-label={`${visibles.length} ${visibles.length === 1 ? 'área visible' : 'áreas visibles'} en el mapa`}
         onClick={(evento) => {
           if (modo !== 'seleccionar' || !onElegirPunto) return
           const svg = evento.currentTarget
@@ -198,7 +198,7 @@ export default function MapaVectorialLocal({
               onClick={() => { if (modo === 'seleccionar' && !bloqueado) onSeleccionar?.(feature) }}
             >
               {poligonosBloqueados && (
-                <title>{nombrePoligonoMapa(feature)} · {bloqueado ? 'Ya vinculado' : 'Disponible'}</title>
+                <title>{nombrePoligonoMapa(feature)} · {bloqueado ? 'Ya vinculada' : 'Disponible'}</title>
               )}
             </path>
           )

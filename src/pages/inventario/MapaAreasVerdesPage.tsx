@@ -130,7 +130,7 @@ function MapaInventario({ datos, asignaciones, tiposUso, areas, puedeEditar, alG
                 {tipo.nombre} <span className={estilos.cantidad}>{tipo.cantidad}</span>
               </Boton>
             ))}
-            <p className={estilos.resumen} role="status">{totalVisible} de {mapa.features.length} polígonos visibles</p>
+            <p className={estilos.resumen} role="status">{totalVisible} de {mapa.features.length} áreas del mapa visibles</p>
           </aside>
         </div>
         <VistaJardin key={seleccionado ? idPoligono(seleccionado) : ''} mapa={mapa} usos={usos} uso={uso}
@@ -203,7 +203,7 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
               if (mostrarEjemplares) consulta.reintentar()
             }} />}
           </section>
-          <section className={estilos.edicion} aria-label="Ejemplares del polígono">
+          <section className={estilos.edicion} aria-label="Ejemplares en el área seleccionada">
             <div className={estilos.cabeceraDetalle}>
               <h2>Ejemplares</h2>
               <Boton variante="secundario" compacto aria-pressed={mostrarEjemplares}
@@ -221,7 +221,7 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
                 opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
                 opciones={puntos.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
             )}
-            {consulta.estado === 'exito' && !puntos.length && <p role="status">No hay ejemplares ubicados dentro de este polígono.</p>}
+            {consulta.estado === 'exito' && !puntos.length && <p role="status">No hay ejemplares con coordenadas dentro de esta área del mapa.</p>}
             {ejemplar && (
               <div className={estilos.detalleEjemplar}>
                 <strong>{ejemplar.codigo} · {ejemplar.especie}</strong>
@@ -292,8 +292,8 @@ function EditorVinculo({ seleccionado, vinculo, areas, alGuardar }: {
         <Boton variante="secundario" cargando={guardando} deshabilitado={valor === vigente} onClick={() => void guardar()}>Guardar vínculo</Boton>
       </div>
       {aviso && <AvisoEnLinea tono={aviso.tono}>{aviso.texto}</AvisoEnLinea>}
-      <DialogoConfirmacion abierto={impacto !== null} titulo="Reasignar polígono y ejemplares"
-        consecuencia="Los ejemplares indicados quedarán vinculados a la nueva área y conservarán sus coordenadas."
+      <DialogoConfirmacion abierto={impacto !== null} titulo="Cambiar el vínculo del área del mapa"
+        consecuencia="El área del mapa y los ejemplares indicados quedarán vinculados a la nueva ficha del inventario. Los ejemplares conservarán sus coordenadas."
         textoConfirmar="Confirmar reasignación" cargando={guardando}
         onConfirmar={() => { if (impacto) void guardar(impacto) }}
         onCancelar={() => setImpacto(null)}>

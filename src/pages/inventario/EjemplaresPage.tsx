@@ -69,7 +69,7 @@ function nombreAreaEjemplar(ejemplar: EjemplarInventario) {
 function ubicacionVisible(ejemplar: EjemplarInventario) {
   const area = nombreAreaEjemplar(ejemplar)
   if (area) return area
-  if (ejemplar.varios_poligonos) return 'Punto en varios polígonos · Sin área vinculada'
+  if (ejemplar.varios_poligonos) return 'Punto en varias áreas del mapa · Sin área vinculada'
   if (ejemplar.nombre_poligono?.trim()) return ejemplar.nombre_poligono.trim() + ' · Sin área vinculada'
   if (ejemplar.latitud !== null && ejemplar.longitud !== null) return 'Ubicación marcada en el mapa'
   return ejemplar.ubicacion?.trim() || 'Sin ubicación registrada'
