@@ -5,6 +5,7 @@
  * permite. El back-end vuelve a comprobarlo todo: estas reglas nunca sustituyen su respuesta.
  */
 import type { Atencion, RolTercerizados } from '../types/tercerizados'
+import { haTerminado, textoOrden } from '../utils/estadosTercerizados'
 
 export const ROLES_TERCERIZADOS: readonly RolTercerizados[] = [
   'Jefe de sección',
@@ -21,6 +22,7 @@ export type AccionAtencion =
   | 'corregirOrigen'
   | 'acuerdoUnidad'
   | 'adjuntarReporte'
+  | 'conformidad'
 
 /** Resultado para una acción: si se muestra y, si se muestra deshabilitada, por qué. */
 export interface DisponibilidadAccion {
@@ -49,19 +51,19 @@ export function puedeRegistrarAtencion(rol: RolTercerizados | null): boolean {
 export function disponibilidad(
   accion: AccionAtencion,
   rol: RolTercerizados | null,
-  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'numero_orden_compra'>,
+  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'clase' | 'numero_orden_compra'>,
 ): DisponibilidadAccion {
   if (!esRolTercerizados(rol)) return OCULTA
   const { estado } = atencion
   const esJefe = rol === JEFE
   const antesDelInicio = estado === 'Requerimiento registrado' || estado === 'OC referenciada'
-  const terminada = estado === 'Ejecutado pendiente de reporte' || estado === 'Reporte adjunto'
+  const terminada = haTerminado(estado)
 
   switch (accion) {
     case 'ordenCompra':
       return antesDelInicio ? LISTA : OCULTA
     case 'inicio':
-      if (estado === 'Requerimiento registrado') return bloqueada('Registra primero la orden de compra emitida por Logística')
+      if (estado === 'Requerimiento registrado') return bloqueada(`Registra primero la ${textoOrden(atencion.clase)} emitida por Logística`)
       if (estado !== 'OC referenciada') return OCULTA
       if (atencion.es_riesgo) {
         return bloqueada('Atención de riesgo: el inicio queda bloqueado hasta integrar la revisión de seguridad')
@@ -75,6 +77,13 @@ export function disponibilidad(
       if (!esJefe || atencion.origen !== 'SolicitudUnidad') return OCULTA
       return terminada ? LISTA : bloqueada('Se registra cuando termine la ejecución del servicio')
     case 'adjuntarReporte':
-      return terminada ? LISTA : OCULTA
+      // Con la atención conforme ya no se aceptan más revisiones.
+      return terminada && estado !== 'Conforme / cerrado' ? LISTA : OCULTA
+    case 'conformidad':
+      if (!esJefe) return OCULTA
+      if (estado === 'Reporte adjunto') return LISTA
+      if (estado === 'Ejecutado pendiente de reporte') return bloqueada('Adjunta primero el informe del proveedor')
+      if (estado === 'Observado') return bloqueada('Espera la nueva revisión del informe para volver a evaluarlo')
+      return OCULTA
   }
 }

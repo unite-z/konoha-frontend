@@ -31,12 +31,15 @@ import {
   insigniaAcuerdo,
   insigniaEstado,
   textoAlcance,
+  textoClase,
+  textoOrden,
   textoOrigen,
 } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import { useRolTercerizados } from '@/sesion/ContextoSesion'
 import AccionesAtencion from './acciones/AccionesAtencion'
 import DocumentosProveedor from './DocumentosProveedor'
+import SeccionConformidad from './SeccionConformidad'
 import Adjuntos from '@/components/core/Adjuntos'
 import HistorialCambios from '@/components/core/HistorialCambios'
 import { PERMISOS, puede } from '@/config/permisosCore'
@@ -149,11 +152,11 @@ function Ficha({
             { etiqueta: 'Proveedor', valor: atencion.proveedor_nombre },
             { etiqueta: 'Contrato', valor: atencion.contrato_numero },
             { etiqueta: 'Servicio', valor: atencion.tipo_servicio_nombre },
-            { etiqueta: 'Modalidad', valor: 'Programada según contrato' },
+            { etiqueta: 'Modalidad', valor: textoClase(atencion.clase) },
             { etiqueta: 'Origen', valor: textoOrigen(atencion.origen) },
             esSolicitudUnidad && { etiqueta: 'Unidad solicitante', valor: textoUnidad(atencion) },
             {
-              etiqueta: 'Orden de compra (Logística)',
+              etiqueta: `${textoOrden(atencion.clase, true)} (Logística)`,
               valor: atencion.numero_orden_compra
                 ? `${atencion.numero_orden_compra} · ${formatearFechaHora(atencion.fecha_orden_compra)}`
                 : 'Pendiente',
@@ -203,6 +206,8 @@ function Ficha({
           </Tarjeta>
         )}
       </div>
+
+      <SeccionConformidad atencion={atencion} />
 
       <section className={estilos.seccion} aria-labelledby="titulo-alcances">
         <div className={estilos.cabeceraSeccion}>

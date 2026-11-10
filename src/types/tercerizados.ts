@@ -29,8 +29,13 @@ export type EstadoAtencion =
   | 'En ejecución'
   | 'Ejecutado pendiente de reporte'
   | 'Reporte adjunto'
+  | 'Observado'
+  | 'Conforme / cerrado'
 
 export type OrigenAtencion = 'Demanda' | 'ProgramacionEstacional' | 'SolicitudUnidad'
+
+/** Modalidad (RF-SER-008): programada según contrato, o extraordinaria, que se tramita con orden de servicio. */
+export type ClaseAtencion = 'ProgramadaContrato' | 'Extraordinaria'
 
 export type CategoriaDocumento =
   | 'InformeFinal'
@@ -78,6 +83,21 @@ export interface PlagaControlada {
   plaga_activo: boolean
 }
 
+/** Decisión del jefe de sección sobre el informe del proveedor (RF-SER-007). */
+export type ResultadoConformidad = 'Conforme' | 'Observada'
+
+export interface Conformidad {
+  id: number
+  resultado: ResultadoConformidad
+  fecha_conformidad: FechaIso
+  comentarios: string
+  /** Revisión del informe que se evaluó. */
+  revision: number
+  usuario_id: number
+  usuario_nombre: string | null
+  fecha_creacion: InstanteIso
+}
+
 export interface CambioEstado {
   estado_anterior: EstadoAtencion | ''
   estado_nuevo: EstadoAtencion
@@ -95,7 +115,7 @@ export interface Atencion {
   proveedor_nombre: string | null
   tipo_servicio_id: number
   tipo_servicio_nombre: string | null
-  clase: string
+  clase: ClaseAtencion
   descripcion: string
   origen: OrigenAtencion
   unidad_solicitante_id: number | null
@@ -122,6 +142,8 @@ export interface Atencion {
   productos: ProductoAplicado[]
   plagas: PlagaControlada[]
   historial: CambioEstado[]
+  /** Decisiones de conformidad, de la más antigua a la más reciente. Ausente si el back-end aún no las envía. */
+  conformidades?: Conformidad[]
 }
 
 export interface ArchivoDocumento {
@@ -179,6 +201,8 @@ export interface CrearAtencionEntrada extends OrigenEntrada {
   contrato_id: number
   descripcion: string
   es_riesgo?: boolean
+  /** Se omite en la programada según contrato. */
+  clase?: ClaseAtencion
   alcances: AlcanceEntrada[]
   productos?: ProductoAplicadoEntrada[]
   /** Ids del catálogo de plagas (RF-FIT-004). */
@@ -201,6 +225,12 @@ export interface AcuerdoUnidadEntrada {
   comentarios_acuerdo_unidad: string
 }
 
+export interface ConformidadEntrada {
+  resultado: ResultadoConformidad
+  fecha_conformidad: FechaIso
+  comentarios: string
+}
+
 export interface DocumentoEntrada {
   categoria: CategoriaDocumento
   alcance_id?: number
@@ -219,6 +249,7 @@ export interface FiltrosAtenciones {
   q?: string
   estado?: EstadoAtencion
   origen?: OrigenAtencion
+  clase?: ClaseAtencion
   contrato_id?: number
 }
 

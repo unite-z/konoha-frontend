@@ -16,8 +16,13 @@ describe('leerFiltrosBandeja', () => {
       .toEqual({ filtros: { q: 'poda', estado: 'En ejecución', origen: 'SolicitudUnidad', contrato_id: 12 }, pagina: 3 })
   })
 
+  it('acepta y valida la modalidad', () => {
+    expect(leer({ clase: 'Extraordinaria' }).filtros).toEqual({ clase: 'Extraordinaria' })
+    expect(leer({ clase: 'Programada' }).filtros).toEqual({})
+  })
+
   it('ignora valores no válidos', () => {
-    expect(leer({ estado: 'Conforme', origen: 'demanda', contrato_id: '0', pagina: '-2' })).toEqual({ filtros: {}, pagina: 1 })
+    expect(leer({ estado: 'Cerrada', origen: 'demanda', contrato_id: '0', pagina: '-2' })).toEqual({ filtros: {}, pagina: 1 })
     expect(leer({ contrato_id: '3.5', pagina: 'abc' })).toEqual({ filtros: {}, pagina: 1 })
     expect(leer({ contrato_id: '99999999999999' }).filtros).toEqual({})
   })
@@ -29,6 +34,10 @@ describe('leerFiltrosBandeja', () => {
 })
 
 describe('hayFiltros', () => {
+  it('cuenta la modalidad como filtro', () => {
+    expect(hayFiltros({ clase: 'ProgramadaContrato' })).toBe(true)
+  })
+
   it('detecta cualquier filtro', () => {
     expect(hayFiltros({})).toBe(false)
     expect(hayFiltros({ q: 'x' })).toBe(true)

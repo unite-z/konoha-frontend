@@ -22,7 +22,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
 import { descargarDocumento, listarReportes } from '@/services/api/tercerizados'
 import type { Alcance, Atencion, DocumentoReporte, ReporteProveedor } from '@/types/tercerizados'
-import { textoAlcance, textoCategoria } from '@/utils/estadosTercerizados'
+import { haTerminado, textoAlcance, textoCategoria } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearTamanoArchivo, SIN_VALOR } from '@/utils/formato'
 import estilos from './Tercerizados.module.css'
 
@@ -186,7 +186,7 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
       />
     )
   } else if (consulta.estado === 'vacio') {
-    const terminada = atencion.estado === 'Ejecutado pendiente de reporte' || atencion.estado === 'Reporte adjunto'
+    const terminada = haTerminado(atencion.estado)
     contenido = (
       <EstadoVacio
         nivel={3}

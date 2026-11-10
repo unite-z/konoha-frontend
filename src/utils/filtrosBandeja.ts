@@ -4,16 +4,17 @@
  * Los valores no válidos de la URL (editada a mano o de una versión anterior) se ignoran en lugar de
  * enviarse a la API: así la bandeja nunca falla por un enlace viejo.
  */
-import type { EstadoAtencion, FiltrosAtenciones, OrigenAtencion } from '../types/tercerizados'
-import { ESTADOS_ATENCION, OPCIONES_ORIGEN } from './estadosTercerizados'
+import type { ClaseAtencion, EstadoAtencion, FiltrosAtenciones, OrigenAtencion } from '../types/tercerizados'
+import { ESTADOS_ATENCION, OPCIONES_CLASE, OPCIONES_ORIGEN } from './estadosTercerizados'
 
 /** Claves en la URL (`useFiltrosUrl`). */
-export type ClaveFiltroBandeja = 'q' | 'estado' | 'origen' | 'contrato_id' | 'pagina'
+export type ClaveFiltroBandeja = 'q' | 'estado' | 'origen' | 'clase' | 'contrato_id' | 'pagina'
 
 export const FILTROS_BANDEJA_VACIOS: Record<ClaveFiltroBandeja, string> = {
   q: '',
   estado: '',
   origen: '',
+  clase: '',
   contrato_id: '',
   pagina: '',
 }
@@ -39,6 +40,7 @@ export function leerFiltrosBandeja(url: Record<ClaveFiltroBandeja, string>): Fil
   if (q) filtros.q = q
   if ((ESTADOS_ATENCION as readonly string[]).includes(url.estado)) filtros.estado = url.estado as EstadoAtencion
   if (OPCIONES_ORIGEN.some((o) => o.valor === url.origen)) filtros.origen = url.origen as OrigenAtencion
+  if (OPCIONES_CLASE.some((o) => o.valor === url.clase)) filtros.clase = url.clase as ClaseAtencion
   const contrato = enteroPositivo(url.contrato_id)
   if (contrato) filtros.contrato_id = contrato
   return { filtros, pagina: enteroPositivo(url.pagina) ?? 1 }
@@ -46,5 +48,5 @@ export function leerFiltrosBandeja(url: Record<ClaveFiltroBandeja, string>): Fil
 
 /** `true` si hay algún filtro aplicado (para el estado vacío y «Limpiar filtros»). */
 export function hayFiltros(filtros: FiltrosAtenciones): boolean {
-  return Boolean(filtros.q || filtros.estado || filtros.origen || filtros.contrato_id)
+  return Boolean(filtros.q || filtros.estado || filtros.origen || filtros.clase || filtros.contrato_id)
 }

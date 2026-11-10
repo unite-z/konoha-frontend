@@ -6,6 +6,11 @@ describe('validarOrdenCompra', () => {
     expect(validarOrdenCompra({ numero: '  ', motivo: '' }, false).numero).toMatch(/número/)
   })
 
+  it('nombra la orden de servicio en la extraordinaria', () => {
+    expect(validarOrdenCompra({ numero: '', motivo: '' }, false, '', 'orden de servicio').numero).toMatch(/orden de servicio/)
+    expect(validarOrdenCompra({ numero: 'OS-2', motivo: '' }, true, 'OS-1', 'orden de servicio').motivo).toMatch(/orden de servicio/)
+  })
+
   it('acepta una OC nueva sin motivo', () => {
     expect(validarOrdenCompra({ numero: ' OC-2026-001 ', motivo: '' }, false)).toEqual({})
   })
@@ -162,5 +167,27 @@ describe('validarAcuerdo', async () => {
     const registrado = { acuerdo: true, fecha: '2026-10-21', comentarios: 'Bien' }
     expect(validarAcuerdo({ respuesta: 'acuerdo', fecha: '2026-10-21', comentarios: 'Bien' }, null, registrado).respuesta).toBeDefined()
     expect(validarAcuerdo({ respuesta: 'pendiente', fecha: '', comentarios: 'Bien' }, null, registrado)).toEqual({})
+  })
+})
+
+describe('validarConformidad', async () => {
+  const { validarConformidad } = await import('./validacionTercerizados')
+
+  it('pide la decisión y la fecha', () => {
+    const e = validarConformidad({ resultado: null, fecha: '', comentarios: '' }, '2026-10-20')
+    expect(e.resultado).toBeDefined()
+    expect(e.fecha).toBeDefined()
+  })
+
+  it('la fecha no puede ser anterior al fin del servicio', () => {
+    const antes = validarConformidad({ resultado: 'Conforme', fecha: '2026-10-19', comentarios: '' }, '2026-10-20')
+    expect(antes.fecha).toBeDefined()
+    expect(validarConformidad({ resultado: 'Conforme', fecha: '2026-10-20', comentarios: '' }, '2026-10-20')).toEqual({})
+  })
+
+  it('al observar los comentarios son obligatorios; al dar la conformidad, no', () => {
+    expect(validarConformidad({ resultado: 'Observada', fecha: '2026-10-21', comentarios: '  ' }, null).comentarios).toBeDefined()
+    expect(validarConformidad({ resultado: 'Observada', fecha: '2026-10-21', comentarios: 'Falta el metrado' }, null)).toEqual({})
+    expect(validarConformidad({ resultado: 'Conforme', fecha: '2026-10-21', comentarios: '' }, null)).toEqual({})
   })
 })

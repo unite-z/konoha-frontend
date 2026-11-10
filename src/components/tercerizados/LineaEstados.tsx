@@ -1,12 +1,12 @@
 /**
- * Línea de estados de una atención tercerizada (mockup, pantalla 6), con los 5 estados reales del back-end.
+ * Línea de estados de una atención tercerizada (mockup, pantalla 6), con los estados reales del back-end.
  *
  * Completados con marca, el actual con su número en círculo y los pendientes con contorno neutral
  * (Guía Web 5.13). Cada paso muestra la fecha en que se alcanzó, según el historial.
- * La conformidad no aparece: está fuera de esta entrega.
+ * Termina en «Conforme / cerrado»; «Observado» se intercala solo mientras la atención está observada.
  */
 import type { CambioEstado, EstadoAtencion } from '@/types/tercerizados'
-import { ESTADOS_ATENCION, fechasPorEstado, indiceEstado } from '@/utils/estadosTercerizados'
+import { fechasPorEstado, indiceEstado, pasosCiclo } from '@/utils/estadosTercerizados'
 import { formatearFechaHora } from '@/utils/formato'
 import Icono from '../ui/Icono'
 import estilos from './LineaEstados.module.css'
@@ -21,7 +21,7 @@ export default function LineaEstados({ estado, historial }: LineaEstadosProps) {
   const fechas = fechasPorEstado(historial)
   return (
     <ol className={estilos.linea} aria-label="Ciclo de la atención">
-      {ESTADOS_ATENCION.map((paso, indice) => {
+      {pasosCiclo(estado).map((paso, indice) => {
         const situacion = indice < actual ? 'completado' : indice === actual ? 'actual' : 'pendiente'
         const fecha = indice <= actual ? fechas[paso] : undefined
         return (
