@@ -55,9 +55,9 @@ function paginaCon(cantidad: number) {
   return { count: cantidad, next: null, previous: null, results: [] }
 }
 
-function montar() {
+function montar(datos = atencion) {
   const props = { onCerrar: vi.fn(), onActualizada: vi.fn(), onReporteAdjunto: vi.fn(), onExito: vi.fn() }
-  render(<DialogoReporte atencion={atencion} abierto {...props} />)
+  render(<DialogoReporte atencion={datos} abierto {...props} />)
   return props
 }
 
@@ -70,6 +70,23 @@ async function elegirArchivo(nombre: string) {
 }
 
 describe('DialogoReporte · envío', () => {
+  it('exige una respuesta al subsanar y la envía con la revisión', async () => {
+    adjuntarReporte.mockResolvedValue(reporte({ revision: 2 }))
+    listarReportes.mockResolvedValue(paginaCon(1))
+    obtenerAtencion.mockResolvedValue(atencion)
+    montar({ ...atencion, estado: 'Observado' })
+    const usuario = await elegirArchivo('informe.pdf')
+    const enviar = screen.getByRole('button', { name: 'Registrar subsanación' })
+    await usuario.click(enviar)
+    expect(adjuntarReporte).not.toHaveBeenCalled()
+    const respuesta = screen.getByRole('textbox', { name: /Respuesta a la observación/ })
+    expect(document.activeElement).toBe(respuesta)
+    await usuario.type(respuesta, 'Corregimos el metrado')
+    await usuario.click(enviar)
+    await waitFor(() => expect(adjuntarReporte).toHaveBeenCalledTimes(1))
+    expect(adjuntarReporte.mock.calls[0][1].resumen).toBe('Corregimos el metrado')
+  })
+
   it('adjunta el informe y avisa de la revisión creada', async () => {
     adjuntarReporte.mockResolvedValue(reporte({ revision: 1 }))
     listarReportes.mockResolvedValue(paginaCon(0))

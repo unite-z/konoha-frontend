@@ -69,7 +69,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
     {
       clave: 'reporte',
       d: reporte,
-      texto: atencion.estado === 'Ejecutado pendiente de reporte' ? 'Adjuntar reporte' : 'Adjuntar nueva revisión',
+      texto: atencion.estado === 'Observado' ? 'Subsanar informe' : atencion.estado === 'Ejecutado pendiente de reporte' ? 'Adjuntar reporte' : 'Adjuntar nueva revisión',
       dialogo: 'reporte' as const,
       // Primaria solo si aún falta el reporte; una nueva revisión es secundaria.
       primaria: reporte.habilitada && atencion.estado === 'Ejecutado pendiente de reporte',

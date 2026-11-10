@@ -33,12 +33,14 @@ interface Descarga {
 
 function RevisionReporte({
   reporte,
+  observacion,
   vigente,
   alcances,
   descarga,
   onDescargar,
 }: {
   reporte: ReporteProveedor
+  observacion?: string
   vigente: boolean
   alcances: Map<number, Alcance>
   descarga: Descarga
@@ -103,8 +105,9 @@ function RevisionReporte({
           { etiqueta: 'Recepción del informe', valor: formatearFecha(reporte.fecha_recepcion) },
           { etiqueta: 'Registrada por', valor: reporte.usuario_creacion_nombre },
           { etiqueta: 'Fecha de registro', valor: formatearFechaHora(reporte.fecha_creacion) },
+          observacion ? { etiqueta: 'Observación que se subsana', valor: observacion, ancho: true } : false,
           Boolean(reporte.resumen) && {
-            etiqueta: 'Resumen',
+            etiqueta: observacion ? 'Respuesta a la observación' : 'Resumen',
             valor: <span className={estilos.textoLargo}>{reporte.resumen}</span>,
             ancho: true,
           },
@@ -216,6 +219,7 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
             <RevisionReporte
               key={reporte.id}
               reporte={reporte}
+              observacion={atencion.conformidades?.find((c) => c.revision === reporte.revision - 1 && c.resultado === 'Observada')?.comentarios}
               vigente={indice === 0}
               alcances={alcances}
               descarga={descarga}
