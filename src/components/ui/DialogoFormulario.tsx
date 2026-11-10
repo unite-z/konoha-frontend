@@ -34,12 +34,14 @@ export interface DialogoFormularioProps {
   textoConfirmar: string
   /** Texto del botón secundario: «Cancelar» por defecto o «Volver» cuando el diálogo es una acción sobre el registro. */
   textoCancelar?: string
+  /** Oculta la acción secundaria cuando la única acción del diálogo es cerrar. */
+  ocultarCancelar?: boolean
   enviando?: boolean
   /** Hay datos escritos que se perderían al cerrar. */
   hayCambios?: boolean
   /** Error general del envío (por ejemplo, el `detalle` del back-end). */
   error?: { titulo: string; detalle: string } | null
-  ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'lateral' | 'hoja'
+  ancho?: 'estrecho' | 'medio' | 'normal' | 'amplio' | 'extraAmplio' | 'lateral' | 'hoja'
   /** X de cierre en la cabecera también en un diálogo centrado (el lateral la lleva siempre). */
   conCierre?: boolean
   /** Con `hoja`: los botones a todo el ancho, el principal arriba («Ya hay una incidencia abierta», Figma 391-8469). */
@@ -70,6 +72,7 @@ export default function DialogoFormulario({
   hayCambios = false,
   error,
   textoCancelar = 'Cancelar',
+  ocultarCancelar = false,
   ancho = 'normal',
   conCierre = false,
   accionesApiladas = false,
@@ -213,11 +216,11 @@ export default function DialogoFormulario({
               <Boton variante="secundario" onClick={onCancelarEnvio}>
                 Cancelar envío
               </Boton>
-            ) : (
+            ) : !ocultarCancelar ? (
               <Boton variante="secundario" onClick={onCancelar ?? pedirCierre} deshabilitado={enviando} className={estilos.cancelar}>
                 {textoCancelar}
               </Boton>
-            )}
+            ) : null}
             <Boton type="submit" cargando={enviando} deshabilitado={envioDeshabilitado}>
               {textoConfirmar}
             </Boton>

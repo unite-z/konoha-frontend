@@ -1,0 +1,95 @@
+.pendientes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pendientes h3 {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.listaPendientes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pendiente {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.botonVistaPrevia {
+  width: 5rem;
+  height: 4rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.miniatura {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.datosPendiente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+}
+
+.nombreArchivo {
+  overflow-wrap: anywhere;
+  color: var(--color-text-primary);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.errorPendiente {
+  color: var(--color-error);
+}
+
+.accionesArchivo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.imagenAmpliada {
+  display: block;
+  max-width: 100%;
+  max-height: min(70vh, 48rem);
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 767px) {
+  .listaPendientes {
+    grid-template-columns: 1fr;
+  }
+
+  .pendiente {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .pendiente > :last-child {
+    grid-column: 1 / -1;
+  }
+}

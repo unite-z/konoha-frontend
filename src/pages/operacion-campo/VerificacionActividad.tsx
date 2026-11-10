@@ -50,7 +50,7 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
       error={mutacion.error}
       hayCambios={hayCambios}
       envioDeshabilitado={!hayCambios}
-      ancho="amplio"
+      ancho="extraAmplio"
     >
       <div className={estilos.detalleVerificacion}>
         <p><strong>Observaciones de ejecución:</strong> {actividad.observaciones?.trim() || 'Sin observaciones del capataz'}</p>
@@ -68,7 +68,7 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
         error={error}
         ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
       />
-      <HistorialCambios entidad="actividad" registroId={actividad.id} />
+      <HistorialCambios entidad="actividad" registroId={actividad.id} presentacion="actividad" />
     </DialogoFormulario>
   )
 }

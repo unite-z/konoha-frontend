@@ -7,9 +7,10 @@
  * - La descarga pasa por la API, que comprueba el permiso: un rol no autorizado no accede al archivo.
  * - Sin permiso para adjuntar, la zona de carga no se muestra; el servidor lo rechazaría igual.
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Boton from '../ui/Boton'
 import AvisoEnLinea from '../ui/AvisoEnLinea'
+import DialogoDetalle from '../ui/DialogoDetalle'
 import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
 import ZonaCarga from '../ui/ZonaCarga'
 import { useConsulta } from '@/hooks/useConsulta'
@@ -17,6 +18,7 @@ import { aErrorApi } from '@/services/api/cliente'
 import { descargarAdjunto, listarAdjuntos, subirAdjunto } from '@/services/api/core'
 import type { Adjunto, EntidadRegistro } from '@/types/core'
 import { formatearFechaHora, formatearTamanoArchivo } from '@/utils/formato'
+import estilos from './Adjuntos.module.css'
 
 const TIPOS = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx'
 
@@ -24,6 +26,13 @@ interface Pendiente {
   archivo: File
   clave: string
   error: string | null
+  vistaPrevia: string
+}
+
+interface VistaPrevia {
+  nombre: string
+  url: string
+  revocarAlCerrar: boolean
 }
 
 export interface AdjuntosProps {
@@ -38,6 +47,8 @@ export interface AdjuntosProps {
   presentacion?: 'evidencias' | 'foto'
   /** Tras subir un archivo, por si la ficha depende de sus adjuntos (poda verificada, AV-309). */
   onCambio?: () => void
+  /** Conserva la selección en el navegador hasta que la persona confirme la subida. */
+  confirmarSeleccion?: boolean
 }
 
 export default function Adjuntos({
@@ -49,16 +60,42 @@ export default function Adjuntos({
   prepararArchivo,
   presentacion = 'evidencias',
   onCambio,
+  confirmarSeleccion = false,
 }: AdjuntosProps) {
   const [version, setVersion] = useState(0)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
   const [subiendo, setSubiendo] = useState(false)
   const [errorDescarga, setErrorDescarga] = useState<string | null>(null)
+  const [seleccionados, setSeleccionados] = useState<Pendiente[]>([])
+  const [errorSeleccion, setErrorSeleccion] = useState<string | null>(null)
+  const [vistaPrevia, setVistaPrevia] = useState<VistaPrevia | null>(null)
+  const urlsTemporales = useRef(new Set<string>())
   const consulta = useConsulta(
     `${entidad}-${registroId}-${version}`,
     (signal) => listarAdjuntos(entidad, registroId, signal),
     (datos) => datos.length === 0,
   )
+
+  useEffect(() => () => {
+    urlsTemporales.current.forEach((url) => URL.revokeObjectURL(url))
+    urlsTemporales.current.clear()
+  }, [])
+
+  function crearVistaPrevia(archivo: File): string {
+    const url = URL.createObjectURL(archivo)
+    urlsTemporales.current.add(url)
+    return url
+  }
+
+  function liberarVistaPrevia(url: string) {
+    if (!url || !urlsTemporales.current.delete(url)) return
+    URL.revokeObjectURL(url)
+  }
+
+  function cerrarVistaPrevia() {
+    if (vistaPrevia?.revocarAlCerrar) liberarVistaPrevia(vistaPrevia.url)
+    setVistaPrevia(null)
+  }
 
   async function subir(objetivo: Pendiente) {
     setSubiendo(true)
@@ -69,9 +106,57 @@ export default function Adjuntos({
       setVersion((v) => v + 1)
       onCambio?.()
     } catch (causa) {
-      setPendiente({ ...objetivo, error: aErrorApi(causa).detalle })
+      setPendiente({ ...objetivo, error: causa instanceof Error ? causa.message : aErrorApi(causa).detalle })
     } finally {
       setSubiendo(false)
+    }
+  }
+
+  function seleccionar(archivos: File[]) {
+    const admitidos = archivos.filter((archivo) => {
+      if (archivo.size > 20 * 1024 * 1024) {
+        setErrorSeleccion(`${archivo.name} supera el tamaño máximo de 20 MB.`)
+        return false
+      }
+      const extension = `.${archivo.name.split('.').pop()?.toLowerCase() ?? ''}`
+      if (!tiposAceptados.toLowerCase().split(',').includes(extension)) {
+        setErrorSeleccion(`${archivo.name} no tiene un formato admitido.`)
+        return false
+      }
+      return true
+    })
+    if (!admitidos.length) return
+    setErrorSeleccion(null)
+    const nuevos = admitidos.map((archivo) => ({
+      archivo,
+      clave: crypto.randomUUID(),
+      error: null,
+      vistaPrevia: confirmarSeleccion ? crearVistaPrevia(archivo) : '',
+    }))
+    if (confirmarSeleccion) setSeleccionados((actuales) => [...actuales, ...nuevos])
+    else void subir(nuevos[0])
+  }
+
+  async function subirSeleccionados() {
+    if (!seleccionados.length) return
+    setSubiendo(true)
+    const fallidos: Pendiente[] = []
+    let subidos = 0
+    for (const seleccionado of seleccionados) {
+      try {
+        const archivo = prepararArchivo ? await prepararArchivo(seleccionado.archivo) : seleccionado.archivo
+        await subirAdjunto(entidad, registroId, archivo, seleccionado.clave)
+        liberarVistaPrevia(seleccionado.vistaPrevia)
+        subidos++
+      } catch (causa) {
+        fallidos.push({ ...seleccionado, error: causa instanceof Error ? causa.message : aErrorApi(causa).detalle })
+      }
+    }
+    setSeleccionados(fallidos)
+    setSubiendo(false)
+    if (subidos > 0) {
+      setVersion((v) => v + 1)
+      onCambio?.()
     }
   }
 
@@ -89,6 +174,17 @@ export default function Adjuntos({
     }
   }
 
+  async function visualizar(adjunto: Adjunto) {
+    setErrorDescarga(null)
+    try {
+      const url = URL.createObjectURL(await descargarAdjunto(adjunto.id))
+      urlsTemporales.current.add(url)
+      setVistaPrevia({ nombre: adjunto.nombre, url, revocarAlCerrar: true })
+    } catch (causa) {
+      setErrorDescarga(aErrorApi(causa).detalle)
+    }
+  }
+
   const columnas: ColumnaTabla<Adjunto>[] = [
     { clave: 'nombre', titulo: 'Archivo', multilinea: true, render: (a) => a.nombre },
     { clave: 'tamano', titulo: 'Tamaño', alineacion: 'derecha', render: (a) => formatearTamanoArchivo(a.tamano_bytes) },
@@ -97,9 +193,16 @@ export default function Adjuntos({
       clave: 'accion',
       titulo: 'Acción',
       render: (a) => (
-        <Boton variante="fantasma" compacto onClick={() => void descargar(a)} aria-label={`Descargar ${a.nombre}`}>
-          Descargar
-        </Boton>
+        <div className={estilos.accionesArchivo}>
+          {a.tipo_mime.startsWith('image/') && (
+            <Boton variante="fantasma" compacto onClick={() => void visualizar(a)} aria-label={`Ver ${a.nombre}`}>
+              Ver
+            </Boton>
+          )}
+          <Boton variante="fantasma" compacto onClick={() => void descargar(a)} aria-label={`Descargar ${a.nombre}`}>
+            Descargar
+          </Boton>
+        </div>
       ),
     },
   ]
@@ -132,6 +235,58 @@ export default function Adjuntos({
       )}
       {puedeAdjuntar && !sinPermiso && (
         <>
+          {errorSeleccion && <AvisoEnLinea tono="error">{errorSeleccion}</AvisoEnLinea>}
+          {confirmarSeleccion && seleccionados.length > 0 && (
+            <section className={estilos.pendientes} aria-labelledby="titulo-fotografias-pendientes">
+              <h3 id="titulo-fotografias-pendientes">Fotografías pendientes de guardar</h3>
+              <ul className={estilos.listaPendientes}>
+                {seleccionados.map((pendienteSeleccionado) => (
+                  <li key={pendienteSeleccionado.clave} className={estilos.pendiente}>
+                    <Boton
+                      variante="fantasma"
+                      className={estilos.botonVistaPrevia}
+                      onClick={() => setVistaPrevia({
+                        nombre: pendienteSeleccionado.archivo.name,
+                        url: pendienteSeleccionado.vistaPrevia,
+                        revocarAlCerrar: false,
+                      })}
+                    >
+                      <img
+                        className={estilos.miniatura}
+                        src={pendienteSeleccionado.vistaPrevia}
+                        alt={`Vista previa de ${pendienteSeleccionado.archivo.name}`}
+                        onError={() => setSeleccionados((actuales) => actuales.map((item) =>
+                          item.clave === pendienteSeleccionado.clave
+                            ? { ...item, error: item.error ?? 'No se pudo mostrar la vista previa de esta fotografía.' }
+                            : item,
+                        ))}
+                      />
+                    </Boton>
+                    <div className={estilos.datosPendiente}>
+                      <span className={estilos.nombreArchivo}>{pendienteSeleccionado.archivo.name}</span>
+                      <span>{formatearTamanoArchivo(pendienteSeleccionado.archivo.size)}</span>
+                      {pendienteSeleccionado.error && (
+                        <span className={estilos.errorPendiente}>{pendienteSeleccionado.error}</span>
+                      )}
+                    </div>
+                    <Boton
+                      variante="fantasma"
+                      compacto
+                      deshabilitado={subiendo}
+                      onClick={() => {
+                        liberarVistaPrevia(pendienteSeleccionado.vistaPrevia)
+                        setSeleccionados((actuales) =>
+                          actuales.filter((item) => item.clave !== pendienteSeleccionado.clave),
+                        )
+                      }}
+                    >
+                      Quitar
+                    </Boton>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <ZonaCarga
             acepta={tiposAceptados}
             ayuda={ayudaCarga}
@@ -139,11 +294,13 @@ export default function Adjuntos({
             multiple={!modoFoto}
             textoBoton={modoFoto ? 'Añadir foto' : undefined}
             deshabilitada={subiendo}
-            onArchivos={(archivos) => {
-              const archivo = archivos[0]
-              if (archivo) void subir({ archivo, clave: crypto.randomUUID(), error: null })
-            }}
+            onArchivos={seleccionar}
           />
+          {confirmarSeleccion && seleccionados.length > 0 && (
+            <Boton cargando={subiendo} onClick={() => void subirSeleccionados()}>
+              Guardar {seleccionados.length === 1 ? 'archivo' : 'archivos'}
+            </Boton>
+          )}
           {pendiente?.error && (
             <AvisoEnLinea
               tono="error"
@@ -154,6 +311,15 @@ export default function Adjuntos({
             </AvisoEnLinea>
           )}
         </>
+      )}
+      {vistaPrevia && (
+        <DialogoDetalle
+          abierto
+          titulo={vistaPrevia.nombre}
+          onCerrar={cerrarVistaPrevia}
+        >
+          <img className={estilos.imagenAmpliada} src={vistaPrevia.url} alt={`Vista ampliada de ${vistaPrevia.nombre}`} />
+        </DialogoDetalle>
       )}
     </>
   )

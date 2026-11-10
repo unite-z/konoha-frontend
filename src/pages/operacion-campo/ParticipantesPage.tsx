@@ -4,6 +4,9 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import Selector from '@/components/ui/Selector'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import DialogoDetalle from '@/components/ui/DialogoDetalle'
+import ListaDescripcion from '@/components/ui/ListaDescripcion'
+import type { ColumnaTabla } from '@/components/ui/TablaDatos'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import ExportarExcel from '@/components/core/ExportarExcel'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
@@ -37,6 +40,7 @@ export default function ParticipantesPage() {
     [materialActividad, setMaterialActividad] = useState<ActividadCampo | null>(null),
     [evidenciaActividad, setEvidenciaActividad] = useState<ActividadCampo | null>(null),
     [verificacionActividad, setVerificacionActividad] = useState<ActividadCampo | null>(null),
+    [detalleActividad, setDetalleActividad] = useState<ActividadCampo | null>(null),
     [nueva, setNueva] = useState(false),
     [poda, setPoda] = useState(false),
     [aviso, setAviso] = useState('')
@@ -88,7 +92,7 @@ export default function ParticipantesPage() {
         titulo="Actividades y operarios participantes"
         listado={listado}
         vacio="No hay actividades con estos filtros"
-        columnas={[
+        columnas={([
           {
             clave: 'tipo_actividad_nombre',
             titulo: 'Actividad',
@@ -148,10 +152,11 @@ export default function ParticipantesPage() {
               <Boton
                 variante="fantasma"
                 compacto
-                aria-label={`${puedeRegistrar && a.estado === 'Abierto' ? 'Seleccionar' : 'Ver'} operarios de actividad ${a.id}`}
-                onClick={() => setActual(a)}
+                aria-label={`Ver detalle de ${a.tipo_actividad_nombre}`}
+                icono="eye"
+                onClick={() => setDetalleActividad(a)}
               >
-                {puedeRegistrar && a.estado === 'Abierto' ? 'Seleccionar operarios' : 'Ver participantes'}
+                Ver detalle
               </Boton>
             ),
           },
@@ -201,8 +206,102 @@ export default function ParticipantesPage() {
                 },
               ]
             : []),
-        ]}
+        ] satisfies ColumnaTabla<ActividadCampo>[]).filter((columna) =>
+          ['tipo_actividad_nombre', 'cuadrilla_nombre', 'fecha', 'cantidad', 'acciones'].includes(columna.clave),
+        )}
       />
+      {detalleActividad && (
+        <DialogoDetalle
+          abierto
+          titulo={detalleActividad.tipo_actividad_nombre}
+          descripcion={`${detalleActividad.area_verde_nombre} · ${formatearFecha(detalleActividad.fecha)}`}
+          onCerrar={() => setDetalleActividad(null)}
+          lateral
+        >
+          <div className={estilos.formulario}>
+            <section className={estilos.seccionDetalle}>
+              <h3>Actividad</h3>
+              <ListaDescripcion
+                elementos={[
+                  { etiqueta: 'Fecha y hora', valor: formatearFechaHora(detalleActividad.fecha_hora_actividad) },
+                  { etiqueta: 'Ubicación', valor: detalleActividad.area_verde_nombre },
+                  { etiqueta: 'Cuadrilla', valor: detalleActividad.cuadrilla_nombre },
+                  { etiqueta: 'Estado del parte', valor: detalleActividad.estado },
+                  { etiqueta: 'Tiempo empleado', valor: detalleActividad.tiempo_minutos ? `${detalleActividad.tiempo_minutos} min` : null },
+                  { etiqueta: 'Superficie', valor: detalleActividad.superficie_m2 === null ? null : `${detalleActividad.superficie_m2} m²` },
+                  { etiqueta: 'Observaciones', valor: detalleActividad.observaciones, ancho: true },
+                ]}
+              />
+            </section>
+            <section className={estilos.seccionDetalle}>
+              <h3>Participantes</h3>
+              <p>
+                {detalleActividad.participantes.operarios.length
+                  ? detalleActividad.participantes.operarios.map((p) => `${p.nombres} ${p.apellidos}`).join(', ')
+                  : 'No se han registrado participantes.'}
+              </p>
+              <Boton
+                variante="secundario"
+                onClick={() => {
+                  setActual(detalleActividad)
+                  setDetalleActividad(null)
+                }}
+              >
+                {puedeRegistrar && detalleActividad.estado === 'Abierto' ? 'Gestionar participantes' : 'Ver participantes'}
+              </Boton>
+            </section>
+            <section className={estilos.seccionDetalle}>
+              <h3>Registro complementario</h3>
+              <div className={estilos.accionesDetalle}>
+                <Boton
+                  variante="secundario"
+                  onClick={() => {
+                    setMaterialActividad(detalleActividad)
+                    setDetalleActividad(null)
+                  }}
+                >
+                  Ver materiales
+                </Boton>
+                <Boton
+                  variante="secundario"
+                  onClick={() => {
+                    setEvidenciaActividad(detalleActividad)
+                    setDetalleActividad(null)
+                  }}
+                >
+                  Ver fotografías
+                </Boton>
+              </div>
+            </section>
+            <section className={estilos.seccionDetalle}>
+              <h3>Verificación</h3>
+              <ListaDescripcion
+                columnas="una"
+                elementos={[
+                  {
+                    etiqueta: 'Verificación',
+                    valor: detalleActividad.fecha_verificacion
+                      ? `${detalleActividad.verificado_por_nombre ?? 'Jefe de sección'} · ${formatearFechaHora(detalleActividad.fecha_verificacion)}`
+                      : 'Pendiente de verificar',
+                  },
+                  { etiqueta: 'Observaciones de verificación', valor: detalleActividad.verificacion_observaciones },
+                ]}
+              />
+              {puedeVerificar && (
+                <Boton
+                  variante="secundario"
+                  onClick={() => {
+                    setVerificacionActividad(detalleActividad)
+                    setDetalleActividad(null)
+                  }}
+                >
+                  {detalleActividad.fecha_verificacion ? 'Actualizar verificación' : 'Verificar actividad'}
+                </Boton>
+              )}
+            </section>
+          </div>
+        </DialogoDetalle>
+      )}
       {nueva && (
         <DialogoNuevaActividad
           onCerrar={() => setNueva(false)}
@@ -256,6 +355,8 @@ export default function ParticipantesPage() {
           onEnviar={() => setEvidenciaActividad(null)}
           onCerrar={() => setEvidenciaActividad(null)}
           conObligatorios={false}
+          ocultarCancelar
+          conCierre
         >
           <Adjuntos
             entidad="actividad"
@@ -264,6 +365,7 @@ export default function ParticipantesPage() {
             tiposAceptados=".jpg,.jpeg,.png"
             ayudaCarga="JPEG o PNG, de hasta 20 MB."
             prepararArchivo={comprimirFotografia}
+            confirmarSeleccion
           />
         </DialogoFormulario>
       )}
