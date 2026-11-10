@@ -77,6 +77,8 @@ const ERRORES_VACIOS: ErroresReporte = { porDocumento: {} }
 function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExito }: Omit<DialogoReporteProps, 'abierto'>) {
   const finLima = atencion.fecha_hora_fin ? fechaLimaDeInstante(atencion.fecha_hora_fin) : null
   const nuevaRevision = atencion.estado !== 'Ejecutado pendiente de reporte'
+  const subsanando = atencion.estado === 'Observado'
+  const observacion = subsanando ? atencion.conformidades?.at(-1) : undefined
   const [fecha, setFecha] = useState(() => hoyLima())
   const [resumen, setResumen] = useState('')
   const [documentos, setDocumentos] = useState<Documento[]>([])
@@ -126,6 +128,10 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
   async function enviar() {
     if (enCurso.current) return
     setIntentado(true)
+    if (subsanando && !resumen.trim()) {
+      document.getElementById('reporte-resumen')?.focus()
+      return
+    }
     const nuevos = validarReporte({ fecha, documentos }, finLima)
     if (hayErroresReporte(nuevos)) {
       const primera = Object.keys(nuevos.porDocumento)[0]
@@ -219,13 +225,13 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
     <DialogoFormulario
       abierto
       ancho="amplio"
-      titulo={nuevaRevision ? 'Adjuntar nueva revisión del reporte' : 'Adjuntar reporte del proveedor'}
+      titulo={subsanando ? 'Subsanar informe observado' : nuevaRevision ? 'Adjuntar nueva revisión del reporte' : 'Adjuntar reporte del proveedor'}
       descripcion={
         nuevaRevision
           ? 'Se registra una revisión completa nueva; las anteriores se conservan. Incluye otra vez todos los documentos vigentes.'
           : 'Adjunta el informe final y la documentación que entregó el proveedor.'
       }
-      textoConfirmar={nuevaRevision ? 'Adjuntar nueva revisión' : 'Adjuntar reporte'}
+      textoConfirmar={subsanando ? 'Registrar subsanación' : nuevaRevision ? 'Adjuntar nueva revisión' : 'Adjuntar reporte'}
       enviando={enviando}
       hayCambios={hayCambios}
       error={error}
@@ -249,7 +255,10 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
       </div>
       <AreaTexto
         id="reporte-resumen"
-        etiqueta="Resumen (opcional)"
+        etiqueta={subsanando ? 'Respuesta a la observación' : 'Resumen (opcional)'}
+        obligatorio={subsanando}
+        ayuda={observacion ? `Observación de la revisión ${observacion.revision}: ${observacion.comentarios}` : undefined}
+        error={intentado && subsanando && !resumen.trim() ? 'Indica cómo se corrigió la observación.' : undefined}
         value={resumen}
         onChange={(e) => setResumen(e.target.value)}
         disabled={enviando}
