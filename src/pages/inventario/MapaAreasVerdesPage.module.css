@@ -121,6 +121,10 @@
   margin-top: 0;
 }
 
+.panelMapaCompacto {
+  height: clamp(16rem, 52vh, 34rem);
+}
+
 .mapaFormulario .panelMapa {
   height: clamp(18rem, 54vh, 34rem);
 }

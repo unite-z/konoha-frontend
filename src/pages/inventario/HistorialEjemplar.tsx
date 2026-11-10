@@ -1,3 +1,4 @@
+import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
@@ -20,8 +21,8 @@ export default function HistorialEjemplar({ ejemplarId }: { ejemplarId: number }
       || a.origen.localeCompare(b.origen) || b.id - a.id)
 
   return (
-    <section aria-label="Historial de intervenciones">
-      <h3>Historial de intervenciones</h3>
+    <section className={estilos.seccionFicha} aria-labelledby="intervenciones-del-ejemplar">
+      <h3 id="intervenciones-del-ejemplar">Historial de intervenciones</h3>
       {fuentes.some(({ consulta }) => consulta.estado === 'cargando') &&
         <EstadoCarga forma="tabla" texto="Cargando historial…" />}
       {fuentes.filter(({ consulta }) => consulta.estado === 'error').map(({ titulo, consulta }) => (
@@ -38,8 +39,11 @@ export default function HistorialEjemplar({ ejemplarId }: { ejemplarId: number }
           {eventos.map((evento) => (
             <li className={estilos.fila} key={`${evento.origen}:${evento.id}`}>
               <div>
-                <strong>{evento.tipo}</strong>
-                <p>{formatearFecha(evento.fecha)} · {evento.origen}</p>
+                <div className={estilos.accionesFila}>
+                  <strong>{evento.tipo}</strong>
+                  <Estado tono="neutro" texto={evento.origen} punto={false} />
+                </div>
+                <p>{formatearFecha(evento.fecha)}</p>
                 {evento.ejecutor && <p>Ejecutor · {evento.ejecutor}</p>}
                 {evento.detalle && <p>{evento.detalle}</p>}
                 {evento.evidencia_id && (

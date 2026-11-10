@@ -2,18 +2,22 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, expect, it, vi } from 'vitest'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import MapaAreasVerdesPage from './MapaAreasVerdesPage'
 
-const { listarEjemplaresDeArea } = vi.hoisted(() => ({
-  listarEjemplaresDeArea: vi.fn(async () => [
+const { listarEjemplaresDePoligono, revisarImpactoPoligono, asignarPoligonoMapa, puedeEditar } = vi.hoisted(() => ({
+  puedeEditar: vi.fn(() => false),
+  revisarImpactoPoligono: vi.fn(async () => ({
+    area_anterior_id: 42, reasignables: [{ id: 1, codigo: 'AR-01' }], conflictos: [],
+  })),
+  asignarPoligonoMapa: vi.fn(async () => ({ area_verde_id: 43 })),
+  listarEjemplaresDePoligono: vi.fn(async () => [
     { id: 1, codigo: 'AR-01', latitud: -12.001, longitud: -77.002, especie_nombre_comun: 'Molle' },
     { id: 2, codigo: 'AR-02', latitud: null, longitud: -77.002, especie_nombre_comun: 'Tara' },
   ]),
 }))
 
-vi.mock('@/services/api/ejemplares', () => ({ listarEjemplaresDeArea }))
 vi.mock('@/services/api/mapaInventario', () => ({
   cargarAreasVerdesGeoJSON: async (): Promise<AreasVerdesGeoJSON> => ({
     type: 'FeatureCollection',
@@ -32,8 +36,13 @@ vi.mock('@/services/api/mapaAsignaciones', () => ({
     id_fuente: 'p-1', area_verde_id: 42, area_verde_nombre: 'Bosque Húmedo', superficie_registrada_m2: '120',
     area_verde_tipo_uso_id: 1, area_verde_tipo_uso_nombre: 'Recreación', area_verde_activa: true,
   }],
-  listarTodasLasAreasVerdes: async () => [],
-  asignarPoligonoMapa: vi.fn(),
+  listarTodasLasAreasVerdes: async () => [
+    { id: 42, nombre: 'Bosque Húmedo', lugar: 'Campus' },
+    { id: 43, nombre: 'Jardín nuevo', lugar: 'Campus' },
+  ],
+  asignarPoligonoMapa,
+  revisarImpactoPoligono,
+  listarEjemplaresDePoligono,
 }))
 vi.mock('@/services/api/catalogosInventario', () => ({
   listarTiposUso: async () => [{ id: 1, nombre: 'Recreación', color: 'green' }],
@@ -41,9 +50,19 @@ vi.mock('@/services/api/catalogosInventario', () => ({
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => null }))
 
+vi.mock('@/config/permisosCore', () => ({ PERMISOS: { gestionarCatalogos: 'gestionar' }, puede: puedeEditar }))
+
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.open = true }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.open = false }
+})
+
 afterEach(() => {
   cleanup()
-  listarEjemplaresDeArea.mockClear()
+  listarEjemplaresDePoligono.mockClear()
+  revisarImpactoPoligono.mockClear()
+  asignarPoligonoMapa.mockClear()
+  puedeEditar.mockReturnValue(false)
 })
 
 it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar los ejemplares', async () => {
@@ -52,11 +71,11 @@ it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar
 
   expect(await screen.findByRole('heading', { name: 'Bosque Húmedo' })).toBeTruthy()
   expect(screen.getByRole('img', { name: '3 polígonos visibles' }).getAttribute('viewBox')).not.toBe('0 0 1000 700')
-  expect(listarEjemplaresDeArea).not.toHaveBeenCalled()
+  expect(listarEjemplaresDePoligono).not.toHaveBeenCalled()
   fireEvent.click(screen.getByRole('button', { name: 'Mostrar ejemplares' }))
   const ejemplares = await screen.findByRole('combobox', { name: 'Ejemplares con coordenadas' })
-  expect(listarEjemplaresDeArea).toHaveBeenCalledWith(42, expect.any(AbortSignal))
-  expect(within(ejemplares).getByRole('option', { name: 'AR-01 · Molle' })).toBeTruthy()
+  expect(listarEjemplaresDePoligono).toHaveBeenCalledWith('p-1', expect.any(AbortSignal))
+  expect(within(ejemplares).getByRole('option', { name: 'AR-01 · Molle · Sin área vinculada' })).toBeTruthy()
   expect(within(ejemplares).queryByRole('option', { name: /AR-02/ })).toBeNull()
   expect(screen.getByRole('link', { name: 'Buscar ficha en el inventario' }).getAttribute('href')).toContain('q=Bosque+H%C3%BAmedo')
 
@@ -79,4 +98,23 @@ it('agrupa usos homónimos, conserva el origen en el detalle y permite consultar
   expect(screen.getByRole('heading', { name: 'Jardín Central' })).toBeTruthy()
   expect(screen.getByText('Origen del tipo de uso · Mapa original')).toBeTruthy()
   expect(screen.getByRole('img', { name: '2 polígonos visibles' })).toBeTruthy()
+})
+
+it('muestra los ejemplares afectados antes de confirmar el cambio de área', async () => {
+  puedeEditar.mockReturnValue(true)
+  render(<MemoryRouter initialEntries={['/mapa?poligono=p-1']}><MapaAreasVerdesPage /></MemoryRouter>)
+
+  const selector = await screen.findByRole('combobox', { name: 'Cambiar área vinculada' })
+  fireEvent.change(selector, { target: { value: '43' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar vínculo' }))
+  const dialogo = within(await screen.findByRole('dialog', { name: 'Reasignar polígono y ejemplares' }))
+  expect(dialogo.getByText('AR-01')).toBeTruthy()
+  expect(revisarImpactoPoligono).toHaveBeenCalledWith('p-1', 43)
+  expect(asignarPoligonoMapa).not.toHaveBeenCalled()
+
+  fireEvent.click(dialogo.getByRole('button', { name: 'Confirmar reasignación' }))
+  expect(await screen.findByText('Vínculo guardado.')).toBeTruthy()
+  expect(asignarPoligonoMapa).toHaveBeenCalledWith('p-1', 43, {
+    area_anterior_id: 42, reasignables: [{ id: 1, codigo: 'AR-01' }], conflictos: [],
+  })
 })

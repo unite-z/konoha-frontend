@@ -34,6 +34,8 @@ export interface AdjuntosProps {
   tiposAceptados?: string
   ayudaCarga?: string
   prepararArchivo?: (archivo: File) => Promise<File>
+  /** Cuando la ficha ya tiene una vista previa de foto, evita repetir el estado vacío. */
+  presentacion?: 'evidencias' | 'foto'
   /** Tras subir un archivo, por si la ficha depende de sus adjuntos (poda verificada, AV-309). */
   onCambio?: () => void
 }
@@ -45,6 +47,7 @@ export default function Adjuntos({
   tiposAceptados = TIPOS,
   ayudaCarga = 'PDF, JPEG, PNG, DOCX o XLSX, de hasta 20 MB.',
   prepararArchivo,
+  presentacion = 'evidencias',
   onCambio,
 }: AdjuntosProps) {
   const [version, setVersion] = useState(0)
@@ -101,31 +104,40 @@ export default function Adjuntos({
     },
   ]
   const sinPermiso = consulta.error?.estado === 403
+  const modoFoto = presentacion === 'foto'
+  const mostrarArchivos = !modoFoto || consulta.estado === 'error' || Boolean(consulta.datos?.length)
 
   return (
     <>
       {errorDescarga && <AvisoEnLinea tono="error" titulo="No se pudo descargar">{errorDescarga}</AvisoEnLinea>}
-      <TablaDatos
-        titulo="Evidencias"
-        tituloVisible
-        columnas={columnas}
-        filas={consulta.datos ?? []}
-        claveFila={(a) => String(a.id)}
-        estado={consulta.estado === 'inactivo' || consulta.estado === 'cargando' ? 'cargando' : consulta.estado}
-        vacio={{ titulo: 'Sin fotografías ni documentos', nivel: 3 }}
-        error={{
-          titulo: sinPermiso ? 'No tiene permiso para ver las evidencias' : 'No pudimos cargar las evidencias',
-          descripcion: sinPermiso ? 'Tu rol no incluye la consulta de este registro.' : (consulta.error?.detalle ?? ''),
-          onReintentar: consulta.reintentar,
-          nivel: 3,
-        }}
-        compacta
-      />
+      {mostrarArchivos && (
+        <TablaDatos
+          titulo={modoFoto ? 'Archivos adjuntos' : 'Evidencias'}
+          tituloVisible
+          columnas={columnas}
+          filas={consulta.datos ?? []}
+          claveFila={(a) => String(a.id)}
+          estado={consulta.estado === 'inactivo' || consulta.estado === 'cargando' ? 'cargando' : consulta.estado}
+          vacio={{ titulo: 'Sin fotografías ni documentos', nivel: 3 }}
+          error={{
+            titulo: sinPermiso
+              ? modoFoto ? 'Sin permiso para ver los archivos' : 'No tiene permiso para ver las evidencias'
+              : modoFoto ? 'No pudimos cargar los archivos' : 'No pudimos cargar las evidencias',
+            descripcion: sinPermiso ? 'Tu rol no incluye la consulta de este registro.' : (consulta.error?.detalle ?? ''),
+            onReintentar: consulta.reintentar,
+            nivel: 3,
+          }}
+          compacta
+        />
+      )}
       {puedeAdjuntar && !sinPermiso && (
         <>
           <ZonaCarga
             acepta={tiposAceptados}
             ayuda={ayudaCarga}
+            compacta={modoFoto}
+            multiple={!modoFoto}
+            textoBoton={modoFoto ? 'Añadir foto' : undefined}
             deshabilitada={subiendo}
             onArchivos={(archivos) => {
               const archivo = archivos[0]
