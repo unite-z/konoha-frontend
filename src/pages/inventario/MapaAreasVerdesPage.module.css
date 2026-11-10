@@ -121,6 +121,10 @@
   margin-top: 0;
 }
 
+.panelMapaCompacto {
+  height: clamp(16rem, 52vh, 34rem);
+}
+
 .mapaFormulario .panelMapa {
   height: clamp(18rem, 54vh, 34rem);
 }
@@ -268,8 +272,44 @@
   background: var(--color-bg-surface);
 }
 
-.edicion > button {
-  justify-self: start;
+.panelDetalle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.edicion {
+  min-width: 0;
+  justify-items: start;
+}
+
+.cabeceraDetalle,
+.filaVinculo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.cabeceraDetalle {
+  justify-content: space-between;
+}
+
+.filaVinculo {
+  align-items: end;
+}
+
+.filaVinculo > :first-child {
+  flex: 1 1 9rem;
+  min-width: 0;
+}
+
+.detalleEjemplar {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
 }
 
 @media (max-width: 54rem) {

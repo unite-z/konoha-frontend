@@ -5,6 +5,7 @@
 import type {
   Acceso,
   Adjunto,
+  CanalAcceso,
   CambioContrasena,
   CambioCuenta,
   CambioDatosUsuario,
@@ -26,7 +27,7 @@ import type {
   UsuarioConContrasena,
   UsuarioResumen,
 } from '@/types/core'
-import { descargarCore, solicitarCore } from './clienteCore'
+import { construirUrlCore, descargarCore, solicitarCore } from './clienteCore'
 
 // --- Sesión (RF-T-001) ------------------------------------------------------------------------------------
 
@@ -111,7 +112,15 @@ export function cambiarRol(id: number, rol: CodigoRol, motivo: string): Promise<
 }
 
 export function listarAccesos(
-  filtros: { usuario_id?: number; resultado?: ResultadoAcceso | ''; page?: number },
+  filtros: {
+    usuario_id?: number
+    usuario?: string
+    resultado?: ResultadoAcceso | ''
+    canal?: CanalAcceso | ''
+    desde?: string
+    hasta?: string
+    page?: number
+  },
   signal?: AbortSignal,
 ): Promise<PaginaCore<Acceso>> {
   return solicitarCore('accesos/', { parametros: filtros, signal })
@@ -177,6 +186,10 @@ export type ListadoExportable = 'actividades' | 'atenciones' | 'ejemplares'
 /** `GET exportaciones/{tipo}/`: el `.xlsx` del listado, con los datos autorizados (RF-T-011). */
 export function exportarListado(listado: ListadoExportable): Promise<Blob> {
   return descargarCore(`exportaciones/${listado}/`)
+}
+
+export function urlContenidoAdjunto(id: number): string {
+  return construirUrlCore(`adjuntos/${id}/contenido/`)
 }
 
 export function descargarAdjunto(id: number): Promise<Blob> {

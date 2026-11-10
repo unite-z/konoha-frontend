@@ -4,22 +4,22 @@ import { ErrorApi, MENSAJE_SIN_CONEXION } from './cliente'
 export type PropiedadesAreaMapa = Record<string, number | string | null>
 export type AreasVerdesGeoJSON = FeatureCollection<MultiPolygon, PropiedadesAreaMapa>
 
-/** Carga la capa GeoJSON del campus servida como dato estático por el frontend. */
+/** Carga la capa de referencia que utiliza la validación cartográfica. */
 export async function cargarAreasVerdesGeoJSON(signal?: AbortSignal): Promise<AreasVerdesGeoJSON> {
   let respuesta: Response
   try {
-    respuesta = await fetch(`${import.meta.env.BASE_URL}datos/areas-verdes.geojson`, {
-      headers: { Accept: 'application/geo+json, application/json' },
-      cache: 'force-cache',
-      signal,
-    })
+    const opciones = { headers: { Accept: 'application/geo+json, application/json' }, signal }
+    respuesta = await fetch('/api/v1/inventario/mapa/geometria', opciones)
+    if (respuesta.status === 404) {
+      respuesta = await fetch(`${import.meta.env.BASE_URL}datos/areas-verdes.geojson`, opciones)
+    }
   } catch (causa) {
     if (signal?.aborted) throw causa
     throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
   }
 
   if (!respuesta.ok) {
-    throw new ErrorApi(respuesta.status, null, 'No pudimos cargar los polígonos del campus.')
+    throw new ErrorApi(respuesta.status, null, 'No pudimos cargar las áreas del mapa del campus.')
   }
 
   try {

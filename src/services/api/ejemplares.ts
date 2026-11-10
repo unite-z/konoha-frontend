@@ -3,9 +3,14 @@ import type { EjemplarInventario, EspecieVegetal, SituacionEjemplar } from '@/ty
 import type { FechaIso, InstanteIso } from '@/types/comun'
 
 const BASE = '/api/v1/inventario'
+export const EJEMPLARES_POR_PAGINA = 25
 
 export function listarEjemplares(q = '', page = 1, signal?: AbortSignal, areaVerdeId?: number): Promise<EjemplarInventario[]> {
   return solicitarTercerizados('ejemplares', { parametros: { q, page, area_verde_id: areaVerdeId }, signal, base: BASE })
+}
+
+export function listarEjemplarPorCodigo(codigo: string, signal?: AbortSignal): Promise<EjemplarInventario[]> {
+  return solicitarTercerizados('ejemplares', { parametros: { codigo }, signal, base: BASE })
 }
 
 export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: AbortSignal): Promise<EjemplarInventario[]> {
@@ -14,7 +19,7 @@ export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: Abort
   for (let pagina = 1; ; pagina++) {
     const lote = await listarEjemplares('', pagina, signal, areaVerdeId)
     ejemplares.push(...lote)
-    if (lote.length < 25) return ejemplares
+    if (lote.length < EJEMPLARES_POR_PAGINA) return ejemplares
   }
 }
 
@@ -29,6 +34,10 @@ export function crearEjemplar(entrada: {
 
 export function vincularEjemplarConArea(id: number, areaVerdeId: number): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { area_verde_id: areaVerdeId }, base: BASE })
+}
+
+export function corregirUbicacionEjemplar(id: number, punto: { latitud: number; longitud: number; area_verde_id?: number }): Promise<EjemplarInventario> {
+  return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: punto, base: BASE })
 }
 
 export function guardarAlturaEjemplar(id: number, altura: number): Promise<EjemplarInventario> {
