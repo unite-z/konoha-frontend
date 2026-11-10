@@ -156,7 +156,7 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
   const opcionesPoligonos = vincularMapa && vinculos.datos ? (poligonos.datos?.features ?? []).flatMap(({ properties }, indice) => {
     const valor = typeof properties.mapa_id === 'string' ? properties.mapa_id : ''
     if (!valor || ocupados.has(valor)) return []
-    const nombre = properties.Nombre || `Polígono ${indice + 1}`
+    const nombre = properties.Nombre || `Área del mapa ${indice + 1}`
     return [{ valor, texto: `${nombre} · ${properties.Uso ?? 'Sin tipo de uso'}${properties['Área'] ? ` · ${Math.round(Number(properties['Área']))} m²` : ''}` }]
   }).sort((a, b) => a.texto.localeCompare(b.texto, 'es')) : []
   const opcionSeleccionada = opcionesPoligonos.find(({ valor }) => valor === poligonoId)
@@ -178,21 +178,21 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
               <div className={estilos.selectorPoligono}>
                 <Boton variante="secundario" aria-expanded={mapaAbierto} aria-controls="mapa-alta-area"
                   deshabilitado={!poligonos.datos || !vinculos.datos} onClick={() => setMapaAbierto(!mapaAbierto)}>
-                  {mapaAbierto ? 'Ocultar mapa' : 'Elegir polígono en el mapa'}
+                  {mapaAbierto ? 'Ocultar mapa' : 'Elegir área en el mapa'}
                 </Boton>
                 {opcionSeleccionada && (
                   <>
-                    <p role="status">Polígono elegido · {opcionSeleccionada.texto}. Revisa los datos completados a partir del mapa.</p>
+                    <p role="status">Área del mapa seleccionada · {opcionSeleccionada.texto}. Revisa los datos completados a partir del mapa.</p>
                     <Boton variante="fantasma" deshabilitado={guardando} onClick={() => setPoligonoId('')}>Quitar selección</Boton>
                   </>
                 )}
-                <Selector id="poligono-area" etiqueta="Polígono del mapa (opcional)" valor={poligonoId} onCambiar={setPoligonoId}
-                  disabled={guardando || !poligonos.datos || !vinculos.datos} opcionTodos="Sin polígono vinculado"
+                <Selector id="poligono-area" etiqueta="Área del mapa (opcional)" valor={poligonoId} onCambiar={setPoligonoId}
+                  disabled={guardando || !poligonos.datos || !vinculos.datos} opcionTodos="Sin área del mapa vinculada"
                   opciones={opcionesPoligonos} />
               </div>
             )}
             {vincularMapa && (poligonos.estado === 'error' || vinculos.estado === 'error') && (
-              <EstadoError titulo="No pudimos cargar los polígonos disponibles" nivel={3}
+              <EstadoError titulo="No pudimos cargar las áreas del mapa disponibles" nivel={3}
                 descripcion={poligonos.error?.detalle ?? vinculos.error?.detalle ?? ''}
                 onReintentar={() => { poligonos.reintentar(); vinculos.reintentar() }} />
             )}
@@ -201,7 +201,7 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
           <div id="mapa-alta-area" className={estilosMapa.mapaFormulario} hidden={!mapaAbierto}>
             {mapaAbierto && poligonos.datos && vinculos.datos && (
               <>
-                <p>Selecciona un polígono disponible. Los polígonos atenuados ya están vinculados.</p>
+                <p>Selecciona un área disponible. Las áreas atenuadas ya tienen una ficha vinculada.</p>
                 <div className={estilosMapa.panelMapa}>
                   <MapaVectorialLocal datos={poligonos.datos} usos={[]} usoSeleccionado=""
                     seleccionado={poligonoSeleccionado} poligonosBloqueados={ocupados}

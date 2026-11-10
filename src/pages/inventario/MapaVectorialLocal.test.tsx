@@ -36,18 +36,18 @@ describe('MapaVectorialLocal', () => {
       onSeleccionar: vi.fn(),
     }
     const { container, rerender } = render(<MapaVectorialLocal {...props} />)
-    expect(screen.getByRole('img', { name: '2 polígonos visibles' })).toBeTruthy()
+    expect(screen.getByRole('img', { name: '2 áreas visibles en el mapa' })).toBeTruthy()
     expect(container.querySelectorAll('svg path[class]')).toHaveLength(2)
 
     rerender(<MapaVectorialLocal {...props} usoSeleccionado="Recreación" />)
-    expect(screen.getByRole('img', { name: '1 polígonos visibles' })).toBeTruthy()
+    expect(screen.getByRole('img', { name: '1 área visible en el mapa' })).toBeTruthy()
     expect(container.querySelectorAll('svg path[class]')).toHaveLength(1)
   })
 
   it('convierte el punto pulsado a coordenadas geográficas', () => {
     const elegir = vi.fn()
     render(<MapaVectorialLocal datos={datos} usos={usos} usoSeleccionado="" onElegirPunto={elegir} />)
-    const svg = screen.getByRole('img', { name: '2 polígonos visibles' })
+    const svg = screen.getByRole('img', { name: '2 áreas visibles en el mapa' })
     Object.defineProperties(svg, {
       getScreenCTM: { value: () => ({ inverse: () => ({}) }) },
       createSVGPoint: {
@@ -60,7 +60,7 @@ describe('MapaVectorialLocal', () => {
 
   it('deja pasar la rueda normal y hace zoom gradual hacia el puntero con Ctrl o Meta', () => {
     render(<MapaVectorialLocal datos={datos} usos={usos} usoSeleccionado="" />)
-    const svg = screen.getByRole('img', { name: '2 polígonos visibles' })
+    const svg = screen.getByRole('img', { name: '2 áreas visibles en el mapa' })
     vi.spyOn(svg, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 1000, 700))
 
     expect(fireEvent.wheel(svg, { deltaY: -100 })).toBe(true)
