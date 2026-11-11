@@ -255,7 +255,8 @@ export default function DialogoNuevaActividad({
                 valor={encargo}
                 opcionTodos="Sin encargo asociado"
                 opciones={(encargos.datos ?? [])
-                  .filter((e) => e.tipo_actividad_id === Number(tipo) && e.area_verde_id === Number(area))
+                  .filter((e) => e.estado !== 'Cancelado' &&
+                    e.tipo_actividad_id === Number(tipo) && e.area_verde_id === Number(area))
                   .map((e) => ({ valor: String(e.id), texto: e.descripcion }))}
                 onCambiar={(v) => cambiar(() => setEncargo(v))}
                 ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio."

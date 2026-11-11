@@ -25,11 +25,22 @@ export interface TipoActividadCampo extends CatalogoCampo { clase_id: number }
 export interface EntradaTipoActividadCampo { nombre: string; clase_id: number; activo: boolean }
 export interface EntradaEncargo {
   cuadrilla_id: number; tipo_actividad_id: number; area_verde_id: number; descripcion: string
-  periodicidad: 'Semanal' | 'Quincenal'; fecha_reunion: string; fecha_inicio: string; fecha_fin: string; plazo_previsto: string
+  periodicidad: 'Semanal' | 'Quincenal' | 'Directo'; fecha_reunion: string | null; fecha_inicio: string; fecha_fin: string; plazo_previsto: string
 }
+export type EstadoEncargo = 'Por completar' | 'En curso' | 'Completado' | 'Observado' | 'Cancelado'
+
+export interface CambioEstadoEncargo {
+  id: number
+  estado_anterior: EstadoEncargo
+  estado_nuevo: EstadoEncargo
+  observaciones: string
+  autor: string
+  fecha: string
+}
+
 export interface EncargoCampo extends EntradaEncargo {
-  /** Sin estado de negocio disponible hasta integrar el contrato de seguimiento. */
-  estado: string | null
+  estado: EstadoEncargo
+  historial_estados?: CambioEstadoEncargo[]
   id: number; capataz_id: number; cuadrilla_nombre: string; capataz_nombre: string; tipo_actividad_nombre: string; area_verde_nombre: string
 }
 export interface ParteCampo { id: number; cuadrilla_id: number; capataz_id: number; fecha: string; estado: 'Abierto' | 'Cerrado' }
