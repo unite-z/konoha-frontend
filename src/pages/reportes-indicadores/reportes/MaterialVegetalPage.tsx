@@ -10,7 +10,8 @@
  *   «Sin movimientos», nunca con ceros.
  * - 1a: el mes sin registros muestra el estado vacío con el motivo del back-end.
  * - 2a: los consumos sin espacio llegan del back-end como «Sin espacio».
- * - 3a: los productos agronómicos aplicados por proveedores van en una sección aparte, sin mezclarse.
+ * - 3a: los productos agronómicos aplicados por proveedores van en una sección aparte, sin mezclarse, con su
+ *   tabla (producto, proveedor, atenciones y dosis registradas).
  * - La exportación (paso 5) es RF-REP-009: «Exportar», con el mes y el espacio aplicados.
  *
  * Esta pantalla no tiene mockup: sigue el patrón de los demás reportes (`PlantillaReporte`).
@@ -46,7 +47,12 @@ import {
   unidadDe,
   type Movimiento,
 } from './material-vegetal/materialVegetal'
-import { TablaMateriales, TablaMes, TablaTraslados } from './material-vegetal/TablasMaterial'
+import {
+  TablaMateriales,
+  TablaMes,
+  TablaProductosProveedor,
+  TablaTraslados,
+} from './material-vegetal/TablasMaterial'
 import PlantillaReporte from './PlantillaReporte'
 import estilos from './Reportes.module.css'
 
@@ -248,13 +254,17 @@ export default function MaterialVegetalPage() {
               {datos.productos_proveedor.sin_datos ? (
                 <EstadoVacio
                   nivel={3}
-                  titulo="Sin productos aplicados registrados"
+                  titulo="Sin productos aplicados en el mes"
                   descripcion={datos.productos_proveedor.mensaje_sin_datos ?? undefined}
                 />
               ) : (
-                // TODO: definir su tabla cuando el back-end envíe los productos aplicados por proveedores (flujo 3a); hoy
-                // siempre llegan «sin datos».
-                <p className={estilos.ayuda}>Los productos aplicados por proveedores todavía no se pueden mostrar</p>
+                <>
+                  <p className={estilos.ayuda}>
+                    Productos que aplicaron los proveedores en las atenciones del mes, aparte del material de las
+                    cuadrillas. La dosis es la que registró el proveedor y no se suma.
+                  </p>
+                  <TablaProductosProveedor filas={datos.productos_proveedor.productos} />
+                </>
               )}
             </section>
 
