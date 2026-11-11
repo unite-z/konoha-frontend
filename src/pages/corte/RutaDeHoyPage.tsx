@@ -31,7 +31,7 @@ import { marcarJardin, obtenerRutaDeHoy, registrarObservacionJardin } from '@/se
 import type { JardinRuta, RutaDeHoy } from '@/types/corte'
 import HojaFueraDeRuta from './HojaFueraDeRuta'
 import { detalleMarcado, detallePendiente, marcados, porCortar, textoSinConexion, textoYaEstabaMarcado, textoYaMarcado, tituloJardin, type MarcaPendiente } from './rutaDeHoy'
-import { useEnLinea } from './useEnLinea'
+import { useEnLinea } from '@/hooks/useEnLinea'
 import estilos from './RutaDeHoy.module.css'
 
 function nuevaClave(): string {

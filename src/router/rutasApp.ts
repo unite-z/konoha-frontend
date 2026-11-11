@@ -321,6 +321,7 @@ export const RUTAS_CORE = {
   accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
   importacion: `${BASE_USUARIOS}/importacion`, // RF-T-009
   repositorio: '/repositorio', // RF-T-010
+  pendientes: '/pendientes', // RF-T-012: lo que falta por sincronizar desde este dispositivo
 } as const
 
 /** Prefijo de «Usuarios y roles» (menú). */

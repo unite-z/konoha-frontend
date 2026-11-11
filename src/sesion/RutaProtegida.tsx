@@ -40,6 +40,7 @@ export default function RutaProtegida({ permitirContrasenaTemporal = false }: { 
         />
       )
     case 'activa':
+    case 'sinConexion':
       if (estado.sesion.debe_cambiar_contrasena && !permitirContrasenaTemporal) {
         return <Navigate to={RUTAS_CORE.cambiarContrasena} replace />
       }

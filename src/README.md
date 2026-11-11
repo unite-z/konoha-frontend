@@ -25,6 +25,7 @@ Código de la PWA. Este fichero dice **dónde va cada cosa y quién puede import
 | `types/` | tipos del contrato de la API | `modulos/<modulo>/tipos/` (`comun.ts` a `compartido/`) |
 | `utils/` | lógica pura con pruebas | `compartido/` (`formato`, `instanteLima`) o `modulos/<modulo>/utils/` |
 | `hooks/` | hooks compartidos | `compartido/` |
+| `sincronizacion/` | modo sin conexión (RF-T-012): almacén IndexedDB, cola común, lecturas descargadas y registro del service worker | `compartido/sincronizacion/` (`ejecutores.ts` y `ProveedorSincronizacion` a `app/`) |
 
 Cada carpeta con README propio explica qué va y qué no.
 

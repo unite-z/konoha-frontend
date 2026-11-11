@@ -1,6 +1,6 @@
 /**
- * `true` mientras el navegador tiene conexión (`navigator.onLine` y los eventos `online` y `offline`). Lo usa
- * «Ruta de hoy» para guardar las marcas sin conexión y enviarlas al volver (AV-271).
+ * `true` mientras el navegador tiene conexión (`navigator.onLine` y los eventos `online` y `offline`). Lo usan la
+ * cola sin conexión (RF-T-012), «Ruta de hoy» (MOD-03), el reporte de incidencias (MOD-03) y el parte (MOD-04).
  */
 import { useSyncExternalStore } from 'react'
 
