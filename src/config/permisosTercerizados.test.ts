@@ -140,3 +140,15 @@ describe('conformidad (RF-SER-007)', () => {
     }
   })
 })
+
+describe('verificación de seguridad', () => {
+  it.each([JEFE, INGENIERO])('%s verifica antes de iniciar', (rol) => {
+    expect(disponibilidad('seguridad', rol, atencion('OC referenciada', { es_riesgo: true })).habilitada).toBe(true)
+  })
+  it('oculta el registro al practicante y habilita el inicio con constancia', () => {
+    expect(disponibilidad('seguridad', PRACTICANTE, atencion('OC referenciada', { es_riesgo: true })).visible).toBe(false)
+    const a = { ...atencion('OC referenciada', { es_riesgo: true }), verificaciones_seguridad: [{ id: 1, medidas: 'EPP', usuario_id: 1, usuario_nombre: 'Jefe', fecha_creacion: '2026-11-10' }] }
+    expect(disponibilidad('inicio', JEFE, a).habilitada).toBe(true)
+    expect(disponibilidad('seguridad', JEFE, { ...a, estado: 'En ejecución' }).visible).toBe(false)
+  })
+})

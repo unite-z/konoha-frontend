@@ -15,11 +15,12 @@ import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoConformidad from './DialogoConformidad'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'
+import DialogoSeguridad from './DialogoSeguridad'
 import DialogoOrigen from './DialogoOrigen'
 import DialogoReporte from './DialogoReporte'
 import estilos from '../Tercerizados.module.css'
 
-type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | 'conformidad' | null
+type Dialogo = 'seguridad' | 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | 'conformidad' | null
 
 export interface AccionesAtencionProps {
   atencion: Atencion
@@ -34,6 +35,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
   const [abierto, setAbierto] = useState<Dialogo>(null)
   const idMotivos = useId()
 
+  const seguridad = disponibilidad('seguridad', rol, atencion)
   const oc = disponibilidad('ordenCompra', rol, atencion)
   const inicio = disponibilidad('inicio', rol, atencion)
   const fin = disponibilidad('fin', rol, atencion)
@@ -65,6 +67,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
 
   // La primaria (siguiente paso del ciclo) va primero; luego las secundarias y al final las deshabilitadas.
   const botones = [
+    { clave: 'seguridad', d: seguridad, texto: atencion.verificaciones_seguridad?.length ? 'Corregir verificación de seguridad' : 'Verificar seguridad', dialogo: 'seguridad' as const, primaria: seguridad.habilitada && !atencion.verificaciones_seguridad?.length },
     { clave: 'fin', d: fin, texto: 'Registrar fin', dialogo: 'fin' as const, primaria: fin.habilitada },
     {
       clave: 'reporte',
@@ -127,6 +130,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
         </ul>
       )}
 
+      <DialogoSeguridad abierto={abierto === 'seguridad'} {...comunes} />
       <DialogoOrdenCompra abierto={abierto === 'ordenCompra'} {...comunes} />
       <DialogoEjecucion modo="inicio" abierto={abierto === 'inicio'} {...comunes} />
       <DialogoEjecucion modo="fin" abierto={abierto === 'fin'} {...comunes} />

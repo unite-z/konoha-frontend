@@ -142,7 +142,7 @@ function Ficha({
           <span className={estilos.enLinea}>
             <Estado {...insigniaAEstado(insigniaEstado(atencion.estado))} />
             {atencion.es_riesgo && (
-              <Estado tono="aviso" texto="Atención de riesgo" ayuda="El inicio queda bloqueado hasta integrar la revisión de seguridad" />
+              <Estado tono="aviso" texto="Atención de riesgo" ayuda="Requiere verificación de seguridad antes del inicio" />
             )}
           </span>
         </div>
@@ -206,6 +206,19 @@ function Ficha({
           </Tarjeta>
         )}
       </div>
+
+      {atencion.es_riesgo && (
+        <Tarjeta titulo={atencion.verificaciones_seguridad?.length ? 'Seguridad verificada' : 'Seguridad pendiente de verificar'} relleno="amplio">
+          {!atencion.verificaciones_seguridad?.length && <p>El jefe de sección o el ingeniero de campo deben registrar la verificación para habilitar el inicio.</p>}
+          {[...(atencion.verificaciones_seguridad ?? [])].reverse().map((v) => (
+            <ListaDescripcion key={v.id} elementos={[
+              { etiqueta: 'EPP y medidas de seguridad', valor: <span className={estilos.textoLargo}>{v.medidas}</span>, ancho: true },
+              { etiqueta: 'Verificada por', valor: v.usuario_nombre },
+              { etiqueta: 'Fecha de verificación', valor: formatearFechaHora(v.fecha_creacion) },
+            ]} />
+          ))}
+        </Tarjeta>
+      )}
 
       <SeccionConformidad atencion={atencion} />
 

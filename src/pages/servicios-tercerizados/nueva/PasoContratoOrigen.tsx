@@ -70,7 +70,7 @@ export default function PasoContratoOrigen({ borrador, cambiar, errores, servici
           // El aviso del bloqueo solo aplica una vez marcada: no hace falta adelantarlo si todavía no aplica.
           ayuda={
             riesgoCatalogo
-              ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo: la marca no se puede quitar y el inicio queda bloqueado hasta integrar la revisión de seguridad.`
+              ? `El servicio «${servicio?.nombre}» es de riesgo según el catálogo: la marca no se puede quitar y el inicio requiere la verificación de seguridad del jefe o del ingeniero.`
               : borrador.es_riesgo
                 ? 'El inicio de la atención queda bloqueado hasta integrar la revisión de seguridad.'
                 : 'Márcala si el trabajo implica riesgo para las personas.'

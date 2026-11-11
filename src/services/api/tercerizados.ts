@@ -192,3 +192,10 @@ export function listarUnidadesInstitucionales(
 ) {
   return catalogo<UnidadInstitucional>('unidades-institucionales', { ...consulta }, signal)
 }
+
+/** Verificación previa al inicio de una atención de riesgo. */
+export function verificarSeguridad(id: number, medidas: string): Promise<Atencion> {
+  return solicitarTercerizados(`/atenciones/${id}/seguridad/`, {
+    base: '/api/v1/tercerizados', metodo: 'POST', cuerpo: { medidas, confirmado: true },
+  })
+}
