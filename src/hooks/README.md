@@ -8,6 +8,7 @@ Hooks de React que usan varios módulos.
 | `usePaginaActual` | título y migas de la página para la cabecera (con `movil`, la barra superior móvil de una ficha) | los seis módulos |
 | `useFiltrosUrl` | filtros guardados en la URL | MOD-01, MOD-05 y MOD-06 |
 | `useDemora` | retrasa un valor (búsqueda mientras se escribe) | MOD-05 y `SelectorBuscable` |
+| `useEnLinea` | `true` mientras hay conexión (`navigator.onLine` y eventos `online`/`offline`) | cola sin conexión (RF-T-012), MOD-03 y MOD-04 |
 
 **No va aquí:**
 - Hooks de un solo módulo: van junto a sus páginas (`pages/operacion-campo/useCampo.ts`) o en `components/<modulo>/` (`useEsMovil.ts` de MOD-06).

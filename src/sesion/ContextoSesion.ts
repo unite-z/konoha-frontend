@@ -14,6 +14,11 @@ export type EstadoSesion =
   /** Sin sesión. `motivo`: `cerrada` si la cerró el usuario, `perdida` si caducó o la cuenta se desactivó. */
   | { tipo: 'anonima'; motivo?: 'cerrada' | 'perdida' }
   | { tipo: 'activa'; sesion: SesionCore }
+  /**
+   * Sin conexión, con la última sesión comprobada en este dispositivo (RF-T-012): se puede consultar lo descargado y
+   * registrar en la cola. Al volver la red se comprueba de nuevo.
+   */
+  | { tipo: 'sinConexion'; sesion: SesionCore }
   /** No se pudo comprobar la sesión (sin conexión o error del servidor). */
   | { tipo: 'error'; error: ErrorApi }
 
@@ -34,10 +39,10 @@ export function useSesion(): ValorSesion {
   return valor
 }
 
-/** Sesión activa o `null`. */
+/** Sesión activa (o la última comprobada, si no hay conexión) o `null`. */
 export function useSesionActiva(): SesionCore | null {
   const { estado } = useSesion()
-  return estado.tipo === 'activa' ? estado.sesion : null
+  return estado.tipo === 'activa' || estado.tipo === 'sinConexion' ? estado.sesion : null
 }
 
 /** Nombre del rol de la sesión (el que usan los permisos de interfaz de MOD-06), o `null` sin sesión. */

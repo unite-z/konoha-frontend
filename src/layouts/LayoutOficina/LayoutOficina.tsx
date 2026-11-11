@@ -16,6 +16,8 @@ import { BarraInferior, BarraSuperiorMovil } from './BarrasMoviles'
 import Cabecera from './Cabecera'
 import { ContextoPagina, type DatosPagina } from './ContextoPagina'
 import MenuLateral from './MenuLateral'
+import IndicadorSincronizacion from '@/pages/sincronizacion/IndicadorSincronizacion'
+import AvisoNuevaVersion from '@/sincronizacion/AvisoNuevaVersion'
 import estilos from './LayoutOficina.module.css'
 
 /** Preferencia de menú fijado abierto: comodidad por navegador, sin datos de la sesión. Por defecto, comprimido. */
@@ -130,6 +132,8 @@ export default function LayoutOficina() {
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>
             )}
+            <AvisoNuevaVersion />
+            <IndicadorSincronizacion />
             <Outlet />
           </main>
           <BarraInferior />

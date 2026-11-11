@@ -9,7 +9,7 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 - Sprint 0 (en curso): repos, estándares, CI y despliegue preparados. Aún sin EC2: `deploy-uat.yml` se salta hasta que `DESPLIEGUE_ACTIVO=true`.
 - MOD-05 y MOD-06: pantallas del borrador importadas y funcionando en local contra el backend.
 - MOD-01: inicio de sesión, menú por permisos, usuarios y roles, registro de accesos, repositorio, y los componentes comunes `Adjuntos` e `HistorialCambios`. Contrato en `konoha-backend/docs/modulos/mod01.md`.
-- Pendiente de arranque: manifiesto y service worker (PWA) y cola sin conexión.
+- PWA y modo sin conexión (RF-T-012, AV-226): manifiesto, service worker (`vite-plugin-pwa`), cola común en IndexedDB y sesión sin conexión. Ver `src/sincronizacion/README.md` y `docs/estandares/pwa-offline.md`.
 
 ## Mapa
 
@@ -27,6 +27,7 @@ Detalle por carpeta, reglas de dependencias y comunicación entre módulos: `src
 | `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
 | `src/config/` | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión) |
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
+| `src/sincronizacion/` | Modo sin conexión (RF-T-012): cola común, lecturas descargadas y service worker |
 | `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`) |
 | `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
 | `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
@@ -100,7 +101,6 @@ Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `lo
 
 ## Deuda conocida (no la arregles de paso: tiene ticket propio)
 
-- Aún no es PWA: faltan el manifiesto, el service worker y la cola sin conexión.
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
 - Solo `Boton` tiene prueba de componente; el resto de `components/ui` las recibe al alinearse con Figma (AV-330).
 

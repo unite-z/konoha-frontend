@@ -1,13 +1,14 @@
 # PWA y modo sin conexión
 
-Requisitos: HU-MOD04-012 y HU-MOD03-011. El catálogo de requisitos v2 eliminó RNF-005 (funcionamiento sin conexión). Se recomienda reponerlo, porque estas historias dependen de él.
+Requisitos: RF-T-012 (AV-226), HU-MOD04-012 y HU-MOD03-011. Implementación: `src/sincronizacion/`. El catálogo de requisitos v2 eliminó RNF-005 (funcionamiento sin conexión). Se recomienda reponerlo, porque estas historias dependen de él.
 
 ## Qué se guarda en el dispositivo
 
 | Qué | Dónde | Notas |
 |---|---|---|
 | App shell (HTML, JS, CSS, iconos) | Caché del service worker | Versionada en cada build |
-| Catálogos de solo lectura (sectores, especies, cuadrillas) | IndexedDB | Se refrescan al abrir la app con conexión |
+| Catálogos y lecturas de campo (ruta de hoy, encargos, catálogos del parte) | IndexedDB, almacén `datos` | La última lectura correcta de cada una, por usuario; se borran al cerrar sesión |
+| Sesión sin conexión | IndexedDB, almacén `sesion` | Solo usuario, rol y permisos de la última comprobación. Nunca la credencial |
 | Operaciones pendientes | IndexedDB, cola `pendientes` | Ver abajo |
 | Fotos pendientes | IndexedDB, como `Blob` comprimido | Se borran al confirmar la subida |
 
@@ -25,7 +26,9 @@ Cada operación de campo (registro de actividad, incidencia, foto) se guarda pri
    | Respuesta | Qué hace la cola |
    |---|---|
    | 2xx, o la respuesta guardada de una clave repetida | Se elimina de la cola |
-   | 4xx de validación o de permiso | Se marca como rechazada y se avisa al usuario. No se reintenta |
+   | 401 (sesión caducada o cuenta desactivada) | La cola entera se detiene sin perder nada y se reanuda al volver a iniciar sesión. Lo que se envíe se vuelve a comprobar en el servidor |
+   | 4xx de validación o 403 de permiso | Se marca como rechazada y se avisa al usuario, con el motivo. No se reintenta sola ni se borra: el usuario la reintenta o la descarta en «Pendientes de sincronizar» |
+   | 409 `ya-marcado` (otro hizo lo mismo antes) | No se sobrescribe: se quita de la cola y se informa de quién y cuándo |
    | 409 por clave reutilizada | Error de programación: se registra y se marca como rechazada |
    | 5xx o sin red | Se reintenta |
 
@@ -39,7 +42,9 @@ Se intenta vaciar en todos estos momentos:
 - con el evento `online`;
 - con `visibilitychange`, al volver a primer plano;
 - cada minuto mientras la app está abierta y hay pendientes;
-- con Background Sync, solo donde exista (`'sync' in registration`), como mejora.
+- con Background Sync, solo donde exista (`'sync' in registration`), como mejora. **Aún no implementado:** exige repetir el envío dentro del service worker.
+
+Solo envía con una sesión comprobada por el servidor y solo las operaciones que registró ese mismo usuario.
 
 La interfaz muestra siempre **cuántas operaciones faltan por sincronizar**, para que quien usa iPhone sepa que tiene que abrir la app con conexión.
 
