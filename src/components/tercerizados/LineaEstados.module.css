@@ -1,8 +1,14 @@
 /* Línea de estados (mockup, pantalla 6): colores y tipografía del sistema de diseño, sin primitivos. */
+.contenedor {
+  container-type: inline-size;
+  min-width: 0;
+}
+
 .linea {
   --marca: var(--space-8);
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--space-2);
   margin: 0;
   padding: 0;
@@ -11,6 +17,7 @@
 
 .paso {
   position: relative;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,6 +44,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: var(--marca);
   height: var(--marca);
   border: 2px solid var(--color-border-strong);
@@ -59,6 +67,8 @@
 }
 
 .texto {
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -85,9 +95,10 @@
   color: var(--color-text-muted);
 }
 
-/* Pantallas estrechas: lista vertical. */
-@media (max-width: 1023px) {
+/* El ancho de la tarjeta decide la disposición, incluso con una barra lateral abierta. */
+@container (max-width: 64rem) {
   .linea {
+    grid-auto-flow: row;
     grid-template-columns: minmax(0, 1fr);
   }
 
