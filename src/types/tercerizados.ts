@@ -106,6 +106,14 @@ export interface CambioEstado {
   fecha_hora: InstanteIso
 }
 
+export interface VerificacionSeguridad {
+  id: number
+  medidas: string
+  usuario_id: number
+  usuario_nombre: string
+  fecha_creacion: string
+}
+
 export interface Atencion {
   id: number
   codigo: string
@@ -143,6 +151,7 @@ export interface Atencion {
   plagas: PlagaControlada[]
   historial: CambioEstado[]
   /** Decisiones de conformidad, de la más antigua a la más reciente. Ausente si el back-end aún no las envía. */
+  verificaciones_seguridad?: VerificacionSeguridad[]
   conformidades?: Conformidad[]
 }
 

@@ -22,6 +22,7 @@ export type AccionAtencion =
   | 'corregirOrigen'
   | 'acuerdoUnidad'
   | 'adjuntarReporte'
+  | 'seguridad'
   | 'conformidad'
 
 /** Resultado para una acción: si se muestra y, si se muestra deshabilitada, por qué. */
@@ -51,7 +52,7 @@ export function puedeRegistrarAtencion(rol: RolTercerizados | null): boolean {
 export function disponibilidad(
   accion: AccionAtencion,
   rol: RolTercerizados | null,
-  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'clase' | 'numero_orden_compra'>,
+  atencion: Pick<Atencion, 'estado' | 'es_riesgo' | 'origen' | 'clase' | 'numero_orden_compra' | 'verificaciones_seguridad'>,
 ): DisponibilidadAccion {
   if (!esRolTercerizados(rol)) return OCULTA
   const { estado } = atencion
@@ -62,11 +63,13 @@ export function disponibilidad(
   switch (accion) {
     case 'ordenCompra':
       return antesDelInicio ? LISTA : OCULTA
+    case 'seguridad':
+      return atencion.es_riesgo && antesDelInicio && (esJefe || rol === 'Ingeniero de campo') ? LISTA : OCULTA
     case 'inicio':
       if (estado === 'Requerimiento registrado') return bloqueada(`Registra primero la ${textoOrden(atencion.clase)} emitida por Logística`)
       if (estado !== 'OC referenciada') return OCULTA
-      if (atencion.es_riesgo) {
-        return bloqueada('Atención de riesgo: el inicio queda bloqueado hasta integrar la revisión de seguridad')
+      if (atencion.es_riesgo && !atencion.verificaciones_seguridad?.length) {
+        return bloqueada('Atención de riesgo: registra primero la verificación de seguridad')
       }
       return LISTA
     case 'fin':
