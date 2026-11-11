@@ -35,6 +35,8 @@ export interface Pendiente {
   /** Quién la registró y cuándo (hora real, aunque se envíe después). */
   usuario_id: number
   creado_en: string
+  /** Orden de llegada a la cola (ms, estrictamente creciente): decide el orden de envío. */
+  orden: number
   /** Operación de la que depende (por ejemplo, el parte de una actividad). */
   depende_de?: string | null
   /** Campos de `carga` que se rellenan con el `id` de la respuesta de `depende_de`. */
@@ -90,7 +92,15 @@ function publicar(cambio: Partial<EstadoCola>) {
 }
 
 function ordenar(lista: Pendiente[]): Pendiente[] {
-  return [...lista].sort((a, b) => a.creado_en.localeCompare(b.creado_en) || a.id.localeCompare(b.id))
+  return [...lista].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.creado_en.localeCompare(b.creado_en))
+}
+
+let ultimoOrden = 0
+
+/** Marca de orden estrictamente creciente, aunque se encolen varias operaciones en el mismo milisegundo. */
+function siguienteOrden(): number {
+  ultimoOrden = Math.max(Date.now(), ultimoOrden + 1, ...estado.pendientes.map((p) => (p.orden ?? 0) + 1))
+  return ultimoOrden
 }
 
 /** Vuelve a leer la cola del dispositivo (al arrancar o al volver a la pestaña: otra pestaña pudo cambiarla). */
@@ -125,6 +135,7 @@ export async function encolar(nueva: NuevoPendiente): Promise<string> {
     descripcion: nueva.descripcion,
     usuario_id: nueva.usuario_id,
     creado_en: nueva.creado_en ?? new Date().toISOString(),
+    orden: siguienteOrden(),
     depende_de: nueva.depende_de ?? null,
     referencias: nueva.referencias ?? [],
     estado: 'pendiente',
@@ -297,6 +308,7 @@ export function reiniciarColaParaPruebas(): void {
   avisos.clear()
   avisosConflicto.clear()
   enCurso = null
+  ultimoOrden = 0
   estado = { pendientes: [], pausada: null, enviando: false }
 }
 
