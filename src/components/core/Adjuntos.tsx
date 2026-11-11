@@ -6,6 +6,9 @@
  *   aunque el servidor llegara a guardarlo, no se duplica.
  * - La descarga pasa por la API, que comprueba el permiso: un rol no autorizado no accede al archivo.
  * - Sin permiso para adjuntar, la zona de carga no se muestra; el servidor lo rechazaría igual.
+ * - Sin conexión (RF-T-012, AV-226): el archivo, ya preparado (foto comprimida), va a la cola común con su UUID y se
+ *   sube al volver la red. Con `registroPendiente`, el registro aún está en la cola (una actividad registrada sin red):
+ *   la foto espera a que exista y toma su `id`.
  */
 import { useEffect, useRef, useState } from 'react'
 import Boton from '../ui/Boton'
@@ -14,7 +17,9 @@ import DialogoDetalle from '../ui/DialogoDetalle'
 import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
 import ZonaCarga from '../ui/ZonaCarga'
 import { useConsulta } from '@/hooks/useConsulta'
-import { aErrorApi } from '@/services/api/cliente'
+import { aErrorApi, ErrorApi } from '@/services/api/cliente'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import { encolar, porSincronizar, useCola } from '@/sincronizacion/cola'
 import { descargarAdjunto, listarAdjuntos, subirAdjunto } from '@/services/api/core'
 import type { Adjunto, EntidadRegistro } from '@/types/core'
 import { formatearFechaHora, formatearTamanoArchivo } from '@/utils/formato'
@@ -49,6 +54,8 @@ export interface AdjuntosProps {
   onCambio?: () => void
   /** Conserva la selección en el navegador hasta que la persona confirme la subida. */
   confirmarSeleccion?: boolean
+  /** UUID en la cola sin conexión del registro que aún no existe en el servidor (`registroId` se ignora). */
+  registroPendiente?: string
 }
 
 export default function Adjuntos({
@@ -61,7 +68,12 @@ export default function Adjuntos({
   presentacion = 'evidencias',
   onCambio,
   confirmarSeleccion = false,
+  registroPendiente,
 }: AdjuntosProps) {
+  const usuarioId = useSesionActiva()?.usuario.id ?? null
+  const enCola = porSincronizar(useCola(), 'core.adjunto').filter((p) =>
+    registroPendiente ? p.depende_de === registroPendiente : p.carga.entidad === entidad && p.carga.registro_id === registroId,
+  )
   const [version, setVersion] = useState(0)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
   const [subiendo, setSubiendo] = useState(false)
@@ -71,7 +83,7 @@ export default function Adjuntos({
   const [vistaPrevia, setVistaPrevia] = useState<VistaPrevia | null>(null)
   const urlsTemporales = useRef(new Set<string>())
   const consulta = useConsulta(
-    `${entidad}-${registroId}-${version}`,
+    registroPendiente ? null : `${entidad}-${registroId}-${version}`,
     (signal) => listarAdjuntos(entidad, registroId, signal),
     (datos) => datos.length === 0,
   )
@@ -97,12 +109,46 @@ export default function Adjuntos({
     setVistaPrevia(null)
   }
 
+  /** A la cola sin conexión con la misma clave: se sube sola al volver la red. */
+  async function aLaCola(objetivo: Pendiente, archivo: File) {
+    if (usuarioId === null) throw new Error('Inicia sesión para guardar el archivo')
+    await encolar({
+      id: objetivo.clave,
+      tipo: 'core.adjunto',
+      carga: { entidad, registro_id: registroPendiente ? null : registroId, descripcion: null },
+      archivo,
+      nombre_archivo: archivo.name,
+      descripcion: `Archivo · ${archivo.name}`,
+      usuario_id: usuarioId,
+      depende_de: registroPendiente ?? null,
+      referencias: registroPendiente ? ['registro_id'] : [],
+    })
+  }
+
+  /** Sube el archivo o, sin red, lo deja en la cola. `true` si quedó en la cola. */
+  async function subirOEncolar(objetivo: Pendiente, archivo: File): Promise<boolean> {
+    if (registroPendiente || !navigator.onLine) {
+      await aLaCola(objetivo, archivo)
+      return true
+    }
+    try {
+      await subirAdjunto(entidad, registroId, archivo, objetivo.clave)
+      return false
+    } catch (causa) {
+      // Solo un fallo de red va a la cola; cualquier otro error se muestra.
+      if (!(causa instanceof ErrorApi) || causa.estado !== 0) throw causa
+      await aLaCola(objetivo, archivo)
+      return true
+    }
+  }
+
   async function subir(objetivo: Pendiente) {
     setSubiendo(true)
     setPendiente({ ...objetivo, error: null })
     try {
-      await subirAdjunto(entidad, registroId, prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo, objetivo.clave)
+      const enLaCola = await subirOEncolar(objetivo, prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo)
       setPendiente(null)
+      if (enLaCola) return
       setVersion((v) => v + 1)
       onCambio?.()
     } catch (causa) {
@@ -145,9 +191,9 @@ export default function Adjuntos({
     for (const seleccionado of seleccionados) {
       try {
         const archivo = prepararArchivo ? await prepararArchivo(seleccionado.archivo) : seleccionado.archivo
-        await subirAdjunto(entidad, registroId, archivo, seleccionado.clave)
+        const enLaCola = await subirOEncolar(seleccionado, archivo)
         liberarVistaPrevia(seleccionado.vistaPrevia)
-        subidos++
+        if (!enLaCola) subidos++
       } catch (causa) {
         fallidos.push({ ...seleccionado, error: causa instanceof Error ? causa.message : aErrorApi(causa).detalle })
       }
@@ -208,7 +254,7 @@ export default function Adjuntos({
   ]
   const sinPermiso = consulta.error?.estado === 403
   const modoFoto = presentacion === 'foto'
-  const mostrarArchivos = !modoFoto || consulta.estado === 'error' || Boolean(consulta.datos?.length)
+  const mostrarArchivos = !registroPendiente && (!modoFoto || consulta.estado === 'error' || Boolean(consulta.datos?.length))
 
   return (
     <>
@@ -300,6 +346,11 @@ export default function Adjuntos({
             <Boton cargando={subiendo} onClick={() => void subirSeleccionados()}>
               Guardar {seleccionados.length === 1 ? 'archivo' : 'archivos'}
             </Boton>
+          )}
+          {enCola.length > 0 && (
+            <AvisoEnLinea tono="advertencia" icono="wifi-off" compacto>
+              {enCola.length === 1 ? '1 archivo pendiente de enviar' : `${enCola.length} archivos pendientes de enviar`}
+            </AvisoEnLinea>
           )}
           {pendiente?.error && (
             <AvisoEnLinea

@@ -8,6 +8,9 @@
 import { subirAdjunto } from '@/services/api/core'
 import { marcarFueraDeRuta, marcarJardin } from '@/services/api/corte'
 import { registrarIncidencia } from '@/services/api/incidencias'
+import { aErrorApi } from '@/services/api/cliente'
+import { campoApi, todosCampo } from '@/services/api/operacionCampo'
+import type { ParteCampo } from '@/types/operacionCampo'
 import type { NuevaIncidencia } from '@/types/incidencias'
 import type { EntidadRegistro } from '@/types/core'
 import { registrarEjecutor, type Pendiente } from './cola'
@@ -40,6 +43,23 @@ export function registrarEjecutores(): void {
   // MOD-03: reporte de incidencia desde el móvil (AV-282), con su foto y su hora original.
   registrarEjecutor('incidencia.reporte', (p) =>
     registrarIncidencia(p.carga.cuerpo as NuevaIncidencia, p.archivo ? comoFichero(p) : null, p.id),
+  )
+
+  // MOD-04: parte del día (HU-MOD04-012-OFF). Si otro ya lo abrió (409), se usa ese: la actividad solo necesita su id.
+  registrarEjecutor('campo.parte', async (p) => {
+    const cuerpo = { cuadrilla_id: Number(p.carga.cuadrilla_id), fecha: String(p.carga.fecha) }
+    try {
+      return await campoApi<ParteCampo>('partes/', { metodo: 'POST', cuerpo, claveIdempotencia: p.id })
+    } catch (causa) {
+      if (aErrorApi(causa).estado !== 409) throw causa
+      const [existente] = await todosCampo<ParteCampo>('partes/', cuerpo)
+      if (!existente) throw causa
+      return existente
+    }
+  })
+  registrarEjecutor('campo.actividad', (p) => campoApi('actividades/', { metodo: 'POST', cuerpo: p.carga, claveIdempotencia: p.id }))
+  registrarEjecutor('campo.material', (p) =>
+    campoApi(`actividades/${Number(p.carga.actividad_id)}/materiales/`, { metodo: 'POST', cuerpo: p.carga.cuerpo, claveIdempotencia: p.id }),
   )
 
   // Evidencia de un registro (MOD-01, RF-T-007). `registro_id` puede llegar de la operación de la que depende.

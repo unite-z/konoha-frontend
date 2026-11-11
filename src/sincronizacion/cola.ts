@@ -15,7 +15,7 @@
  * Quién envía cada tipo de operación lo registra `registrarEjecutor` (ver `ejecutores.ts`).
  */
 import { useSyncExternalStore } from 'react'
-import { aErrorApi, type ErrorApi } from '@/services/api/cliente'
+import { ErrorApi } from '@/services/api/cliente'
 import { borrar, guardar, leerTodos } from './almacenLocal'
 
 export type EstadoPendiente = 'pendiente' | 'enviando' | 'rechazada' | 'hecha'
@@ -206,7 +206,12 @@ async function enviarUna(p: Pendiente): Promise<'seguir' | 'sin-red' | 'pausar'>
     else await quitar(p.id)
     return 'seguir'
   } catch (causa) {
-    const error = aErrorApi(causa)
+    // Un fallo que no viene de la API (datos de la operación dañados): rechazada, no se reintenta sin fin.
+    if (!(causa instanceof ErrorApi)) {
+      await actualizar({ ...enviando, estado: 'rechazada', error: causa instanceof Error ? causa.message : 'No se pudo preparar el envío' })
+      return 'seguir'
+    }
+    const error = causa
     if (error.estado === 0 || error.estado >= 500) {
       await actualizar({
         ...enviando,

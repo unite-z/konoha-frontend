@@ -39,6 +39,8 @@ export default function ParticipantesPage() {
   const [actual, setActual] = useState<ActividadCampo | null>(null),
     [materialActividad, setMaterialActividad] = useState<ActividadCampo | null>(null),
     [evidenciaActividad, setEvidenciaActividad] = useState<ActividadCampo | null>(null),
+    // Poda registrada sin conexión (RF-T-012): su foto de evidencia se encola colgando de ella.
+    [evidenciaEnCola, setEvidenciaEnCola] = useState<string | null>(null),
     [verificacionActividad, setVerificacionActividad] = useState<ActividadCampo | null>(null),
     [detalleActividad, setDetalleActividad] = useState<ActividadCampo | null>(null),
     [nueva, setNueva] = useState(false),
@@ -311,6 +313,10 @@ export default function ParticipantesPage() {
             setAviso('Actividad registrada. Selecciona los operarios que participaron')
             listado.consulta.reintentar()
           }}
+          onEncolado={() => {
+            setNueva(false)
+            setAviso('Sin conexión: la actividad se guardó en este dispositivo y se enviará al volver la red. Los operarios se seleccionan después')
+          }}
         />
       )}
       {poda && (
@@ -325,6 +331,11 @@ export default function ParticipantesPage() {
           onIncidencia={(mensaje) => {
             setPoda(false)
             setAviso(mensaje)
+          }}
+          onEncolado={(id) => {
+            setPoda(false)
+            setEvidenciaEnCola(id)
+            setAviso('Sin conexión: la poda se guardó en este dispositivo y se enviará al volver la red. Añade la fotografía de evidencia')
           }}
         />
       )}
@@ -366,6 +377,27 @@ export default function ParticipantesPage() {
             ayudaCarga="JPEG o PNG, de hasta 20 MB."
             prepararArchivo={comprimirFotografia}
             confirmarSeleccion
+          />
+        </DialogoFormulario>
+      )}
+      {evidenciaEnCola && (
+        <DialogoFormulario
+          abierto
+          titulo="Fotografía de la poda"
+          textoConfirmar="Cerrar"
+          onEnviar={() => setEvidenciaEnCola(null)}
+          onCerrar={() => setEvidenciaEnCola(null)}
+          conObligatorios={false}
+        >
+          <Adjuntos
+            entidad="actividad"
+            registroId={0}
+            registroPendiente={evidenciaEnCola}
+            puedeAdjuntar
+            tiposAceptados=".jpg,.jpeg,.png"
+            ayudaCarga="JPEG o PNG, de hasta 20 MB. Se subirá con la poda al volver la conexión."
+            prepararArchivo={comprimirFotografia}
+            presentacion="foto"
           />
         </DialogoFormulario>
       )}
