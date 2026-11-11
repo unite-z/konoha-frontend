@@ -13,4 +13,6 @@ Componentes de negocio comunes a varios módulos. Nacieron en MOD-01 para las fi
 
 **Ejemplo:** `AtencionDetallePage.tsx` (MOD-05) muestra los ficheros de una atención con `<Adjuntos>`, que sale de aquí y llama a los servicios de MOD-01.
 
+`Adjuntos` también trabaja sin conexión (RF-T-012): el archivo preparado va a la cola común (`core.adjunto`) y, con `registroPendiente`, espera a que el registro de la cola exista en el servidor.
+
 **Destino:** `compartido/`.

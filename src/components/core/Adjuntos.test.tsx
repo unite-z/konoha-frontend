@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { descargarAdjunto, listarAdjuntos, subirAdjunto } from '@/services/api/core'
 import Adjuntos from './Adjuntos'
+
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 4, nombre: 'J. Ramos' } }) }))
 
 vi.mock('@/services/api/core', () => ({
   listarAdjuntos: vi.fn(async () => []),
