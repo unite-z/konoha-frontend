@@ -1,7 +1,8 @@
 // HU-024 · Mis incidencias en el móvil (AV-282, Figma 391-8522 y 394-9964)
 /**
  * Las incidencias que reportó el usuario, con su espacio, cuándo y el estado. Las que se reportaron sin conexión van
- * arriba como «Pendiente de enviar» y, sin conexión, una banda lo avisa; al volver la conexión se envían solas.
+ * arriba como «Pendiente de enviar» y, sin conexión, una banda lo avisa; al volver la conexión las envía la cola común
+ * de RF-T-012 (AV-226), aunque esta pantalla no esté abierta.
  * «+» abre «Reportar incidencia» (`?reportar=`, `DialogoReportarIncidencia`) y cada una lleva a su seguimiento
  * (`MiIncidenciaPage`).
  * Datos simulados hasta el backend (AV-274 y AV-279), con `AvisoDatosSimulados` (D9).
@@ -22,13 +23,13 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
 import { RUTAS_MIS_INCIDENCIAS, rutaMiIncidencia } from '@/router/rutasApp'
-import { listarMisIncidencias, registrarIncidencia } from '@/services/api/incidencias'
+import { listarMisIncidencias } from '@/services/api/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
 import { useEnLinea } from '@/hooks/useEnLinea'
 import { ESTADO_INCIDENCIA } from './bandeja'
 import { cuandoReportada } from './misIncidencias'
 import DialogoReportarIncidencia from './DialogoReportarIncidencia'
-import { quitarPendiente, usePendientes } from './reportesPendientes'
+import { usePendientes } from './reportesPendientes'
 import estilos from './Incidencias.module.css'
 
 export default function MisIncidenciasPage() {
@@ -42,30 +43,15 @@ export default function MisIncidenciasPage() {
   const reportando = parametros.has('reportar')
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
-  const enviandoCola = useRef(false)
   const { reintentar } = consulta
 
-  // Al volver la conexión se envían los reportes pendientes, uno detrás de otro.
-  const conCuerpo = pendientes.filter((p) => p.cuerpo)
+  // Cuando la cola termina de enviar reportes, se relee la lista para verlos con su código y estado.
+  const enCola = pendientes.length
+  const anteriorEnCola = useRef(enCola)
   useEffect(() => {
-    if (!enLinea || conCuerpo.length === 0 || enviandoCola.current) return
-    enviandoCola.current = true
-    void (async () => {
-      for (const pendiente of conCuerpo) {
-        if (!pendiente.cuerpo) continue
-        try {
-          await registrarIncidencia(pendiente.cuerpo, pendiente.foto ?? null)
-          quitarPendiente(pendiente.clave)
-        } catch {
-          // Sigue pendiente; se reintenta con la próxima reconexión.
-        }
-      }
-      enviandoCola.current = false
-      reintentar()
-    })()
-    // Solo al cambiar la conexión o la cola.
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [enLinea, conCuerpo.length, reintentar])
+    if (enLinea && enCola < anteriorEnCola.current) reintentar()
+    anteriorEnCola.current = enCola
+  }, [enCola, enLinea, reintentar])
 
   let contenido
   if (consulta.estado === 'error' && !consulta.datos) {
@@ -91,9 +77,15 @@ export default function MisIncidenciasPage() {
           <li key={pendiente.clave} className={estilos.miIncidencia}>
             <span className={estilos.textosMiIncidencia}>
               <span className={estilos.tituloMiIncidencia}>{pendiente.tipo}</span>
-              <span className={estilos.detalleMiIncidencia}>{pendiente.espacio} · ahora</span>
+              <span className={estilos.detalleMiIncidencia}>
+                {pendiente.espacio} · {cuandoReportada(pendiente.creado_en, hoy)}
+              </span>
             </span>
-            <Estado tono="aviso" texto="Pendiente de enviar" punto />
+            {pendiente.error ? (
+              <Estado tono="error" texto="No se pudo enviar" ayuda={pendiente.error} />
+            ) : (
+              <Estado tono="aviso" texto="Pendiente de enviar" punto />
+            )}
           </li>
         ))}
         {consulta.datos.map((incidencia) => {

@@ -207,16 +207,17 @@ export interface NuevaIncidencia {
   espacio: string
   ejemplar: string | null
   descripcion: string
+  /** Hora real del reporte si se hizo sin conexión (RF-T-012); sin ella, la del servidor. */
+  reportado_en?: string
 }
 
-/** Una incidencia reportada sin conexión que espera a enviarse (AV-282, cola de la pantalla hasta AV-226). */
+/** Una incidencia reportada sin conexión que espera en la cola común (AV-282, RF-T-012). */
 export interface ReportePendiente {
-  /** Clave de idempotencia del envío. */
+  /** UUID de la operación: su `Idempotency-Key`. */
   clave: string
   tipo: string
   espacio: string
   creado_en: string
-  /** Lo que se enviará al volver la conexión. */
-  cuerpo?: NuevaIncidencia
-  foto?: File | null
+  /** Motivo si el servidor la rechazó (se revisa en «Pendientes de sincronizar»). */
+  error: string | null
 }

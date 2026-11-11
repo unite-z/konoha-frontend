@@ -11,6 +11,9 @@ import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import SelectorBuscable from '@/components/ui/SelectorBuscable'
 import { buscarJardinesFueraDeRuta, marcarFueraDeRuta } from '@/services/api/corte'
+import { ErrorApi } from '@/services/api/cliente'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import { encolar } from '@/sincronizacion/cola'
 import type { JardinMaestro } from '@/types/corte'
 
 export interface HojaFueraDeRutaProps {
@@ -22,6 +25,7 @@ export interface HojaFueraDeRutaProps {
 }
 
 export default function HojaFueraDeRuta({ programacionId, clave, onCerrar, onMarcado }: HojaFueraDeRutaProps) {
+  const usuarioId = useSesionActiva()?.usuario.id ?? null
   const [jardin, setJardin] = useState<JardinMaestro | null>(null)
   const [nota, setNota] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -32,7 +36,21 @@ export default function HojaFueraDeRuta({ programacionId, clave, onCerrar, onMar
     setEnviando(true)
     setError(null)
     try {
-      await marcarFueraDeRuta(programacionId, { jardin_id: jardin.id, marcado_en: new Date().toISOString(), nota: nota.trim() }, clave)
+      const cuerpo = { jardin_id: jardin.id, marcado_en: new Date().toISOString(), nota: nota.trim() }
+      try {
+        await marcarFueraDeRuta(programacionId, cuerpo, clave)
+      } catch (causa) {
+        // Sin red (RF-T-012): a la cola común con la misma clave y la hora del toque.
+        if (!(causa instanceof ErrorApi) || causa.estado !== 0 || usuarioId === null) throw causa
+        await encolar({
+          id: clave,
+          tipo: 'corte.fuera-de-ruta',
+          carga: { programacion_id: programacionId, ...cuerpo },
+          descripcion: `Marca fuera de ruta · ${jardin.codigo}`,
+          usuario_id: usuarioId,
+          creado_en: cuerpo.marcado_en,
+        })
+      }
       onMarcado(jardin)
     } catch (causa) {
       setError({ titulo: 'No se pudo marcar el jardín', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
