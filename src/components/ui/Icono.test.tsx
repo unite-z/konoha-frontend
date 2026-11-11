@@ -6,8 +6,8 @@ import Icono, { NOMBRES_ICONOS_FIGMA, type NombreIcono } from './Icono'
 afterEach(cleanup)
 
 describe('Icono', () => {
-  it('tiene los 45 iconos de la página de Figma, con su nombre', () => {
-    expect(NOMBRES_ICONOS_FIGMA).toHaveLength(45)
+  it('tiene los 46 iconos de la página de Figma, con su nombre', () => {
+    expect(NOMBRES_ICONOS_FIGMA).toHaveLength(46)
     const { container } = render(
       <>
         {NOMBRES_ICONOS_FIGMA.map((nombre) => (
@@ -15,7 +15,7 @@ describe('Icono', () => {
         ))}
       </>,
     )
-    expect(container.querySelectorAll('svg')).toHaveLength(45)
+    expect(container.querySelectorAll('svg')).toHaveLength(46)
   })
 
   it.each(['circulo', 'verificacion', 'triangulo', 'aspa', 'flechaOrden', 'chevronDerecha', 'documento', 'destello'] as NombreIcono[])(

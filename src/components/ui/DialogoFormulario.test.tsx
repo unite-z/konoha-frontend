@@ -74,6 +74,28 @@ describe('DialogoFormulario', () => {
     expect(onCerrar).toHaveBeenCalledOnce()
   })
 
+  it('puede mostrar únicamente la acción Cerrar y conservar la X de la cabecera', () => {
+    const onCerrar = vi.fn()
+    render(
+      <DialogoFormulario
+        abierto
+        titulo="Ver fotografías"
+        textoConfirmar="Cerrar"
+        ocultarCancelar
+        conCierre
+        onEnviar={onCerrar}
+        onCerrar={onCerrar}
+      >
+        <p>Fotografías</p>
+      </DialogoFormulario>,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Cancelar' })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Cerrar' })).toHaveLength(2)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Cerrar' })[0])
+    expect(onCerrar).toHaveBeenCalledOnce()
+  })
+
   it('el panel lateral se cierra con la X y, con el envío deshabilitado, no envía', () => {
     const onCerrar = vi.fn()
     const onEnviar = vi.fn()

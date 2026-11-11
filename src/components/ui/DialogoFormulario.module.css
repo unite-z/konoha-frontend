@@ -15,6 +15,10 @@
   --dialogo-ancho: 56rem;
 }
 
+.extraAmplio {
+  --dialogo-ancho: 68rem;
+}
+
 /* Un solo campo («Registrar motivo», Figma 373-5658: 440 de ancho), sin línea sobre los botones, como en Figma. */
 .estrecho {
   --dialogo-ancho: 27.5rem;
