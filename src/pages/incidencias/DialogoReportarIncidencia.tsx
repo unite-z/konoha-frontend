@@ -37,10 +37,6 @@ function useVistaPrevia(foto: File | null): string | null {
   return url
 }
 
-function nuevaClave(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`
-}
-
 export interface DialogoReportarIncidenciaProps {
   onCerrar: () => void
   /** Se envió, se sumó a otra o quedó pendiente: el aviso que muestra la lista. */
@@ -97,8 +93,13 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
     setMostrarErrores(true)
     if (errores.tipo || errores.foto || errores.espacio) return
     if (!enLinea) {
-      anadirPendiente({ clave: nuevaClave(), tipo: tipo ?? '', espacio, creado_en: new Date().toISOString(), cuerpo: cuerpo(), foto })
-      onEnviado('Sin conexión: se enviará al reconectar')
+      if (!sesion) return
+      try {
+        await anadirPendiente(cuerpo(), foto, sesion.usuario.id)
+        onEnviado('Sin conexión: se enviará al reconectar')
+      } catch {
+        setError({ titulo: 'No se pudo guardar el reporte', detalle: 'Este dispositivo no permite guardar datos sin conexión.' })
+      }
       return
     }
     setEnviando(true)

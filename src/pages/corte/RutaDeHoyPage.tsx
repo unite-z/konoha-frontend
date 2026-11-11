@@ -6,8 +6,9 @@
  *
  * Sin conexión (Figma 353-2396): la marca queda «Sin sincronizar» con la hora real y su clave, una banda dice cuántas
  * faltan por enviar y, al volver la conexión, se envían solas. Si otro ya había marcado el jardín, un aviso lo dice
- * («J-015 ya estaba marcado · J. Ramos, 10:18»). Las pendientes viven en la pantalla: la cola persistente en IndexedDB
- * (que sobrevive a cerrar la aplicación) es la común de RF-T-012 (AV-226).
+ * («J-015 ya estaba marcado · J. Ramos, 10:18»). Las pendientes van a la cola común de RF-T-012 (AV-226): sobreviven a
+ * cerrar la aplicación y se envían aunque esta pantalla no esté abierta. La ruta se lee también sin red (la última
+ * descargada en este dispositivo).
  */
 import { useEffect, useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -27,16 +28,16 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
 import { MIGAS_CORTE } from '@/router/rutasApp'
 import { ErrorApi } from '@/services/api/cliente'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import { alResolverConflicto, encolar, nuevaClave, porSincronizar, useCola } from '@/sincronizacion/cola'
+import { conCache, descargadoEn } from '@/sincronizacion/datosDescargados'
+import { formatearFechaHora } from '@/utils/formato'
 import { marcarJardin, obtenerRutaDeHoy, registrarObservacionJardin } from '@/services/api/corte'
 import type { JardinRuta, RutaDeHoy } from '@/types/corte'
 import HojaFueraDeRuta from './HojaFueraDeRuta'
 import { detalleMarcado, detallePendiente, marcados, porCortar, textoSinConexion, textoYaEstabaMarcado, textoYaMarcado, tituloJardin, type MarcaPendiente } from './rutaDeHoy'
 import { useEnLinea } from '@/hooks/useEnLinea'
 import estilos from './RutaDeHoy.module.css'
-
-function nuevaClave(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`
-}
 
 function ListaRuta({
   ruta,
@@ -180,48 +181,86 @@ function HojaYaMarcado({ ruta, jardin, onCerrar, onAnadida }: { ruta: RutaDeHoy;
 
 export default function RutaDeHoyPage() {
   usePaginaActual('Ruta de hoy', [MIGAS_CORTE.corte, { texto: 'Ruta de hoy' }])
-  const consulta = useConsulta('ruta-de-hoy', obtenerRutaDeHoy)
+  const consulta = useConsulta('ruta-de-hoy', (signal) => conCache('ruta-de-hoy', () => obtenerRutaDeHoy(signal)))
+  const usuarioId = useSesionActiva()?.usuario.id ?? null
+  const cola = useCola()
   // Marcas hechas aquí, encima de la consulta hasta la siguiente.
   const [locales, setLocales] = useState<Record<number, JardinRuta>>({})
   const [enviando, setEnviando] = useState<number | null>(null)
   const [abierto, setAbierto] = useState<JardinRuta | null>(null)
   const [aviso, setAviso] = useState<{ mensaje: string; tono: 'exito' | 'error' | 'info' } | null>(null)
   const enLinea = useEnLinea()
-  const [sinSincronizar, setSinSincronizar] = useState<Record<number, MarcaPendiente>>({})
-  const enviandoCola = useRef(false)
   // Clave de idempotencia de la marca fuera de ruta en curso (`null`: hoja cerrada).
   const [fueraDeRuta, setFueraDeRuta] = useState<string | null>(null)
 
   const servidor = consulta.datos?.ruta ?? null
   const ruta = servidor && { ...servidor, jardines: servidor.jardines.map((j) => locales[j.id] ?? j) }
 
-  /**
-   * Envía una marca. Sin red (`ErrorApi` con estado 0) la deja sin sincronizar; si otro ya lo marcó (409), trae quién y
-   * cuándo y, si fue un toque, abre la hoja; si venía de la cola, lo avisa.
-   */
-  async function enviar(programacionId: number, jardin: JardinRuta, marca: MarcaPendiente, deLaCola: boolean) {
-    const quitarDeCola = () =>
-      setSinSincronizar((previas) => {
-        const resto = { ...previas }
-        delete resto[jardin.id]
-        return resto
+  // Marcas de esta ruta que siguen en la cola común (las rechazadas se revisan en «Pendientes de sincronizar»).
+  const sinSincronizar: Record<number, MarcaPendiente> = {}
+  for (const p of porSincronizar(cola, 'corte.marca')) {
+    if (p.estado === 'rechazada' || p.carga.programacion_id !== servidor?.programacion_id) continue
+    sinSincronizar[Number(p.carga.jardin_id)] = { marcado_en: String(p.carga.marcado_en), clave: p.id }
+  }
+  const enCola = Object.keys(sinSincronizar).length
+
+  // Cuando la cola termina de enviar marcas, se relee la ruta para ver quién y cuándo.
+  const anteriorEnCola = useRef(enCola)
+  const { reintentar } = consulta
+  useEffect(() => {
+    if (enLinea && enCola < anteriorEnCola.current) reintentar()
+    anteriorEnCola.current = enCola
+  }, [enCola, enLinea, reintentar])
+
+  // Si al enviarla otro ya había marcado el jardín, se avisa («J-015 ya estaba marcado · J. Ramos, 10:18»).
+  useEffect(
+    () =>
+      alResolverConflicto(({ pendiente }) => {
+        if (pendiente.tipo !== 'corte.marca') return
+        void obtenerRutaDeHoy()
+          .then((datos) => {
+            const actual = datos.ruta?.jardines.find((j) => j.id === Number(pendiente.carga.jardin_id))
+            if (actual) setAviso({ mensaje: textoYaEstabaMarcado(actual), tono: 'info' })
+          })
+          .catch(() => undefined)
+      }),
+    [],
+  )
+
+  async function aLaCola(programacionId: number, jardin: JardinRuta, marca: MarcaPendiente) {
+    if (usuarioId === null) return
+    try {
+      await encolar({
+        id: marca.clave,
+        tipo: 'corte.marca',
+        carga: { programacion_id: programacionId, jardin_id: jardin.id, marcado_en: marca.marcado_en },
+        descripcion: `Marca de corte · ${tituloJardin(jardin)}`,
+        usuario_id: usuarioId,
+        creado_en: marca.marcado_en,
       })
+    } catch {
+      setAviso({ mensaje: `No se pudo guardar la marca de ${jardin.codigo} en este dispositivo`, tono: 'error' })
+    }
+  }
+
+  /**
+   * Envía una marca con conexión. Si se corta la red (`ErrorApi` con estado 0), pasa a la cola con la misma hora y clave;
+   * si otro ya lo marcó (409), trae quién y cuándo y abre la hoja.
+   */
+  async function enviar(programacionId: number, jardin: JardinRuta, marca: MarcaPendiente) {
     try {
       const marcado = await marcarJardin(programacionId, jardin.id, marca.marcado_en, marca.clave)
       setLocales((previas) => ({ ...previas, [jardin.id]: marcado }))
-      quitarDeCola()
     } catch (causa) {
       if (causa instanceof ErrorApi && causa.estado === 0) {
-        setSinSincronizar((previas) => ({ ...previas, [jardin.id]: marca }))
+        await aLaCola(programacionId, jardin, marca)
         return
       }
-      quitarDeCola()
       if (causa instanceof ErrorApi && causa.codigo === 'ya-marcado') {
         const actual = (await obtenerRutaDeHoy().catch(() => null))?.ruta?.jardines.find((j) => j.id === jardin.id)
         if (!actual) return
         setLocales((previas) => ({ ...previas, [jardin.id]: actual }))
-        if (deLaCola) setAviso({ mensaje: textoYaEstabaMarcado(actual), tono: 'info' })
-        else setAbierto(actual)
+        setAbierto(actual)
       } else {
         setAviso({ mensaje: `No se pudo marcar ${jardin.codigo}`, tono: 'error' })
       }
@@ -232,30 +271,13 @@ export default function RutaDeHoyPage() {
     if (!ruta) return
     const marca = { marcado_en: new Date().toISOString(), clave: nuevaClave() }
     if (!enLinea) {
-      setSinSincronizar((previas) => ({ ...previas, [jardin.id]: marca }))
+      await aLaCola(ruta.programacion_id, jardin, marca)
       return
     }
     setEnviando(jardin.id)
-    await enviar(ruta.programacion_id, jardin, marca, false)
+    await enviar(ruta.programacion_id, jardin, marca)
     setEnviando(null)
   }
-
-  // Al volver la conexión, se envían las marcas pendientes, una detrás de otra, con su hora y su clave.
-  const idsEnCola = Object.keys(sinSincronizar).join(',')
-  useEffect(() => {
-    if (!enLinea || !servidor || !idsEnCola || enviandoCola.current) return
-    enviandoCola.current = true
-    const cola = Object.entries(sinSincronizar)
-    void (async () => {
-      for (const [id, marca] of cola) {
-        const jardin = servidor.jardines.find((j) => j.id === Number(id))
-        if (jardin) await enviar(servidor.programacion_id, jardin, marca, true)
-      }
-      enviandoCola.current = false
-    })()
-    // Solo al cambiar la conexión o la cola; `enviar` y `sinSincronizar` se leen en ese momento.
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [enLinea, idsEnCola, servidor])
 
   let contenido
   if (consulta.estado === 'error' && !consulta.datos) {
@@ -265,11 +287,13 @@ export default function RutaDeHoyPage() {
   } else if (!ruta) {
     contenido = <EstadoVacio titulo="Hoy no hay corte en tu cuadrilla" descripcion="Cuando el jefe de sección inicie un ciclo de corte, verás aquí tu ruta." />
   } else {
-    const enCola = Object.keys(sinSincronizar).length
+    const descargada = descargadoEn('ruta-de-hoy')
     contenido = (
       <>
         {(!enLinea || enCola > 0) && (
-          <AvisoEnLinea tono="advertencia" icono="wifi-off" compacto titulo={textoSinConexion(enCola, enLinea)} />
+          <AvisoEnLinea tono="advertencia" icono="wifi-off" compacto titulo={textoSinConexion(enCola, enLinea)}>
+            {descargada ? `Ruta descargada el ${formatearFechaHora(descargada)}` : undefined}
+          </AvisoEnLinea>
         )}
         <ListaRuta
           ruta={ruta}

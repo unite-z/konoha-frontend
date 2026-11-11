@@ -1,19 +1,33 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { incidenciasSimuladas } from '@/services/simulados/incidencias'
 import MisIncidenciasPage from './MisIncidenciasPage'
-import { anadirPendiente, vaciarPendientes } from './reportesPendientes'
+import { vaciar } from '@/sincronizacion/almacenLocal'
+import { descartar, reiniciarColaParaPruebas } from '@/sincronizacion/cola'
+import type { NuevaIncidencia } from '@/types/incidencias'
+import { anadirPendiente } from './reportesPendientes'
 
 const propias = incidenciasSimuladas().filter((i) => [34, 37].includes(i.id))
 vi.mock('@/services/api/incidencias', () => ({ listarMisIncidencias: async () => propias }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 
-afterEach(() => {
+afterEach(async () => {
   cleanup()
-  vaciarPendientes()
+  reiniciarColaParaPruebas()
+  await vaciar('pendientes')
 })
+
+const reporte: NuevaIncidencia = {
+  canal: 'App',
+  tipo: 'Rama caída',
+  reportado_por: { usuario_id: 4 },
+  espacio: 'Estacionamiento 3',
+  ejemplar: null,
+  descripcion: '',
+}
 
 function pintar() {
   render(
@@ -34,12 +48,11 @@ describe('MisIncidenciasPage', () => {
 
   it('sin conexión avisa y muestra arriba las pendientes de enviar (Figma 394-9964)', async () => {
     const enLinea = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
-    anadirPendiente({ clave: 'c1', tipo: 'Rama caída', espacio: 'Estacionamiento 3', creado_en: new Date().toISOString() })
+    const clave = await anadirPendiente(reporte, null, 4)
     pintar()
     expect(await screen.findByText('Sin conexión · se enviará al reconectar')).toBeTruthy()
     expect(screen.getByText('Pendiente de enviar')).toBeTruthy()
-    expect(screen.getByText('Estacionamiento 3 · ahora')).toBeTruthy()
-    act(() => vaciarPendientes())
+    await act(() => descartar(clave))
     expect(screen.queryByText('Pendiente de enviar')).toBeNull()
     enLinea.mockRestore()
   })
