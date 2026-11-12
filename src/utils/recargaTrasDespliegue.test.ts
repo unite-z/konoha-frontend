@@ -41,10 +41,9 @@ describe('debeRecargar', () => {
 
 describe('instalarRecargaTrasDespliegue', () => {
   it('recarga una sola vez ante dos fallos seguidos', () => {
-    sessionStorage.clear()
     const reload = vi.fn()
     const ventana = Object.assign(new EventTarget(), {
-      sessionStorage,
+      sessionStorage: almacenEnMemoria(),
       location: { reload },
     }) as unknown as Window
     instalarRecargaTrasDespliegue(ventana)
