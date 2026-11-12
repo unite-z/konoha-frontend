@@ -60,6 +60,9 @@ function useListadoActividades() {
   const consulta = useConsulta(
     JSON.stringify(['actividades-verificacion', params]),
     async (signal) => {
+      // El contrato actual no admite filtrar ni contar por verificación. Para que el total y la paginación
+      // local sean exactos se recorren las páginas del resto de filtros. `conCache` solo interviene sin red;
+      // el reintento posterior a una mutación vuelve a consultar el servidor y renueva esa copia.
       const actividades = await conCache(`listado-completo-${claveRemota}`, () =>
         todosCampo<ActividadCampo>('actividades/', parametrosRemotos, signal),
       )
@@ -122,7 +125,8 @@ export default function ParticipantesPage() {
     [detalleActividad, setDetalleActividad] = useState<ActividadCampo | null>(null),
     [nueva, setNueva] = useState(false),
     [poda, setPoda] = useState(false),
-    [aviso, setAviso] = useState('')
+    [aviso, setAviso] = useState(''),
+    [avisoPendientesVisible, setAvisoPendientesVisible] = useState(true)
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
@@ -143,7 +147,7 @@ export default function ParticipantesPage() {
           {aviso}
         </AvisoEnLinea>
       )}
-      {puedeVerificar && Boolean(listado.consulta.datos?.pendientes_verificacion) && (
+      {puedeVerificar && avisoPendientesVisible && Boolean(listado.consulta.datos?.pendientes_verificacion) && (
         <AvisoEnLinea
           tono="advertencia"
           titulo={`${listado.consulta.datos?.pendientes_verificacion ?? 0} ${
@@ -154,6 +158,7 @@ export default function ParticipantesPage() {
               ? undefined
               : { texto: 'Ver pendientes', onClick: () => listado.filtrar({ verificacion: 'pendiente' }) }
           }
+          onCerrar={() => setAvisoPendientesVisible(false)}
         >
           Revisa las actividades de campo y registra el resultado de la verificación.
         </AvisoEnLinea>
@@ -429,6 +434,7 @@ export default function ParticipantesPage() {
             setNueva(false)
             setActual(actividad)
             setAviso('Actividad registrada. Selecciona los operarios que participaron')
+            setAvisoPendientesVisible(true)
             listado.consulta.reintentar()
           }}
           onEncolado={() => {
@@ -446,6 +452,7 @@ export default function ParticipantesPage() {
             setPoda(false)
             setEvidenciaActividad(actividad)
             setAviso('Poda menor registrada. Añade la fotografía de evidencia')
+            setAvisoPendientesVisible(true)
             listado.consulta.reintentar()
           }}
           onIncidencia={(mensaje) => {
@@ -531,6 +538,7 @@ export default function ParticipantesPage() {
           onGuardado={() => {
             setVerificacionActividad(null)
             setAviso('Verificación registrada con su autor y fecha')
+            setAvisoPendientesVisible(true)
             listado.consulta.reintentar()
           }}
         />

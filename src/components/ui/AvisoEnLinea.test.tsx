@@ -14,7 +14,11 @@ describe('AvisoEnLinea', () => {
   })
 
   it('el tono error se anuncia como alerta', () => {
-    render(<AvisoEnLinea tono="error" titulo="No pudimos guardar">Vuelve a intentarlo.</AvisoEnLinea>)
+    render(
+      <AvisoEnLinea tono="error" titulo="No pudimos guardar">
+        Vuelve a intentarlo.
+      </AvisoEnLinea>,
+    )
 
     expect(screen.getByRole('alert').textContent).toContain('Vuelve a intentarlo.')
   })
@@ -26,5 +30,24 @@ describe('AvisoEnLinea', () => {
 
     await usuario.click(screen.getByRole('button', { name: 'Revisar ciclo' }))
     expect(revisar).toHaveBeenCalledTimes(1)
+  })
+
+  it('permite conservar la acción y cerrar el aviso mediante una X', async () => {
+    const usuario = userEvent.setup()
+    const revisar = vi.fn()
+    const cerrar = vi.fn()
+    render(
+      <AvisoEnLinea
+        tono="advertencia"
+        titulo="Aviso"
+        accion={{ texto: 'Revisar ciclo', onClick: revisar }}
+        onCerrar={cerrar}
+      />,
+    )
+
+    await usuario.click(screen.getByRole('button', { name: 'Revisar ciclo' }))
+    await usuario.click(screen.getByRole('button', { name: 'Cerrar aviso' }))
+    expect(revisar).toHaveBeenCalledTimes(1)
+    expect(cerrar).toHaveBeenCalledTimes(1)
   })
 })

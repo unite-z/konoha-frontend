@@ -189,7 +189,12 @@ it('avisa de las actividades pendientes, filtra por verificación y amplía el d
 
   expect(await screen.findByText('1 actividad pendiente de verificación')).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).toBeNull()
+  await usuario.click(screen.getByRole('button', { name: 'Ver pendientes' }))
+  expect((screen.getByLabelText('Estado de verificación') as HTMLSelectElement).value).toBe('pendiente')
+  await usuario.click(screen.getByRole('button', { name: 'Cerrar aviso' }))
+  expect(screen.queryByText('1 actividad pendiente de verificación')).toBeNull()
   await usuario.selectOptions(screen.getByLabelText('Estado de verificación'), 'verificada')
+  expect(screen.queryByText('1 actividad pendiente de verificación')).toBeNull()
 
   const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
   await waitFor(() => expect(within(tabla).queryByText('Riego manual')).toBeNull())

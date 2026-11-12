@@ -42,9 +42,9 @@ it('presenta el alta de una actividad con etiquetas funcionales y sin identifica
   const tabla = await screen.findByRole('table', { name: 'Historial de cambios' })
   expect(within(tabla).getByText('Actividad')).toBeTruthy()
   expect(within(tabla).getByText('Limpieza de plantas')).toBeTruthy()
-  expect(within(tabla).getByText('Pendiente de verificar')).toBeTruthy()
   expect(within(tabla).getByText('45 min')).toBeTruthy()
   expect(within(tabla).getByText(/12[.,]5 m²/)).toBeTruthy()
+  expect(within(tabla).queryByText(/Estado de verificación|Fecha de verificación|Pendiente de verificar/)).toBeNull()
   expect(within(tabla).queryByText(/parte_id|tipo_actividad_id|pendiente_vinculacion/)).toBeNull()
 })
 
@@ -80,8 +80,9 @@ it('muestra únicamente cambios funcionales con sus valores anterior y nuevo', a
   render(<HistorialCambios entidad="actividad" registroId={1} presentacion="actividad" />)
 
   const tabla = await screen.findByRole('table', { name: 'Historial de cambios' })
+  expect(within(tabla).queryByText(/Estado de verificación|Fecha de verificación/)).toBeNull()
+  expect(within(tabla).getByText('Observaciones de verificación')).toBeTruthy()
   expect(within(tabla).getByText('45 min → 60 min')).toBeTruthy()
-  expect(within(tabla).getByText('Sin verificar → Verificada')).toBeTruthy()
   expect(within(tabla).getByText('Sin registrar → Conforme en campo')).toBeTruthy()
   expect(within(tabla).queryByText('Por revisar')).toBeNull()
   expect(within(tabla).queryByText(/id:/)).toBeNull()
