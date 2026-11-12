@@ -20,7 +20,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaEditarProveedor } from '@/router/rutasApp'
 import { obtenerProveedor } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ProveedorMaestro } from '@/types/maestrosTercerizados'
 import { formatearNumero } from '@/utils/formato'
 import { datosContacto, textoVinculo } from '@/utils/validacionMaestros'
@@ -85,7 +85,7 @@ export default function ProveedorDetallePage() {
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverAQuery = volverALista(state)
   const volverA = RUTAS_TERCERIZADOS.proveedoresContratos + volverAQuery
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
 
   const consulta = useConsulta(id === null ? null : `proveedor|${id}`, (signal) => obtenerProveedor(id as number, signal))
   // Última versión que devolvió el servidor al cambiar el estado o editar; vale mientras sea el mismo proveedor.
@@ -144,7 +144,7 @@ export default function ProveedorDetallePage() {
           proveedor={proveedor}
           fallo={fallo}
           acciones={
-            puedeCambiarEstadoProveedor(rol) && (
+            puedeCambiarEstadoProveedor(permisos) && (
               <div className={estilos.enLinea}>
                 <BotonEnlace to={rutaEditarProveedor(proveedor.id)} variante="secundario" state={{ volverA: volverAQuery } satisfies EstadoNavegacionProveedor}>
                   Editar
@@ -158,7 +158,7 @@ export default function ProveedorDetallePage() {
           key={proveedor.id}
           proveedor={proveedor}
           volverA={volverAQuery}
-          puedeRegistrar={puedeRegistrarProveedoresYContratos(rol)}
+          puedeRegistrar={puedeRegistrarProveedoresYContratos(permisos)}
         />
       </>
     )

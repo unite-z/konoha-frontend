@@ -1,19 +1,23 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ErrorApi } from '@/services/api/cliente'
-import type { Atencion, ReporteProveedor } from '@/types/tercerizados'
+import type { Atencion, FormatoReporteAtencion, ReporteProveedor } from '@/types/tercerizados'
 import DialogoReporte from './DialogoReporte'
 
 const adjuntarReporte = vi.fn()
 const listarReportes = vi.fn()
 const obtenerAtencion = vi.fn()
+const obtenerFormatoReporte = vi.fn()
 vi.mock('@/services/api/tercerizados', () => ({
   adjuntarReporte: (...argumentos: unknown[]) => adjuntarReporte(...argumentos),
   listarReportes: (...argumentos: unknown[]) => listarReportes(...argumentos),
   obtenerAtencion: (...argumentos: unknown[]) => obtenerAtencion(...argumentos),
+  obtenerFormatoReporte: (...argumentos: unknown[]) => obtenerFormatoReporte(...argumentos),
 }))
+
+const SIN_FORMATO: FormatoReporteAtencion = { formato: null, datos_anteriores: null }
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
@@ -22,6 +26,9 @@ beforeAll(() => {
   HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
     this.open = false
   }
+})
+beforeEach(() => {
+  obtenerFormatoReporte.mockResolvedValue(SIN_FORMATO)
 })
 afterEach(() => {
   cleanup()
@@ -207,5 +214,115 @@ describe('DialogoReporte · reintento sin duplicar', () => {
     await usuario.click(screen.getByRole('button', { name: 'Adjuntar reporte' }))
 
     expect(await screen.findByText('Sin permiso')).toBeTruthy()
+  })
+})
+
+describe('DialogoReporte · datos del informe final (RF-SER-009)', () => {
+  const conFormato: FormatoReporteAtencion = {
+    formato: {
+      id: 4,
+      version: 2,
+      tipo_servicio_id: 3,
+      tipo_servicio_nombre: 'Control fitosanitario',
+      campos: [
+        { nombre_campo: 'Metrado', tipo_dato: 'Decimal', obligatorio: true, orden: 1, subcampos: null },
+        {
+          nombre_campo: 'Productos aplicados',
+          tipo_dato: 'JSON',
+          obligatorio: true,
+          orden: 2,
+          subcampos: [
+            { nombre: 'producto', tipo_dato: 'Texto', descripcion: 'Nombre del producto' },
+            { nombre: 'cantidad', tipo_dato: 'Decimal', descripcion: 'Cantidad total' },
+          ],
+        },
+        { nombre_campo: 'Ruta recorrida', tipo_dato: 'Texto largo', obligatorio: false, orden: 3, subcampos: null },
+      ],
+    },
+    datos_anteriores: null,
+  }
+
+  function preparar(formato: FormatoReporteAtencion = conFormato) {
+    obtenerFormatoReporte.mockResolvedValue(formato)
+    adjuntarReporte.mockResolvedValue(reporte({ revision: 1 }))
+    listarReportes.mockResolvedValue(paginaCon(0))
+    obtenerAtencion.mockResolvedValue(atencion)
+  }
+
+  it('solo pide los datos cuando hay un «Informe final»', async () => {
+    preparar()
+    montar()
+    await elegirArchivo('fotos-del-jardin.pdf')
+    expect(screen.queryByRole('heading', { name: 'Datos del informe final' })).toBeNull()
+
+    await elegirArchivo('informe.pdf')
+
+    expect(await screen.findByRole('heading', { name: 'Datos del informe final' })).toBeTruthy()
+    expect(screen.getByText(/Formato estándar de Control fitosanitario · versión 2/)).toBeTruthy()
+    expect(screen.getByText('0 de 2 obligatorios')).toBeTruthy()
+    expect(obtenerFormatoReporte).toHaveBeenCalledWith(9, expect.any(AbortSignal))
+  })
+
+  it('no envía sin los obligatorios, lleva el foco al primero y luego los envía normalizados', async () => {
+    preparar()
+    const props = montar()
+    const usuario = await elegirArchivo('informe.pdf')
+    const metrado = await screen.findByRole('textbox', { name: /Metrado/ })
+
+    await usuario.click(screen.getByRole('button', { name: 'Adjuntar reporte' }))
+
+    expect(adjuntarReporte).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(metrado)
+    expect(screen.getByText('Completa «Metrado»')).toBeTruthy()
+    expect(screen.getByText('Registra al menos una fila de «Productos aplicados»')).toBeTruthy()
+
+    await usuario.type(metrado, '120,5')
+    await usuario.type(screen.getByRole('textbox', { name: 'Producto' }), 'Abamectina')
+    await usuario.click(screen.getByRole('button', { name: 'Agregar fila a Productos aplicados' }))
+    expect(screen.getAllByRole('textbox', { name: 'Producto' })).toHaveLength(2)
+    expect(screen.getByText('2 de 2 obligatorios')).toBeTruthy()
+    await usuario.click(screen.getByRole('button', { name: 'Adjuntar reporte' }))
+
+    await waitFor(() => expect(props.onExito).toHaveBeenCalled())
+    expect(adjuntarReporte.mock.calls[0][1].datos_formato).toEqual({
+      Metrado: '120.5',
+      'Productos aplicados': [{ producto: 'Abamectina' }],
+    })
+  })
+
+  it('propone los datos de la revisión anterior', async () => {
+    preparar({ ...conFormato, datos_anteriores: { revision: 2, datos: { Metrado: '80', 'Productos aplicados': [{ producto: 'Azufre', cantidad: '3' }] } } })
+    montar({ ...atencion, estado: 'Reporte adjunto' })
+    await elegirArchivo('informe.pdf')
+
+    expect(await screen.findByText(/Partimos de los datos de la revisión 2/)).toBeTruthy()
+    expect((screen.getByRole('textbox', { name: /Metrado/ }) as HTMLInputElement).value).toBe('80')
+    expect((screen.getByRole('textbox', { name: 'Producto' }) as HTMLInputElement).value).toBe('Azufre')
+    expect(screen.getByText('2 de 2 obligatorios')).toBeTruthy()
+  })
+
+  it('sin formato vigente, adjunta el reporte como antes', async () => {
+    preparar(SIN_FORMATO)
+    const props = montar()
+    const usuario = await elegirArchivo('informe.pdf')
+
+    await usuario.click(screen.getByRole('button', { name: 'Adjuntar reporte' }))
+
+    await waitFor(() => expect(props.onExito).toHaveBeenCalled())
+    expect(screen.queryByRole('heading', { name: 'Datos del informe final' })).toBeNull()
+    expect(adjuntarReporte.mock.calls[0][1].datos_formato).toBeUndefined()
+  })
+
+  it('si no puede cargar el formato, avisa y deja adjuntar el reporte sin sus datos', async () => {
+    preparar()
+    obtenerFormatoReporte.mockRejectedValue(new ErrorApi(503, null, 'Servicio no disponible'))
+    const props = montar()
+    const usuario = await elegirArchivo('informe.pdf')
+
+    expect(await screen.findByText(/No pudimos cargar el formato estándar del informe final/)).toBeTruthy()
+    await usuario.click(screen.getByRole('button', { name: 'Adjuntar reporte' }))
+
+    await waitFor(() => expect(props.onExito).toHaveBeenCalled())
+    expect(adjuntarReporte.mock.calls[0][1].datos_formato).toBeUndefined()
   })
 })

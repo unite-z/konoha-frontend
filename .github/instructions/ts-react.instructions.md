@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ts,src/**/*.tsx,src/**/*.css"
+applyTo: 'src/**/*.ts,src/**/*.tsx,src/**/*.css'
 ---
 
 # TypeScript, React y estilos (konoha-frontend)
@@ -14,9 +14,9 @@ applyTo: "src/**/*.ts,src/**/*.tsx,src/**/*.css"
 ## Estructura de `src/`
 
 - `pages/<modulo-en-kebab-case>/`: pantallas por módulo.
-- `components/ui/`: componentes base reutilizables. Antes de crear uno, comprueba si ya existe. `components/<modulo>/`: los propios de un módulo.
+- `design-system/`: componentes base reutilizables, `tokens.css` y `global.css`, en ficheros planos. Código nuevo: `@/design-system/...`. Los imports antiguos `@/components/ui/...` y `@/styles/...` siguen funcionando por un alias (`vite.config.ts` y `tsconfig.app.json`) y se migran al tocar cada fichero; no los uses en código nuevo. Antes de crear uno, comprueba si ya existe. `components/<modulo>/`: los propios de un módulo.
 - `services/api/`: un cliente por módulo con funciones tipadas. **Ninguna pantalla ni componente llama a `fetch` directamente.**
-- `hooks/` compartidos, `utils/` (lógica pura, con pruebas), `config/` (permisos de interfaz por rol), `sesion/`, `router/`, `layouts/`, `styles/`.
+- `hooks/` compartidos, `utils/` (lógica pura, con pruebas), `config/` (permisos de interfaz por rol), `sesion/`, `router/`, `layouts/`.
 
 ## React
 
@@ -30,7 +30,7 @@ applyTo: "src/**/*.ts,src/**/*.tsx,src/**/*.css"
 ## Estilos
 
 - CSS Modules: un `.module.css` por componente.
-- Colores, espacios, tipografía y radios **solo con los tokens de `src/styles/tokens.css`**. Nada de colores ni medidas escritos a mano.
+- Colores, espacios, tipografía y radios **solo con los tokens de `src/design-system/tokens.css`**. Nada de colores ni medidas escritos a mano.
 - Sin estilos en línea, salvo valores calculados en tiempo de ejecución.
 
 ## Accesibilidad

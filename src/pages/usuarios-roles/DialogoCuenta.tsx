@@ -10,6 +10,9 @@ import { useRef, useState } from 'react'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import Selector from '@/components/ui/Selector'
+import { useConsulta } from '@/hooks/useConsulta'
+import { listarPermisos, listarRoles } from '@/services/api/core'
+import ResumenPermisosRol from './ResumenPermisosRol'
 import { aErrorApi } from '@/services/api/cliente'
 import { datosDeError } from '@/services/api/clienteCore'
 import { actualizarUsuario, crearUsuario } from '@/services/api/core'
@@ -44,6 +47,10 @@ export default function DialogoCuenta({ cuenta, onCerrar, onCreada, onActualizad
   }
   const [borrador, setBorrador] = useState(inicial)
   const [errores, setErrores] = useState<ErroresCuenta & { rol?: string }>({})
+  // Qué implica el rol elegido (AV-381): solo en el alta, donde se elige.
+  const roles = useConsulta(alta ? 'roles' : null, (signal) => listarRoles(signal))
+  const catalogo = useConsulta(alta ? 'catalogo-permisos' : null, (signal) => listarPermisos(signal))
+  const rolElegido = roles.datos?.find((r) => r.codigo === borrador.rol)
   const [error, setError] = useState<{ titulo: string; detalle: string } | null>(null)
   const [enviando, setEnviando] = useState(false)
   const enCurso = useRef(false)
@@ -166,6 +173,9 @@ export default function DialogoCuenta({ cuenta, onCerrar, onCreada, onActualizad
           ayuda="Un solo rol por persona. El capataz se vincula luego con su cuadrilla."
           disabled={enviando}
         />
+      )}
+      {alta && rolElegido?.activo && (
+        <ResumenPermisosRol nombreRol={rolElegido.nombre} permisos={rolElegido.permisos} catalogo={catalogo.datos ?? null} />
       )}
       <CampoFormulario
         id="cuenta-fecha_fin_vigencia"

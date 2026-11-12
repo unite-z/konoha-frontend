@@ -36,7 +36,7 @@ import {
   textoOrigen,
 } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearFechaHora, formatearMinutos, formatearNumero, SIN_VALOR } from '@/utils/formato'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import AccionesAtencion from './acciones/AccionesAtencion'
 import DocumentosProveedor from './DocumentosProveedor'
 import SeccionConformidad from './SeccionConformidad'
@@ -311,7 +311,7 @@ export default function AtencionDetallePage() {
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = RUTAS_TERCERIZADOS.atenciones + ((state as EstadoNavegacionBandeja | null)?.volverA ?? '')
 
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
 
   const consulta = useConsulta(id === null ? null : `atencion|${id}`, (signal) => obtenerAtencion(id as number, signal))
   // Última versión recibida de una operación o recarga; se usa si es tan reciente como la consultada.
@@ -367,7 +367,7 @@ export default function AtencionDetallePage() {
         acciones={
           <AccionesAtencion
             atencion={atencion}
-            rol={rol}
+            permisos={permisos}
             onActualizada={setLocal}
             onExito={setAviso}
             onReporteAdjunto={() => setVersionDocumentos((v) => v + 1)}

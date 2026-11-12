@@ -9,28 +9,29 @@ Este fichero es la guía para personas y agentes. Estándares comunes y ADR: en 
 - Sprint 0 (en curso): repos, estándares, CI y despliegue preparados. Aún sin EC2: `deploy-uat.yml` se salta hasta que `DESPLIEGUE_ACTIVO=true`.
 - MOD-05 y MOD-06: pantallas del borrador importadas y funcionando en local contra el backend.
 - MOD-01: inicio de sesión, menú por permisos, usuarios y roles, registro de accesos, repositorio, y los componentes comunes `Adjuntos` e `HistorialCambios`. Contrato en `konoha-backend/docs/modulos/mod01.md`.
-- Pendiente de arranque: manifiesto y service worker (PWA) y cola sin conexión.
+- PWA y modo sin conexión (RF-T-012, AV-226): manifiesto, service worker (`vite-plugin-pwa`), cola común en IndexedDB y sesión sin conexión. Ver `src/sincronizacion/README.md` y `docs/estandares/pwa-offline.md`.
 
 ## Mapa
 
 Detalle por carpeta, reglas de dependencias y comunicación entre módulos: `src/README.md`.
 
-| Ruta | Qué hay |
-|---|---|
-| `src/pages/<modulo>/` | Pantallas: `acceso/`, `usuarios-roles/` y `repositorio/` (MOD-01), `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
-| `src/pages/operacion-campo/` | MOD-04: cuadrillas, encargos y participantes; sesión común de MOD-01, menú y rutas según `CAM.CUADRILLA.CONSULTAR` |
-| `src/components/core/` | Componentes comunes de MOD-01 para las fichas de otros módulos: `Adjuntos` e `HistorialCambios` |
-| `src/components/ui/` | Componentes base. Reutilízalos antes de crear otro |
-| `src/components/reportes-indicadores/` | Componentes propios del MOD-06 (filtros compartidos de los reportes de gestión) |
-| `src/services/api/` | Clientes y servicios tipados por módulo |
-| `src/types/` | Tipos del contrato de la API |
-| `src/hooks/`, `src/utils/` | Hooks compartidos y lógica pura con pruebas |
-| `src/config/` | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión) |
-| `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
-| `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`) |
-| `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
-| `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
-| `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR |
+| Ruta                                                       | Qué hay                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/pages/<modulo>/`                                      | Pantallas: `acceso/`, `usuarios-roles/` y `repositorio/` (MOD-01), `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06)                                                                                                                                                                                 |
+| `src/pages/operacion-campo/`                               | MOD-04: cuadrillas, encargos y participantes; sesión común de MOD-01, menú y rutas según `CAM.CUADRILLA.CONSULTAR`                                                                                                                                                                                                       |
+| `src/components/core/`                                     | Componentes comunes de MOD-01 para las fichas de otros módulos: `Adjuntos` e `HistorialCambios`                                                                                                                                                                                                                          |
+| `src/design-system/`                                       | Componentes base, tokens y estilos globales. Reutilízalos antes de crear otro. Código nuevo: `@/design-system/...`. Los imports antiguos `@/components/ui/...` y `@/styles/...` siguen funcionando por un alias (`vite.config.ts` y `tsconfig.app.json`) y se migran al tocar cada fichero; no los uses en código nuevo. |
+| `src/components/reportes-indicadores/`                     | Componentes propios del MOD-06 (filtros compartidos de los reportes de gestión)                                                                                                                                                                                                                                          |
+| `src/services/api/`                                        | Clientes y servicios tipados por módulo                                                                                                                                                                                                                                                                                  |
+| `src/types/`                                               | Tipos del contrato de la API                                                                                                                                                                                                                                                                                             |
+| `src/hooks/`, `src/utils/`                                 | Hooks compartidos y lógica pura con pruebas                                                                                                                                                                                                                                                                              |
+| `src/config/`                                              | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión)                                                                                                                                                                                                                                        |
+| `src/sesion/`, `src/router/`                               | Sesión, guardián de rutas y rutas                                                                                                                                                                                                                                                                                        |
+| `src/sincronizacion/`                                      | Modo sin conexión (RF-T-012): cola común, lecturas descargadas y service worker                                                                                                                                                                                                                                          |
+| `src/design-system/tokens.css`                             | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`)                                                                                                                                                                                                                                                        |
+| `Dockerfile`, `docker/Caddyfile`                           | Imagen `konoha-web`: la PWA servida por Caddy sin root                                                                                                                                                                                                                                                                   |
+| `.github/workflows/`                                       | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas)                                                                                                                                                                                                                 |
+| `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR                                                                                                                                                                                                                                                                                 |
 
 ## Comandos
 
@@ -51,7 +52,7 @@ npm run typecheck && npm run lint && npm test && npm run build
 ```
 
 - El hook `pre-push` ya ejecuta typecheck y oxlint. Actívalo con `git config core.hooksPath .githooks`.
-- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css`, `fetch` fuera de `services/api/`, medidas en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` o `border-radius` sin `var(--type-*)` o `var(--radius-*)`, imports con más de un `../` (se usa el alias `@/`), y en las líneas nuevas, `style={…}`. En las carpetas migradas al sistema de diseño (todas las de `pages/`, `layouts` y `components`) rechaza además primitivos de color, variables `var(--x)` sin definir y controles crudos (`<button>`, `<input>`, `<table>`…) fuera de `components/ui` y `layouts`, salvo con el comentario `Excepción al sistema (AV-351): motivo`.
+- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css`, `fetch` fuera de `services/api/`, medidas en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` o `border-radius` sin `var(--type-*)` o `var(--radius-*)`, imports con más de un `../` (se usa el alias `@/`), y en las líneas nuevas, `style={…}`. En las carpetas migradas al sistema de diseño (todas las de `pages/`, `layouts` y `components`) rechaza además primitivos de color, variables `var(--x)` sin definir y controles crudos (`<button>`, `<input>`, `<table>`…) fuera de `design-system` y `layouts`, salvo con el comentario `Excepción al sistema (AV-351): motivo`.
 - oxlint rechaza `any`, `!` sin justificar (`// oxlint-disable-next-line typescript/no-non-null-assertion -- motivo`) y `console.*`.
 
 ## Reglas no negociables
@@ -78,16 +79,16 @@ npm run typecheck && npm run lint && npm test && npm run build
 
 Cambiarlas exige un ADR nuevo que sustituya al anterior.
 
-| Decisión | Dónde |
-|---|---|
-| Backend en Spring Boot; este repo solo consume su API | `konoha-infra`: `docs/adr/0001-backend-spring-boot.md` |
-| Tres repos: backend, frontend e infra | `konoha-infra`: `docs/adr/0002-repos-backend-frontend-infra.md` |
-| Una EC2 con Docker Compose; entornos UAT y prod, sin DEV en la nube | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
-| Alertas solo dentro de la aplicación | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md` |
-| Cola sin conexión con idempotencia; Background Sync solo como mejora | `docs/estandares/pwa-offline.md` |
-| Ficheros TS que no son componentes en camelCase | `konoha-infra`: `docs/estandares/nombres.md` |
-| Claves JSON de la API en snake_case: los tipos de `src/types/` las reflejan tal cual | `konoha-infra`: `docs/adr/0005-claves-json-snake-case.md` |
-| Prefijo de tickets `AV`; el primer issue es AV-1 | `konoha-infra`: `docs/estandares/git-y-prs.md` |
+| Decisión                                                                             | Dónde                                                           |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Backend en Spring Boot; este repo solo consume su API                                | `konoha-infra`: `docs/adr/0001-backend-spring-boot.md`          |
+| Tres repos: backend, frontend e infra                                                | `konoha-infra`: `docs/adr/0002-repos-backend-frontend-infra.md` |
+| Una EC2 con Docker Compose; entornos UAT y prod, sin DEV en la nube                  | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md`       |
+| Alertas solo dentro de la aplicación                                                 | `konoha-infra`: `docs/adr/0003-despliegue-ec2-compose.md`       |
+| Cola sin conexión con idempotencia; Background Sync solo como mejora                 | `docs/estandares/pwa-offline.md`                                |
+| Ficheros TS que no son componentes en camelCase                                      | `konoha-infra`: `docs/estandares/nombres.md`                    |
+| Claves JSON de la API en snake_case: los tipos de `src/types/` las reflejan tal cual | `konoha-infra`: `docs/adr/0005-claves-json-snake-case.md`       |
+| Prefijo de tickets `AV`; el primer issue es AV-1                                     | `konoha-infra`: `docs/estandares/git-y-prs.md`                  |
 
 Pendiente de decisión (no la cambies por tu cuenta): formato de errores del backend (ADR 0004, propuesto).
 
@@ -100,9 +101,8 @@ Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `lo
 
 ## Deuda conocida (no la arregles de paso: tiene ticket propio)
 
-- Aún no es PWA: faltan el manifiesto, el service worker y la cola sin conexión.
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
-- Solo `Boton` tiene prueba de componente; el resto de `components/ui` las recibe al alinearse con Figma (AV-330).
+- Solo `Boton` tiene prueba de componente; el resto de `design-system` las recibe al alinearse con Figma (AV-330).
 
 ## Qué no entra al repo
 
@@ -117,16 +117,16 @@ Los planes, notas y borradores de trabajo de personas y agentes van en `.notas/`
 
 ## Mapa de documentos
 
-| Documento | Para qué |
-|---|---|
-| `AGENTS.md` | Esta guía: estado, gates, reglas y decisiones |
-| `CLAUDE.md` | Solo importa `AGENTS.md` |
-| `README.md` | Qué es y cómo arrancarlo |
-| `DESIGN.md` | Sistema de diseño: tokens, componentes y patrones de Figma, y qué usar en cada caso |
-| `src/README.md` y `src/**/README.md` | Dónde va cada cosa en `src/`, dependencias permitidas y comunicación entre módulos |
-| `CONTRIBUTING.md` | Ciclo de trabajo y checklist de revisión del frontend |
-| `SECURITY.md` | Cómo avisar de una vulnerabilidad |
-| `docs/estandares/*.md` | TypeScript y React, pruebas, PWA y modo sin conexión |
+| Documento                            | Para qué                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------- |
+| `AGENTS.md`                          | Esta guía: estado, gates, reglas y decisiones                                       |
+| `CLAUDE.md`                          | Solo importa `AGENTS.md`                                                            |
+| `README.md`                          | Qué es y cómo arrancarlo                                                            |
+| `DESIGN.md`                          | Sistema de diseño: tokens, componentes y patrones de Figma, y qué usar en cada caso |
+| `src/README.md` y `src/**/README.md` | Dónde va cada cosa en `src/`, dependencias permitidas y comunicación entre módulos  |
+| `CONTRIBUTING.md`                    | Ciclo de trabajo y checklist de revisión del frontend                               |
+| `SECURITY.md`                        | Cómo avisar de una vulnerabilidad                                                   |
+| `docs/estandares/*.md`               | TypeScript y React, pruebas, PWA y modo sin conexión                                |
 
 **No se crean documentos nuevos** sin fusionar antes su contenido en uno existente o justificar en el PR por qué no cabe.
 

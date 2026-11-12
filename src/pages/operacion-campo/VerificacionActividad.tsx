@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import HistorialCambios from '@/components/core/HistorialCambios'
+import Boton from '@/components/ui/Boton'
 import { AreaTexto } from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import { campoApi } from '@/services/api/operacionCampo'
@@ -12,9 +13,17 @@ interface Props {
   actividad: ActividadCampo
   onCerrar: () => void
   onGuardado: (actividad: ActividadCampo) => void
+  puedeAnular?: boolean
+  onAnular?: () => void
 }
 
-export default function VerificacionActividad({ actividad, onCerrar, onGuardado }: Props) {
+export default function VerificacionActividad({
+  actividad,
+  onCerrar,
+  onGuardado,
+  puedeAnular = false,
+  onAnular,
+}: Props) {
   const [observaciones, setObservaciones] = useState(actividad.verificacion_observaciones ?? '')
   const [error, setError] = useState('')
   const mutacion = useMutacionCampo()
@@ -50,12 +59,19 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
       error={mutacion.error}
       hayCambios={hayCambios}
       envioDeshabilitado={!hayCambios}
-      ancho="amplio"
+      ancho="extraAmplio"
+      conObligatorios={false}
     >
       <div className={estilos.detalleVerificacion}>
-        <p><strong>Observaciones de ejecución:</strong> {actividad.observaciones?.trim() || 'Sin observaciones del capataz'}</p>
+        <p>
+          <strong>Observaciones de ejecución:</strong>{' '}
+          {actividad.observaciones?.trim() || 'Sin observaciones del capataz'}
+        </p>
         {actividad.fecha_verificacion && (
-          <p><strong>Última verificación:</strong> {actividad.verificado_por_nombre ?? 'Jefe de sección'} · {formatearFechaHora(actividad.fecha_verificacion)}</p>
+          <p>
+            <strong>Última verificación:</strong> {actividad.verificado_por_nombre ?? 'Jefe de sección'} ·{' '}
+            {formatearFechaHora(actividad.fecha_verificacion)}
+          </p>
         )}
       </div>
       <AreaTexto
@@ -64,11 +80,19 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
         obligatorio
         maxLength={1000}
         value={observaciones}
-        onChange={(evento) => { setObservaciones(evento.target.value); setError('') }}
+        onChange={(evento) => {
+          setObservaciones(evento.target.value)
+          setError('')
+        }}
         error={error}
         ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
       />
-      <HistorialCambios entidad="actividad" registroId={actividad.id} />
+      {puedeAnular && onAnular && (
+        <Boton variante="destructivo" onClick={onAnular} deshabilitado={mutacion.enviando}>
+          Anular actividad
+        </Boton>
+      )}
+      <HistorialCambios entidad="actividad" registroId={actividad.id} presentacion="actividad" />
     </DialogoFormulario>
   )
 }

@@ -3,6 +3,7 @@
   display: grid;
   grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .menuComprimido {
@@ -15,7 +16,7 @@
  */
 @media (min-width: 768px) {
   .layout {
-    transition: grid-template-columns var(--duracion-transicion);
+    transition: grid-template-columns var(--duracion-menu) var(--curva-menu);
   }
 
   .menuComprimido:has(> aside:hover),
@@ -35,8 +36,23 @@
  * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
  */
 @media (min-width: 768px) {
+  /*
+   * Franja fija con el fondo de la página sobre el margen superior del panel (AV-393): al desplazarse, el
+   * contenido no asoma por encima de la cabecera, que se queda pegada justo debajo y no se mueve.
+   */
+  .layout::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 25;
+    height: var(--space-2);
+    background: var(--color-bg-page);
+    pointer-events: none;
+  }
+
   .columna {
     min-height: calc(100vh - 2 * var(--space-2));
+    min-height: calc(100dvh - 2 * var(--space-2));
     margin: var(--space-2) var(--space-2) var(--space-2) 0;
     overflow: clip;
     border: 1px solid var(--color-border-default);
@@ -161,7 +177,7 @@
     width: var(--web-sidebar-width);
     box-shadow: var(--web-elev-3);
     transform: translateX(-100%);
-    transition: transform var(--duracion-transicion);
+    transition: transform var(--duracion-menu) var(--curva-menu);
   }
 
   .menuAbierto > aside {
@@ -218,4 +234,15 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+}
+
+/* Bandas de toda la aplicación (sin conexión, pendientes, versión nueva): separadas del contenido. Sin bandas no ocupa. */
+.avisosGlobales {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.avisosGlobales:not(:empty) {
+  margin-bottom: var(--space-4);
 }

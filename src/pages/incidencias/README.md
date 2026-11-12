@@ -20,7 +20,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 - **Mis incidencias** (`MisIncidenciasPage.tsx`, `/mis-incidencias`, AV-282, Figma 391-8522 y 394-9964), en el móvil y para cualquier usuario con sesión:
   - las incidencias que reportó, con el espacio, cuándo («hoy», «ayer», «12/10») y el estado;
   - «+» en la barra superior para reportar;
-  - las reportadas sin conexión van arriba como «Pendiente de enviar» (`reportesPendientes.ts`, hasta la cola común de AV-226) y, sin conexión, una banda lo avisa.
+  - las reportadas sin conexión van arriba como «Pendiente de enviar» (`reportesPendientes.ts`, sobre la cola común de RF-T-012, tipo `incidencia.reporte`, con su foto, su hora real y su UUID como `Idempotency-Key`) y, sin conexión, una banda lo avisa.
 
   - «Reportar incidencia» (`DialogoReportarIncidencia.tsx`, `?reportar=`, 391-8394): el panel lateral, a pantalla completa en el móvil.
     - Pide el tipo en chips, la foto obligatoria, el espacio (entra con el que propone la ubicación), el ejemplar y la descripción.

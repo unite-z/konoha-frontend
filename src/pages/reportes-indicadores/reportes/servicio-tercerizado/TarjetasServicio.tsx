@@ -6,7 +6,7 @@ import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
 import type { ResultadoReporteServicio } from '@/types/reportesGestion'
 import { formatearNumero } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
-import { resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '@/utils/reporteServicio'
+import { contextoRendimiento, resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
 
 function motivo(seccion: { mensaje_sin_datos: string | null }): string {
@@ -18,7 +18,6 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
   const porcentaje = numeroDeDecimal(avance.porcentaje_avance)
   const total = avance.programadas + avance.extraordinarias
   const valorRendimiento = tituloTarjetaRendimiento(rendimiento)
-  const horas = numeroDeDecimal(rendimiento.horas_ejecucion)
   const plagas = especies.elementos.filter((e) => e.tipo === 'Plaga').length
   const especiesDistintas = especies.elementos.length - plagas
 
@@ -35,7 +34,12 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           avance={
             porcentaje === null
               ? undefined
-              : { valor: avance.ejecutadas, maximo: total, etiqueta: 'Atenciones ejecutadas', textoValor: textoAvance(avance) ?? undefined }
+              : {
+                  valor: avance.ejecutadas,
+                  maximo: total,
+                  etiqueta: 'Atenciones ejecutadas',
+                  textoValor: textoAvance(avance) ?? undefined,
+                }
           }
         />
       </div>
@@ -45,7 +49,12 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           estado={valorRendimiento === 'Sin datos' ? 'sinDatos' : 'normal'}
           motivoSinDatos={motivo(rendimiento)}
           valor={valorRendimiento}
-          contexto={horas === null ? undefined : `En ${formatearNumero(horas)} h de ejecución`}
+          contexto={contextoRendimiento(rendimiento) ?? undefined}
+          insignia={
+            rendimiento.atenciones_fuera_de_plazo
+              ? { tono: 'advertencia', texto: 'Con atenciones fuera de plazo' }
+              : undefined
+          }
         />
       </div>
       <div>
@@ -55,7 +64,8 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           motivoSinDatos={motivo(especies)}
           valor={formatearNumero(especies.elementos.length)}
           contexto={[
-            especiesDistintas > 0 && `${formatearNumero(especiesDistintas)} ${especiesDistintas === 1 ? 'especie' : 'especies'}`,
+            especiesDistintas > 0 &&
+              `${formatearNumero(especiesDistintas)} ${especiesDistintas === 1 ? 'especie' : 'especies'}`,
             plagas > 0 && `${formatearNumero(plagas)} ${plagas === 1 ? 'plaga' : 'plagas'}`,
           ]
             .filter(Boolean)
@@ -73,7 +83,11 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
               ? undefined
               : `${formatearNumero(conformidad.pendientes_de_revision)} pendientes de revisión`
           }
-          insignia={conformidad.observadas > 0 && !conformidad.sin_datos ? { tono: 'advertencia', texto: 'Con observaciones' } : undefined}
+          insignia={
+            conformidad.observadas > 0 && !conformidad.sin_datos
+              ? { tono: 'advertencia', texto: 'Con observaciones' }
+              : undefined
+          }
         />
       </div>
     </div>

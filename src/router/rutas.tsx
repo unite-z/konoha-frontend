@@ -8,7 +8,10 @@
  */
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
+import PendientesPage from '../pages/sincronizacion/PendientesPage'
+import ConfiguracionUsuarioPage from '../pages/configuracion/ConfiguracionPage'
 import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
+import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
 import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
 import ExtraccionReporteProveedorPage from '../pages/reportes-indicadores/asistencia-ia/ExtraccionReporteProveedorPage'
 import RevisionExtraccionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionExtraccionPage'
@@ -60,7 +63,10 @@ import CampanaPodaDetallePage from '../pages/inventario/CampanaPodaDetallePage'
 import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
 import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
 import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
+import FichaTecnicaEjemplarPage from '../pages/inventario/FichaTecnicaEjemplarPage'
+import RutaCortePage from '../pages/inventario/RutaCortePage'
 import EspeciesCampanaPage from '../pages/inventario/EspeciesCampanaPage'
+import SolicitarPodaAlturaPage from '../pages/inventario/SolicitarPodaAlturaPage'
 import RendimientoCampanaPage from '../pages/inventario/RendimientoCampanaPage'
 import AtencionEspecialPage from '../pages/servicios-tercerizados/maestros/AtencionEspecialPage'
 import PlanFitosanitarioPage from '../pages/servicios-tercerizados/maestros/PlanFitosanitarioPage'
@@ -87,10 +93,24 @@ import IngresoPage from '../pages/acceso/IngresoPage'
 import RepositorioPage from '../pages/repositorio/RepositorioPage'
 import AccesosPage from '../pages/usuarios-roles/AccesosPage'
 import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
+import RolesPermisosPage from '../pages/usuarios-roles/RolesPermisosPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
-import { PREFIJO_CORTE, PREFIJO_INCIDENCIAS, PREFIJO_PLANIFICACION, RUTAS_CORTE, RUTAS_MIS_INCIDENCIAS, PREFIJO_TERCERIZADOS, RUTAS, RUTAS_CORE, RUTAS_INVENTARIO, RUTAS_PLANIFICACION, RUTAS_PLANIFICACION_ANTIGUAS, RUTAS_TERCERIZADOS } from './rutasApp'
+import {
+  PREFIJO_CORTE,
+  PREFIJO_INCIDENCIAS,
+  PREFIJO_PLANIFICACION,
+  RUTAS_CORTE,
+  RUTAS_MIS_INCIDENCIAS,
+  PREFIJO_TERCERIZADOS,
+  RUTAS,
+  RUTAS_CORE,
+  RUTAS_INVENTARIO,
+  RUTAS_PLANIFICACION,
+  RUTAS_PLANIFICACION_ANTIGUAS,
+  RUTAS_TERCERIZADOS,
+} from './rutasApp'
 import CuadrillasPage from '../pages/operacion-campo/CuadrillasPage'
 import EncargosPage from '../pages/operacion-campo/EncargosPage'
 import ActividadesPage from '../pages/operacion-campo/ActividadesPage'
@@ -109,11 +129,14 @@ export const router = createBrowserRouter([
   },
   {
     element: <RutaProtegida />,
+    errorElement: <ErrorCargaPantalla />, // AV-367
     children: [
       {
         element: <LayoutOficina />,
         children: [
           { path: '/', element: <InicioRol /> },
+          { path: RUTAS_CORE.pendientes, element: <PendientesPage /> }, // RF-T-012: cualquier sesión
+          { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-389: cualquier sesión
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
             children: [
@@ -165,26 +188,37 @@ export const router = createBrowserRouter([
           // MOD-01 «Usuarios y roles»: solo el jefe de sección (RF-T-002 a RF-T-004).
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarInventario} />,
-            children: [{
-              path: RUTAS_INVENTARIO.areasVerdes,
-              children: [
-                { index: true, element: <AreasVerdesPage /> },
-                { path: 'nueva', element: <NuevaAreaVerdePage /> },
-                { path: ':id/editar', element: <EditarAreaVerdePage /> },
-                { path: 'coberturas', element: <CoberturasPage /> },
-                { path: 'catalogos', element: <CatalogosPage /> },
-                { path: 'ejemplares', element: <EjemplaresPage /> },
-                { path: 'campanas-poda', element: <CampanasPodaPage /> },
-                { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
-                { path: 'campanas-poda/:id', element: <CampanaPodaDetallePage /> },
-                { path: 'campanas-poda/:id/editar', element: <PlanificarCampanaPage /> },
-                { path: 'campanas-poda/:id/registrar', element: <RegistrarPodaPage /> },
-                { path: 'campanas-poda/:id/rendimiento', element: <RendimientoCampanaPage /> },
-                { path: 'campanas-poda/:id/especies', element: <EspeciesCampanaPage /> },
-                { path: 'intervenciones-poda/:id', element: <IntervencionPodaPage /> },
-                { path: 'mapa', lazy: async () => ({ Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default }) },
-              ],
-            }],
+            children: [
+              {
+                path: RUTAS_INVENTARIO.areasVerdes,
+                children: [
+                  { index: true, element: <AreasVerdesPage /> },
+                  { path: 'nueva', element: <NuevaAreaVerdePage /> },
+                  { path: ':id/editar', element: <EditarAreaVerdePage /> },
+                  { path: 'coberturas', element: <CoberturasPage /> },
+                  { path: 'catalogos', element: <CatalogosPage /> },
+                  { path: 'ejemplares', element: <EjemplaresPage /> },
+                  { path: 'ejemplares/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
+                  { path: 'ruta-corte', element: <RutaCortePage /> },
+                  { path: 'ejemplares/:id/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
+                  { path: 'campanas-poda', element: <CampanasPodaPage /> },
+                  { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
+                  { path: 'campanas-poda/:id', element: <CampanaPodaDetallePage /> },
+                  { path: 'campanas-poda/:id/editar', element: <PlanificarCampanaPage /> },
+                  { path: 'campanas-poda/:id/registrar', element: <RegistrarPodaPage /> },
+                  { path: 'campanas-poda/:id/rendimiento', element: <RendimientoCampanaPage /> },
+                  { path: 'campanas-poda/:id/especies', element: <EspeciesCampanaPage /> },
+                  { path: 'poda-altura', element: <SolicitarPodaAlturaPage /> },
+                  { path: 'intervenciones-poda/:id', element: <IntervencionPodaPage /> },
+                  {
+                    path: 'mapa',
+                    lazy: async () => ({
+                      Component: (await import('../pages/inventario/MapaAreasVerdesPage')).default,
+                    }),
+                  },
+                ],
+              },
+            ],
           },
           {
             element: <RutaConPermiso permiso={PERMISOS.gestionarUsuarios} />,
@@ -194,6 +228,10 @@ export const router = createBrowserRouter([
               { path: RUTAS_CORE.accesos, element: <AccesosPage /> },
               { path: RUTAS_CORE.importacion, element: <ImportacionPage /> },
             ],
+          },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.gestionarRoles} seccion="Roles y permisos" />,
+            children: [{ path: RUTAS_CORE.rolesPermisos, element: <RolesPermisosPage /> }], // AV-381
           },
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarRepositorio} />,
@@ -212,28 +250,46 @@ export const router = createBrowserRouter([
               { path: RUTAS_TERCERIZADOS.proveedoresContratos, element: <ProveedoresContratosPage /> }, // RF-SER-001 y 002
               { path: RUTAS_TERCERIZADOS.nuevoProveedor, element: <ProveedorNuevoPage /> }, // RF-SER-001
               { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/:id`, element: <ProveedorDetallePage /> }, // RF-SER-001 y 002
-              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/:id/editar`, element: <ProveedorEditarPage /> }, // RF-SER-001
+              {
+                path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/proveedores/:id/editar`,
+                element: <ProveedorEditarPage />,
+              }, // RF-SER-001
               { path: RUTAS_TERCERIZADOS.nuevoContrato, element: <ContratoNuevoPage /> }, // RF-SER-002
               { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/:id`, element: <ContratoDetallePage /> }, // RF-SER-002
-              { path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/:id/editar`, element: <ContratoEditarPage /> }, // RF-SER-002
+              {
+                path: `${RUTAS_TERCERIZADOS.proveedoresContratos}/contratos/:id/editar`,
+                element: <ContratoEditarPage />,
+              }, // RF-SER-002
               { path: RUTAS_TERCERIZADOS.controlFitosanitario, element: <AtencionEspecialPage /> }, // RF-INV-011
               { path: RUTAS_TERCERIZADOS.marcarEjemplar, element: <MarcarEjemplarPage /> }, // RF-INV-011
               { path: RUTAS_TERCERIZADOS.planFitosanitario, element: <PlanFitosanitarioPage /> }, // RF-FIT-001
               { path: RUTAS_TERCERIZADOS.productosAgronomicos, element: <ProductosAgronomicosPage /> }, // RF-FIT-003
               { path: RUTAS_TERCERIZADOS.nuevoProductoAgronomico, element: <ProductoAgronomicoNuevoPage /> }, // RF-FIT-003
-              { path: `${RUTAS_TERCERIZADOS.productosAgronomicos}/:id/editar`, element: <ProductoAgronomicoEditarPage /> }, // RF-FIT-003
+              {
+                path: `${RUTAS_TERCERIZADOS.productosAgronomicos}/:id/editar`,
+                element: <ProductoAgronomicoEditarPage />,
+              }, // RF-FIT-003
               { path: `${RUTAS_TERCERIZADOS.productosAgronomicos}/:id`, element: <ProductoAgronomicoDetallePage /> }, // RF-FIT-003
               { path: RUTAS_TERCERIZADOS.observacionesPlagas, element: <ObservacionesPlagasPage /> }, // RF-FIT-005
               { path: RUTAS_TERCERIZADOS.nuevaObservacionPlaga, element: <ObservacionPlagaNuevaPage /> }, // RF-FIT-005
               { path: `${RUTAS_TERCERIZADOS.observacionesPlagas}/:id`, element: <ObservacionPlagaDetallePage /> }, // RF-FIT-005
-              { path: `${RUTAS_TERCERIZADOS.controlFitosanitario}/:id/aplicaciones/nueva`, element: <ProgramarAplicacionPage /> }, // RF-FIT-006
+              {
+                path: `${RUTAS_TERCERIZADOS.controlFitosanitario}/:id/aplicaciones/nueva`,
+                element: <ProgramarAplicacionPage />,
+              }, // RF-FIT-006
               { path: `${RUTAS_TERCERIZADOS.controlFitosanitario}/:id`, element: <AtencionEspecialDetallePage /> }, // RF-INV-011 y RF-FIT-006
             ],
           },
           // MOD-03 «Planificación».
           {
             path: PREFIJO_PLANIFICACION,
-            element: <RutaConPermiso permiso={PERMISOS.consultarPlanificacion} seccion="Planificación" descripcion={DESCRIPCION_SIN_PLANIFICACION} />,
+            element: (
+              <RutaConPermiso
+                permiso={PERMISOS.consultarPlanificacion}
+                seccion="Planificación"
+                descripcion={DESCRIPCION_SIN_PLANIFICACION}
+              />
+            ),
             children: [
               { index: true, element: <Navigate to={RUTAS_PLANIFICACION.resumen} replace /> },
               { path: RUTAS_PLANIFICACION.resumen, element: <ResumenPlanificacionPage /> }, // RF-PLA-008 y 009
@@ -241,8 +297,14 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
               { path: `${RUTAS_PLANIFICACION.ciclos}/:id`, element: <CicloDetallePage /> }, // CU-004 y CU-007
               { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
-              { path: RUTAS_PLANIFICACION_ANTIGUAS.servicios, element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace /> },
-              { path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones, element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace /> },
+              {
+                path: RUTAS_PLANIFICACION_ANTIGUAS.servicios,
+                element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace />,
+              },
+              {
+                path: RUTAS_PLANIFICACION_ANTIGUAS.restricciones,
+                element: <Navigate to={RUTAS_PLANIFICACION.calendario} replace />,
+              },
             ],
           },
           // MOD-03 · el capataz en el móvil (AV-271): su ruta del día y el calendario de su cuadrilla.

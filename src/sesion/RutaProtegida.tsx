@@ -9,18 +9,29 @@
  * - `InicioRol`: lleva a la primera sección que el rol puede usar.
  */
 import { Navigate, Outlet, useLocation } from 'react-router'
-import Boton, { BotonEnlace } from '../components/ui/Boton'
-import EstadoCarga from '../components/ui/EstadoCarga'
-import EstadoError from '../components/ui/EstadoError'
-import EstadoVacio from '../components/ui/EstadoVacio'
+import Boton, { BotonEnlace } from '@/design-system/Boton'
+import EstadoCarga from '@/design-system/EstadoCarga'
+import EstadoError from '@/design-system/EstadoError'
+import EstadoVacio from '@/design-system/EstadoVacio'
 import { entradasMenu, puede, type EntradaMenu } from '../config/permisosCore'
 import { usePaginaActual } from '../hooks/usePaginaActual'
-import { RUTAS, RUTAS_CORE, RUTAS_CORTE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'
+import {
+  RUTAS,
+  RUTAS_CORE,
+  RUTAS_CORTE,
+  RUTAS_PLANIFICACION,
+  RUTAS_TERCERIZADOS,
+  rutaIngresoCore,
+} from '../router/rutasApp'
 import { useSesion, useSesionActiva } from './ContextoSesion'
 import estilos from './RutaProtegida.module.css'
 import { RUTAS_CAMPO } from '../router/rutasCampo'
 
-export default function RutaProtegida({ permitirContrasenaTemporal = false }: { permitirContrasenaTemporal?: boolean }) {
+export default function RutaProtegida({
+  permitirContrasenaTemporal = false,
+}: {
+  permitirContrasenaTemporal?: boolean
+}) {
   const { estado, recargar } = useSesion()
   const { pathname, search, hash } = useLocation()
 
@@ -29,7 +40,11 @@ export default function RutaProtegida({ permitirContrasenaTemporal = false }: { 
       return <EstadoCarga forma="pagina" texto="Comprobando tu sesión…" retrasar />
     case 'error':
       return (
-        <EstadoError titulo="No pudimos comprobar tu sesión" descripcion={estado.error.detalle} onReintentar={() => void recargar()} />
+        <EstadoError
+          titulo="No pudimos comprobar tu sesión"
+          descripcion={estado.error.detalle}
+          onReintentar={() => void recargar()}
+        />
       )
     case 'anonima':
       return (
@@ -40,6 +55,7 @@ export default function RutaProtegida({ permitirContrasenaTemporal = false }: { 
         />
       )
     case 'activa':
+    case 'sinConexion':
       if (estado.sesion.debe_cambiar_contrasena && !permitirContrasenaTemporal) {
         return <Navigate to={RUTAS_CORE.cambiarContrasena} replace />
       }
@@ -55,9 +71,14 @@ export interface SinPermisoProps {
 }
 
 export function SinPermiso({ seccion, descripcion }: SinPermisoProps) {
-  usePaginaActual(seccion ? 'Acceso denegado' : 'Sin permiso', seccion ? [{ texto: seccion }, { texto: 'Acceso denegado' }] : [], undefined, {
-    tituloOculto: Boolean(seccion),
-  })
+  usePaginaActual(
+    seccion ? 'Acceso denegado' : 'Sin permiso',
+    seccion ? [{ texto: seccion }, { texto: 'Acceso denegado' }] : [],
+    undefined,
+    {
+      tituloOculto: Boolean(seccion),
+    },
+  )
   if (seccion) {
     return (
       <div className={estilos.hueco}>
@@ -65,7 +86,9 @@ export function SinPermiso({ seccion, descripcion }: SinPermisoProps) {
           centrado
           icono="circle-x"
           titulo={`No tienes acceso a ${seccion}`}
-          descripcion={descripcion ?? 'Tu rol no incluye esta sección. Si la necesitas, pide al jefe de sección que revise tu rol.'}
+          descripcion={
+            descripcion ?? 'Tu rol no incluye esta sección. Si la necesitas, pide al jefe de sección que revise tu rol.'
+          }
           accion={
             <BotonEnlace to="/" variante="secundario">
               Volver al inicio
@@ -99,8 +122,10 @@ export function InicioRol() {
   const sesion = useSesionActiva()
   const { cerrarSesion } = useSesion()
   const entradas = entradasMenu(sesion)
-  if (sesion?.rol.codigo === 'capataz' && entradas.has('corte')) return <Navigate to={RUTAS_CORTE.rutaDeHoy} replace />
-  if (sesion?.rol.codigo === 'capataz' && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
+  // Quien trabaja en campo (registra su parte y no ve los de otras cuadrillas) empieza por su ruta o su cuadrilla.
+  const deCampo = puede(sesion, 'CAM.PARTE.REGISTRAR') && !puede(sesion, 'CAM.PARTE.CONSULTAR')
+  if (deCampo && entradas.has('corte')) return <Navigate to={RUTAS_CORTE.rutaDeHoy} replace />
+  if (deCampo && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
   if (entradas.has('reportes')) return <Navigate to={RUTAS.reportes} replace />
   if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.resumen} replace />
   if (entradas.has('tercerizados')) return <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace />

@@ -1,0 +1,37 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: calc(var(--space-12) * 14);
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.vistaPrevia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-page);
+}
+
+.rotulo {
+  margin: 0;
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
+  color: var(--color-text-muted);
+}
+
+.muestras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}

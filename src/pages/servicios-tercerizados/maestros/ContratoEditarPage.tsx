@@ -16,7 +16,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleContrato, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { editarContrato, obtenerContrato } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { hoyLima } from '@/utils/instanteLima'
 import { borradorDeContrato, construirContrato, hayErrores, validarContrato, type BorradorContrato } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
@@ -29,7 +29,7 @@ export default function ContratoEditarPage() {
   const { id: parametro } = useParams()
   const { state } = useLocation()
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = volverAContrato(state)
 
@@ -49,7 +49,7 @@ export default function ContratoEditarPage() {
     { texto: 'Editar' },
   ])
 
-  if (!puedeRegistrarProveedoresYContratos(rol)) {
+  if (!puedeRegistrarProveedoresYContratos(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección edita contratos"

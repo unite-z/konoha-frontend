@@ -17,7 +17,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleProductoAgronomico, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { editarProductoAgronomico, obtenerProductoAgronomico } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { borradorDeProducto, construirProducto, hayErrores, validarProducto, type BorradorProducto } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import CamposProductoAgronomico, { IDS_PRODUCTO, ORDEN_PRODUCTO } from './CamposProductoAgronomico'
@@ -29,7 +29,7 @@ export default function ProductoAgronomicoEditarPage() {
   const { id: parametro } = useParams()
   const { state } = useLocation()
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = volverALista(state)
 
@@ -49,7 +49,7 @@ export default function ProductoAgronomicoEditarPage() {
     { texto: 'Editar' },
   ])
 
-  if (!puedeAdministrarProductosAgronomicos(rol)) {
+  if (!puedeAdministrarProductosAgronomicos(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección edita el catálogo"

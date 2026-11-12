@@ -1,32 +1,31 @@
 /**
  * Quién puede hacer qué en proveedores, contratos y atención especial (RF-SER-001, RF-SER-002, RF-INV-011).
- * La interfaz solo oculta lo que el rol no puede hacer: el back-end vuelve a comprobarlo todo.
+ * AV-382: por permiso de la sesión, no por nombre de rol. La interfaz solo oculta: el back-end vuelve a comprobarlo.
  */
-import type { RolTercerizados } from '../types/tercerizados'
+import { tiene, type Permisos } from './permisosSesion'
+import { PERMISOS_TERCERIZADOS } from './permisosTercerizados'
 
-const JEFE: RolTercerizados = 'Jefe de sección'
-
-/** Solo el jefe de sección registra proveedores y contratos. */
-export function puedeRegistrarProveedoresYContratos(rol: RolTercerizados | null): boolean {
-  return rol === JEFE
+/** Registrar proveedores y contratos: `SER.CONTRATO.GESTIONAR`. */
+export function puedeRegistrarProveedoresYContratos(permisos: Permisos): boolean {
+  return tiene(permisos, PERMISOS_TERCERIZADOS.gestionarContratos)
 }
 
-/** Los tres roles del módulo marcan ejemplares con atención especial (RF-INV-011). */
-export function puedeMarcarAtencionEspecial(rol: RolTercerizados | null): boolean {
-  return rol !== null
+/** Marcar ejemplares con atención especial (RF-INV-011): `SER.ATENCION.REGISTRAR`. */
+export function puedeMarcarAtencionEspecial(permisos: Permisos): boolean {
+  return tiene(permisos, PERMISOS_TERCERIZADOS.registrarAtencion)
 }
 
-/** Solo el jefe de sección habilita o inhabilita un proveedor. */
-export function puedeCambiarEstadoProveedor(rol: RolTercerizados | null): boolean {
-  return rol === JEFE
+/** Habilitar o inhabilitar un proveedor: `SER.CONTRATO.GESTIONAR`. */
+export function puedeCambiarEstadoProveedor(permisos: Permisos): boolean {
+  return tiene(permisos, PERMISOS_TERCERIZADOS.gestionarContratos)
 }
 
-/** Solo el jefe de sección administra el catálogo de productos agronómicos (RF-FIT-003). */
-export function puedeAdministrarProductosAgronomicos(rol: RolTercerizados | null): boolean {
-  return rol === JEFE
+/** Administrar el catálogo de productos agronómicos (RF-FIT-003): `SER.CONTRATO.GESTIONAR`. */
+export function puedeAdministrarProductosAgronomicos(permisos: Permisos): boolean {
+  return tiene(permisos, PERMISOS_TERCERIZADOS.gestionarContratos)
 }
 
-/** Los tres roles del módulo registran observaciones de plagas (RF-FIT-005). */
-export function puedeRegistrarObservacionPlaga(rol: RolTercerizados | null): boolean {
-  return rol !== null
+/** Registrar observaciones de plagas (RF-FIT-005): `SER.ATENCION.REGISTRAR`. */
+export function puedeRegistrarObservacionPlaga(permisos: Permisos): boolean {
+  return tiene(permisos, PERMISOS_TERCERIZADOS.registrarAtencion)
 }

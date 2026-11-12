@@ -4,8 +4,8 @@
  *
  * - «Programar aplicación adicional»: solo mientras queden aplicaciones por programar (RN-010: una o dos al
  *   año, fijadas al marcar el ejemplar) y el seguimiento no esté cancelado.
- * - «Cancelar seguimiento»: error al marcar, o el riesgo ya no corresponde. No se borra: queda como
- *   histórico, con quién y cuándo lo canceló. Los tres roles del módulo lo hacen, igual que al marcar.
+ * - «Cancelar seguimiento»: error al marcar, o el riesgo ya no corresponde. Exige motivo (AV-154). No se borra:
+ *   queda como histórico, con quién, cuándo y por qué lo canceló. Los tres roles del módulo lo hacen, igual que al marcar.
  */
 import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
@@ -25,10 +25,15 @@ import { puedeMarcarAtencionEspecial } from '@/config/permisosMaestros'
 import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, rutaDetalleAtencion, rutaProgramarAplicacionAdicional, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
+import {
+  MIGAS_TERCERIZADOS,
+  rutaDetalleAtencion,
+  rutaProgramarAplicacionAdicional,
+  RUTAS_TERCERIZADOS,
+} from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { cancelarAtencionEspecial, obtenerAtencionEspecial } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AplicacionAdicional, AtencionEspecialDetalle } from '@/types/maestrosTercerizados'
 import { formatearFecha, formatearFechaHora, SIN_VALOR } from '@/utils/formato'
 import { textoAplicaciones } from '@/utils/validacionMaestros'
@@ -37,17 +42,23 @@ import estilos from './Maestros.module.css'
 const COLUMNAS: ColumnaTabla<AplicacionAdicional>[] = [
   { clave: 'codigo', titulo: 'Atención', render: (a) => <Link to={rutaDetalleAtencion(a.id)}>{a.codigo}</Link> },
   { clave: 'estado', titulo: 'Estado', render: (a) => a.estado },
-  { clave: 'fecha', titulo: 'Programada el', render: (a) => <span className="cifra">{formatearFechaHora(a.fecha_creacion)}</span> },
+  {
+    clave: 'fecha',
+    titulo: 'Programada el',
+    render: (a) => <span className="cifra">{formatearFechaHora(a.fecha_creacion)}</span>,
+  },
 ]
 
 export default function AtencionEspecialDetallePage() {
   const { id: parametro } = useParams()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
-  const rol = useRolTercerizados()
-  const puedeProgramar = puedeRegistrarAtencion(rol)
-  const puedeCancelar = puedeMarcarAtencionEspecial(rol)
+  const permisos = usePermisos()
+  const puedeProgramar = puedeRegistrarAtencion(permisos)
+  const puedeCancelar = puedeMarcarAtencionEspecial(permisos)
 
-  const consulta = useConsulta(id === null ? null : `atencion-especial|${id}`, (signal) => obtenerAtencionEspecial(id as number, signal))
+  const consulta = useConsulta(id === null ? null : `atencion-especial|${id}`, (signal) =>
+    obtenerAtencionEspecial(id as number, signal),
+  )
   // Última versión que devolvió el servidor al cancelar; vale mientras sea el mismo ejemplar marcado.
   const [actualizado, setActualizado] = useState<AtencionEspecialDetalle | null>(null)
   const especial = actualizado && actualizado.id === consulta.datos?.id ? actualizado : consulta.datos
@@ -60,11 +71,15 @@ export default function AtencionEspecialDetallePage() {
 
   async function cancelar() {
     if (enCurso.current || id === null) return
+    if (!motivo.trim()) {
+      setFalloCancelar('Escribe el motivo de la cancelación.')
+      return
+    }
     enCurso.current = true
     setEnviando(true)
     setFalloCancelar(null)
     try {
-      setActualizado(await cancelarAtencionEspecial(id, { motivo: motivo.trim() || undefined }))
+      setActualizado(await cancelarAtencionEspecial(id, { motivo: motivo.trim() }))
       setConfirmando(false)
       setMotivo('')
       setAviso('Seguimiento cancelado.')
@@ -97,7 +112,11 @@ export default function AtencionEspecialDetallePage() {
     )
   } else if (consulta.estado === 'error' && !especial) {
     contenido = (
-      <EstadoError titulo="No pudimos cargar la ficha" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+      <EstadoError
+        titulo="No pudimos cargar la ficha"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
     )
   } else if (!especial) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -142,8 +161,16 @@ export default function AtencionEspecialDetallePage() {
               { etiqueta: 'Área verde', valor: especial.area_verde_nombre ?? SIN_VALOR },
               { etiqueta: 'Plaga recurrente', valor: especial.plaga_nombre },
               {
+                etiqueta: 'Marcado',
+                valor: `${especial.usuario_creacion_nombre ?? SIN_VALOR} · ${formatearFecha(especial.fecha_creacion)}`,
+              },
+              {
                 etiqueta: 'Aplicaciones adicionales',
-                valor: <span className="cifra">{textoAplicaciones(especial.aplicaciones_realizadas, especial.aplicaciones_adicionales)}</span>,
+                valor: (
+                  <span className="cifra">
+                    {textoAplicaciones(especial.aplicaciones_realizadas, especial.aplicaciones_adicionales)}
+                  </span>
+                ),
               },
             ]}
           />
@@ -193,7 +220,8 @@ export default function AtencionEspecialDetallePage() {
           <AreaTexto
             id="cancelar-especial-motivo"
             etiqueta="Motivo"
-            ayuda="Opcional: por qué ya no se necesita el seguimiento"
+            ayuda="Por qué ya no se necesita el seguimiento; queda en el historial"
+            required
             rows={2}
             value={motivo}
             maxLength={300}

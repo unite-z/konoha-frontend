@@ -1,0 +1,6 @@
+/* Pendientes de sincronizar (RF-T-012): solo coloca. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}

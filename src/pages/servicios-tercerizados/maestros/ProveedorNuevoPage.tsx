@@ -17,7 +17,7 @@ import { puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { registrarProveedor } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { BORRADOR_PROVEEDOR_VACIO, construirProveedor, hayErrores, validarProveedor, type BorradorProveedor } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import CamposProveedor, { IDS_PROVEEDOR, ORDEN_PROVEEDOR } from './CamposProveedor'
@@ -29,7 +29,7 @@ const TITULO = 'Registrar proveedor'
 
 export default function ProveedorNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.proveedoresContratos, { texto: 'Registrar proveedor' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorProveedor>(BORRADOR_PROVEEDOR_VACIO)
@@ -39,7 +39,7 @@ export default function ProveedorNuevoPage() {
   const [fallo, setFallo] = useState<FalloRegistro | null>(null)
   const enCurso = useRef(false)
 
-  if (!puedeRegistrarProveedoresYContratos(rol)) {
+  if (!puedeRegistrarProveedoresYContratos(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección registra proveedores"

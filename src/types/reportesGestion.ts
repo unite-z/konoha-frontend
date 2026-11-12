@@ -81,6 +81,31 @@ export interface FilaAtencionPeriodo {
   proveedor: string
 }
 
+/**
+ * Fila del detalle de «actividades-por-estado» (`ActividadCampo.java`, MOD-04). `estado`: el del parte diario
+ * («Abierto» o «Cerrado»); la actividad no tiene estado propio.
+ */
+export interface FilaActividadCampo {
+  id: number
+  fecha: FechaIso
+  estado: string
+  tipo_actividad: string
+  area_verde_id: number | null
+  espacio: string | null
+  cuadrilla: string
+}
+
+/** Fila del detalle de «distribucion-operarios» (`ParticipacionOperario.java`, MOD-04): un operario en una actividad. */
+export interface FilaParticipacionOperario {
+  actividad_id: number
+  fecha: FechaIso
+  operario_id: number
+  operario: string
+  cuadrilla: string
+  area_verde_id: number | null
+  espacio: string | null
+}
+
 /** Fila del detalle de «consumo-materiales» (`MovimientoConsumo.java`). `cantidad`: texto decimal. */
 export interface FilaMovimientoMaterial {
   id: number
@@ -155,6 +180,28 @@ export interface SeccionNoDisponible {
   mensaje_sin_datos: string | null
 }
 
+/**
+ * Producto agronómico aplicado por un proveedor en el mes (`TotalProductoProveedor.java`). La dosis es texto libre
+ * en MOD-05: llegan las distintas, sin sumar.
+ */
+export interface ProductoProveedor {
+  producto_id: number
+  producto: string
+  principio_activo: string | null
+  proveedor_id: number
+  proveedor: string
+  /** Atenciones del mes en las que el proveedor aplicó el producto. */
+  aplicaciones: number
+  dosis: string[]
+  /** Códigos de esas atenciones, en orden de fecha. */
+  atenciones: string[]
+}
+
+/** Productos aplicados por proveedores, en una vista aparte del material (`ProductosProveedor.java`). */
+export interface ProductosProveedor extends SeccionNoDisponible {
+  productos: ProductoProveedor[]
+}
+
 /** `filtros_aplicados` del material vegetal (`FiltrosMaterialVegetal.java`). */
 export interface FiltrosMaterialVegetal {
   mes: string
@@ -168,7 +215,7 @@ export interface ResultadoMaterialVegetal extends ReporteBase<FiltrosMaterialVeg
   propagado: TotalMaterial[]
   trasladado: TotalTraslado[]
   comparacion: ComparacionMes[]
-  productos_proveedor: SeccionNoDisponible
+  productos_proveedor: ProductosProveedor
   notas: string[]
 }
 

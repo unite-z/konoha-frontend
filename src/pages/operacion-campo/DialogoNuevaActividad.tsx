@@ -1,13 +1,23 @@
 import { useRef, useState } from 'react'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import Selector from '@/components/ui/Selector'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import Selector from '@/design-system/Selector'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { useConsulta } from '@/hooks/useConsulta'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import { conCache } from '@/sincronizacion/datosDescargados'
+import { encolarActividad, esSinRed, partesDe } from './actividadSinConexion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import { clasesActividadParaParte, listarTiposActividad } from '@/services/api/catalogoActividadesCampo'
 import { ErrorApi, aErrorApi } from '@/services/api/cliente'
-import type { ActividadCampo, CatalogoCampo, CuadrillaCampo, EncargoCampo, ParteCampo, UnidadMedidaCampo } from '@/types/operacionCampo'
+import type {
+  ActividadCampo,
+  CatalogoCampo,
+  CuadrillaCampo,
+  EncargoCampo,
+  ParteCampo,
+  UnidadMedidaCampo,
+} from '@/types/operacionCampo'
 import { aInstanteLima, esFuturo, esLocalValido, hoyLima } from '@/utils/instanteLima'
 import { EstadoCatalogos } from './ComponentesCampo'
 import { useMutacionCampo } from './useCampo'
@@ -16,10 +26,14 @@ import estilos from './OperacionCampo.module.css'
 export default function DialogoNuevaActividad({
   onCerrar,
   onGuardado,
+  onEncolado,
 }: {
   onCerrar: () => void
   onGuardado: (a: ActividadCampo) => void
+  /** Sin conexión (RF-T-012): la actividad quedó en la cola con este UUID. */
+  onEncolado?: (idCola: string) => void
 }) {
+  const usuarioId = useSesionActiva()?.usuario.id ?? null
   const [cuadrilla, setCuadrilla] = useState(''),
     [tipo, setTipo] = useState(''),
     [area, setArea] = useState('')
@@ -39,18 +53,23 @@ export default function DialogoNuevaActividad({
     [errores, setErrores] = useState<Record<string, string>>({})
   const mutacion = useMutacionCampo()
   const intento = useRef<{ cuerpo: string; clave: string } | null>(null)
-  const catalogos = useConsulta('catalogos-actividad', async (signal) => {
-    const [cuadrillas, tipos, areas, clases, unidades] = await Promise.all([
-      todosCampo<CuadrillaCampo>('cuadrillas/', { activa: true }, signal),
-      listarTiposActividad(true, signal),
-      todosCampo<CatalogoCampo>('catalogos/areas-verdes/', { activo: true }, signal),
-      clasesActividadParaParte(signal),
-      todosCampo<UnidadMedidaCampo>('catalogos/unidades-medida/', {}, signal),
-    ])
-    return { cuadrillas, tipos, areas, clases, unidades }
-  })
+  // Con copia en el dispositivo para registrar sin conexión (RF-T-012).
+  const catalogos = useConsulta('catalogos-actividad', (signal) =>
+    conCache('catalogos-actividad', async () => {
+      const [cuadrillas, tipos, areas, clases, unidades] = await Promise.all([
+        todosCampo<CuadrillaCampo>('cuadrillas/', { activa: true }, signal),
+        listarTiposActividad(true, signal),
+        todosCampo<CatalogoCampo>('catalogos/areas-verdes/', { activo: true }, signal),
+        clasesActividadParaParte(signal),
+        todosCampo<UnidadMedidaCampo>('catalogos/unidades-medida/', {}, signal),
+      ])
+      return { cuadrillas, tipos, areas, clases, unidades }
+    }),
+  )
   const encargos = useConsulta(cuadrilla && fecha ? `encargos-actividad-${cuadrilla}-${fecha}` : null, (signal) =>
-    todosCampo<EncargoCampo>('encargos/', { cuadrilla_id: cuadrilla, desde: fecha, hasta: fecha }, signal),
+    conCache(`encargos-actividad-${cuadrilla}-${fecha}`, () =>
+      todosCampo<EncargoCampo>('encargos/', { cuadrilla_id: cuadrilla, desde: fecha, hasta: fecha }, signal),
+    ),
   )
   function cambiar(fn: () => void) {
     setCambios(true)
@@ -58,7 +77,7 @@ export default function DialogoNuevaActividad({
     fn()
   }
   async function asegurarParte(): Promise<ParteCampo> {
-    const existentes = await todosCampo<ParteCampo>('partes/', { cuadrilla_id: cuadrilla, fecha })
+    const existentes = await partesDe(cuadrilla, fecha)
     if (existentes.length) return existentes[0]
     try {
       return await campoApi<ParteCampo>('partes/', {
@@ -82,14 +101,19 @@ export default function DialogoNuevaActividad({
     if (catalogos.datos?.clases.length && !clase) errors.clase = 'Selecciona una clase'
     if (!area) errors.area = 'Selecciona un espacio'
     if (!fecha || fecha > hoyLima()) errors.fecha = 'Selecciona una fecha válida que no sea futura'
-    if (fechaSolicitud && fechaSolicitud > fecha) errors.fechaSolicitud = 'La solicitud no puede ser posterior a la actividad'
-    if (incidencia && (!Number.isSafeInteger(Number(incidencia.replace(',', '.'))) || Number(incidencia.replace(',', '.')) <= 0))
+    if (fechaSolicitud && fechaSolicitud > fecha)
+      errors.fechaSolicitud = 'La solicitud no puede ser posterior a la actividad'
+    if (
+      incidencia &&
+      (!Number.isSafeInteger(Number(incidencia.replace(',', '.'))) || Number(incidencia.replace(',', '.')) <= 0)
+    )
       errors.incidencia = 'Indica un identificador de incidencia válido'
     if (incidencia && encargo) errors.incidencia = 'Selecciona una incidencia o un encargo de origen'
     for (const [campo, valor] of Object.entries({ superficie, solicitada, ejecutada }))
       if (valor && (!Number.isFinite(Number(valor.replace(',', '.'))) || Number(valor.replace(',', '.')) < 0))
         errors[campo] = 'Indica una cantidad no negativa'
-    if (Boolean(solicitada || ejecutada) !== Boolean(unidad)) errors.unidad = 'Las cantidades requieren una unidad de medida'
+    if (Boolean(solicitada || ejecutada) !== Boolean(unidad))
+      errors.unidad = 'Las cantidades requieren una unidad de medida'
     if (tiempo && (!Number.isInteger(Number(tiempo)) || Number(tiempo) < 1 || Number(tiempo) > 1440))
       errors.tiempo = 'Indica entre 1 y 1440 minutos'
     if (!/^\d{2}:\d{2}$/.test(hora)) errors.hora = 'Indica la hora de la actividad'
@@ -108,15 +132,7 @@ export default function DialogoNuevaActividad({
     }
     void mutacion.enviar(
       async () => {
-        const parte = await asegurarParte()
-        if (parte.estado === 'Cerrado')
-          throw new ErrorApi(
-            409,
-            'ParteCerrado',
-            'El parte de esa cuadrilla está cerrado para la fecha seleccionada. No se pueden agregar actividades',
-          )
-        const cuerpo = {
-          parte_id: parte.id,
+        const datosActividad = {
           clase_actividad_id: clase ? Number(clase) : null,
           tipo_actividad_id: Number(tipo),
           area_verde_id: Number(area),
@@ -131,13 +147,49 @@ export default function DialogoNuevaActividad({
           tiempo_minutos: tiempo ? Number(tiempo) : null,
           observaciones,
         }
+        // Sin conexión (RF-T-012): a la cola con su hora real; se envía sola al volver la red.
+        const aLaCola = async () => {
+          if (usuarioId === null) return
+          const nombreTipo = catalogos.datos?.tipos.find((t) => t.id === Number(tipo))?.nombre ?? 'Actividad'
+          const nombreArea = catalogos.datos?.areas.find((a) => a.id === Number(area))?.nombre ?? ''
+          const id = await encolarActividad({
+            cuadrillaId: Number(cuadrilla),
+            fecha,
+            cuerpo: datosActividad,
+            descripcion: `${nombreTipo} · ${nombreArea} · ${fecha} ${hora}`,
+            usuarioId,
+          })
+          onEncolado?.(id)
+        }
+        if (!navigator.onLine) return aLaCola()
+        let parte: ParteCampo
+        try {
+          parte = await asegurarParte()
+        } catch (causa) {
+          if (esSinRed(causa)) return aLaCola()
+          throw causa
+        }
+        if (parte.estado === 'Cerrado')
+          throw new ErrorApi(
+            409,
+            'ParteCerrado',
+            'El parte de esa cuadrilla está cerrado para la fecha seleccionada. No se pueden agregar actividades',
+          )
+        const cuerpo = { parte_id: parte.id, ...datosActividad }
         const firma = JSON.stringify(cuerpo)
-        if (!intento.current || intento.current.cuerpo !== firma) intento.current = { cuerpo: firma, clave: crypto.randomUUID() }
-        const actividad = await campoApi<ActividadCampo>('actividades/', {
-          metodo: 'POST',
-          cuerpo,
-          claveIdempotencia: intento.current.clave,
-        })
+        if (!intento.current || intento.current.cuerpo !== firma)
+          intento.current = { cuerpo: firma, clave: crypto.randomUUID() }
+        let actividad: ActividadCampo
+        try {
+          actividad = await campoApi<ActividadCampo>('actividades/', {
+            metodo: 'POST',
+            cuerpo,
+            claveIdempotencia: intento.current.clave,
+          })
+        } catch (causa) {
+          if (esSinRed(causa)) return aLaCola()
+          throw causa
+        }
         onGuardado(actividad)
       },
       () => {},
@@ -255,7 +307,12 @@ export default function DialogoNuevaActividad({
                 valor={encargo}
                 opcionTodos="Sin encargo asociado"
                 opciones={(encargos.datos ?? [])
-                  .filter((e) => e.tipo_actividad_id === Number(tipo) && e.area_verde_id === Number(area))
+                  .filter(
+                    (e) =>
+                      e.estado !== 'Cancelado' &&
+                      e.tipo_actividad_id === Number(tipo) &&
+                      e.area_verde_id === Number(area),
+                  )
                   .map((e) => ({ valor: String(e.id), texto: e.descripcion }))}
                 onCambiar={(v) => cambiar(() => setEncargo(v))}
                 ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio."

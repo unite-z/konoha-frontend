@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import DialogoReportarIncidencia from './DialogoReportarIncidencia'
-import { leerPendientes, vaciarPendientes } from './reportesPendientes'
+import { vaciar } from '@/sincronizacion/almacenLocal'
+import { leerEstadoCola, reiniciarColaParaPruebas } from '@/sincronizacion/cola'
 
 const duplicados = vi.fn(async (_tipo: string, _espacio: string, _ejemplar: string | null): Promise<unknown[]> => [])
 const registrarIncidencia = vi.fn(async (_cuerpo: unknown, _foto: File | null) => ({ id: 42, codigo: 'INC-2026-042' }))
@@ -29,10 +31,11 @@ beforeAll(() => {
     this.open = false
   }
 })
-afterEach(() => {
+afterEach(async () => {
   cleanup()
   vi.clearAllMocks()
-  vaciarPendientes()
+  reiniciarColaParaPruebas()
+  await vaciar('pendientes')
 })
 
 const foto = new File(['x'], 'rama.jpg', { type: 'image/jpeg' })
@@ -88,8 +91,10 @@ describe('DialogoReportarIncidencia', () => {
     const usuario = await rellenar()
     await usuario.click(screen.getByRole('button', { name: 'Enviar' }))
     expect(registrarIncidencia).not.toHaveBeenCalled()
-    expect(leerPendientes()).toEqual([expect.objectContaining({ tipo: 'Rama caída', espacio: 'Jardín de la Biblioteca', foto })])
-    expect(onEnviado).toHaveBeenCalledWith('Sin conexión: se enviará al reconectar')
+    await vi.waitFor(() => expect(onEnviado).toHaveBeenCalledWith('Sin conexión: se enviará al reconectar'))
+    const [pendiente] = leerEstadoCola().pendientes
+    expect(pendiente).toMatchObject({ tipo: 'incidencia.reporte', usuario_id: 4, archivo: foto })
+    expect(pendiente.carga.cuerpo).toMatchObject({ tipo: 'Rama caída', espacio: 'Jardín de la Biblioteca', reportado_en: pendiente.creado_en })
     enLinea.mockRestore()
   })
 })

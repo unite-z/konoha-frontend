@@ -21,7 +21,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, rutaDetalleObservacionPlaga, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarObservacionesPlagas, listarPlagas } from '@/services/api/maestrosTercerizados'
 import { listarTodo } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ObservacionPlaga } from '@/types/maestrosTercerizados'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import BarraFiltros from './BarraFiltros'
@@ -45,8 +45,8 @@ export default function ObservacionesPlagasPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: TITULO }])
   const { state } = useLocation()
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
-  const puedeRegistrar = puedeRegistrarObservacionPlaga(rol)
+  const permisos = usePermisos()
+  const puedeRegistrar = puedeRegistrarObservacionPlaga(permisos)
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

@@ -1,6 +1,5 @@
 /**
- * Permisos por rol del MOD-06 (matriz de permisos, Historias de Usuario v3, sección 2.1).
- * Son los mismos conjuntos que `backend/reportes_indicadores/permisos.py`.
+ * Permisos del MOD-06: los códigos de MOD-01 de la sesión (AV-382), los mismos que comprueba el backend.
  *
  * La interfaz oculta lo que el rol no puede hacer (Arquitectura de la Información: «la navegación no
  * presenta opciones que luego sean rechazadas»). El back-end vuelve a comprobarlo.
@@ -8,28 +7,20 @@
 import type { SesionCore } from '../types/core'
 import { DATOS_SIMULADOS } from './datosSimulados'
 import { PERMISOS, puede as puedeSesion } from './permisosCore'
-import type { Rol } from './sesion'
+import { tiene, type Permisos } from './permisosSesion'
 
-/** Reportes RF-REP-002, RF-REP-004 y RF-REP-006: consulta. */
-export const ROLES_CONSULTA_REPORTES: ReadonlySet<Rol> = new Set<Rol>([
-  'Jefe de sección',
-  'Ingeniero de campo',
-  'Practicante',
-])
+/** Consultar los reportes RF-REP-002, RF-REP-004 y RF-REP-006. */
+export const PERMISO_CONSULTA_REPORTES = 'REP.INDICADOR.CONSULTAR'
 
-/** Solicitar el análisis de IA (RF-IA-001): el jefe de sección lo hace; ingeniero y practicante proponen. */
-export const ROLES_SOLICITAR_IA: ReadonlySet<Rol> = new Set<Rol>([
-  'Jefe de sección',
-  'Ingeniero de campo',
-  'Practicante',
-])
+/** Solicitar y proponer con IA (RF-IA-001). */
+export const PERMISO_SOLICITAR_IA = 'IA.PROPUESTA.PROPONER'
 
-/** Validar o rechazar la propuesta de IA: solo el jefe de sección. */
-export const ROLES_VALIDAR_IA: ReadonlySet<Rol> = new Set<Rol>(['Jefe de sección'])
+/** Validar o rechazar la propuesta de IA. */
+export const PERMISO_VALIDAR_IA = 'IA.PROPUESTA.VALIDAR'
 
-/** `true` si el rol pertenece al conjunto de roles autorizados. */
-export function puede(rol: Rol, conjunto: ReadonlySet<Rol>): boolean {
-  return conjunto.has(rol)
+/** `true` si la sesión tiene el permiso (AV-382: por permiso, no por nombre de rol). */
+export function puede(permisos: Permisos, permiso: string): boolean {
+  return tiene(permisos, permiso)
 }
 
 /**

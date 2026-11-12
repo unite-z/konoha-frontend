@@ -89,6 +89,7 @@ export default function MapaCalorCuadrillaJornada({ filas, medida, onCambiarMedi
                       if (!celda) {
                         return (
                           <td key={j}>
+                            {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- el texto va en el span «sr-only» interior */}
                             <span className={estilos.celdaVacia}>
                               <span aria-hidden="true">{SIN_VALOR}</span>
                               <span className="sr-only">Sin actividades</span>

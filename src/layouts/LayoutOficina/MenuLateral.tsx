@@ -4,7 +4,7 @@
  * Las entradas salen de `MODULOS_MENU` (`entradasMenuLateral.ts`) y el activo, de `activoEnMenu`: una única regla
  * (prefijo más largo) para el módulo y para la entrada de segundo nivel, así que nunca hay dos marcados.
  * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
- * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
+ * «Próximamente». «Configuración» (ajustes de cada usuario, AV-389) está al final, para todos.
  *
  * Comprimido por defecto («Menú lateral · Comprimido» y «Elemento compacto» de Figma): el logo arriba y solo los
  * iconos de primer nivel, con el nombre como texto accesible y `title`. Al pasar el cursor, o con el foco del
@@ -13,18 +13,19 @@
  * visible al desplegarse, fija el menú abierto.
  *
  * Los módulos con submódulos llevan un chevron que gira al plegar o desplegar su grupo (`aria-expanded`), con
- * una línea guía a la izquierda de los submódulos. Solo el grupo del módulo activo empieza abierto; al navegar a
- * otro módulo, se abre el suyo.
+ * una línea guía a la izquierda de los submódulos. Funcionan como acordeón: nunca hay dos grupos abiertos. Empieza
+ * abierto el del módulo activo; abrir otro cierra el anterior, y al navegar a otro módulo queda solo el suyo (AV-388).
  *
  * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
  * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
  */
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
-import { PERMISOS, entradasMenu, puede } from '@/config/permisosCore'
+import { entradasMenu } from '@/config/permisosCore'
+import { RUTAS_CORE } from '@/router/rutasApp'
 import Icono, { type NombreIconoFigma } from '@/components/ui/Icono'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
-import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
+import { MODULOS_MENU, activoEnMenu, hijosVisibles } from './entradasMenuLateral'
 import UsuarioMenu from './UsuarioMenu'
 import estilos from './MenuLateral.module.css'
 
@@ -98,19 +99,18 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
   const permitidas = entradasMenu(sesion)
   const activo = activoEnMenu(pathname)
 
-  // Grupos abiertos: el del módulo activo; al cambiar de módulo se abre el nuevo (ajuste durante el render).
+  // Grupos abiertos: como mucho uno. Empieza el del módulo activo; abrir otro a mano cierra el anterior, y al
+  // cambiar de módulo vuelve a quedar solo el nuevo (AV-388; ajuste durante el render).
   const textoActivo = activo.modulo?.texto ?? null
   const [abiertos, setAbiertos] = useState<ReadonlySet<string>>(() => new Set(textoActivo ? [textoActivo] : []))
   const [activoPrevio, setActivoPrevio] = useState(textoActivo)
   if (textoActivo !== activoPrevio) {
     setActivoPrevio(textoActivo)
-    if (textoActivo && !abiertos.has(textoActivo)) setAbiertos(new Set([...abiertos, textoActivo]))
+    setAbiertos(new Set(textoActivo ? [textoActivo] : []))
   }
+  // Acordeón: abrir un grupo cierra el que estuviera abierto; nunca hay dos a la vez.
   function alternarGrupo(texto: string) {
-    const siguiente = new Set(abiertos)
-    if (siguiente.has(texto)) siguiente.delete(texto)
-    else siguiente.add(texto)
-    setAbiertos(siguiente)
+    setAbiertos(abiertos.has(texto) ? new Set() : new Set([texto]))
   }
 
   return (
@@ -149,7 +149,8 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
           </p>
           <ul className={estilos.lista}>
             {MODULOS_MENU.map((modulo) => {
-              if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
+              if (!modulo.clave || !modulo.ruta)
+                return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
               if (!permitidas.has(modulo.clave)) return null
               const esActivo = activo.modulo === modulo
               const abierto = abiertos.has(modulo.texto)
@@ -187,7 +188,7 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
                         aria-hidden={!abierto || undefined}
                         inert={!abierto}
                       >
-                        {modulo.hijos.map((hijo) =>
+                        {hijosVisibles(modulo.hijos, sesion?.permisos ?? []).map((hijo) =>
                           hijo.ruta ? (
                             <li key={hijo.texto}>
                               <Entrada texto={hijo.texto} ruta={hijo.ruta} activa={activo.hijo === hijo} secundaria />
@@ -203,8 +204,15 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
               )
             })}
 
-            {/* Catálogos y parámetros: otro requisito; solo para quien los gestiona. */}
-            {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" icono="settings" />}
+            {/* Ajustes de cada usuario (AV-389): para todos. */}
+            <li>
+              <Entrada
+                texto="Configuración"
+                icono="settings"
+                ruta={RUTAS_CORE.configuracion}
+                activa={pathname === RUTAS_CORE.configuracion}
+              />
+            </li>
           </ul>
         </nav>
       </div>

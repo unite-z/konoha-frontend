@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { act, cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { ErrorApi } from '@/services/api/cliente'
 import type { JardinRuta, RespuestaRutaDeHoy } from '@/types/corte'
+import { vaciar } from '@/sincronizacion/almacenLocal'
+import { reiniciarColaParaPruebas, vaciarCola } from '@/sincronizacion/cola'
+import { registrarEjecutores } from '@/sincronizacion/ejecutores'
 import RutaDeHoyPage from './RutaDeHoyPage'
 
 function jardin(id: number, codigo: string, nombre: string, marcadoEn: string | null = null): JardinRuta {
@@ -29,6 +33,7 @@ vi.mock('@/services/api/corte', () => ({
   registrarObservacionJardin: (...argumentos: unknown[]) => registrarObservacionJardin(...(argumentos as [])),
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 4, nombre: 'J. Ramos' } }) }))
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
@@ -38,9 +43,11 @@ beforeAll(() => {
     this.open = false
   }
 })
-afterEach(() => {
+afterEach(async () => {
   cleanup()
   marcarJardin.mockReset()
+  reiniciarColaParaPruebas()
+  await vaciar('pendientes')
 })
 
 function pintar() {
@@ -119,13 +126,16 @@ describe('RutaDeHoyPage', () => {
     await usuario.click(screen.getByRole('button', { name: /^J-016 · Talud de Química, pendiente/ }))
     await usuario.click(screen.getByRole('button', { name: /^J-017 · Jardín de Ingeniería, pendiente/ }))
     expect(marcarJardin).not.toHaveBeenCalled()
-    expect(screen.getByText('Sin conexión · 2 marcas pendientes de enviar')).toBeTruthy()
+    expect(await screen.findByText('Sin conexión · 2 marcas pendientes de enviar')).toBeTruthy()
     expect(screen.getByText('3 de 3')).toBeTruthy()
     expect(screen.getByRole('button', { name: /^J-016 · Talud de Química, sin sincronizar/ }).textContent).toContain('se enviará al tener conexión')
 
+    // Al volver la red, la cola común (ProveedorSincronizacion) envía las marcas aunque la pantalla no lo haga.
     enLinea.mockReturnValue(true)
+    registrarEjecutores()
     await act(async () => {
       window.dispatchEvent(new Event('online'))
+      await vaciarCola(4)
     })
     expect(await screen.findByText('J-017 ya estaba marcado · J. Ramos, 11:02')).toBeTruthy()
     expect(marcarJardin).toHaveBeenCalledTimes(2)

@@ -5,8 +5,8 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
 import CuadrillasPage from './CuadrillasPage'
 
-vi.mock('@/sesion/ContextoSesionCampo', () => ({
-  useSesionCampo: () => ({ usuario: { rol: 'Jefe de sección' } }),
+vi.mock('@/sesion/ContextoSesion', () => ({
+  usePermisos: () => ['CAM.CUADRILLA.GESTIONAR', 'CAM.CUADRILLA.CONSULTAR'],
 }))
 
 beforeAll(() => {

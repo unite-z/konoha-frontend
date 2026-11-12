@@ -11,13 +11,13 @@ aislamiento de cuadrillas se comprueban en el backend.
 
 `DialogoPodaMenor` implementa AV-315 sobre el parte diario: vincula ejemplares de menos de 5 m, deja los árboles sin catastro pendientes de vinculación y deriva los ejemplares de 5 m o más al flujo existente de incidencias. Tras registrar abre las evidencias de AV-82. La altura procede de MOD-02 y debe coordinarse con AV-133.
 
-| Qué | Dónde |
-|---|---|
-| Servicios | `services/api/operacionCampo.ts` (`campoApi`, `todosCampo`) |
-| Tipos | `types/operacionCampo.ts` |
-| Lógica pura | `utils/operacionCampo.ts` |
-| Sesión | `sesion/ContextoSesionCampo.ts` (`useSesionCampo`) |
-| Rutas | `router/rutasCampo.ts` (`RUTAS_CAMPO`, prefijo `/operacion-campo`) |
+| Qué         | Dónde                                                              |
+| ----------- | ------------------------------------------------------------------ |
+| Servicios   | `services/api/operacionCampo.ts` (`campoApi`, `todosCampo`)        |
+| Tipos       | `types/operacionCampo.ts`                                          |
+| Lógica pura | `utils/operacionCampo.ts`                                          |
+| Sesión      | `sesion/ContextoSesionCampo.ts` (`useSesionCampo`)                 |
+| Rutas       | `router/rutasCampo.ts` (`RUTAS_CAMPO`, prefijo `/operacion-campo`) |
 
 **Va aquí:** pantallas del capataz y del ingeniero de campo, pensadas también para móvil.
 
@@ -42,12 +42,12 @@ abrirse, filtra por clase y limpia el tipo seleccionado al cambiar de clase.
 Base: `/api/v1/operacion-campo/catalogos/`. Se reutilizan sesión, CSRF y paginación
 `{count, next, previous, results}` de `campoApi` y `todosCampo`.
 
-| Operación | Ruta | Entrada o respuesta |
-|---|---|---|
-| GET | `clases-actividad/` | Elementos `{id, nombre, activo}` |
-| GET | `tipos-actividad/` | Elementos `{id, nombre, activo, clase_id}`; filtro `activo=true` para nuevas altas |
-| POST | `tipos-actividad/` | `{nombre, clase_id, activo}` → tipo creado |
-| PUT | `tipos-actividad/{id}/` | `{nombre, clase_id, activo}` → tipo actualizado |
+| Operación | Ruta                    | Entrada o respuesta                                                                |
+| --------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| GET       | `clases-actividad/`     | Elementos `{id, nombre, activo}`                                                   |
+| GET       | `tipos-actividad/`      | Elementos `{id, nombre, activo, clase_id}`; filtro `activo=true` para nuevas altas |
+| POST      | `tipos-actividad/`      | `{nombre, clase_id, activo}` → tipo creado                                         |
+| PUT       | `tipos-actividad/{id}/` | `{nombre, clase_id, activo}` → tipo actualizado                                    |
 
 Ejemplo: `POST tipos-actividad/` con `{nombre: "Poda de formación", clase_id: 4, activo: true}`
 devuelve `{id: 3, nombre: "Poda de formación", clase_id: 4, activo: true}`.
@@ -125,6 +125,16 @@ verificación. La respuesta conserva `verificacion_observaciones`,
 separados de `observaciones` y `fecha_hora_actividad`, que pertenecen a la
 ejecución del capataz. Cada cambio se incorpora al historial común de la actividad.
 
+## AV-384: anulación auditable
+
+`PUT /api/v1/operacion-campo/actividades/{id}/anulacion/` recibe un `motivo`
+obligatorio. `CAM.PARTE.ANULAR` se reserva a la jefatura y solo permite la
+transición de `Registrada` a `Anulada`; una actividad verificada o anulada no
+admite esa transición. Las anuladas siguen visibles con su responsable, fecha y
+motivo, pero quedan en solo lectura. El listado filtra y pagina en el servidor
+por `estado_actividad` y devuelve `pendientes_verificacion`, que cuenta únicamente
+las registradas dentro del alcance y los filtros activos.
+
 ## AV-82: fotografías de actividades
 
 El diálogo de fotografías reutiliza `Adjuntos` de MOD-01 con entidad `actividad`.
@@ -133,4 +143,16 @@ de hasta 1600 píxeles en su lado mayor con calidad 0,8. La subida conserva el
 `Idempotency-Key` para reintentos. El backend comprueba que el capataz sea dueño
 de la actividad al adjuntar, listar o descargar; otros roles conservan sus
 permisos de consulta. Las fotografías siguen siendo opcionales para cerrar el
-parte. La integración sin conexión corresponde a RF-T-012.
+parte.
+
+### Sin conexión (RF-T-012, AV-226)
+
+- `actividadSinConexion.ts`: sin red, «Registrar actividad» y «Registrar poda menor» dejan la actividad en la cola común
+  (`campo.actividad`). Si el parte de la cuadrilla y fecha ya se descargó, la actividad lleva su `parte_id`; si no, se
+  encola también su apertura (`campo.parte`) y todas las actividades del día cuelgan de ella. Al volver la red, si otro
+  ya abrió el parte (409), se usa ese.
+- La foto de una poda registrada sin red se encola colgando de la poda (`Adjuntos` con `registroPendiente`), y las de
+  actividades ya enviadas, como `core.adjunto` con su `registro_id`.
+- Los insumos de una actividad que ya está en el servidor se encolan como `campo.material` (POST idempotente).
+- Los listados (`useListadoCampo`: encargos, actividades) y los catálogos del parte se leen sin red con `conCache`.
+- Pendiente: insumos y participantes de una actividad que todavía no se ha enviado (se añaden al sincronizar).

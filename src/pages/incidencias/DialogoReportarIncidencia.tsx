@@ -13,11 +13,18 @@ import GrupoOpciones from '@/components/ui/GrupoOpciones'
 import Icono from '@/components/ui/Icono'
 import Selector from '@/components/ui/Selector'
 import ZonaCarga from '@/components/ui/ZonaCarga'
+import { motivoSinEspacios } from './sinEspacios'
 import { useConsulta } from '@/hooks/useConsulta'
-import { buscarPosiblesDuplicados, obtenerCatalogosRegistro, registrarIncidencia, sumarReporte } from '@/services/api/incidencias'
+import {
+  buscarPosiblesDuplicados,
+  obtenerCatalogosRegistro,
+  registrarIncidencia,
+  sumarReporte,
+} from '@/services/api/incidencias'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { NuevaIncidencia, PosibleDuplicado } from '@/types/incidencias'
-import { useEnLinea } from '../corte/useEnLinea'
+import { useEnLinea } from '@/hooks/useEnLinea'
+import { comprimirFotografia } from '@/utils/comprimirFotografia'
 import { textoDuplicado } from './misIncidencias'
 import { anadirPendiente } from './reportesPendientes'
 import estilos from './Incidencias.module.css'
@@ -37,10 +44,6 @@ function useVistaPrevia(foto: File | null): string | null {
   return url
 }
 
-function nuevaClave(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`
-}
-
 export interface DialogoReportarIncidenciaProps {
   onCerrar: () => void
   /** Se envió, se sumó a otra o quedó pendiente: el aviso que muestra la lista. */
@@ -49,7 +52,12 @@ export interface DialogoReportarIncidenciaProps {
   ejemplarInicial?: string
 }
 
-export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacioInicial, ejemplarInicial }: DialogoReportarIncidenciaProps) {
+export default function DialogoReportarIncidencia({
+  onCerrar,
+  onEnviado,
+  espacioInicial,
+  ejemplarInicial,
+}: DialogoReportarIncidenciaProps) {
   const sesion = useSesionActiva()
   const enLinea = useEnLinea()
   const catalogos = useConsulta('incidencias-catalogos-registro', obtenerCatalogosRegistro)
@@ -64,11 +72,26 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
   const [duplicado, setDuplicado] = useState<PosibleDuplicado | null>(null)
   const vistaPrevia = useVistaPrevia(foto)
 
+  /**
+   * Foto comprimida a JPEG (lado mayor de 1600 px, `pwa-offline.md`): menos datos móviles y un formato que el servidor
+   * admite. Si el navegador no puede leerla (por ejemplo, HEIC), se envía tal cual y el servidor explica el motivo.
+   */
+  async function elegirFoto(archivo: File | null) {
+    if (!archivo) return setFoto(null)
+    setFoto(archivo)
+    const comprimida = await comprimirFotografia(archivo).catch(() => archivo)
+    setFoto((actual) => (actual === archivo ? comprimida : actual))
+  }
+
   // El espacio entra con el que propone la ubicación hasta que se elige otro.
   const sugerido = catalogos.datos?.espacio_sugerido ?? ''
   const espacio = espacioElegido ?? sugerido
   const ejemplares = catalogos.datos?.espacios.find((e) => e.nombre === espacio)?.ejemplares ?? []
-  const errores = { tipo: !tipo ? 'Elige el tipo.' : undefined, foto: !foto ? 'Añade una foto.' : undefined, espacio: !espacio ? 'Elige el espacio.' : undefined }
+  const errores = {
+    tipo: !tipo ? 'Elige el tipo.' : undefined,
+    foto: !foto ? 'Añade una foto.' : undefined,
+    espacio: !espacio ? 'Elige el espacio.' : undefined,
+  }
 
   function cuerpo(): NuevaIncidencia {
     return {
@@ -88,7 +111,10 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
       const registrada = await registrarIncidencia(cuerpo(), foto)
       onEnviado(`${registrada.codigo} reportada`)
     } catch (causa) {
-      setError({ titulo: 'No se pudo enviar el reporte', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setError({
+        titulo: 'No se pudo enviar el reporte',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
       setEnviando(false)
     }
   }
@@ -97,8 +123,16 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
     setMostrarErrores(true)
     if (errores.tipo || errores.foto || errores.espacio) return
     if (!enLinea) {
-      anadirPendiente({ clave: nuevaClave(), tipo: tipo ?? '', espacio, creado_en: new Date().toISOString(), cuerpo: cuerpo(), foto })
-      onEnviado('Sin conexión: se enviará al reconectar')
+      if (!sesion) return
+      try {
+        await anadirPendiente(cuerpo(), foto, sesion.usuario.id)
+        onEnviado('Sin conexión: se enviará al reconectar')
+      } catch {
+        setError({
+          titulo: 'No se pudo guardar el reporte',
+          detalle: 'Este dispositivo no permite guardar datos sin conexión.',
+        })
+      }
       return
     }
     setEnviando(true)
@@ -117,7 +151,10 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
       await sumarReporte(existente.id, descripcion.trim(), foto)
       onEnviado(`Añadido a ${existente.codigo}`)
     } catch (causa) {
-      setError({ titulo: 'No se pudo añadir el reporte', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setError({
+        titulo: 'No se pudo añadir el reporte',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
       setEnviando(false)
       setDuplicado(null)
     }
@@ -153,7 +190,11 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
           <div className={estilos.fotos}>
             {foto && (
               <span className={estilos.fotoElegida}>
-                {vistaPrevia ? <img src={vistaPrevia} alt="Foto elegida" /> : <Icono nombre="image" tamano="md" titulo="Foto elegida" />}
+                {vistaPrevia ? (
+                  <img src={vistaPrevia} alt="Foto elegida" />
+                ) : (
+                  <Icono nombre="image" tamano="md" titulo="Foto elegida" />
+                )}
               </span>
             )}
             <ZonaCarga
@@ -163,7 +204,7 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
               textoBoton={foto ? 'Otra' : 'Foto'}
               ayuda=""
               error={mostrarErrores ? errores.foto : undefined}
-              onArchivos={(archivos) => setFoto(archivos[0] ?? null)}
+              onArchivos={(archivos) => void elegirFoto(archivos[0] ?? null)}
             />
           </div>
           {mostrarErrores && errores.foto && <p className={estilos.errorAccion}>{errores.foto}</p>}
@@ -181,9 +222,23 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
           }}
           ayuda={espacio && espacio === sugerido ? 'Según tu ubicación' : undefined}
           error={mostrarErrores ? errores.espacio : undefined}
+          bloqueadoMotivo={motivoSinEspacios(catalogos.datos?.espacios)}
         />
-        <Selector id="reportar-ejemplar" etiqueta="Ejemplar" valor={ejemplar} opcionTodos="Sin ejemplar" opciones={ejemplares.map((e) => ({ valor: e, texto: e }))} onCambiar={setEjemplar} />
-        <CampoFormulario id="reportar-descripcion" etiqueta="Descripción" value={descripcion} maxLength={300} onChange={(e) => setDescripcion(e.target.value)} />
+        <Selector
+          id="reportar-ejemplar"
+          etiqueta="Ejemplar"
+          valor={ejemplar}
+          opcionTodos="Sin ejemplar"
+          opciones={ejemplares.map((e) => ({ valor: e, texto: e }))}
+          onCambiar={setEjemplar}
+        />
+        <CampoFormulario
+          id="reportar-descripcion"
+          etiqueta="Descripción"
+          value={descripcion}
+          maxLength={300}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
       </DialogoFormulario>
 
       {duplicado && (

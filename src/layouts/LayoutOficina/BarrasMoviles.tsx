@@ -9,6 +9,7 @@
 import { Link, useLocation } from 'react-router'
 import Icono from '@/components/ui/Icono'
 import type { Miga } from './ContextoPagina'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
 import estilos from './BarrasMoviles.module.css'
 
@@ -44,7 +45,7 @@ export function BarraSuperiorMovil({
 
 export function BarraInferior() {
   const { pathname } = useLocation()
-  const secciones = seccionesMoviles(pathname)
+  const secciones = seccionesMoviles(pathname, undefined, useSesionActiva()?.permisos ?? [])
   const { hijo: activa, modulo } = activoEnMenu(pathname)
   if (!modulo || secciones.length < 2) return null
 

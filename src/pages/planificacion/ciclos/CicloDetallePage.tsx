@@ -28,7 +28,7 @@ import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaDetalleAtencion } from '@/router/rutasApp'
 import { obtenerCicloCorte } from '@/services/api/corte'
 import { listarRestricciones, listarServiciosPeriodicos, obtenerProgramacion, type CambioEstadoCiclo } from '@/services/api/planificacion'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { CicloCorte, InterrupcionCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
@@ -206,7 +206,7 @@ export default function CicloDetallePage() {
   const { id: idRuta } = useParams()
   const id = Number(idRuta)
   const hoy = hoyLima()
-  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
+  const puedeEditar = puedeEditarPlanificacion(usePermisos())
   const consulta = useConsulta(Number.isFinite(id) ? `ciclo:${id}` : null, (signal) => obtenerProgramacion(id, signal))
   const servicios = useConsulta('ciclo-servicios', (signal) => listarServiciosPeriodicos(signal))
   const [local, setLocal] = useState<Programacion | null>(null)

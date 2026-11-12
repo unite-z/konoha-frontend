@@ -7,7 +7,7 @@
  * - «Aceptar propuesta» o «Descartar», con confirmación (criterio 2). Aceptar no modifica el registro oficial: el
  *   hallazgo queda registrado para corregirlo en su módulo (criterio 3).
  *
- * Solo el jefe de sección decide (ROLES_VALIDAR_IA); los demás lo ven sin acciones.
+ * Solo el jefe de sección decide (PERMISO_VALIDAR_IA); los demás lo ven sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
@@ -23,13 +23,13 @@ import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Icono from '@/components/ui/Icono'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
-import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { aceptarInconsistencia, descartarInconsistencia, obtenerInconsistencia } from '@/services/api/inconsistenciasIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaInconsistencia } from '@/types/inconsistenciasIa'
 import { formatearFechaHora, SIN_VALOR } from '@/utils/formato'
 import {
@@ -57,8 +57,8 @@ export default function RevisionInconsistenciaPage() {
   const location = useLocation()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaBandeja = `${RUTAS.inconsistenciasIa}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeDecidir = rol !== null && puede(rol, ROLES_VALIDAR_IA)
+  const permisos = usePermisos()
+  const puedeDecidir = puede(permisos, PERMISO_VALIDAR_IA)
 
   usePaginaActual(`Hallazgo n.º ${id}`, [
     MIGAS.reportesIndicadores,

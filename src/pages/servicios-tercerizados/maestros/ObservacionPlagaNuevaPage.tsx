@@ -20,7 +20,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarPlagas, registrarObservacionPlaga } from '@/services/api/maestrosTercerizados'
 import { listarAreasVerdes, listarEjemplares, listarTodo } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AreaVerde, Ejemplar } from '@/types/tercerizados'
 import { hoyLima } from '@/utils/instanteLima'
 import {
@@ -48,7 +48,7 @@ function idDestino(tipo: BorradorObservacion['tipoDestino']): string {
 
 export default function ObservacionPlagaNuevaPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Registrar observación' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
   const hoy = hoyLima()
 
@@ -65,7 +65,7 @@ export default function ObservacionPlagaNuevaPage() {
     ...(plagas.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.nombre })),
   ]
 
-  if (!puedeRegistrarObservacionPlaga(rol)) {
+  if (!puedeRegistrarObservacionPlaga(permisos)) {
     return (
       <EstadoVacio
         titulo="Tu usuario no tiene acceso a este módulo"
