@@ -92,6 +92,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Campañas de poda', icono: 'scissors', ruta: RUTAS_INVENTARIO.campanasPoda },
       { texto: 'Poda a demanda', icono: 'scissors', ruta: RUTAS_INVENTARIO.podaAltura, permiso: 'INV.PODA.PLANIFICAR' },
       { texto: 'Ficha técnica y evaluación', icono: 'clipboard', ruta: RUTAS_INVENTARIO.fichaTecnica },
+      { texto: 'Ruta de corte', icono: 'repeat', ruta: RUTAS_INVENTARIO.rutaCorte },
     ],
   },
   {
