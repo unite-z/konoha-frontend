@@ -30,7 +30,15 @@ import { avisoDeNavegacion, volverALista } from './filtrosMaestros'
 import type { EstadoNavegacionProveedor } from './ListaProveedores'
 import estilos from './Maestros.module.css'
 
-function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; acciones: ReactNode; fallo: string | null }) {
+function Ficha({
+  proveedor,
+  acciones,
+  fallo,
+}: {
+  proveedor: ProveedorMaestro
+  acciones: ReactNode
+  fallo: string | null
+}) {
   const contacto = datosContacto(proveedor)
   return (
     <>
@@ -40,7 +48,10 @@ function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; ac
             <h2 id="titulo-proveedor" className={estilos.tituloPrincipal}>
               {proveedor.razon_social}
             </h2>
-            <Estado tono={proveedor.activo ? 'exito' : 'neutro'} texto={proveedor.activo ? 'Habilitado' : 'Inhabilitado'} />
+            <Estado
+              tono={proveedor.activo ? 'exito' : 'neutro'}
+              texto={proveedor.activo ? 'Habilitado' : 'Inhabilitado'}
+            />
           </div>
           {acciones}
         </div>
@@ -56,27 +67,25 @@ function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; ac
         )}
       </Tarjeta>
 
-      <div className={estilos.columnas}>
-        <Tarjeta titulo="Datos del proveedor" relleno="amplio">
-          <ListaDescripcion
-            elementos={[
-              { etiqueta: 'RUC', valor: proveedor.ruc ? <span className="cifra">{proveedor.ruc}</span> : null },
-              { etiqueta: 'Contratos', valor: <span className="cifra">{formatearNumero(proveedor.contratos)}</span> },
-              { etiqueta: 'Vínculo con otras empresas', valor: textoVinculo(proveedor), ancho: true },
-            ]}
-          />
-        </Tarjeta>
+      <Tarjeta titulo="Datos del proveedor" relleno="amplio">
+        <ListaDescripcion
+          elementos={[
+            { etiqueta: 'RUC', valor: proveedor.ruc ? <span className="cifra">{proveedor.ruc}</span> : null },
+            { etiqueta: 'Contratos', valor: <span className="cifra">{formatearNumero(proveedor.contratos)}</span> },
+            { etiqueta: 'Vínculo con otras empresas', valor: textoVinculo(proveedor) },
+          ]}
+        />
+      </Tarjeta>
 
-        <Tarjeta titulo="Persona de contacto" relleno="amplio">
-          <ListaDescripcion
-            elementos={[
-              { etiqueta: 'Nombre', valor: contacto.nombre },
-              { etiqueta: 'Teléfono', valor: contacto.telefono },
-              { etiqueta: 'Correo', valor: contacto.correo, ancho: true },
-            ]}
-          />
-        </Tarjeta>
-      </div>
+      <Tarjeta titulo="Persona de contacto" relleno="amplio">
+        <ListaDescripcion
+          elementos={[
+            { etiqueta: 'Nombre', valor: contacto.nombre },
+            { etiqueta: 'Teléfono', valor: contacto.telefono },
+            { etiqueta: 'Correo', valor: contacto.correo },
+          ]}
+        />
+      </Tarjeta>
     </>
   )
 }
@@ -89,7 +98,9 @@ export default function ProveedorDetallePage() {
   const volverA = RUTAS_TERCERIZADOS.proveedoresContratos + volverAQuery
   const permisos = usePermisos()
 
-  const consulta = useConsulta(id === null ? null : `proveedor|${id}`, (signal) => obtenerProveedor(id as number, signal))
+  const consulta = useConsulta(id === null ? null : `proveedor|${id}`, (signal) =>
+    obtenerProveedor(id as number, signal),
+  )
   // Última versión que devolvió el servidor al cambiar el estado o editar; vale mientras sea el mismo proveedor.
   const [actualizado, setActualizado] = useState<ProveedorMaestro | null>(null)
   const proveedor = actualizado && actualizado.id === consulta.datos?.id ? actualizado : consulta.datos
@@ -97,11 +108,18 @@ export default function ProveedorDetallePage() {
   const [fallo, setFallo] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
-  usePaginaActual(proveedor ? proveedor.razon_social : 'Proveedor', [
-    MIGAS_TERCERIZADOS.serviciosTercerizados,
-    MIGAS_TERCERIZADOS.proveedoresContratos,
-    { texto: proveedor ? proveedor.razon_social : 'Ficha' },
-  ])
+  usePaginaActual(
+    proveedor ? proveedor.razon_social : 'Proveedor',
+    [
+      MIGAS_TERCERIZADOS.serviciosTercerizados,
+      MIGAS_TERCERIZADOS.proveedoresContratos,
+      { texto: proveedor ? proveedor.razon_social : 'Ficha' },
+    ],
+    undefined,
+    // El nombre ya se ve en la tarjeta de la ficha, junto con el estado y las acciones: el título
+    // de la cabecera quedaría repetido. Se mantiene para lectores de pantalla y la pestaña del navegador.
+    { tituloOculto: true },
+  )
 
   function alCambiarEstado(nuevo: ProveedorMaestro) {
     setActualizado(nuevo)
@@ -141,7 +159,11 @@ export default function ProveedorDetallePage() {
           acciones={
             puedeCambiarEstadoProveedor(permisos) && (
               <div className={estilos.enLinea}>
-                <BotonEnlace to={rutaEditarProveedor(proveedor.id)} variante="secundario" state={{ volverA: volverAQuery } satisfies EstadoNavegacionProveedor}>
+                <BotonEnlace
+                  to={rutaEditarProveedor(proveedor.id)}
+                  variante="secundario"
+                  state={{ volverA: volverAQuery } satisfies EstadoNavegacionProveedor}
+                >
                   Editar
                 </BotonEnlace>
                 <AccionEstadoProveedor proveedor={proveedor} onCambiado={alCambiarEstado} onFallo={setFallo} />

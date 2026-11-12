@@ -46,6 +46,7 @@ import {
   pasoDeCampo,
   validarPaso1,
   validarPaso2,
+  type AlcanceSeleccionado,
   type BorradorAtencion,
   type ErroresPaso1,
   type ErroresPaso2,
@@ -75,6 +76,16 @@ export interface EstadoContratoElegido {
 function contratoDeOrigen(estado: unknown): Contrato | null {
   const contrato = (estado as Partial<EstadoContratoElegido> | null)?.contrato
   return contrato && typeof contrato.id === 'number' ? contrato : null
+}
+
+/** Estado con el que se abre el asistente desde una observación de plaga, ya con ese espacio o ejemplar elegido. */
+export interface EstadoAlcanceElegido {
+  alcance: AlcanceSeleccionado
+}
+
+function alcanceDeOrigen(estado: unknown): AlcanceSeleccionado | null {
+  const alcance = (estado as Partial<EstadoAlcanceElegido> | null)?.alcance
+  return alcance && typeof alcance.id === 'number' ? alcance : null
 }
 
 /** Nombre legible de un campo que rechace el servidor (sus mensajes pueden venir en inglés). */
@@ -111,10 +122,13 @@ export default function NuevaAtencionPage() {
   const navegar = useNavigate()
   const { state } = useLocation()
   const contratoInicial = contratoDeOrigen(state)
+  const alcanceInicial = alcanceDeOrigen(state)
 
-  const [borrador, setBorrador] = useState<BorradorAtencion>(() =>
-    contratoInicial ? { ...BORRADOR_VACIO, contrato: contratoInicial } : BORRADOR_VACIO,
-  )
+  const [borrador, setBorrador] = useState<BorradorAtencion>(() => ({
+    ...BORRADOR_VACIO,
+    ...(contratoInicial ? { contrato: contratoInicial } : {}),
+    ...(alcanceInicial ? { alcances: [alcanceInicial] } : {}),
+  }))
   const [paso, setPaso] = useState(0)
   const [alcanzado, setAlcanzado] = useState(0)
   // Tras el primer intento de avanzar, los errores del paso se recalculan en vivo al corregir.

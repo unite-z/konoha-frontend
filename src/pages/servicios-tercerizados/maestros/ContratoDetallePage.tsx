@@ -45,11 +45,17 @@ export default function ContratoDetallePage() {
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = () => setAviso(null)
 
-  usePaginaActual(contrato ? contrato.numero : 'Contrato', [
-    MIGAS_TERCERIZADOS.serviciosTercerizados,
-    MIGAS_TERCERIZADOS.proveedoresContratos,
-    { texto: contrato ? contrato.numero : 'Ficha' },
-  ])
+  usePaginaActual(
+    contrato ? contrato.numero : 'Contrato',
+    [
+      MIGAS_TERCERIZADOS.serviciosTercerizados,
+      MIGAS_TERCERIZADOS.proveedoresContratos,
+      { texto: contrato ? contrato.numero : 'Ficha' },
+    ],
+    undefined,
+    // El número ya se ve en la tarjeta de la ficha, junto con el estado y la acción de editar.
+    { tituloOculto: true },
+  )
 
   let contenido
   if (id === null || (consulta.estado === 'error' && consulta.error?.estado === 404)) {
@@ -66,7 +72,11 @@ export default function ContratoDetallePage() {
     )
   } else if (consulta.estado === 'error' && !contrato) {
     contenido = (
-      <EstadoError titulo="No pudimos cargar el contrato" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+      <EstadoError
+        titulo="No pudimos cargar el contrato"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
     )
   } else if (!contrato) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -82,7 +92,9 @@ export default function ContratoDetallePage() {
               <Estado
                 tono={contrato.vigente ? 'exito' : 'aviso'}
                 texto={contrato.vigente ? 'Vigente' : 'Vencido'}
-                ayuda={contrato.vigente ? undefined : 'Se conserva como histórico: no se puede usar en nuevas atenciones'}
+                ayuda={
+                  contrato.vigente ? undefined : 'Se conserva como histórico: no se puede usar en nuevas atenciones'
+                }
               />
             </div>
             {puedeRegistrarProveedoresYContratos(permisos) && (
@@ -104,7 +116,10 @@ export default function ContratoDetallePage() {
                 {
                   etiqueta: 'Proveedor',
                   valor: (
-                    <Link to={rutaDetalleProveedor(contrato.proveedor_id)} state={{ volverA: '' } satisfies EstadoNavegacionProveedor}>
+                    <Link
+                      to={rutaDetalleProveedor(contrato.proveedor_id)}
+                      state={{ volverA: '' } satisfies EstadoNavegacionProveedor}
+                    >
                       {contrato.proveedor_nombre}
                     </Link>
                   ),
@@ -129,8 +144,14 @@ export default function ContratoDetallePage() {
         <Tarjeta titulo="Vigencia y condiciones" relleno="amplio">
           <ListaDescripcion
             elementos={[
-              { etiqueta: 'Inicio de la vigencia', valor: <span className="cifra">{formatearFecha(contrato.vigencia_inicio)}</span> },
-              { etiqueta: 'Fin de la vigencia', valor: <span className="cifra">{formatearFecha(contrato.vigencia_fin)}</span> },
+              {
+                etiqueta: 'Inicio de la vigencia',
+                valor: <span className="cifra">{formatearFecha(contrato.vigencia_inicio)}</span>,
+              },
+              {
+                etiqueta: 'Fin de la vigencia',
+                valor: <span className="cifra">{formatearFecha(contrato.vigencia_fin)}</span>,
+              },
               { etiqueta: 'Condiciones', valor: contrato.condiciones, ancho: true },
             ]}
           />
