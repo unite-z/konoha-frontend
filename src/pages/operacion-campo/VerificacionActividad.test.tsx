@@ -54,7 +54,13 @@ it('separa la ejecución y registra la verificación con el contrato esperado', 
   const guardadas: ActividadCampo[] = []
   const anular = vi.fn()
   render(
-    <VerificacionActividad actividad={actividad} puedeAnular onAnular={anular} onCerrar={() => {}} onGuardado={(valor) => guardadas.push(valor)} />,
+    <VerificacionActividad
+      actividad={actividad}
+      puedeAnular
+      onAnular={anular}
+      onCerrar={() => {}}
+      onGuardado={(valor) => guardadas.push(valor)}
+    />,
   )
   expect(screen.getByRole('dialog', { name: 'Verificar actividad en campo' }).className).toMatch(/extraAmplio/)
   expect(screen.queryByText('* Campo obligatorio')).toBeNull()

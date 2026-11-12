@@ -40,7 +40,17 @@ export function puede(sesion: SesionCore | null, permiso: string): boolean {
 }
 
 /** Entradas de primer nivel del menú con enlace, según los permisos (HU-MOD01-007, «Menú por rol»). */
-export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'misIncidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
+export type EntradaMenu =
+  | 'planificacion'
+  | 'corte'
+  | 'incidencias'
+  | 'misIncidencias'
+  | 'tercerizados'
+  | 'reportes'
+  | 'repositorio'
+  | 'usuarios'
+  | 'campo'
+  | 'inventario'
 
 export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   const entradas = new Set<EntradaMenu>()

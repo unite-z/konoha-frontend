@@ -17,7 +17,13 @@ interface Props {
   onAnular?: () => void
 }
 
-export default function VerificacionActividad({ actividad, onCerrar, onGuardado, puedeAnular = false, onAnular }: Props) {
+export default function VerificacionActividad({
+  actividad,
+  onCerrar,
+  onGuardado,
+  puedeAnular = false,
+  onAnular,
+}: Props) {
   const [observaciones, setObservaciones] = useState(actividad.verificacion_observaciones ?? '')
   const [error, setError] = useState('')
   const mutacion = useMutacionCampo()
