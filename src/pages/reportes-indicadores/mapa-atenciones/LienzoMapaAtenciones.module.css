@@ -81,6 +81,13 @@
   border: var(--borde-espacio) solid var(--color-action-primary);
 }
 
+/* Muestra del color de un tipo de uso (el color viene del catálogo de MOD-02). */
+.simboloUso {
+  flex-shrink: 0;
+  width: var(--marcador-atencion);
+  height: var(--marcador-atencion);
+}
+
 /* Móvil: un mapa más bajo, para que quepa en pantalla junto al panel de capas. */
 @media (max-width: 767px) {
   .contenedor {

@@ -7,7 +7,7 @@ import { Link } from 'react-router'
 import Boton from '@/components/ui/Boton'
 import { rutaDetalleAtencion } from '@/router/rutasApp'
 import { formatearFecha, formatearNumero } from '@/utils/formato'
-import type { FilaMapa } from '@/utils/mapaAtenciones'
+import { esAtencionTercerizada, type FilaMapa } from '@/utils/mapaAtenciones'
 import { insigniaEstadoAtencion } from '@/utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
 import Estado from '@/components/ui/Estado'
@@ -37,20 +37,33 @@ export default function ListaAtencionesMovil({ filas, seleccion, onSeleccionar }
           <li key={f.clave}>
             <article className={`${estilos.ficha} ${f.clave === seleccion ? estilos.fichaElegida : ''}`}>
               <div className={estilos.cabeceraFicha}>
-                <Link to={rutaDetalleAtencion(f.atencion_id)} className={estilos.codigoFicha}>
-                  {f.codigo}
-                </Link>
-                <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />
+                {esAtencionTercerizada(f) ? (
+                  <>
+                    <Link to={rutaDetalleAtencion(f.atencion_id)} className={estilos.codigoFicha}>
+                      {f.codigo}
+                    </Link>
+                    <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />
+                  </>
+                ) : (
+                  <>
+                    <span className={estilos.codigoFicha}>{f.codigo}</span>
+                    <Estado tono="neutro" texto={`Parte ${f.estado.toLocaleLowerCase('es')}`} />
+                  </>
+                )}
               </div>
               <p className={estilos.metaFicha}>
-                {f.tipo_atencion} · {f.tipo_servicio}
+                {f.tipo_atencion} · {f.tipo_servicio} · {esAtencionTercerizada(f) ? 'Tercerizado' : 'Personal propio'}
               </p>
               <p className={estilos.metaFicha}>
                 {f.espacio}
                 {f.ejemplar_codigo ? ` · Ejemplar ${f.ejemplar_codigo}` : ''} · {formatearFecha(f.fecha)}
               </p>
               <div className={estilos.pieFicha}>
-                {f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />}
+                {f.con_ubicacion ? (
+                  <Estado tono="info" texto="En el mapa" />
+                ) : (
+                  <Estado tono="neutro" texto="Sin ubicación" />
+                )}
                 <Boton variante="fantasma" onClick={() => verResumen(f.clave)}>
                   Ver resumen
                 </Boton>

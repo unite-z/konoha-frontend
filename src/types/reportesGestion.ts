@@ -226,7 +226,12 @@ export interface ResultadoMaterialVegetal extends ReporteBase<FiltrosMaterialVeg
 /** Tipo de atención del mapa (`TiposAtencion.java`). */
 export type TipoAtencion = 'Mantenimiento' | 'Poda' | 'Fitosanitario'
 
-/** Resumen de una atención en el mapa (CU-MOD06-003, paso 6; `AtencionMapa.java`). Una fila por espacio o ejemplar. */
+/**
+ * Resumen de una atención en el mapa (CU-MOD06-003, paso 6; `AtencionMapa.java`). Una fila por espacio o ejemplar.
+ * Con `modalidad` «PersonalPropio» es una actividad de MOD-04: `atencion_id` es el id de la actividad (puede
+ * coincidir con el de una atención tercerizada), `codigo` es «ACT-…», `tipo_servicio` el tipo de actividad, `estado`
+ * el del parte diario y `proveedor` la cuadrilla.
+ */
 export interface AtencionMapa {
   atencion_id: number
   codigo: string
@@ -243,6 +248,8 @@ export interface AtencionMapa {
   ejemplar_id: number | null
   ejemplar_codigo: string | null
   archivos_asociados: number
+  /** Tipo de uso del espacio en MOD-02 (para colorearlo); null si no lo tiene o no hay espacio. */
+  tipo_uso_id: number | null
 }
 
 /** Geometrías GeoJSON admitidas (EPSG:4326, [longitud, latitud]). Otras se descartan con un guarda de tipo. */

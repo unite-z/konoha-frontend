@@ -3,7 +3,9 @@
  * `maplibre-gl`: la página lo carga con `React.lazy`, así MapLibre va en un fragmento aparte (Guía Web 8.3).
  *
  * - Mapa base: el mismo que el mapa de áreas verdes de MOD-02 (teselas ráster de OpenStreetMap).
- * - Espacios de las atenciones (Polygon y MultiPolygon): relleno `green-100` y borde `green-500` (Guía Web 5.8).
+ * - Espacios de las atenciones (Polygon y MultiPolygon): relleno con el color de su tipo de uso (catálogo de MOD-02,
+ *   como en el mapa de áreas verdes) y borde `--map-area-line`; sin tipo de uso, `--map-area-fill`. La leyenda
+ *   muestra los tipos de uso de los espacios dibujados.
  * - Atenciones: cuadrado azul de 14 px (`color-info`) como `<button>` propio, accesible con teclado y lector de
  *   pantalla. Al pulsarlo se selecciona; la seleccionada lleva el anillo de foco.
  *   SUPUESTO (pendiente de confirmar): el mismo símbolo para los tres tipos de atención. La guía solo define
@@ -24,7 +26,16 @@ import {
   type GeoJSONSourceSpecification,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { claveFilaMapa, limitesDeElementos, puntoRepresentativo, textoMarcador, type ElementoDibujable, type Limites } from '@/utils/mapaAtenciones'
+import {
+  claveFilaMapa,
+  limitesDeElementos,
+  puntoRepresentativo,
+  textoMarcador,
+  usosDeElementos,
+  type ElementoDibujable,
+  type Limites,
+  type UsoColoreado,
+} from '@/utils/mapaAtenciones'
 import estilos from './LienzoMapaAtenciones.module.css'
 
 export interface LienzoMapaAtencionesProps {
@@ -32,6 +43,8 @@ export interface LienzoMapaAtencionesProps {
   elementos: ElementoDibujable[]
   /** Encuadre si no hay elementos al crear el mapa (los últimos límites conocidos en esta visita). */
   limitesIniciales: Limites
+  /** Catálogo de tipos de uso de MOD-02 con su color: el relleno de cada espacio y la leyenda. */
+  usos: UsoColoreado[]
   /** Clave de la fila seleccionada. */
   seleccion: string | null
   onSeleccionar: (clave: string) => void
@@ -49,19 +62,32 @@ function leerToken(nombre: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim()
 }
 
-/** Polígonos de los espacios como FeatureCollection (solo la clave como propiedad). */
-function coleccionAreas(elementos: ElementoDibujable[]): GeoJSONSourceSpecification['data'] {
+/**
+ * Polígonos de los espacios como FeatureCollection, con la clave y el color de su tipo de uso (el del catálogo de
+ * MOD-02, como en el mapa de áreas verdes); sin tipo de uso, el relleno de siempre (`--map-area-fill`).
+ */
+function coleccionAreas(elementos: ElementoDibujable[], usos: UsoColoreado[]): GeoJSONSourceSpecification['data'] {
+  const colores = new Map(usos.map((u) => [u.id, u.color]))
+  const porDefecto = leerToken('--map-area-fill')
   return {
     type: 'FeatureCollection',
     features: elementos
       .filter((e) => e.geometry.type !== 'Point')
-      .map((e) => ({ type: 'Feature', geometry: e.geometry, properties: { clave: claveFilaMapa(e.properties) } })),
+      .map((e) => ({
+        type: 'Feature',
+        geometry: e.geometry,
+        properties: {
+          clave: claveFilaMapa(e.properties),
+          color: (e.properties.tipo_uso_id !== null && colores.get(e.properties.tipo_uso_id)) || porDefecto,
+        },
+      })),
   }
 }
 
 export default function LienzoMapaAtenciones({
   elementos,
   limitesIniciales,
+  usos,
   seleccion,
   onSeleccionar,
   onError,
@@ -73,9 +99,9 @@ export default function LienzoMapaAtenciones({
   const botones = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   // Últimos valores de las props para los manejadores de MapLibre (que se registran una sola vez).
-  const ultimos = useRef({ elementos, limitesIniciales, seleccion, onSeleccionar, onError })
+  const ultimos = useRef({ elementos, limitesIniciales, usos, seleccion, onSeleccionar, onError })
   useEffect(() => {
-    ultimos.current = { elementos, limitesIniciales, seleccion, onSeleccionar, onError }
+    ultimos.current = { elementos, limitesIniciales, usos, seleccion, onSeleccionar, onError }
   })
 
   /** Quita los marcadores y crea uno por elemento. */
@@ -104,7 +130,7 @@ export default function LienzoMapaAtenciones({
   /** Datos de los polígonos, marcadores y encuadre (al cargar y al cambiar los elementos). */
   function pintar(instancia: MapaMapLibre) {
     const actuales = ultimos.current.elementos
-    instancia.getSource<GeoJSONSource>(ID_FUENTE)?.setData(coleccionAreas(actuales))
+    instancia.getSource<GeoJSONSource>(ID_FUENTE)?.setData(coleccionAreas(actuales, ultimos.current.usos))
     pintarMarcadores(instancia)
     const limites = limitesDeElementos(actuales)
     // A2: sin elementos se mantiene la vista actual.
@@ -154,8 +180,13 @@ export default function LienzoMapaAtenciones({
     })
     instancia.once('load', () => {
       cargado.current = true
-      instancia.addSource(ID_FUENTE, { type: 'geojson', data: coleccionAreas([]) })
-      instancia.addLayer({ id: `${ID_FUENTE}-relleno`, type: 'fill', source: ID_FUENTE, paint: { 'fill-color': leerToken('--map-area-fill') } })
+      instancia.addSource(ID_FUENTE, { type: 'geojson', data: coleccionAreas([], []) })
+      instancia.addLayer({
+        id: `${ID_FUENTE}-relleno`,
+        type: 'fill',
+        source: ID_FUENTE,
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.6 },
+      })
       instancia.addLayer({
         id: `${ID_FUENTE}-borde`,
         type: 'line',
@@ -175,11 +206,13 @@ export default function LienzoMapaAtenciones({
     // Se crea una sola vez: los cambios de props se aplican en los efectos de abajo.
   }, [])
 
-  // Cambio de elementos: polígonos, marcadores y encuadre.
+  // Cambio de elementos o de colores: polígonos, marcadores y encuadre.
   useEffect(() => {
     if (mapa.current && cargado.current) pintar(mapa.current)
     // `pintar` lee las props desde `ultimos`.
-  }, [elementos])
+  }, [elementos, usos])
+
+  const usosVisibles = usosDeElementos(elementos, usos)
 
   // Cambio de selección: solo el estado de los botones.
   useEffect(() => {
@@ -194,12 +227,23 @@ export default function LienzoMapaAtenciones({
         <ul className={estilos.listaLeyenda}>
           <li>
             <span className={estilos.simboloAtencion} aria-hidden="true" />
-            Atención tercerizada
+            Atención o actividad
           </li>
-          <li>
-            <span className={estilos.simboloEspacio} aria-hidden="true" />
-            Espacio de la atención
-          </li>
+          {usosVisibles.length === 0 ? (
+            <li>
+              <span className={estilos.simboloEspacio} aria-hidden="true" />
+              Espacio de la atención
+            </li>
+          ) : (
+            usosVisibles.map((uso) => (
+              <li key={uso.id}>
+                <svg className={estilos.simboloUso} viewBox="0 0 16 16" aria-hidden="true">
+                  <rect width="16" height="16" fill={uso.color} />
+                </svg>
+                {uso.nombre}
+              </li>
+            ))
+          )}
         </ul>
       </div>
     </div>

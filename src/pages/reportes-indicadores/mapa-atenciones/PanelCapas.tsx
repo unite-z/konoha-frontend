@@ -6,11 +6,11 @@
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import Casilla from '@/components/ui/Casilla'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
-import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
 import { rutaDetalleAtencion } from '@/router/rutasApp'
 import type { TipoAtencion, TotalTipoAtencion } from '@/types/reportesGestion'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
-import type { FilaMapa } from '@/utils/mapaAtenciones'
+import { esAtencionTercerizada, type FilaMapa } from '@/utils/mapaAtenciones'
 import { insigniaEstadoAtencion, TIPOS_ATENCION } from '@/utils/reportesGestion'
 import estilos from './MapaAtenciones.module.css'
 import Estado from '@/components/ui/Estado'
@@ -20,6 +20,8 @@ export interface PanelCapasProps {
   totales: TotalTipoAtencion[]
   visibles: ReadonlySet<TipoAtencion>
   onCambiarVisible: (tipo: TipoAtencion, visible: boolean) => void
+  /** Filtro por tipo de uso del espacio (catálogo de MOD-02); valor vacío = todos. */
+  tipoUso: { valor: string; opciones: OpcionSelector[]; motivoBloqueo?: string; onCambiar: (valor: string) => void }
   seleccionada: FilaMapa | null
   /** Filtra la pantalla por el espacio de la atención seleccionada. */
   onVerHistorial: (areaVerdeId: number) => void
@@ -33,20 +35,28 @@ function textoEvidencias(n: number): string {
 
 function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (areaVerdeId: number) => void }) {
   const areaVerdeId = fila.area_verde_id
+  const tercerizada = esAtencionTercerizada(fila)
   return (
     <>
       <div className={estilos.cabeceraSeleccion}>
         <span className="cifra">{fila.codigo}</span>
-        <Estado {...insigniaAEstado(insigniaEstadoAtencion(fila.estado))} />
+        {tercerizada ? (
+          <Estado {...insigniaAEstado(insigniaEstadoAtencion(fila.estado))} />
+        ) : (
+          <Estado tono="neutro" texto={`Parte ${fila.estado.toLocaleLowerCase('es')}`} />
+        )}
       </div>
       <ListaDescripcion
         columnas="una"
         elementos={[
           { etiqueta: 'Tipo de atención', valor: fila.tipo_atencion },
-          { etiqueta: 'Tipo de servicio', valor: fila.tipo_servicio },
+          { etiqueta: tercerizada ? 'Tipo de servicio' : 'Actividad', valor: fila.tipo_servicio },
           { etiqueta: 'Fecha', valor: formatearFecha(fila.fecha) },
-          { etiqueta: 'Responsable', valor: fila.proveedor },
-          { etiqueta: 'Evidencias disponibles', valor: textoEvidencias(fila.archivos_asociados) },
+          { etiqueta: 'Modalidad', valor: tercerizada ? 'Tercerizado' : 'Personal propio' },
+          { etiqueta: tercerizada ? 'Responsable' : 'Cuadrilla', valor: fila.proveedor },
+          ...(tercerizada
+            ? [{ etiqueta: 'Evidencias disponibles', valor: textoEvidencias(fila.archivos_asociados) }]
+            : []),
           { etiqueta: 'Espacio', valor: fila.espacio },
           { etiqueta: 'Ejemplar', valor: fila.ejemplar_codigo ?? SIN_VALOR },
           { etiqueta: 'Nivel de riesgo', valor: fila.es_riesgo ? 'Atención de riesgo' : 'Sin riesgo' },
@@ -54,9 +64,11 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
         ]}
       />
       <div className={estilos.acciones}>
-        <BotonEnlace variante="secundario" to={rutaDetalleAtencion(fila.atencion_id)}>
-          Ver atención
-        </BotonEnlace>
+        {tercerizada && (
+          <BotonEnlace variante="secundario" to={rutaDetalleAtencion(fila.atencion_id)}>
+            Ver atención
+          </BotonEnlace>
+        )}
         <Boton
           variante="fantasma"
           deshabilitado={areaVerdeId === null}
@@ -72,7 +84,14 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
   )
 }
 
-export default function PanelCapas({ totales, visibles, onCambiarVisible, seleccionada, onVerHistorial }: PanelCapasProps) {
+export default function PanelCapas({
+  totales,
+  visibles,
+  onCambiarVisible,
+  tipoUso,
+  seleccionada,
+  onVerHistorial,
+}: PanelCapasProps) {
   return (
     <aside className={estilos.panel} aria-labelledby="titulo-capas">
       <h2 id="titulo-capas" className={estilos.titulo}>
@@ -95,20 +114,14 @@ export default function PanelCapas({ totales, visibles, onCambiarVisible, selecc
         <p className={estilos.ayuda}>Las casillas muestran u ocultan cada tipo en el mapa y en la lista</p>
       </fieldset>
 
-      {/*
-        TODO (cuando se fusione MOD-02): las opciones vendrán de `listarTiposUso` (services/api/inventario.ts de la
-        rama mod02), se enviará `tipo_uso_id` y los polígonos se rellenarán por tipo de uso con color y patrón.
-        Faltan los tokens de la guía (--web-map-institucional, --web-map-ornamental y --web-map-deportivo, con los
-        colores de la Guía Web 5.8; el recreativo usa --map-area-line). MOD-02 usa --map-uso-*: hay que acordarlo.
-      */}
       <Selector
         id="filtro-tipo-uso"
         etiqueta="Tipo de uso"
-        valor=""
-        opciones={[]}
+        valor={tipoUso.valor}
+        opciones={tipoUso.opciones}
         opcionTodos={OPCION_TODOS}
-        bloqueadoMotivo="El tipo de uso de los espacios todavía no está disponible en el sistema"
-        onCambiar={() => undefined}
+        bloqueadoMotivo={tipoUso.motivoBloqueo}
+        onCambiar={tipoUso.onCambiar}
       />
 
       <section className={estilos.seleccion} aria-labelledby="titulo-seleccion">

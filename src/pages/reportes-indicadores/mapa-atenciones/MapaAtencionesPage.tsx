@@ -3,11 +3,14 @@
  * Mapa de atenciones de mantenimiento, poda y control fitosanitario del periodo (Guía Web 5.8 y 6.1, patrón
  * «Mapa con capas»; mockup, pantallas 2 y 3 solo como referencia de composición).
  *
- * - Filtros (criterio 1 y v2): periodo, tipo de atención, espacio, tipo de servicio (actividad), estado (solo
- *   atenciones realizadas), modalidad y nivel de riesgo. El tipo de uso está bloqueado con su motivo.
- * - Mapa con MapLibre (cargado aparte), panel de capas con totales y resumen de la selección, y lista.
+ * - Atenciones tercerizadas (MOD-05) y actividades del personal propio (MOD-04) de mantenimiento, poda y manejo
+ *   fitosanitario; la modalidad se ve en la lista y en el resumen.
+ * - Filtros (criterio 1 y v2): periodo, tipo de atención, tipo de uso (catálogo de MOD-02, en el panel de capas),
+ *   espacio, tipo de servicio (actividad), estado (solo atenciones realizadas), modalidad y nivel de riesgo.
+ * - Mapa con MapLibre (cargado aparte), con los espacios coloreados por su tipo de uso, panel de capas con totales y
+ *   resumen de la selección, y lista.
  * - A1: lo que no tiene coordenadas no se dibuja, pero está en la lista (ordenable por espacio) y se puede filtrar
- *   por el nombre del espacio. Hoy en `main` no llega ninguna geometría: no se carga MapLibre y se avisa.
+ *   por el nombre del espacio. Si nada tiene ubicación, no se carga MapLibre y se avisa.
  * - A2: sin atenciones, el mapa sigue visible y un aviso lo informa (por eso no se usa `PlantillaReporte`, que
  *   sustituye todo el contenido).
  * - E1: si el mapa falla, se avisa y se sigue con la lista, con «Reintentar mapa».
@@ -36,12 +39,14 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { listarTiposUso } from '@/services/api/catalogosInventario'
 import { obtenerMapaAtenciones } from '@/services/api/reportesGestion'
 import type { ResultadoMapaAtenciones, TipoAtencion } from '@/types/reportesGestion'
 import { OPCIONES_MODALIDAD } from '@/utils/estados'
 import { formatearFecha, formatearFechaHora, semanaActual, SIN_VALOR } from '@/utils/formato'
 import {
   aConsultaMapa,
+  esAtencionTercerizada,
   limitesDeElementos,
   prepararMapa,
   soloTiposVisibles,
@@ -71,6 +76,7 @@ type BorradorMapa = Record<CampoOpcionalMapa, string>
 
 const CAMPOS_OPCIONALES: CampoOpcionalMapa[] = [
   'tipo_atencion',
+  'tipo_uso_id',
   'area_verde_id',
   'tipo_servicio_id',
   'estado',
@@ -92,16 +98,34 @@ const COLUMNAS: ColumnaTabla<FilaMapa>[] = [
   {
     clave: 'codigo',
     titulo: 'Atención',
-    // El clic en el enlace abre la atención sin seleccionar la fila.
-    render: (f) => (
-      <Link to={rutaDetalleAtencion(f.atencion_id)} onClick={(e) => e.stopPropagation()}>
-        {f.codigo}
-      </Link>
-    ),
+    // El clic en el enlace abre la atención sin seleccionar la fila. Una actividad propia no tiene ficha aquí.
+    render: (f) =>
+      esAtencionTercerizada(f) ? (
+        <Link to={rutaDetalleAtencion(f.atencion_id)} onClick={(e) => e.stopPropagation()}>
+          {f.codigo}
+        </Link>
+      ) : (
+        f.codigo
+      ),
   },
   { clave: 'tipo_atencion', titulo: 'Tipo de atención', ordenable: true },
-  { clave: 'tipo_servicio', titulo: 'Tipo de servicio' },
-  { clave: 'estado', titulo: 'Estado', render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'modalidad',
+    titulo: 'Modalidad',
+    ordenable: true,
+    render: (f) => (esAtencionTercerizada(f) ? 'Tercerizado' : 'Personal propio'),
+  },
+  { clave: 'tipo_servicio', titulo: 'Servicio o actividad' },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    render: (f) =>
+      esAtencionTercerizada(f) ? (
+        <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />
+      ) : (
+        <Estado tono="neutro" texto={`Parte ${f.estado.toLocaleLowerCase('es')}`} />
+      ),
+  },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true },
   { clave: 'ejemplar_codigo', titulo: 'Ejemplar', render: (f) => f.ejemplar_codigo ?? SIN_VALOR },
   {
@@ -125,6 +149,7 @@ export default function MapaAtencionesPage() {
   const { filtros, establecer } = useFiltrosUrl<ClaveFiltroMapa>({
     ...predeterminado,
     tipo_atencion: '',
+    tipo_uso_id: '',
     area_verde_id: '',
     tipo_servicio_id: '',
     estado: '',
@@ -133,6 +158,7 @@ export default function MapaAtencionesPage() {
   })
   const aplicados: BorradorMapa = {
     tipo_atencion: filtros.tipo_atencion,
+    tipo_uso_id: filtros.tipo_uso_id,
     area_verde_id: filtros.area_verde_id,
     tipo_servicio_id: filtros.tipo_servicio_id,
     estado: filtros.estado,
@@ -141,6 +167,13 @@ export default function MapaAtencionesPage() {
   }
   const claveAplicados = JSON.stringify(aplicados)
   const catalogos = useCatalogosFiltros()
+  // Catálogo de tipos de uso de MOD-02 (filtro y colores del mapa). Si falla, el filtro se bloquea con su motivo.
+  const catalogoUsos = useConsulta('catalogo-tipos-uso', (signal) => listarTiposUso(false, signal))
+  const usos = useMemo(() => catalogoUsos.datos ?? [], [catalogoUsos.datos])
+  const opcionesUso: OpcionSelector[] = useMemo(
+    () => usos.map((u) => ({ valor: String(u.id), texto: u.nombre })),
+    [usos],
+  )
 
   // Borrador de los filtros opcionales, sincronizado con la URL (al quitar un chip, el selector lo refleja).
   const [borrador, setBorrador] = useState<BorradorMapa>(aplicados)
@@ -159,12 +192,10 @@ export default function MapaAtencionesPage() {
   function reintentar() {
     consulta.reintentar()
     catalogos.reintentar()
+    if (catalogoUsos.estado === 'error') catalogoUsos.reintentar()
   }
 
-  const { elementos, filas } = useMemo(
-    () => (datos ? prepararMapa(datos) : { elementos: [], filas: [] }),
-    [datos],
-  )
+  const { elementos, filas } = useMemo(() => (datos ? prepararMapa(datos) : { elementos: [], filas: [] }), [datos])
 
   // Si alguna vez hubo algo que dibujar en esta visita, el mapa se mantiene (A2) con el último encuadre.
   const limitesActuales = useMemo(() => limitesDeElementos(elementos), [elementos])
@@ -197,6 +228,10 @@ export default function MapaAtencionesPage() {
 
   const filtrosActivos: FiltroActivo[] = [
     aplicados.tipo_atencion && { clave: 'tipo_atencion', texto: `Tipo de atención: ${aplicados.tipo_atencion}` },
+    aplicados.tipo_uso_id && {
+      clave: 'tipo_uso_id',
+      texto: `Tipo de uso: ${textoOpcion(opcionesUso, aplicados.tipo_uso_id)}`,
+    },
     aplicados.area_verde_id && {
       clave: 'area_verde_id',
       texto: `Espacio: ${textoOpcion(catalogos.espacios, aplicados.area_verde_id)}`,
@@ -210,7 +245,10 @@ export default function MapaAtencionesPage() {
       clave: 'modalidad',
       texto: `Modalidad: ${textoOpcion(OPCIONES_MODALIDAD, aplicados.modalidad)}`,
     },
-    aplicados.es_riesgo && { clave: 'es_riesgo', texto: `Nivel de riesgo: ${textoOpcion(OPCIONES_RIESGO, aplicados.es_riesgo)}` },
+    aplicados.es_riesgo && {
+      clave: 'es_riesgo',
+      texto: `Nivel de riesgo: ${textoOpcion(OPCIONES_RIESGO, aplicados.es_riesgo)}`,
+    },
   ].filter((f): f is FiltroActivo => Boolean(f))
 
   function quitar(clave: string) {
@@ -232,7 +270,9 @@ export default function MapaAtencionesPage() {
         cargando={estado === 'cargando' && cargaVisible}
         onAplicar={(periodo) => {
           const sinCambios =
-            periodo.desde === filtros.desde && periodo.hasta === filtros.hasta && JSON.stringify(borrador) === claveAplicados
+            periodo.desde === filtros.desde &&
+            periodo.hasta === filtros.hasta &&
+            JSON.stringify(borrador) === claveAplicados
           if (sinCambios) reintentar()
           else establecer({ ...periodo, ...borrador })
         }}
@@ -274,7 +314,8 @@ export default function MapaAtencionesPage() {
   let contenido = null
   if (estado === 'error' && error) {
     if (erroresDePeriodo(error)) contenido = null // el mensaje va junto al campo del periodo
-    else if (error.estado === 403 || error.estado === 400) contenido = <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
+    else if (error.estado === 403 || error.estado === 400)
+      contenido = <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
     else contenido = <EstadoError titulo={TITULO_ERROR_CARGA} descripcion={error.detalle} onReintentar={reintentar} />
   } else if (estado === 'cargando' && (cargaVisible || !datos)) {
     contenido = cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -303,6 +344,7 @@ export default function MapaAtencionesPage() {
             key={intentoMapa}
             elementos={elementosVisibles}
             limitesIniciales={limitesConocidos}
+            usos={usos}
             seleccion={seleccion}
             onSeleccionar={setSeleccion}
             onError={() => setFalloMapa(true)}
@@ -310,10 +352,11 @@ export default function MapaAtencionesPage() {
         </Suspense>
       )
     } else {
-      // Hoy en `main` no llega ninguna geometría: no se descarga MapLibre (A1). La razón técnica va en `notas`.
+      // A1: nada que dibujar (los espacios no tienen polígono en MOD-02 ni los ejemplares, coordenadas): no se
+      // descarga MapLibre y las atenciones están en la lista.
       mapa = (
-        <AvisoEnLinea tono="info" titulo="Ubicaciones todavía no disponibles">
-          Las atenciones del periodo no tienen ubicación registrada. Búscalas en la lista de abajo
+        <AvisoEnLinea tono="info" titulo="Sin ubicaciones en el mapa">
+          Las atenciones del periodo no tienen ubicación registrada en el inventario. Búscalas en la lista de abajo
         </AvisoEnLinea>
       )
     }
@@ -338,6 +381,15 @@ export default function MapaAtencionesPage() {
             totales={datos.totales_por_tipo}
             visibles={tiposVisibles}
             onCambiarVisible={cambiarVisible}
+            tipoUso={{
+              valor: filtros.tipo_uso_id,
+              opciones: opcionesUso,
+              motivoBloqueo:
+                catalogoUsos.estado === 'error'
+                  ? 'No se pudo cargar el catálogo de tipos de uso del inventario'
+                  : undefined,
+              onCambiar: (valor) => establecer({ tipo_uso_id: valor || null }),
+            }}
             seleccionada={seleccionada}
             onVerHistorial={(areaVerdeId) => establecer({ area_verde_id: String(areaVerdeId) })}
           />
@@ -364,7 +416,8 @@ export default function MapaAtencionesPage() {
               onFilaClick={(f) => setSeleccion(f.clave)}
               estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
               vacio={{
-                titulo: filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
+                titulo:
+                  filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
               }}
             />
           )}

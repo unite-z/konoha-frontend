@@ -12,7 +12,7 @@ import type {
   TipoAtencion,
 } from '../types/reportesGestion'
 import { formatearFecha } from './formato'
-import { aConsultaGestion, TIPOS_ATENCION } from './reportesGestion'
+import { aConsultaGestion, enteroPositivo, TIPOS_ATENCION } from './reportesGestion'
 
 type Posicion = [number, number]
 
@@ -67,9 +67,30 @@ export interface FilaMapa extends AtencionMapa {
   con_ubicacion: boolean
 }
 
-/** Clave estable y única por fila: una atención se repite por cada espacio o ejemplar de su alcance. */
+/**
+ * Clave estable y única por fila: una atención se repite por cada espacio o ejemplar de su alcance, y el id de una
+ * actividad del personal propio puede coincidir con el de una atención tercerizada (por eso va la modalidad).
+ */
 export function claveFilaMapa(a: AtencionMapa): string {
-  return `${a.atencion_id}-${a.area_verde_id ?? 'sin'}-${a.ejemplar_id ?? 'sin'}`
+  return `${a.modalidad}-${a.atencion_id}-${a.area_verde_id ?? 'sin'}-${a.ejemplar_id ?? 'sin'}`
+}
+
+/** `true` si la fila es una atención tercerizada de MOD-05 (tiene ficha propia); `false` si es una actividad. */
+export function esAtencionTercerizada(a: AtencionMapa): boolean {
+  return a.modalidad === 'Tercerizado'
+}
+
+/** Tipo de uso con su color del catálogo de MOD-02. */
+export interface UsoColoreado {
+  id: number
+  nombre: string
+  color: string
+}
+
+/** Tipos de uso de los espacios dibujados, en el orden del catálogo (para la leyenda). */
+export function usosDeElementos(elementos: { properties: AtencionMapa }[], usos: UsoColoreado[]): UsoColoreado[] {
+  const presentes = new Set(elementos.map((e) => e.properties.tipo_uso_id))
+  return usos.filter((u) => presentes.has(u.id))
 }
 
 /**
@@ -147,15 +168,17 @@ export function soloTiposVisibles<T extends { tipo_atencion: TipoAtencion }>(
   return lista.filter((e) => visibles.has(e.tipo_atencion))
 }
 
-/** Texto accesible del marcador: «Atención AT-001, Poda, 10 oct. 2026, Plaza de Armas». */
+/** Texto accesible del marcador: «Atención AT-001, Poda, 10 oct. 2026, Plaza de Armas» («Actividad …» si es propia). */
 export function textoMarcador(a: AtencionMapa): string {
-  return `Atención ${a.codigo}, ${a.tipo_atencion}, ${formatearFecha(a.fecha)}, ${a.espacio}`
+  const quien = esAtencionTercerizada(a) ? 'Atención' : 'Actividad'
+  return `${quien} ${a.codigo}, ${a.tipo_atencion}, ${formatearFecha(a.fecha)}, ${a.espacio}`
 }
 
 export type ClaveFiltroMapa =
   | 'desde'
   | 'hasta'
   | 'tipo_atencion'
+  | 'tipo_uso_id'
   | 'area_verde_id'
   | 'tipo_servicio_id'
   | 'estado'
@@ -174,6 +197,8 @@ export function aConsultaMapa(filtros: Record<ClaveFiltroMapa, string>): Consult
   })
   const tipo = TIPOS_ATENCION.find((t) => t === filtros.tipo_atencion)
   if (tipo) consulta.tipo_atencion = tipo
+  const tipoUso = enteroPositivo(filtros.tipo_uso_id)
+  if (tipoUso !== undefined) consulta.tipo_uso_id = tipoUso
   if (filtros.es_riesgo === 'true') consulta.es_riesgo = true
   else if (filtros.es_riesgo === 'false') consulta.es_riesgo = false
   return consulta
