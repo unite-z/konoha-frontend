@@ -18,6 +18,7 @@ const TITULO = 'Configuración'
 
 const OPCIONES_TEMA: OpcionGrupo<Tema>[] = [
   { valor: 'claro', texto: 'Claro' },
+  { valor: 'calido', texto: 'Cálido' },
   { valor: 'oscuro', texto: 'Oscuro' },
   { valor: 'sistema', texto: 'Según el sistema' },
 ]

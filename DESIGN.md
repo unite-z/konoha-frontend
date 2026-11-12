@@ -25,25 +25,25 @@ Los README de `src/` dicen dónde va el código. Este documento dice cómo tiene
 
 | Figma               | Token CSS                      | Claro   | Oscuro  | Uso                                                              |
 | ------------------- | ------------------------------ | ------- | ------- | ---------------------------------------------------------------- |
-| fondo/app           | `--color-bg-page`              | #f6f7f9 | #021330 | fondo de la aplicación                                           |
-| fondo/panel         | `--color-bg-surface`           | #ffffff | #031c43 | tarjetas, tablas, diálogos, menú                                 |
-| fondo/sutil         | `--color-bg-subtle`            | #f0f2f5 | #0b2f5e | cabecera de tabla, pestañas, zonas secundarias                   |
-| fondo/hover         | `--color-bg-hover`             | #f0f2f5 | #0b2f5e | fila o elemento al pasar el ratón                                |
+| fondo/app           | `--color-bg-page`              | #f6f7f9 | #020814 | fondo de la aplicación                                           |
+| fondo/panel         | `--color-bg-surface`           | #ffffff | #112240 | tarjetas, tablas, diálogos, menú                                 |
+| fondo/sutil         | `--color-bg-subtle`            | #f0f2f5 | #1b3156 | cabecera de tabla, pestañas, zonas secundarias                   |
+| fondo/hover         | `--color-bg-hover`             | #f0f2f5 | #1b3156 | fila o elemento al pasar el ratón                                |
 | texto/principal     | `--color-text-primary`         | #042354 | #f6f7f9 | texto normal y títulos                                           |
-| texto/secundario    | `--color-text-muted`           | #5c6c83 | #bdc3c9 | descripciones, leyendas, metadatos                               |
-| texto/deshabilitado | `--color-text-disabled`        | #959ea9 | #667892 | controles deshabilitados, celdas sin valor                       |
+| texto/secundario    | `--color-text-muted`           | #5c6c83 | #c2c9d2 | descripciones, leyendas, metadatos                               |
+| texto/deshabilitado | `--color-text-disabled`        | #959ea9 | #8391a8 | controles deshabilitados, celdas sin valor                       |
 | texto/sobre-acento  | `--color-text-on-action`       | #ffffff | #ffffff | texto sobre botón primario o destructivo                         |
-| borde/default       | `--color-border-default`       | #e1e5ea | #0b2f5e | bordes de tarjeta, tabla y campo                                 |
-| borde/fuerte        | `--color-border-strong`        | #bdc3c9 | #36507a | bordes que deben verse más (campo con foco perdido, separadores) |
+| borde/default       | `--color-border-default`       | #e1e5ea | #34507c | bordes de tarjeta, tabla y campo                                 |
+| borde/fuerte        | `--color-border-strong`        | #bdc3c9 | #6a81a8 | bordes que deben verse más (campo con foco perdido, separadores) |
 | acento/default      | `--color-action-primary`       | #042354 | #004ea8 | botón primario, elemento seleccionado                            |
 | acento/hover        | `--color-action-primary-hover` | #004ea8 | #0a7bc2 | hover del botón primario                                         |
 | acento/texto        | `--color-action-text`          | #004ea8 | #41b9e4 | enlaces, botón fantasma, códigos enlazados                       |
-| acento/sutil        | `--color-action-subtle`        | #ebf1f8 | #0b2f5e | fondo de un elemento seleccionado suave                          |
+| acento/sutil        | `--color-action-subtle`        | #ebf1f8 | #1b3156 | fondo de un elemento seleccionado suave                          |
 | foco                | `--web-focus-ring-color`       | #0a7bc2 | #41b9e4 | anillo de foco de 2 px                                           |
-| menu/activo         | `--color-sidebar-active-bg`    | #dbe6f3 | #0b2f5e | fondo del elemento de menú activo                                |
+| menu/activo         | `--color-sidebar-active-bg`    | #dbe6f3 | #173059 | fondo del elemento de menú activo                                |
 | menu/texto-activo   | `--color-sidebar-active-text`  | #042354 | #41b9e4 | texto del elemento de menú activo                                |
 
-Color de acento (AV-389): en Configuración → Apariencia cada usuario elige tema (claro, oscuro o según el sistema) y acento entre el azul institucional (predeterminado), Azul PUCP #004EA8, Verde PUCP #007a5e (de #008768), Morado PUCP #7F32C8 y Magenta PUCP #A31598. Se aplican con `data-tema` y `data-acento` en `<html>` (`utils/apariencia.ts`); los bloques `:root[data-acento='…']` de `tokens.css` solo cambian los tokens de acento, menú activo y foco.
+Color de acento (AV-389): en Configuración → Apariencia cada usuario elige tema (claro, cálido, oscuro o según el sistema; el cálido usa fondos crema y grises tostados, AV-392) y acento entre el azul institucional (predeterminado), Azul PUCP #004EA8, Verde PUCP #007a5e (de #008768), Morado PUCP #7F32C8 y Magenta PUCP #A31598. Se aplican con `data-tema` y `data-acento` en `<html>` (`utils/apariencia.ts`); los bloques `:root[data-acento='…']` de `tokens.css` solo cambian los tokens de acento, menú activo y foco.
 
 Estados (texto, fondo y borde, en claro / oscuro):
 

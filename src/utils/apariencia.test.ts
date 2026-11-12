@@ -40,6 +40,12 @@ describe('apariencia (AV-389)', () => {
     expect(html.dataset.acento).toBeUndefined()
   })
 
+  it('el tema cálido tiene su propio atributo (AV-392)', () => {
+    const html = raiz()
+    aplicarApariencia({ tema: 'calido', acento: 'verde' }, html, true)
+    expect(html.dataset).toEqual({ tema: 'calido', acento: 'verde' })
+  })
+
   it('«según el sistema» sigue lo que prefiere el sistema', () => {
     const html = raiz()
     aplicarApariencia({ tema: 'sistema', acento: 'institucional' }, html, true)
