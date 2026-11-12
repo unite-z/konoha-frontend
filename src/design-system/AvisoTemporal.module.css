@@ -3,7 +3,8 @@
   position: fixed;
   top: var(--space-4);
   right: var(--space-6);
-  z-index: 10;
+  /* Por encima de todo el layout (cabecera 5, barras móviles 20, menú móvil 29-30): un toast nunca queda tapado. */
+  z-index: 35;
   max-width: min(22.5rem, calc(100vw - 2 * var(--space-6)));
 }
 
