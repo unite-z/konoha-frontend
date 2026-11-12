@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { FilaAtencionEspacio, FilaMovimientoMaterial } from '@/types/reportesGestion'
+import type {
+  FilaActividadCampo,
+  FilaAtencionEspacio,
+  FilaMovimientoMaterial,
+  FilaParticipacionOperario,
+} from '@/types/reportesGestion'
 import { filtroDeBarra, gruposDesglose, separarUnidad } from './desglose'
 import { AGRUPACIONES_ATENCIONES_ESPACIO, AGRUPACIONES_CONSUMO, agruparRegistros, unidadesDe } from './registros'
 
@@ -67,13 +72,46 @@ const movimiento = (cambios: Partial<FilaMovimientoMaterial>): FilaMovimientoMat
   ...cambios,
 })
 
+const actividad = (cambios: Partial<FilaActividadCampo>): FilaActividadCampo => ({
+  id: 1,
+  fecha: '2026-10-20',
+  estado: 'Abierto',
+  tipo_actividad: 'Deshierbo',
+  area_verde_id: 5,
+  espacio: 'Jardín',
+  cuadrilla: 'Cuadrilla 1',
+  ...cambios,
+})
+
+const participacion = (cambios: Partial<FilaParticipacionOperario>): FilaParticipacionOperario => ({
+  actividad_id: 1,
+  fecha: '2026-10-20',
+  operario_id: 7,
+  operario: 'Operario 03',
+  cuadrilla: 'Cuadrilla 1',
+  area_verde_id: 5,
+  espacio: 'Jardín',
+  ...cambios,
+})
+
 describe('filtroDeBarra', () => {
   it('encuentra los registros de la barra', () => {
     const sinEspacio = filtroDeBarra('atenciones-por-espacio', 'Sin espacio')
-    expect(sinEspacio?.(atencion({ espacio: null, area_verde_id: null }))).toBe(true)
-    expect(sinEspacio?.(atencion({}))).toBe(false)
-    expect(filtroDeBarra('consumo-materiales', 'Compost (kg)')?.(movimiento({}))).toBe(true)
-    expect(filtroDeBarra('actividades-por-estado', 'Estado: Abierto')).toBeNull()
+    expect(sinEspacio(atencion({ espacio: null, area_verde_id: null }))).toBe(true)
+    expect(sinEspacio(atencion({}))).toBe(false)
+    expect(filtroDeBarra('consumo-materiales', 'Compost (kg)')(movimiento({}))).toBe(true)
+  })
+
+  it('actividades: por estado del parte o por tipo de actividad', () => {
+    expect(filtroDeBarra('actividades-por-estado', 'Estado: Abierto')(actividad({}))).toBe(true)
+    expect(filtroDeBarra('actividades-por-estado', 'Estado: Cerrado')(actividad({}))).toBe(false)
+    expect(filtroDeBarra('actividades-por-estado', 'Tipo: Deshierbo')(actividad({}))).toBe(true)
+  })
+
+  it('operarios: por cuadrilla o por espacio', () => {
+    expect(filtroDeBarra('distribucion-operarios', 'Cuadrilla: Cuadrilla 1')(participacion({}))).toBe(true)
+    expect(filtroDeBarra('distribucion-operarios', 'Espacio: Jardín')(participacion({}))).toBe(true)
+    expect(filtroDeBarra('distribucion-operarios', 'Espacio: Patio')(participacion({}))).toBe(false)
   })
 })
 

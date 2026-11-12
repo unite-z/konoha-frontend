@@ -8,9 +8,11 @@ import type {
   ClaveIndicadorPanel,
   ConsultaGestion,
   DetalleIndicadorPanel,
+  FilaActividadCampo,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
+  FilaParticipacionOperario,
 } from '@/types/reportesGestion'
 import { formatearFecha } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
@@ -54,6 +56,21 @@ const porDia = <F extends { fecha: string }>(): Agrupacion<F> => ({
   clave: (f) => f.fecha,
   textoClave: formatearFecha,
 })
+
+export const AGRUPACIONES_ACTIVIDADES: Agrupacion<FilaActividadCampo>[] = [
+  { valor: 'estado', texto: 'Estado', porFecha: false, clave: (f) => f.estado },
+  { valor: 'tipo', texto: 'Tipo de actividad', porFecha: false, clave: (f) => f.tipo_actividad },
+  { valor: 'cuadrilla', texto: 'Cuadrilla', porFecha: false, clave: (f) => f.cuadrilla },
+  porDia(),
+]
+
+/** Cada registro es una participación: la barra cuenta participaciones (un operario puede repetirse). */
+export const AGRUPACIONES_OPERARIOS: Agrupacion<FilaParticipacionOperario>[] = [
+  { valor: 'cuadrilla', texto: 'Cuadrilla', porFecha: false, clave: (f) => f.cuadrilla },
+  { valor: 'espacio', texto: 'Espacio', porFecha: false, clave: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { valor: 'operario', texto: 'Operario', porFecha: false, clave: (f) => f.operario },
+  porDia(),
+]
 
 export const AGRUPACIONES_ATENCIONES_ESPACIO: Agrupacion<FilaAtencionEspacio>[] = [
   porDia(),

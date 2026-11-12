@@ -11,9 +11,11 @@
 import type {
   ClaveIndicadorPanel,
   ElementoDesglose,
+  FilaActividadCampo,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
+  FilaParticipacionOperario,
 } from '@/types/reportesGestion'
 import { ESTADOS_FILTRO_PANEL, numeroDeDecimal } from '@/utils/reportesGestion'
 
@@ -108,7 +110,7 @@ export function gruposDesglose(clave: ClaveIndicadorPanel, desglose: ElementoDes
 }
 
 /** Registros del detalle que forman una barra del desglose (por su etiqueta). */
-export function filtroDeBarra(clave: ClaveIndicadorPanel, etiqueta: string): ((fila: unknown) => boolean) | null {
+export function filtroDeBarra(clave: ClaveIndicadorPanel, etiqueta: string): (fila: unknown) => boolean {
   switch (clave) {
     case 'atenciones-por-espacio':
       return (f) => ((f as FilaAtencionEspacio).espacio ?? TEXTO_SIN_ESPACIO) === etiqueta
@@ -119,8 +121,17 @@ export function filtroDeBarra(clave: ClaveIndicadorPanel, etiqueta: string): ((f
         const m = f as FilaMovimientoMaterial
         return `${m.tipo_material} (${m.unidad})` === etiqueta
       }
-    default:
-      return null // actividades y operarios: su detalle aún no se puede mostrar (MOD-04)
+    // Mismo texto que las etiquetas del back-end («Estado: …», «Tipo: …», «Cuadrilla: …», «Espacio: …»).
+    case 'actividades-por-estado':
+      return (f) => {
+        const a = f as FilaActividadCampo
+        return `Estado: ${a.estado}` === etiqueta || `Tipo: ${a.tipo_actividad}` === etiqueta
+      }
+    case 'distribucion-operarios':
+      return (f) => {
+        const p = f as FilaParticipacionOperario
+        return `Cuadrilla: ${p.cuadrilla}` === etiqueta || `Espacio: ${p.espacio}` === etiqueta
+      }
   }
 }
 
@@ -129,7 +140,3 @@ export function esConteo(clave: ClaveIndicadorPanel): boolean {
   return clave !== 'consumo-materiales'
 }
 
-/** `true` si el indicador tiene registros que se pueden mostrar (los de MOD-04 aún no). */
-export function tieneRegistros(clave: ClaveIndicadorPanel): boolean {
-  return clave === 'atenciones-por-espacio' || clave === 'cumplimiento-tercerizados' || clave === 'consumo-materiales'
-}

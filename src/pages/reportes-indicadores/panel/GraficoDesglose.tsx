@@ -4,20 +4,19 @@
  *   cumplimiento de tercerizados (con el porcentaje de cada estado);
  * - chips para elegir el grupo: la unidad en el consumo de materiales (no se comparan unidades distintas) o
  *   «por estado / por tipo» y «por cuadrilla / por espacio» en los indicadores de MOD-04;
- * - al elegir una barra, «Ver detalles» abre sus registros (si el indicador ya tiene detalle).
+ * - al elegir una barra, «Ver detalles» abre sus registros.
  */
 import { useMemo, useState } from 'react'
 import BarrasHorizontales from '@/components/reportes-indicadores/graficos/BarrasHorizontales'
 import { escalaRedonda, marcasEje } from '@/components/reportes-indicadores/graficos/escala'
 import comunes from '@/components/reportes-indicadores/graficos/Graficos.module.css'
 import { BarraSeleccion, CabeceraGrafico } from '@/components/reportes-indicadores/graficos/PartesGrafico'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import { GrupoChips } from '@/components/ui/ChipsFiltro'
 import type { ResultadoIndicador } from '@/types/reportesGestion'
 import { formatearNumero } from '@/utils/formato'
 import { valorTarjeta } from '@/utils/reportesGestion'
-import { esConteo, gruposDesglose, tieneRegistros } from './desglose'
+import { esConteo, gruposDesglose } from './desglose'
 import Tarjeta from '@/components/ui/Tarjeta'
 
 /** Barras visibles antes de «Ver todas». */
@@ -42,7 +41,6 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
 
   const grupo = grupos.find((g) => g.clave === claveGrupo) ?? grupos[0]
   if (!grupo) return null
-  const conDetalle = tieneRegistros(resultado.clave)
   const visibles = grupo.enOrden || verTodas ? grupo.barras : grupo.barras.slice(0, BARRAS_INICIALES)
   const totalGrupo = grupo.barras.reduce((a, b) => a + b.valor, 0)
   const maximo = Math.max(0, ...grupo.barras.map((b) => b.valor))
@@ -79,20 +77,14 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
           />
         </div>
       )}
-      {conDetalle ? (
-        <BarraSeleccion
-          seleccionado={barraElegida?.texto ?? null}
-          indicacion="Haz clic en una barra para ver sus registros."
-          onVerDetalle={() =>
-            barraElegida &&
-            onVerDetalle({ etiqueta: barraElegida.etiqueta, titulo: `${resultado.indicador.nombre}: ${barraElegida.texto}` })
-          }
-        />
-      ) : (
-        <AvisoEnLinea tono="info">
-          Los registros de este indicador se podrán ver cuando Operación de campo publique sus partes diarios.
-        </AvisoEnLinea>
-      )}
+      <BarraSeleccion
+        seleccionado={barraElegida?.texto ?? null}
+        indicacion="Haz clic en una barra para ver sus registros."
+        onVerDetalle={() =>
+          barraElegida &&
+          onVerDetalle({ etiqueta: barraElegida.etiqueta, titulo: `${resultado.indicador.nombre}: ${barraElegida.texto}` })
+        }
+      />
       <BarrasHorizontales
         barras={visibles.map((b) => ({ clave: b.etiqueta, texto: b.texto, valor: b.valor, esTipo: false }))}
         agrupadas={false}
@@ -100,7 +92,7 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
         escala={escala}
         marcas={marcasEje(escala, conUnidad)}
         claveElegida={elegida}
-        onAlternar={(clave) => conDetalle && setElegida((actual) => (actual === clave ? null : clave))}
+        onAlternar={(clave) => setElegida((actual) => (actual === clave ? null : clave))}
       />
       {!grupo.enOrden && grupo.barras.length > BARRAS_INICIALES && (
         <div className={comunes.pie}>
