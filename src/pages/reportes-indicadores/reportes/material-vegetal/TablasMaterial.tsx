@@ -1,11 +1,13 @@
 /**
- * Tablas de RF-REP-005 que se abren en los diálogos «Ver detalles»: movimientos del mes (consumido, propagado o
- * trasladado) y totales de un mes de la comparación. Paginan en el cliente (25, 50 o 100 por página).
+ * Tablas de RF-REP-005: las que se abren en los diálogos «Ver detalles» (movimientos del mes, consumido, propagado
+ * o trasladado, y totales de un mes de la comparación) y la de productos aplicados por proveedores (flujo 3a), que
+ * va en su propia sección. Paginan en el cliente (25, 50 o 100 por página).
  */
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
-import type { TotalMaterial, TotalMes, TotalTraslado } from '@/types/reportesGestion'
-import { formatearNumero } from '@/utils/formato'
+import type { ProductoProveedor, TotalMaterial, TotalMes, TotalTraslado } from '@/types/reportesGestion'
+import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
+import { textoLista } from './materialVegetal'
 
 function columnaCantidad<F extends { cantidad: string }>(): ColumnaTabla<F> {
   return {
@@ -52,6 +54,32 @@ const COLUMNAS_MES: ColumnaTabla<TotalMes>[] = [
   columnaCantidad<TotalMes>(),
   { clave: 'unidad', titulo: 'Unidad' },
 ]
+
+const COLUMNAS_PRODUCTOS: ColumnaTabla<ProductoProveedor>[] = [
+  { clave: 'producto', titulo: 'Producto', ordenable: true },
+  { clave: 'principio_activo', titulo: 'Principio activo', render: (f) => f.principio_activo ?? SIN_VALOR },
+  { clave: 'proveedor', titulo: 'Proveedor', ordenable: true },
+  {
+    clave: 'aplicaciones',
+    titulo: 'Atenciones',
+    alineacion: 'derecha',
+    ordenable: true,
+    render: (f) => formatearNumero(f.aplicaciones),
+  },
+  { clave: 'dosis', titulo: 'Dosis', render: (f) => textoLista(f.dosis) },
+  { clave: 'atenciones', titulo: 'Códigos', render: (f) => textoLista(f.atenciones) },
+]
+
+export function TablaProductosProveedor({ filas }: { filas: ProductoProveedor[] }) {
+  return (
+    <TablaDatos
+      titulo="Productos agronómicos aplicados por proveedores"
+      columnas={COLUMNAS_PRODUCTOS}
+      filas={filas}
+      claveFila={(f) => `${f.producto_id}|${f.proveedor_id}`}
+    />
+  )
+}
 
 export function TablaMateriales({ titulo, filas }: { titulo: string; filas: TotalMaterial[] }) {
   return (

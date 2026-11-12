@@ -3,7 +3,7 @@
  * Planificación asistida: bandeja de propuestas de cronograma de la IA (mismo patrón que las demás bandejas de
  * Asistencia IA). Una propuesta no es una programación: nada se registra en Planificación hasta confirmarla.
  *
- * - «Generar propuesta» solo se muestra a los roles que pueden solicitar a la IA (ROLES_SOLICITAR_IA).
+ * - «Generar propuesta» solo se muestra a los roles que pueden solicitar a la IA (PERMISO_SOLICITAR_IA).
  * - El estado y la página van en la URL, para conservarlos al volver de la revisión.
  * - En móvil, cada propuesta es una ficha.
  */
@@ -17,14 +17,14 @@ import Pestanas from '@/components/ui/Pestanas'
 import Boton from '@/components/ui/Boton'
 import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionCronograma } from '@/router/rutasApp'
 import { listarCronogramas } from '@/services/api/cronogramaIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaCronograma } from '@/types/cronogramaIa'
 import type { EstadoSugerencia } from '@/types/ia'
 import { textoPeriodoCorto } from '@/utils/cronogramaIa'
@@ -97,8 +97,8 @@ export default function CronogramaIaPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeGenerar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeGenerar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
   const [dialogoAbierto, setDialogoAbierto] = useState(false)
 

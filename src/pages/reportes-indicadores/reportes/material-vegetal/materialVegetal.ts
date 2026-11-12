@@ -7,7 +7,7 @@
  */
 import type { Agrupacion } from '@/components/reportes-indicadores/graficos/agrupar'
 import type { ResultadoMaterialVegetal, TotalMaterial, TotalMes, TotalTraslado } from '@/types/reportesGestion'
-import { formatearMes } from '@/utils/formato'
+import { formatearMes, SIN_VALOR } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
 
 export type Movimiento = 'consumido' | 'propagado' | 'trasladado'
@@ -21,6 +21,9 @@ export const MOVIMIENTOS: { valor: Movimiento; texto: string }[] = [
 const cantidad = (f: { cantidad: string }) => numeroDeDecimal(f.cantidad) ?? 0
 
 export const unidadDe = (f: { unidad: string }) => f.unidad
+
+/** Dosis o atenciones de un producto aplicado (flujo 3a), separadas por comas; «—» si no hay ninguna. */
+export const textoLista = (valores: string[]) => (valores.length > 0 ? valores.join(', ') : SIN_VALOR)
 
 export const AGRUPACIONES_MATERIAL: Agrupacion<TotalMaterial>[] = [
   { valor: 'material', texto: 'Material', porFecha: false, clave: (f) => f.tipo_material, peso: cantidad },

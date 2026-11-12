@@ -5,7 +5,7 @@
  *
  * - La IA solo señala posibles problemas: ningún registro oficial cambia desde aquí (criterio 3).
  * - Estado, tipo de hallazgo, conjunto y página van en la URL, para conservarlos al volver del detalle.
- * - «Analizar datos» solo se muestra a los roles que pueden solicitar a la IA (ROLES_SOLICITAR_IA).
+ * - «Analizar datos» solo se muestra a los roles que pueden solicitar a la IA (PERMISO_SOLICITAR_IA).
  * - En móvil, cada hallazgo es una ficha.
  */
 // Excepción al sistema (AV-351): la ficha móvil de cada hallazgo es un <button> que lo abre entero; no tiene el aspecto de Boton.
@@ -20,14 +20,14 @@ import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton from '@/components/ui/Boton'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionInconsistencia } from '@/router/rutasApp'
 import { listarInconsistencias } from '@/services/api/inconsistenciasIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaInconsistencia } from '@/types/inconsistenciasIa'
 import { formatearFechaHora, formatearNumero } from '@/utils/formato'
 import {
@@ -101,8 +101,8 @@ export default function InconsistenciasIaPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeAnalizar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeAnalizar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
   const [analisisAbierto, setAnalisisAbierto] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)

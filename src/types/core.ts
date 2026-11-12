@@ -5,7 +5,7 @@
 import type { FechaIso, InstanteIso } from './comun'
 
 /** Códigos estables de rol (`core_rol.codigo`). El operario está previsto pero inactivo (RS-004). */
-export type CodigoRol = 'jefe-seccion' | 'ingeniero-campo' | 'practicante' | 'capataz' | 'operario'
+export type CodigoRol = 'jefe-seccion' | 'ingeniero-campo' | 'practicante' | 'capataz' | 'operario' | 'superadmin'
 
 export type CanalSesion = 'oficina' | 'campo'
 
@@ -115,6 +115,28 @@ export interface RolConPermisos {
   descripcion: string
   activo: boolean
   permisos: string[]
+}
+
+/** Permiso del catálogo (`GET permisos/`, AV-381). */
+export interface PermisoCatalogo {
+  codigo: string
+  modulo: string
+  descripcion: string
+  es_sensible: boolean
+}
+
+/** Cambio de los permisos de un rol, con autor, fecha y motivo (AV-381). */
+export interface CambioPermisos {
+  anteriores: string[]
+  nuevos: string[]
+  motivo: string
+  autor: string
+  fecha_hora: InstanteIso
+}
+
+export interface PermisosRol {
+  rol: RolConPermisos
+  historial: CambioPermisos[]
 }
 
 export interface CambioRol {

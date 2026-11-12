@@ -46,7 +46,7 @@ export default function UsuarioMenu({ claseSeDesvanece }: { claseSeDesvanece: st
     }
   }, [abierto])
 
-  if (estado.tipo !== 'activa') return null
+  if (estado.tipo !== 'activa' && estado.tipo !== 'sinConexion') return null
   const { usuario, rol } = estado.sesion
 
   return (

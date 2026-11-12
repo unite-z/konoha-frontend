@@ -33,6 +33,8 @@ export interface EntradaSegundoNivel {
   textoMovil?: string
   /** Sin ruta: pertenece a otro requisito y se muestra sin enlace, con «Próximamente». */
   ruta?: string
+  /** Permiso que hace falta para verla (si falta, el módulo la oculta). */
+  permiso?: string
 }
 
 export interface ModuloMenu {
@@ -88,6 +90,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Ejemplares y especies', icono: 'tree', ruta: RUTAS_INVENTARIO.ejemplares },
       { texto: 'Mapa del campus', icono: 'map', ruta: RUTAS_INVENTARIO.mapa },
       { texto: 'Campañas de poda', icono: 'scissors', ruta: RUTAS_INVENTARIO.campanasPoda },
+      { texto: 'Poda a demanda', icono: 'scissors', ruta: RUTAS_INVENTARIO.podaAltura, permiso: 'INV.PODA.PLANIFICAR' },
     ],
   },
   {
@@ -127,7 +130,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
   },
   // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil.
-  { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] },
+  {
+    clave: 'misIncidencias',
+    texto: 'Mis incidencias',
+    icono: 'clipboard',
+    ruta: RUTAS_MIS_INCIDENCIAS.lista,
+    prefijos: [RUTAS_MIS_INCIDENCIAS.lista],
+  },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',
@@ -142,7 +151,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Asistencia IA', icono: 'search', ruta: RUTAS.asistenciaIa },
     ],
   },
-  { clave: 'repositorio', texto: 'Repositorio', icono: 'paperclip', ruta: RUTAS_CORE.repositorio, prefijos: [RUTAS_CORE.repositorio] },
+  {
+    clave: 'repositorio',
+    texto: 'Repositorio',
+    icono: 'paperclip',
+    ruta: RUTAS_CORE.repositorio,
+    prefijos: [RUTAS_CORE.repositorio],
+  },
   {
     clave: 'usuarios',
     texto: 'Usuarios y roles',
@@ -153,6 +168,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Usuarios', icono: 'list', ruta: RUTAS_CORE.usuarios },
       { texto: 'Registro de accesos', icono: 'clipboard', ruta: RUTAS_CORE.accesos },
       { texto: 'Importación', icono: 'paperclip', ruta: RUTAS_CORE.importacion },
+      { texto: 'Roles y permisos', icono: 'settings', ruta: RUTAS_CORE.rolesPermisos, permiso: 'CORE.ROL.GESTIONAR' },
     ],
   },
 ]
@@ -191,11 +207,19 @@ export function activoEnMenu(pathname: string, modulos: ModuloMenu[] = MODULOS_M
   return { modulo, hijo }
 }
 
+/** Subentradas que la sesión puede ver: las que no piden permiso o las que lo tiene. */
+export function hijosVisibles(hijos: EntradaSegundoNivel[], permisos: readonly string[]): EntradaSegundoNivel[] {
+  return hijos.filter((hijo) => !hijo.permiso || permisos.includes(hijo.permiso))
+}
+
 /** Subentradas con enlace del módulo activo, para la Barra inferior móvil (como mucho 5, como en Figma). */
 export function seccionesMoviles(
   pathname: string,
   modulos: ModuloMenu[] = MODULOS_MENU,
+  permisos: readonly string[] = [],
 ): (EntradaSegundoNivel & { ruta: string })[] {
   const { modulo } = activoEnMenu(pathname, modulos)
-  return (modulo?.hijos ?? []).filter((hijo): hijo is EntradaSegundoNivel & { ruta: string } => Boolean(hijo.ruta)).slice(0, 5)
+  return hijosVisibles(modulo?.hijos ?? [], permisos)
+    .filter((hijo): hijo is EntradaSegundoNivel & { ruta: string } => Boolean(hijo.ruta))
+    .slice(0, 5)
 }

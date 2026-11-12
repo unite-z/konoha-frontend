@@ -10,7 +10,7 @@ import { useId, useState } from 'react'
 import Boton from '@/components/ui/Boton'
 import { disponibilidad } from '@/config/permisosTercerizados'
 import { textoOrden } from '@/utils/estadosTercerizados'
-import type { Atencion, ReporteProveedor, RolTercerizados } from '@/types/tercerizados'
+import type { Atencion, ReporteProveedor } from '@/types/tercerizados'
 import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoConformidad from './DialogoConformidad'
 import DialogoEjecucion from './DialogoEjecucion'
@@ -24,25 +24,25 @@ type Dialogo = 'seguridad' | 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'ori
 
 export interface AccionesAtencionProps {
   atencion: Atencion
-  rol: RolTercerizados | null
+  permisos: readonly string[] | null
   onActualizada: (atencion: Atencion) => void
   onExito: (mensaje: string) => void
   /** Se registró una revisión del reporte (la sección de documentos se recarga). */
   onReporteAdjunto: (reporte: ReporteProveedor | null) => void
 }
 
-export default function AccionesAtencion({ atencion, rol, onActualizada, onExito, onReporteAdjunto }: AccionesAtencionProps) {
+export default function AccionesAtencion({ atencion, permisos, onActualizada, onExito, onReporteAdjunto }: AccionesAtencionProps) {
   const [abierto, setAbierto] = useState<Dialogo>(null)
   const idMotivos = useId()
 
-  const seguridad = disponibilidad('seguridad', rol, atencion)
-  const oc = disponibilidad('ordenCompra', rol, atencion)
-  const inicio = disponibilidad('inicio', rol, atencion)
-  const fin = disponibilidad('fin', rol, atencion)
-  const reporte = disponibilidad('adjuntarReporte', rol, atencion)
-  const origen = disponibilidad('corregirOrigen', rol, atencion)
-  const acuerdo = disponibilidad('acuerdoUnidad', rol, atencion)
-  const conformidad = disponibilidad('conformidad', rol, atencion)
+  const seguridad = disponibilidad('seguridad', permisos, atencion)
+  const oc = disponibilidad('ordenCompra', permisos, atencion)
+  const inicio = disponibilidad('inicio', permisos, atencion)
+  const fin = disponibilidad('fin', permisos, atencion)
+  const reporte = disponibilidad('adjuntarReporte', permisos, atencion)
+  const origen = disponibilidad('corregirOrigen', permisos, atencion)
+  const acuerdo = disponibilidad('acuerdoUnidad', permisos, atencion)
+  const conformidad = disponibilidad('conformidad', permisos, atencion)
   const tieneOc = Boolean(atencion.numero_orden_compra)
 
   if (![oc, inicio, fin, reporte, origen, acuerdo, conformidad].some((d) => d.visible)) return null

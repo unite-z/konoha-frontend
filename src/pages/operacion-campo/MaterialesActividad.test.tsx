@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
 import type { ActividadCampo } from '@/types/operacionCampo'
 import MaterialesActividad from './MaterialesActividad'
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 4, nombre: 'J. Ramos' } }) }))
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal ??= function () { this.open = true }

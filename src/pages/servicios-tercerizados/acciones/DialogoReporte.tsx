@@ -11,8 +11,11 @@
  *   revisiones antes y después: si aumentó, la revisión se registró; si no se puede saber, se pide revisar los
  *   documentos antes de reintentar.
  * - El tamaño máximo lo define el servidor (configurable); su mensaje se muestra tal cual.
+ * - RF-SER-009: si algún documento es «Informe final» y el tipo de servicio tiene formato estándar vigente, se piden
+ *   sus datos (`DatosInformeFinal`) y se envían con el reporte. Sin formato, o si no se puede cargar, el reporte se
+ *   adjunta como antes.
  */
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
@@ -20,9 +23,11 @@ import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import Icono from '@/components/ui/Icono'
 import Selector from '@/components/ui/Selector'
 import ZonaCarga from '@/components/ui/ZonaCarga'
+import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi, esCancelacion } from '@/services/api/cliente'
-import { adjuntarReporte, listarReportes, obtenerAtencion } from '@/services/api/tercerizados'
+import { adjuntarReporte, listarReportes, obtenerAtencion, obtenerFormatoReporte } from '@/services/api/tercerizados'
 import type { Atencion, CategoriaDocumento, ReporteProveedor } from '@/types/tercerizados'
+import { borradorInicial, datosParaEnviar, validarDatos, type BorradorDatos, type ErroresDatos, type ValorBorrador } from '@/utils/datosInformeFinal'
 import { OPCIONES_CATEGORIA, textoAlcance } from '@/utils/estadosTercerizados'
 import { formatearFecha, formatearNumero, formatearTamanoArchivo } from '@/utils/formato'
 import { fechaLimaDeInstante, hoyLima } from '@/utils/instanteLima'
@@ -35,6 +40,7 @@ import {
   type DocumentoBorrador,
   type ErroresReporte,
 } from '@/utils/validacionTercerizados'
+import DatosInformeFinal from './DatosInformeFinal'
 import estilos from './Acciones.module.css'
 
 const ID_FECHA = 'reporte-fecha'
@@ -73,6 +79,13 @@ async function contarRevisiones(id: number): Promise<number | null> {
 }
 
 const ERRORES_VACIOS: ErroresReporte = { porDocumento: {} }
+const SIN_ERRORES_DATOS: ErroresDatos = {}
+
+/** Lleva el foco a un control; en un sí/no, a su primera opción. */
+function enfocar(id: string) {
+  const destino = document.getElementById(id) ?? document.getElementById(`${id}-si`)
+  destino?.focus()
+}
 
 function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExito }: Omit<DialogoReporteProps, 'abierto'>) {
   const finLima = atencion.fecha_hora_fin ? fechaLimaDeInstante(atencion.fecha_hora_fin) : null
@@ -88,10 +101,29 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
   const [aviso, setAviso] = useState<string | null>(null)
   const enCurso = useRef(false)
   const controlador = useRef<AbortController | null>(null)
+  // RF-SER-009: formato estándar del informe final y, si hay, datos de la última revisión con ese formato.
+  const consultaFormato = useConsulta(`formato-reporte-${atencion.id}`, (signal) => obtenerFormatoReporte(atencion.id, signal))
+  const respuestaFormato = consultaFormato.datos
+  const formato = respuestaFormato?.formato?.campos.length ? respuestaFormato.formato : null
+  const anteriores = formato ? respuestaFormato?.datos_anteriores ?? null : null
+  // Borrador propuesto al cargar el formato; el que se edita lo sustituye desde el primer cambio.
+  const borradorPropuesto = useMemo(() => (formato ? borradorInicial(formato, anteriores?.datos) : {}), [formato, anteriores])
+  const [borradorEditado, setBorradorEditado] = useState<BorradorDatos | null>(null)
+  const borrador = borradorEditado ?? borradorPropuesto
+  const datosTocados = borradorEditado !== null
+  const formatoCargando = consultaFormato.estado === 'cargando' || consultaFormato.estado === 'inactivo'
+  const formatoFallido = consultaFormato.estado === 'error' && respuestaFormato === null
 
+  const hayInforme = documentos.some((d) => d.categoria === 'InformeFinal')
+  const pideDatos = hayInforme && formato !== null
   const errores = intentado ? validarReporte({ fecha, documentos }, finLima) : ERRORES_VACIOS
+  const erroresDatos = intentado && pideDatos ? validarDatos(formato, borrador) : SIN_ERRORES_DATOS
   const totalBytes = documentos.reduce((suma, d) => suma + d.archivo.size, 0)
-  const hayCambios = documentos.length > 0 || resumen.trim() !== ''
+  const hayCambios = documentos.length > 0 || resumen.trim() !== '' || datosTocados
+
+  function cambiarDato(nombreCampo: string, valor: ValorBorrador) {
+    setBorradorEditado((actual) => ({ ...(actual ?? borradorPropuesto), [nombreCampo]: valor }))
+  }
   const opcionesAlcance = atencion.alcances.map((a) => ({ valor: String(a.id), texto: textoAlcance(a) }))
 
   function agregar(archivos: File[]) {
@@ -144,6 +176,15 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
       document.getElementById(destino)?.focus()
       return
     }
+    if (hayInforme && formatoCargando) {
+      setError({ titulo: 'Cargando el formato del informe', detalle: 'Espera un momento y vuelve a intentarlo.' })
+      return
+    }
+    const primerErrorDatos = pideDatos ? Object.keys(validarDatos(formato, borrador))[0] : undefined
+    if (primerErrorDatos) {
+      enfocar(primerErrorDatos)
+      return
+    }
     enCurso.current = true
     setEnviando(true)
     setError(null)
@@ -170,6 +211,7 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
             descripcion: d.descripcion,
             archivo: d.archivo,
           })),
+          datos_formato: pideDatos ? datosParaEnviar(formato, borrador) : undefined,
         },
         control.signal,
       )
@@ -207,7 +249,12 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
       } else if (fallo?.estado === 403) {
         setError({ titulo: 'Sin permiso', detalle: 'Tu usuario no puede adjuntar reportes. Si cambiaron tus roles, vuelve a ingresar.' })
       } else if (fallo && Object.keys(fallo.errores_campo).length > 0) {
-        setError({ titulo: 'Revisa los datos', detalle: 'El servidor rechazó algunos datos del reporte. Revisa la fecha y los documentos.' })
+        setError({
+          titulo: 'Revisa los datos',
+          detalle: pideDatos
+            ? 'El servidor rechazó algunos datos del reporte. Revisa la fecha, los documentos y los datos del informe final.'
+            : 'El servidor rechazó algunos datos del reporte. Revisa la fecha y los documentos.',
+        })
       } else {
         setError({
           titulo: fallo?.estado === 503 ? 'No se pudieron guardar los archivos' : 'No se pudo adjuntar el reporte',
@@ -347,6 +394,27 @@ function Formulario({ atencion, onCerrar, onActualizada, onReporteAdjunto, onExi
             })}
           </ul>
         </section>
+      )}
+
+      {hayInforme && formatoCargando && (
+        <p className={estilos.ayuda} role="status">
+          Cargando los datos que pide el formato del informe final…
+        </p>
+      )}
+      {hayInforme && formatoFallido && (
+        <AvisoEnLinea tono="advertencia" accion={{ texto: 'Reintentar', onClick: consultaFormato.reintentar }}>
+          No pudimos cargar el formato estándar del informe final. Reintenta, o adjunta el reporte sin sus datos.
+        </AvisoEnLinea>
+      )}
+      {pideDatos && (
+        <DatosInformeFinal
+          formato={formato}
+          borrador={borrador}
+          errores={erroresDatos}
+          revisionAnterior={anteriores?.revision ?? null}
+          deshabilitado={enviando}
+          onCambiar={cambiarDato}
+        />
       )}
 
       {enviando && (

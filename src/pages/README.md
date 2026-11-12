@@ -4,7 +4,7 @@ Pantallas: un componente por ruta, agrupadas por módulo.
 
 | Carpeta | Módulo | Prefijo de URL | Constantes de ruta |
 |---|---|---|---|
-| `acceso/`, `usuarios-roles/`, `repositorio/` | MOD-01 | `/ingreso`, `/usuarios-roles`, `/repositorio` | `RUTAS_CORE` |
+| `acceso/`, `usuarios-roles/`, `repositorio/`, `sincronizacion/` | MOD-01 | `/ingreso`, `/usuarios-roles`, `/repositorio`, `/pendientes` | `RUTAS_CORE` |
 | `inventario/` | MOD-02 | `/areas-verdes` | `RUTAS_INVENTARIO` |
 | `planificacion/` | MOD-03 | `/planificacion` | `RUTAS_PLANIFICACION` |
 | `incidencias/` | MOD-03 | `/incidencias` y `/mis-incidencias` | `RUTAS_INCIDENCIAS` y `RUTAS_MIS_INCIDENCIAS` |
@@ -21,6 +21,6 @@ Pantallas: un componente por ruta, agrupadas por módulo.
 
 **Nombres:** `AtencionesPage.tsx`, `DialogoCambioRol.tsx`, `Tercerizados.module.css`. Subcarpetas en kebab-case cuando el módulo crece (`servicios-tercerizados/maestros/`).
 
-`repositorio/` no tiene README propio: es una sola pantalla (`RepositorioPage.tsx`).
+`repositorio/` no tiene README propio: es una sola pantalla (`RepositorioPage.tsx`). Tampoco `sincronizacion/` (RF-T-012): `PendientesPage.tsx` y la banda `IndicadorSincronizacion.tsx` que pinta `LayoutOficina`; la lógica está en `src/sincronizacion/`.
 
 **Destino:** `modulos/<modulo>/paginas/`.

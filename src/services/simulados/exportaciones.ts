@@ -1,7 +1,7 @@
 /**
  * Datos simulados de RF-REP-009 (exportaciones), solo con `VITE_DATOS_SIMULADOS=true`.
  *
- * - Tipos exportables: los del Modelo BD; la matriz de incidencias, no disponible.
+ * - Tipos exportables: los del Modelo BD, todos disponibles (como en el back-end).
  * - Historial: un almacén en memoria con 8 reportes ficticios (se pierde al recargar).
  * - Generar: valida el periodo y crea un `ReporteGenerado` con filas calculadas a partir de los parámetros.
  * - Descargar: NO genera un PDF ni un Excel real en el navegador. Entrega un CSV de texto con la cabecera de
@@ -35,7 +35,8 @@ const TIPOS: TipoExportable[] = [
   {
     tipo: 'GestionOSG',
     nombre: 'Reporte general de gestión para la OSG',
-    descripcion: 'Indicadores del panel, cumplimiento de tercerizados, material vegetal y atenciones por espacio del mes',
+    descripcion:
+      'Indicadores del panel, cumplimiento de tercerizados, material vegetal y atenciones por espacio del mes',
     formatos: ['PDF', 'Excel'],
     filtros: ['mes'],
     disponible: true,
@@ -78,9 +79,9 @@ const TIPOS: TipoExportable[] = [
     descripcion: 'Incidencias del periodo por espacio, tipo y estado',
     formatos: ['PDF', 'Excel'],
     filtros: ['periodo'],
-    disponible: false,
-    motivo_no_disponible: 'El registro de incidencias aún no está disponible',
-    limite_filas: null,
+    disponible: true,
+    motivo_no_disponible: null,
+    limite_filas: { PDF: 5000 },
   },
 ]
 
@@ -110,7 +111,12 @@ function resumen(tipo: TipoExportable, parametros: ParametrosExportacion): strin
   return partes.filter(Boolean).join(' · ') || tipo.nombre
 }
 
-function crearReporte(id: number, solicitud: SolicitudExportacion, usuario: string, fechaHora: string): ReporteGenerado {
+function crearReporte(
+  id: number,
+  solicitud: SolicitudExportacion,
+  usuario: string,
+  fechaHora: string,
+): ReporteGenerado {
   const tipo = TIPOS.find((t) => t.tipo === solicitud.tipo) ?? TIPOS[0]
   const filas = filasDe(solicitud.parametros)
   const extension = solicitud.formato === 'PDF' ? 'pdf' : 'xlsx'
@@ -123,7 +129,11 @@ function crearReporte(id: number, solicitud: SolicitudExportacion, usuario: stri
     resumen_parametros: resumen(tipo, solicitud.parametros),
     usuario,
     fecha_hora: fechaHora,
-    archivo: { id: 5000 + id, nombre: `${tipo.tipo}-${id}.${extension}`, tamano_bytes: filas * (extension === 'pdf' ? 310 : 95) },
+    archivo: {
+      id: 5000 + id,
+      nombre: `${tipo.tipo}-${id}.${extension}`,
+      tamano_bytes: filas * (extension === 'pdf' ? 310 : 95),
+    },
     filas,
   }
 }
@@ -138,13 +148,24 @@ const SEMILLAS: [number, TipoReporte, FormatoSalida, ParametrosExportacion, numb
   [4, 'GestionOSG', 'Excel', { mes: mesAtras(2) }, 57],
   [5, 'DistribucionPersonal', 'Excel', { desde: haceDias(50), hasta: haceDias(44) }, 43],
   [6, 'GestionOSG', 'PDF', { mes: mesAtras(1) }, 28],
-  [7, 'ServicioTercerizado', 'Excel', { desde: haceDias(30), hasta: haceDias(1), tipo_servicio_id: 2, proveedor_id: 102 }, 9],
+  [
+    7,
+    'ServicioTercerizado',
+    'Excel',
+    { desde: haceDias(30), hasta: haceDias(1), tipo_servicio_id: 2, proveedor_id: 102 },
+    9,
+  ],
   [8, 'MaterialVegetal', 'PDF', { mes: mesAtras(1), area_verde_id: 3 }, 2],
 ]
 
 const almacen = crearAlmacenSimulado(
   SEMILLAS.map(([id, tipo, formato, parametros, dias], i) =>
-    crearReporte(id, { tipo, formato, parametros }, USUARIOS[i % USUARIOS.length], `${haceDias(dias)}T10:${String(10 + i).padStart(2, '0')}:00-05:00`),
+    crearReporte(
+      id,
+      { tipo, formato, parametros },
+      USUARIOS[i % USUARIOS.length],
+      `${haceDias(dias)}T10:${String(10 + i).padStart(2, '0')}:00-05:00`,
+    ),
   ),
 )
 
@@ -155,22 +176,25 @@ export function simularTiposExportables(signal?: AbortSignal) {
 
 /** `GET exportaciones/` simulado: del más reciente al más antiguo, 25 por página. */
 export function simularListarExportaciones(consulta: ConsultaExportaciones, signal?: AbortSignal) {
-  return responderSimulado<Paginado<ReporteGenerado>>(() => {
-    const todos =
-      escenarioSimulado() === 'vacio'
-        ? []
-        : almacen
-            .listar()
-            .filter((r) => !consulta.tipo || r.tipo === consulta.tipo)
-            .sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora) || b.id - a.id)
-    const pagina = Math.max(1, consulta.page ?? 1)
-    return {
-      count: todos.length,
-      next: pagina * POR_PAGINA < todos.length ? `?page=${pagina + 1}` : null,
-      previous: pagina > 1 ? `?page=${pagina - 1}` : null,
-      results: todos.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA),
-    }
-  }, { signal })
+  return responderSimulado<Paginado<ReporteGenerado>>(
+    () => {
+      const todos =
+        escenarioSimulado() === 'vacio'
+          ? []
+          : almacen
+              .listar()
+              .filter((r) => !consulta.tipo || r.tipo === consulta.tipo)
+              .sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora) || b.id - a.id)
+      const pagina = Math.max(1, consulta.page ?? 1)
+      return {
+        count: todos.length,
+        next: pagina * POR_PAGINA < todos.length ? `?page=${pagina + 1}` : null,
+        previous: pagina > 1 ? `?page=${pagina - 1}` : null,
+        results: todos.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA),
+      }
+    },
+    { signal },
+  )
 }
 
 /** Valida la solicitud como el backend y, sin escenario de error, guarda el reporte (exportado para las pruebas). */
@@ -180,14 +204,20 @@ export function generarSimulado(solicitud: SolicitudExportacion, ahora: Date = n
     throw new ErrorApi(400, 'tipo-no-disponible', tipo?.motivo_no_disponible ?? 'Elige un tipo de reporte exportable')
   }
   if (!tipo.formatos.includes(solicitud.formato)) {
-    throw new ErrorApi(400, 'formato-no-permitido', 'Este reporte no se puede exportar en ese formato', { formato: ['No permitido'] })
+    throw new ErrorApi(400, 'formato-no-permitido', 'Este reporte no se puede exportar en ese formato', {
+      formato: ['No permitido'],
+    })
   }
   const { mes, desde, hasta } = solicitud.parametros
   if (tipo.filtros.includes('mes') && !mes) {
-    throw new ErrorApi(400, 'parametro-invalido', 'Indica el mes del reporte', { mes: ['Indica el mes del reporte (mes), con el formato AAAA-MM'] })
+    throw new ErrorApi(400, 'parametro-invalido', 'Indica el mes del reporte', {
+      mes: ['Indica el mes del reporte (mes), con el formato AAAA-MM'],
+    })
   }
   if (tipo.filtros.includes('periodo') && (!desde || !hasta)) {
-    throw new ErrorApi(400, 'periodo-invalido', 'Indica el periodo del reporte', { desde: ['Indica la fecha de inicio del periodo (desde)'] })
+    throw new ErrorApi(400, 'periodo-invalido', 'Indica el periodo del reporte', {
+      desde: ['Indica la fecha de inicio del periodo (desde)'],
+    })
   }
   const escenario = escenarioSimulado()
   if (escenario === 'vacio') throw new ErrorApi(422, 'sin-datos', 'No hay datos para exportar con estos filtros')

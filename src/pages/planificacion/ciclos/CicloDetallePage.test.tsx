@@ -54,7 +54,7 @@ vi.mock('@/services/api/corte', async () => {
   }
 })
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
+vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'] }))
 vi.mock('@/utils/instanteLima', async (original) => ({ ...(await original<typeof import('@/utils/instanteLima')>()), hoyLima: () => '2026-11-02' }))
 vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
 

@@ -1,7 +1,13 @@
-import type { EntradaEncargo, UsuarioCampo } from '../types/operacionCampo'
+import type { EntradaEncargo } from '../types/operacionCampo'
+import { tiene, type Permisos } from '../config/permisosSesion'
 
-export function esJefeCampo(user: UsuarioCampo | null): boolean { return user?.rol === 'Jefe de sección' }
-export function puedeRegistrarCampo(user: UsuarioCampo | null): boolean { return esJefeCampo(user) || user?.rol === 'Capataz' }
+/** Gestionar cuadrillas, encargos y verificar actividades: `CAM.CUADRILLA.GESTIONAR` (AV-382, por permiso). */
+export function esJefeCampo(permisos: Permisos): boolean { return tiene(permisos, 'CAM.CUADRILLA.GESTIONAR') }
+/** Registrar en el parte de la propia cuadrilla: `CAM.PARTE.REGISTRAR`. */
+export function puedeRegistrarParte(permisos: Permisos): boolean { return tiene(permisos, 'CAM.PARTE.REGISTRAR') }
+/** Avanzar el estado de los encargos propios (capataz responsable): `PLA.ENCARGO.ACTUALIZAR_ESTADO`, como el backend. */
+export function puedeCambiarEstadoEncargo(permisos: Permisos): boolean { return tiene(permisos, 'PLA.ENCARGO.ACTUALIZAR_ESTADO') }
+export function puedeRegistrarCampo(permisos: Permisos): boolean { return esJefeCampo(permisos) || puedeRegistrarParte(permisos) }
 export { hoyLima } from './instanteLima'
 export function sumarDiasCampo(fecha: string, dias: number): string {
   const date = new Date(`${fecha}T12:00:00Z`)

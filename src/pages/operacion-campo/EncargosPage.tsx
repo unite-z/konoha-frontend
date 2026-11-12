@@ -8,10 +8,10 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
-import { useSesionCampo } from '@/sesion/ContextoSesionCampo'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
-import { esJefeCampo, hoyLima, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
+import { esJefeCampo, hoyLima, puedeCambiarEstadoEncargo, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
 import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
@@ -36,8 +36,8 @@ const transiciones: Record<EstadoEncargo, EstadoEncargo[]> = {
 
 export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])
-  const { usuario } = useSesionCampo()
-  const jefe = esJefeCampo(usuario)
+  const permisos = usePermisos()
+  const jefe = esJefeCampo(permisos)
   const [seguimiento, setSeguimiento] = useState<EncargoCampo | null>(null)
   const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
@@ -173,7 +173,7 @@ export default function EncargosPage() {
       {seguimiento && (
         <DialogoSeguimiento
           id={seguimiento.id}
-          puedeCambiar={usuario?.rol === 'Capataz'}
+          puedeCambiar={puedeCambiarEstadoEncargo(permisos)}
           puedeCancelar={jefe}
           onCerrar={() => setSeguimiento(null)}
           onGuardado={() => {

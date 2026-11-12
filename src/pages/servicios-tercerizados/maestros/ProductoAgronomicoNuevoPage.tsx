@@ -15,7 +15,7 @@ import { puedeAdministrarProductosAgronomicos } from '@/config/permisosMaestros'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { registrarProductoAgronomico } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { BORRADOR_PRODUCTO_VACIO, construirProducto, hayErrores, validarProducto, type BorradorProducto } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import CamposProductoAgronomico, { IDS_PRODUCTO, ORDEN_PRODUCTO } from './CamposProductoAgronomico'
@@ -27,7 +27,7 @@ const TITULO = 'Registrar producto agronómico'
 
 export default function ProductoAgronomicoNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.productosAgronomicos, { texto: TITULO }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorProducto>(BORRADOR_PRODUCTO_VACIO)
@@ -36,7 +36,7 @@ export default function ProductoAgronomicoNuevoPage() {
   const [fallo, setFallo] = useState<FalloRegistro | null>(null)
   const enCurso = useRef(false)
 
-  if (!puedeAdministrarProductosAgronomicos(rol)) {
+  if (!puedeAdministrarProductosAgronomicos(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección administra el catálogo"

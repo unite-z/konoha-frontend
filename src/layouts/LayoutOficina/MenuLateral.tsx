@@ -24,7 +24,7 @@ import { Link, useLocation } from 'react-router'
 import { PERMISOS, entradasMenu, puede } from '@/config/permisosCore'
 import Icono, { type NombreIconoFigma } from '@/components/ui/Icono'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
-import { MODULOS_MENU, activoEnMenu } from './entradasMenuLateral'
+import { MODULOS_MENU, activoEnMenu, hijosVisibles } from './entradasMenuLateral'
 import UsuarioMenu from './UsuarioMenu'
 import estilos from './MenuLateral.module.css'
 
@@ -187,7 +187,7 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
                         aria-hidden={!abierto || undefined}
                         inert={!abierto}
                       >
-                        {modulo.hijos.map((hijo) =>
+                        {hijosVisibles(modulo.hijos, sesion?.permisos ?? []).map((hijo) =>
                           hijo.ruta ? (
                             <li key={hijo.texto}>
                               <Entrada texto={hijo.texto} ruta={hijo.ruta} activa={activo.hijo === hijo} secundaria />

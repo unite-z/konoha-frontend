@@ -97,6 +97,7 @@ export const RUTAS_INVENTARIO = {
   ejemplares: `${BASE_INVENTARIO}/ejemplares`,
   campanasPoda: `${BASE_INVENTARIO}/campanas-poda`,
   nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
+  podaAltura: `${BASE_INVENTARIO}/poda-altura`,
 } as const
 
 export function rutaCampanaPoda(id: number): string {
@@ -142,6 +143,7 @@ export const MIGAS_INVENTARIO = {
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
   campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
+  podaAltura: { texto: 'Poda a demanda', ruta: RUTAS_INVENTARIO.podaAltura },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
@@ -320,7 +322,9 @@ export const RUTAS_CORE = {
   usuarios: `${BASE_USUARIOS}/usuarios`, // RF-T-002 y RF-T-003
   accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
   importacion: `${BASE_USUARIOS}/importacion`, // RF-T-009
+  rolesPermisos: `${BASE_USUARIOS}/roles`, // AV-381: solo el superadministrador
   repositorio: '/repositorio', // RF-T-010
+  pendientes: '/pendientes', // RF-T-012: lo que falta por sincronizar desde este dispositivo
 } as const
 
 /** Prefijo de «Usuarios y roles» (menú). */

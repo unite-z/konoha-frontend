@@ -133,4 +133,16 @@ de hasta 1600 píxeles en su lado mayor con calidad 0,8. La subida conserva el
 `Idempotency-Key` para reintentos. El backend comprueba que el capataz sea dueño
 de la actividad al adjuntar, listar o descargar; otros roles conservan sus
 permisos de consulta. Las fotografías siguen siendo opcionales para cerrar el
-parte. La integración sin conexión corresponde a RF-T-012.
+parte.
+
+### Sin conexión (RF-T-012, AV-226)
+
+- `actividadSinConexion.ts`: sin red, «Registrar actividad» y «Registrar poda menor» dejan la actividad en la cola común
+  (`campo.actividad`). Si el parte de la cuadrilla y fecha ya se descargó, la actividad lleva su `parte_id`; si no, se
+  encola también su apertura (`campo.parte`) y todas las actividades del día cuelgan de ella. Al volver la red, si otro
+  ya abrió el parte (409), se usa ese.
+- La foto de una poda registrada sin red se encola colgando de la poda (`Adjuntos` con `registroPendiente`), y las de
+  actividades ya enviadas, como `core.adjunto` con su `registro_id`.
+- Los insumos de una actividad que ya está en el servidor se encolan como `campo.material` (POST idempotente).
+- Los listados (`useListadoCampo`: encargos, actividades) y los catálogos del parte se leen sin red con `conCache`.
+- Pendiente: insumos y participantes de una actividad que todavía no se ha enviado (se añaden al sincronizar).

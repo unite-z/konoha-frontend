@@ -20,14 +20,14 @@ import Paginacion from '@/components/ui/Paginacion'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionEstimacion } from '@/router/rutasApp'
 import { listarEstimaciones } from '@/services/api/estimacionIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SolicitudEstimacion, SugerenciaEstimacion } from '@/types/estimacionIa'
 import type { EstadoSugerencia } from '@/types/ia'
 import { estadoEstimacion, resumenEstimacion } from '@/utils/estimacionIa'
@@ -73,8 +73,8 @@ export default function EstimacionRecursosPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
 
   const { filtros, establecer } = useFiltrosUrl({ estado: 'todas', page: '1', actividad_id: '' })

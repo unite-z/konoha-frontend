@@ -115,6 +115,7 @@ export default function MapaVectorialLocal({
 
   return (
     <div className={estilos.mapaLocal}>
+      {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- elegir un punto con puntero es opcional: la ubicación también se escribe en los campos del formulario */}
       <svg
         ref={svgRef}
         className={`${estilos.mapaLocalSvg} ${modo === 'mover' ? estilos.modoMover : estilos.modoSeleccionar}`}

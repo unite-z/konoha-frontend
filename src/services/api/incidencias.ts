@@ -106,16 +106,18 @@ export async function obtenerCatalogosRegistro(signal?: AbortSignal) {
 
 /**
  * `POST incidencias/` (AV-274): registra la incidencia en nombre de otro; con foto, en multipart (`datos` en JSON y
- * `foto`). Devuelve la incidencia Registrada.
+ * `foto`). Devuelve la incidencia Registrada. `clave` va en `Idempotency-Key`: reenviar el mismo reporte desde la cola
+ * sin conexión (RF-T-012) devuelve el ya registrado en lugar de duplicarlo.
  */
-export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | null) {
+export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | null, clave?: string) {
+  const cabeceras = clave ? { 'Idempotency-Key': clave } : undefined
   if (foto) {
     const formulario = new FormData()
     formulario.append('datos', JSON.stringify(cuerpo))
     formulario.append('foto', foto)
-    return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', formulario })
+    return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', formulario, cabeceras })
   }
-  return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo })
+  return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo, cabeceras })
 }
 
 /** `GET incidencias/mias/` (AV-274 y AV-279): las incidencias que reportó el usuario, de la más reciente a la más antigua. */

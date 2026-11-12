@@ -7,7 +7,7 @@
  * (con los datos que la sustentan, criterio 1) de «Tu decisión». El bloque de contexto informa de la suficiencia y
  * de lo que faltó (criterio 3).
  *
- * Solo el jefe de sección valida o rechaza (ROLES_VALIDAR_IA); los demás ven la propuesta sin acciones.
+ * Solo el jefe de sección valida o rechaza (PERMISO_VALIDAR_IA); los demás ven la propuesta sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
@@ -23,13 +23,13 @@ import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
-import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { obtenerPriorizacion, rechazarPriorizacion, validarPriorizacion } from '@/services/api/priorizacionIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { PrioridadAtencion, SugerenciaPriorizacion } from '@/types/priorizacionIa'
 import { insigniaSugerencia } from '@/utils/estados'
 import { formatearFechaHora, formatearNumero } from '@/utils/formato'
@@ -76,8 +76,8 @@ export default function RevisionPriorizacionPage() {
   const location = useLocation()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaBandeja = `${RUTAS.priorizacionIa}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeValidar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
+  const permisos = usePermisos()
+  const puedeValidar = puede(permisos, PERMISO_VALIDAR_IA)
 
   usePaginaActual(`Propuesta de prioridades n.º ${id}`, [
     MIGAS.reportesIndicadores,

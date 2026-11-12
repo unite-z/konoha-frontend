@@ -21,7 +21,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarPlagas, marcarAtencionEspecial } from '@/services/api/maestrosTercerizados'
 import { listarEjemplares, listarTodo } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { Ejemplar } from '@/types/tercerizados'
 import {
   BORRADOR_ESPECIAL_VACIO,
@@ -44,7 +44,7 @@ const ORDEN: (keyof ErroresEspecial)[] = ['ejemplar', 'plaga', 'aplicaciones']
 
 export default function MarcarEjemplarPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Marcar ejemplar' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorEspecial>(BORRADOR_ESPECIAL_VACIO)
@@ -60,7 +60,7 @@ export default function MarcarEjemplarPage() {
     ...(plagas.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.nombre })),
   ]
 
-  if (!puedeMarcarAtencionEspecial(rol)) {
+  if (!puedeMarcarAtencionEspecial(permisos)) {
     return (
       <EstadoVacio
         titulo="Tu usuario no tiene acceso a este módulo"

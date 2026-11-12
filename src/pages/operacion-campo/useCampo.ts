@@ -4,6 +4,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
 import { campoApi, type ParametrosCampo } from '@/services/api/operacionCampo'
 import type { PaginaCampo } from '@/types/operacionCampo'
+import { conCache } from '@/sincronizacion/datosDescargados'
 
 export function useListadoCampo<T>(recurso: string, filtros: string[]) {
   const [url, setUrl] = useSearchParams()
@@ -12,7 +13,8 @@ export function useListadoCampo<T>(recurso: string, filtros: string[]) {
   for (const key of ['q', ...filtros]) params[key] = url.get(key) ?? ''
   const consulta = useConsulta(
     JSON.stringify([recurso, params]),
-    (signal) => campoApi<PaginaCampo<T>>(`${recurso}/`, { parametros: params, signal }),
+    // Sin red, la última respuesta de este mismo listado (RF-T-012: consultar los encargos descargados).
+    (signal) => conCache(`listado-${JSON.stringify([recurso, params])}`, () => campoApi<PaginaCampo<T>>(`${recurso}/`, { parametros: params, signal })),
     (p) => p.count === 0,
   )
   function filtrar(cambios: ParametrosCampo) {
