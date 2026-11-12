@@ -1,15 +1,16 @@
 /**
- * Cliente único de la API REST del MOD-06 (ADR-001: API REST desacoplada con contrato OpenAPI).
+ * Cliente HTTP único de la aplicación (AV-354). Es el único sitio que llama a `fetch`: construye la URL, aplica la
+ * sesión de MOD-01 e interpreta los errores. Cada módulo lo usa con su propia base (`base`) mediante un envoltorio fino:
+ * `solicitar` (MOD-06, `/api/v1`), `solicitarCore` (MOD-01), `solicitarTercerizados` (MOD-05), `solicitarPlanificacion`
+ * (MOD-03), `solicitarReportesGestion` y `campoApi` (MOD-04).
  *
- * Es el único punto que conoce la URL base, serializa los parámetros e interpreta los errores:
- * - errores de dominio `{codigo, detalle}` (400, 404, 409, 415, 422, 503);
- * - errores de validación de DRF: `{campo: [mensajes]}`;
- * - errores propios de DRF: `{detail: "..."}` (por ejemplo, 403).
+ * Errores aceptados (ADR 0004 sigue «propuesto»; durante la transición se entienden todos los formatos):
+ * - errores de dominio `{codigo, detalle}` (con `errores: {campo: [mensajes]}` opcional);
+ * - errores propios de DRF y de la autenticación: `{detail: "..."}` (por ejemplo, 403);
+ * - errores de validación: `{campo: [mensajes]}`, con objetos anidados.
  *
  * Sesión de MOD-01 (AV-327): la cookie `HttpOnly` viaja sola, las escrituras llevan el token CSRF y un 401 avisa a la
- * sesión para volver al ingreso.
- *
- * Las páginas nunca llaman a `fetch` directamente: usan `reportes.ts` e `ia.ts`.
+ * sesión para volver al ingreso. Un 403 no cierra la sesión: llega a la página como `ErrorApi` con `estado` 403.
  */
 
 export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '/api/v1'
@@ -52,7 +53,7 @@ export function aErrorApi(error: unknown): ErrorApi {
   return new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
 }
 
-type ValorParametro = string | number | boolean | null | undefined
+export type ValorParametro = string | number | boolean | null | undefined
 
 export interface OpcionesSolicitud {
   metodo?: 'GET' | 'POST'
@@ -78,23 +79,15 @@ export function avisarSesionPerdida(): void {
 }
 
 /** Valor de una cookie legible por scripts (solo `XSRF-TOKEN`; la de sesión es `HttpOnly`). */
-export function leerCookie(nombre: string, cookies: string = typeof document === 'undefined' ? '' : document.cookie): string | null {
+export function leerCookie(
+  nombre: string,
+  cookies: string = typeof document === 'undefined' ? '' : document.cookie,
+): string | null {
   for (const parte of cookies.split(';')) {
     const [clave, ...valor] = parte.trim().split('=')
     if (clave === nombre) return decodeURIComponent(valor.join('='))
   }
   return null
-}
-
-/** Construye la URL relativa a `API_BASE_URL` con los parámetros no vacíos. */
-function construirUrl(ruta: string, parametros?: Record<string, ValorParametro>): string {
-  const consulta = new URLSearchParams()
-  for (const [clave, valor] of Object.entries(parametros ?? {})) {
-    if (valor === null || valor === undefined || valor === '') continue
-    consulta.set(clave, String(valor))
-  }
-  const texto = consulta.toString()
-  return `${API_BASE_URL}/${ruta}${texto ? `?${texto}` : ''}`
 }
 
 /** Interpreta el cuerpo de una respuesta de error (también lo usa el cliente de MOD-05). */
@@ -135,69 +128,157 @@ function aplanarMensajes(valor: unknown): string[] {
   return []
 }
 
-/**
- * Hace una petición a la API y devuelve el cuerpo JSON tipado.
- * Lanza `ErrorApi` si la respuesta no es 2xx o no hay conexión, y `DOMException` (AbortError) si se cancela.
- */
-export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Promise<T> {
-  const respuesta = await enviar(ruta, opciones, 'application/json')
-
-  let datos: unknown = null
-  const texto = await respuesta.text()
-  if (texto) {
-    try {
-      datos = JSON.parse(texto)
-    } catch {
-      datos = null
-    }
-  }
-
-  if (!respuesta.ok) throw interpretarError(respuesta.status, datos)
-  return datos as T
+/** Opciones del cliente único; los envoltorios de cada módulo fijan la `base` y los modos que necesitan. */
+export interface OpcionesHttp {
+  /** Base de la API; por defecto la de MOD-06. */
+  base?: string
+  metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  /** Parámetros de consulta; se omiten los vacíos (`null`, `undefined` o cadena vacía). */
+  parametros?: Record<string, ValorParametro>
+  /** Cuerpo JSON. */
+  cuerpo?: unknown
+  /** Cuerpo multipart. Excluye `cuerpo`; el navegador pone el `boundary`. */
+  formulario?: FormData
+  /** Cabeceras extra, como `Idempotency-Key`. */
+  cabeceras?: Record<string, string>
+  signal?: AbortSignal
+  acepta?: string
+  /** Pide `cache: 'no-store'` (respuestas privadas). */
+  sinCache?: boolean
+  /** `false` si un 401 no debe avisar a la sesión (por ejemplo, el propio ingreso). */
+  avisarSesion?: boolean
+  /**
+   * Qué hacer con un cuerpo 2xx que no es JSON: `tolerante` lo da por `null`; `estricto` falla si no es JSON (vacío =
+   * `null`); `obligatorio` falla también si está vacío.
+   */
+  cuerpoOk?: 'tolerante' | 'estricto' | 'obligatorio'
 }
 
-/** Hace la petición con la sesión (cookie y token CSRF). Lanza `ErrorApi` sin conexión y avisa del 401. */
-async function enviar(ruta: string, opciones: OpcionesSolicitud, acepta: string): Promise<Response> {
-  const { metodo = 'GET', parametros, cuerpo, formulario, signal } = opciones
-  const token = metodo === 'GET' ? null : leerCookie('XSRF-TOKEN')
-  const json = formulario === undefined && cuerpo !== undefined
+/** Cuerpo completo de cada error, para los campos extra de MOD-01 (por ejemplo, `cuenta_id`). */
+const cuerpos = new WeakMap<ErrorApi, Record<string, unknown>>()
+
+/** Campos del cuerpo del error devuelto por la API (vacío si no hubo cuerpo). */
+export function datosDeError(error: unknown): Record<string, unknown> {
+  return error instanceof ErrorApi ? (cuerpos.get(error) ?? {}) : {}
+}
+
+function errorDe(estado: number, datos: unknown): ErrorApi {
+  const error = interpretarError(estado, datos)
+  if (datos && typeof datos === 'object') cuerpos.set(error, datos as Record<string, unknown>)
+  return error
+}
+
+/** Construye la URL de la ruta relativa a `base`, con los parámetros no vacíos. */
+export function construirUrlHttp(
+  ruta: string,
+  parametros?: Record<string, ValorParametro>,
+  base: string = API_BASE_URL,
+): string {
+  const consulta = new URLSearchParams()
+  for (const [clave, valor] of Object.entries(parametros ?? {})) {
+    if (valor === null || valor === undefined || valor === '') continue
+    consulta.set(clave, String(valor))
+  }
+  const texto = consulta.toString()
+  return `${base.replace(/\/+$/, '')}/${ruta.replace(/^\/+/, '')}${texto ? `?${texto}` : ''}`
+}
+
+/**
+ * Hace la petición con la sesión (cookie y token CSRF) y devuelve la respuesta sin interpretarla. Lanza `ErrorApi`
+ * sin conexión, `DOMException` (AbortError) si se cancela, y avisa del 401.
+ */
+export async function enviarHttp(ruta: string, opciones: OpcionesHttp = {}): Promise<Response> {
+  const { metodo = 'GET', parametros, cuerpo, formulario, signal, base, acepta = 'application/json' } = opciones
+  const cabeceras = new Headers({ Accept: acepta })
+  if (metodo !== 'GET') {
+    const token = leerCookie('XSRF-TOKEN')
+    if (token) cabeceras.set('X-XSRF-TOKEN', token)
+  }
+  if (cuerpo !== undefined && formulario === undefined) cabeceras.set('Content-Type', 'application/json')
+  for (const [nombre, valor] of Object.entries(opciones.cabeceras ?? {})) cabeceras.set(nombre, valor)
   let respuesta: Response
   try {
-    respuesta = await fetch(construirUrl(ruta, parametros), {
+    respuesta = await fetch(construirUrlHttp(ruta, parametros, base), {
       method: metodo,
-      headers: {
-        Accept: acepta,
-        ...(json ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
-      },
+      headers: cabeceras,
       credentials: 'same-origin',
-      body: formulario ?? (json ? JSON.stringify(cuerpo) : undefined),
+      ...(opciones.sinCache ? { cache: 'no-store' as const } : {}),
+      body: formulario ?? (cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined),
       signal,
     })
   } catch (error) {
     if (esCancelacion(error)) throw error
     throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
   }
-  if (respuesta.status === 401) avisarSesionPerdida()
+  if (respuesta.status === 401 && opciones.avisarSesion !== false) avisarSesionPerdida()
   return respuesta
+}
+
+/** Lee el cuerpo como JSON; `legible` es `false` si estaba vacío o no era JSON. */
+function leerJson(texto: string): { datos: unknown; legible: boolean } {
+  if (!texto) return { datos: null, legible: false }
+  try {
+    return { datos: JSON.parse(texto), legible: true }
+  } catch {
+    return { datos: null, legible: false }
+  }
+}
+
+/**
+ * Petición JSON tipada. Lanza `ErrorApi` si la respuesta no es 2xx o no hay conexión, y `DOMException` (AbortError)
+ * si se cancela.
+ */
+export async function solicitarHttp<T>(ruta: string, opciones: OpcionesHttp = {}): Promise<T> {
+  const respuesta = await enviarHttp(ruta, opciones)
+  const texto = await respuesta.text()
+  const { datos, legible } = leerJson(texto)
+  if (!respuesta.ok) throw errorDe(respuesta.status, datos)
+  const modo = opciones.cuerpoOk ?? 'tolerante'
+  if (!legible && (modo === 'obligatorio' || (modo === 'estricto' && texto !== '')))
+    throw interpretarError(respuesta.status, null)
+  return datos as T
+}
+
+/** Descarga un archivo con la sesión: el blob y las cabeceras (para `Content-Disposition`). */
+export async function descargarHttp(
+  ruta: string,
+  opciones: OpcionesHttp = {},
+): Promise<{ blob: Blob; cabeceras: Headers }> {
+  const respuesta = await enviarHttp(ruta, { ...opciones, acepta: '*/*' })
+  if (!respuesta.ok) throw errorDe(respuesta.status, leerJson(await respuesta.text()).datos)
+  try {
+    return { blob: await respuesta.blob(), cabeceras: respuesta.headers }
+  } catch (error) {
+    if (esCancelacion(error)) throw error
+    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
+  }
+}
+
+/** Petición a la API de MOD-06 (`/api/v1`). Envoltorio del cliente único. */
+export function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Promise<T> {
+  return solicitarHttp<T>(ruta, opciones)
 }
 
 /** Descarga un archivo protegido (por ejemplo, una fotografía) como `Blob`, con la sesión. */
 export async function solicitarBlob(ruta: string, signal?: AbortSignal): Promise<Blob> {
-  const respuesta = await enviar(ruta, { signal }, '*/*')
-  if (!respuesta.ok) {
-    let datos: unknown = null
-    try {
-      datos = JSON.parse(await respuesta.text())
-    } catch {
-      datos = null
-    }
-    throw interpretarError(respuesta.status, datos)
-  }
+  return (await descargarHttp(ruta, { signal })).blob
+}
+
+/** Tiempo antes de liberar el blob: revocarlo de inmediato puede cancelar la descarga. */
+const REVOCAR_DESCARGA_MS = 60_000
+
+/** Entrega un archivo al navegador con un enlace temporal y libera el blob después. */
+export function guardarArchivo(blob: Blob, nombre: string): void {
+  const url = URL.createObjectURL(blob)
   try {
-    return await respuesta.blob()
-  } catch (error) {
-    if (esCancelacion(error)) throw error
-    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = nombre
+    enlace.rel = 'noopener'
+    document.body.append(enlace)
+    enlace.click()
+    enlace.remove()
+  } finally {
+    window.setTimeout(() => URL.revokeObjectURL(url), REVOCAR_DESCARGA_MS)
   }
 }

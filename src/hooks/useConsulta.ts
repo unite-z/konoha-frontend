@@ -8,9 +8,14 @@
  * - `vacio` se decide con la función `esVacio` (en los reportes, `sin_datos` del back-end).
  *
  * La consulta se repite cuando cambia `clave` o al llamar a `reintentar`. Con `clave` nula no consulta.
+ *
+ * Sin conexión (RF-T-012): cada respuesta correcta se guarda en el dispositivo con su `clave` y, si después no hay
+ * red, se devuelve esa copia (`conCache`, por usuario y borrada al cerrar sesión). Así cualquier pantalla abre con lo
+ * último que se vio, también tras recargar sin red. Los demás errores (401, 403, 404…) se muestran igual.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { aErrorApi, esCancelacion, type ErrorApi } from '../services/api/cliente'
+import { conCache } from '../sincronizacion/datosDescargados'
 
 export type EstadoConsulta = 'inactivo' | 'cargando' | 'exito' | 'vacio' | 'error'
 
@@ -58,8 +63,7 @@ export function useConsulta<T>(
     const controlador = new AbortController()
     const temporizador = window.setTimeout(() => setCargaVisiblePara(solicitud), UMBRAL_CARGA_MS)
 
-    consultarRef
-      .current(controlador.signal)
+    conCache(`consulta:${clave}`, () => consultarRef.current(controlador.signal))
       .then((datos) => {
         if (controlador.signal.aborted) return
         const vacio = esVacioRef.current?.(datos) ?? false
@@ -80,7 +84,7 @@ export function useConsulta<T>(
       controlador.abort()
       window.clearTimeout(temporizador)
     }
-  }, [solicitud])
+  }, [solicitud, clave])
 
   const reintentar = useCallback(() => setIntento((n) => n + 1), [])
 

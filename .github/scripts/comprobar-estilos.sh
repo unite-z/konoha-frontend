@@ -6,10 +6,11 @@
 #   3. solo en las líneas añadidas del PR: medidas en px y style={...} (salvo valores
 #      calculados marcados con el comentario estilo-calculado);
 #   4. en todo src/: imports con más de un ../ (usa el alias @/, AV-333);
-#   5. en las carpetas ya migradas al sistema de diseño (AV-351): nada de primitivos de color (--green-*,
+#   5. en todo src/ (AV-351): nada de primitivos de color (--green-*,
 #      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
-# Desde AV-268 todas las carpetas de pages/ están migradas, también planificacion (MOD-03).
+#   6. solo en las líneas añadidas del PR (AV-246): new Date(, toLocaleDateString y toLocaleString fuera de
+#      utils/instanteLima.ts (las fechas van en America/Lima).
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -52,10 +53,8 @@ while IFS=: read -r fichero linea _; do
 done < <(git grep -nE "(from|import|import\(|vi\.mock\(|importActual[^(]*\()[[:space:]]*['\"](\.\./){2,}" -- 'src/*.ts' 'src/*.tsx' \
   | sin_comentarios)
 
-# --- Sistema de diseño en las carpetas migradas (AV-351) --------------------------------------------------
-migradas=(src/components/ui src/components/core src/components/reportes-indicadores src/components/tercerizados
-  src/layouts src/pages/servicios-tercerizados src/pages/reportes-indicadores src/pages/acceso
-  src/pages/usuarios-roles src/pages/repositorio src/pages/operacion-campo src/pages/inventario src/pages/planificacion)
+# --- Sistema de diseño en todo src/ (AV-351) ---------------------------------------------------------------
+migradas=(src)
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/styles/tokens.css (DESIGN.md, 3.1)."
@@ -69,7 +68,7 @@ while IFS=: read -r fichero linea _; do
 done < <(git grep -nE '<(button|input|select|textarea|dialog|table)([[:space:]>]|$)' -- "${migradas[@]/%//*.tsx}" \
   ':!src/components/ui' ':!src/layouts' ':!*.test.tsx' | sin_comentarios)
 
-# Variables definidas en cualquier CSS o como propiedad calculada en TSX; usadas en las carpetas migradas.
+# Variables definidas en cualquier CSS o como propiedad calculada en TSX; usadas en todo src/.
 definidas=$(git grep -hoE -- '--[a-zA-Z0-9-]+[[:space:]]*:' -- 'src/*.css' | sed -E 's/[[:space:]]*:$//'
   git grep -hoE -- "['\"]--[a-zA-Z0-9-]+['\"]" -- 'src/*.tsx' | tr -d "'\"")
 while IFS=: read -r fichero linea uso; do
@@ -95,6 +94,16 @@ done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.css' 'src/*.tsx'
   | awk '/^\+\+\+ b\// { f = substr($0, 7); next }
          /^@@/ { split($3, a, ","); n = substr(a[1], 2) + 0; next }
          /^\+/ { print f "\t" n "\t" substr($0, 2); n++ }')
+
+# Fechas en la hora de Lima (AV-246): solo en las líneas añadidas, salvo instanteLima.ts y las pruebas.
+# Se admite un caso justificado con el comentario fecha-lima-ok.
+while IFS=$'\t' read -r fichero linea texto; do
+  [[ "$texto" =~ ^[[:space:]]*(//|\*|/\*) || "$texto" == *fecha-lima-ok* ]] && continue
+  falla "$fichero" "$linea" "Fecha sin la hora de Lima: usa utils/instanteLima.ts (hoyLima, ahoraLimaLocal, fechaLimaDeInstante, instanteALocalLima, aInstanteLima, esFuturo) o formatearFecha y formatearFechaHora de utils/formato.ts. Si el uso es correcto, márcalo con el comentario fecha-lima-ok."
+done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.ts' 'src/*.tsx' ':!src/utils/instanteLima.ts' ':!*.test.ts' ':!*.test.tsx' \
+  | awk '/^\+\+\+ b\// { f = substr($0, 7); next }
+         /^@@/ { split($3, a, ","); n = substr(a[1], 2) + 0; next }
+         /^\+/ { t = substr($0, 2); if (t ~ /new Date\(|toLocaleDateString|toLocaleString/) print f "\t" n "\t" t; n++ }')
 
 if (( errores == 0 )); then echo "Estilos correctos."; fi
 exit "$errores"

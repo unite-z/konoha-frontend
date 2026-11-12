@@ -10,6 +10,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
 import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
+import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
 import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
 import ExtraccionReporteProveedorPage from '../pages/reportes-indicadores/asistencia-ia/ExtraccionReporteProveedorPage'
 import RevisionExtraccionPage from '../pages/reportes-indicadores/asistencia-ia/RevisionExtraccionPage'
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
   },
   {
     element: <RutaProtegida />,
+    errorElement: <ErrorCargaPantalla />, // AV-367
     children: [
       {
         element: <LayoutOficina />,

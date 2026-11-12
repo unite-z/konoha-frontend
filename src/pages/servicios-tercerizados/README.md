@@ -3,14 +3,14 @@
 Atenciones tercerizadas y sus maestros. En la raíz están la bandeja y la ficha (`AtencionesPage`, `AtencionDetallePage`). Subcarpetas:
 
 - `nueva/`: asistente de registro de una atención (`NuevaAtencionPage` y sus pasos);
-- `acciones/`: diálogos que cambian el estado de una atención (orden de compra, inicio y fin, informe, origen, acuerdo);
+- `acciones/`: diálogos que cambian el estado de una atención (orden de compra, inicio y fin, informe, origen, acuerdo). Al adjuntar el informe, `DatosInformeFinal` pide los datos del formato estándar del tipo de servicio (RF-SER-009) cuando hay un «Informe final»;
 - `maestros/`: proveedores, contratos y control fitosanitario (`MarcarEjemplarPage`, RF-INV-011).
 
 | Qué | Dónde |
 |---|---|
 | Servicios | `services/api/tercerizados.ts`, `maestrosTercerizados.ts`, `clienteTercerizados.ts` |
 | Tipos | `types/tercerizados.ts`, `types/maestrosTercerizados.ts` |
-| Lógica pura | `utils/estadosTercerizados.ts`, `nuevaAtencion.ts`, `filtrosBandeja.ts`, `validacionTercerizados.ts`, `validacionMaestros.ts` |
+| Lógica pura | `utils/estadosTercerizados.ts`, `nuevaAtencion.ts`, `filtrosBandeja.ts`, `validacionTercerizados.ts`, `validacionMaestros.ts`, `datosInformeFinal.ts` |
 | Permisos | `config/permisosTercerizados.ts`, `config/permisosMaestros.ts` |
 | Componentes propios | `components/tercerizados/LineaEstados.tsx` |
 | Rutas | `RUTAS_TERCERIZADOS`, `rutaDetalleAtencion(id)` (prefijo `/servicios-tercerizados`) |
