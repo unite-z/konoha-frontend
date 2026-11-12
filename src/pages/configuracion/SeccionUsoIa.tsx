@@ -6,7 +6,8 @@ import { useState } from 'react'
 import BarraAvance from '@/design-system/BarraAvance'
 import EstadoError from '@/design-system/EstadoError'
 import Estado from '@/design-system/Estado'
-import FiltroMes from '@/design-system/FiltroMes'
+import { GrupoChips } from '@/design-system/ChipsFiltro'
+import FiltroPeriodo from '@/design-system/FiltroPeriodo'
 import TablaDatos, { type ColumnaTabla } from '@/design-system/TablaDatos'
 import Tarjeta from '@/design-system/Tarjeta'
 import TarjetaIndicador, { FilaTarjetas } from '@/design-system/TarjetaIndicador'
@@ -39,6 +40,24 @@ function segundos(ms: number | null): string {
 
 function miles(n: number | null): string {
   return n === null ? '—' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+const MESES = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.']
+
+/** Este mes y los dos anteriores, en hora de Lima, para los atajos «Ver mes». */
+export function mesesRecientes(hoy: string): { valor: string; texto: string; desde: string; hasta: string }[] {
+  const [a, m] = hoy.split('-').map(Number)
+  return [0, 1, 2].map((atras) => {
+    const total = a * 12 + (m - 1) - atras
+    const mes = `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`
+    const [desde, hasta] = rangoDelMes(mes)
+    return {
+      valor: mes,
+      texto: atras === 0 ? 'Este mes' : `${MESES[total % 12]} ${Math.floor(total / 12)}`,
+      desde,
+      hasta,
+    }
+  })
 }
 
 function rangoDelMes(mes: string): [string, string] {
@@ -88,9 +107,15 @@ const COLUMNAS_HISTORIAL: ColumnaTabla<FilaHistorial>[] = [
 ]
 
 export default function SeccionUsoIa({ mesInicial }: { mesInicial?: string }) {
-  const [mes, setMes] = useState(() => mesInicial ?? hoyLima().slice(0, 7))
-  const [desde, hasta] = rangoDelMes(mes)
-  const consulta = useConsulta(`uso-ia|${mes}`, (signal) => obtenerUsoIa(desde, hasta, signal))
+  const hoy = hoyLima()
+  const meses = mesesRecientes(hoy)
+  const [periodo, setPeriodo] = useState(() => {
+    const [desde, hasta] = rangoDelMes(mesInicial ?? meses[0].valor)
+    return { desde, hasta }
+  })
+  const { desde, hasta } = periodo
+  const mesElegido = meses.find((x) => x.desde === desde && x.hasta === hasta)?.valor ?? ''
+  const consulta = useConsulta(`uso-ia|${desde}|${hasta}`, (signal) => obtenerUsoIa(desde, hasta, signal))
   const uso = consulta.datos
   const t = uso?.totales
 
@@ -100,7 +125,25 @@ export default function SeccionUsoIa({ mesInicial }: { mesInicial?: string }) {
       descripcion="Cada llamada de los siete asistentes: cuánto cuesta, cuánto tarda y cuándo falla."
     >
       <div className={estilos.campos}>
-        <FiltroMes mes={mes} onAplicar={setMes} idBase="uso-ia" />
+        <div className={estilos.mesesRapidos}>
+          <span className={estilos.rotulo}>Ver mes</span>
+          <GrupoChips
+            etiqueta="Ver mes"
+            opciones={meses.map((x) => ({ valor: x.valor, texto: x.texto }))}
+            valor={mesElegido}
+            onCambiar={(valor) => {
+              const elegido = meses.find((x) => x.valor === valor)
+              if (elegido) setPeriodo({ desde: elegido.desde, hasta: elegido.hasta })
+            }}
+          />
+        </div>
+        <FiltroPeriodo
+          idBase="uso-ia"
+          desde={desde}
+          hasta={hasta}
+          cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
+          onAplicar={setPeriodo}
+        />
         {consulta.estado === 'error' && (
           <EstadoError
             titulo="No pudimos cargar el uso de la IA"
@@ -110,7 +153,7 @@ export default function SeccionUsoIa({ mesInicial }: { mesInicial?: string }) {
         )}
         {t && uso && (
           <>
-            <FilaTarjetas etiqueta="Resumen del mes">
+            <FilaTarjetas etiqueta="Resumen del periodo">
               <TarjetaIndicador
                 etiqueta="Coste"
                 valor={usd(t.coste_usd)}

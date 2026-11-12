@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UsoIa } from '@/types/ia'
-import SeccionUsoIa, { usd } from './SeccionUsoIa'
+import SeccionUsoIa, { mesesRecientes, usd } from './SeccionUsoIa'
 
 const api = vi.hoisted(() => ({ obtenerUsoIa: vi.fn() }))
 vi.mock('@/services/api/usoIa', () => api)
@@ -86,5 +86,21 @@ describe('Configuración · Uso y costes de la IA (AV-396)', () => {
     expect(usd(0.0042)).toBe('0,0042 US$')
     expect(usd(1.5)).toBe('1,50 US$')
     expect(usd(null)).toBe('—')
+  })
+
+  it('ofrece este mes y los dos anteriores como atajos, con fechas completas', () => {
+    expect(mesesRecientes('2026-01-15')).toEqual([
+      { valor: '2026-01', texto: 'Este mes', desde: '2026-01-01', hasta: '2026-01-31' },
+      { valor: '2025-12', texto: 'dic. 2025', desde: '2025-12-01', hasta: '2025-12-31' },
+      { valor: '2025-11', texto: 'nov. 2025', desde: '2025-11-01', hasta: '2025-11-30' },
+    ])
+  })
+
+  it('filtra por periodo con fechas, no con un campo de texto', async () => {
+    render(<SeccionUsoIa mesInicial="2026-11" />)
+    await screen.findAllByText('0,55 US$')
+    expect(screen.getByLabelText(/Desde/).getAttribute('type')).toBe('date')
+    expect(screen.getByLabelText(/Hasta/).getAttribute('type')).toBe('date')
+    expect(screen.getByRole('group', { name: 'Ver mes' })).toBeTruthy()
   })
 })

@@ -3,7 +3,7 @@
  */
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
-import ListaEnlaces from '../ListaEnlaces'
+import ListaEnlaces from '@/design-system/ListaEnlaces'
 
 export default function AsistenciaIaIndexPage() {
   usePaginaActual('Asistencia IA', [MIGAS.reportesIndicadores, { texto: 'Asistencia IA' }])
