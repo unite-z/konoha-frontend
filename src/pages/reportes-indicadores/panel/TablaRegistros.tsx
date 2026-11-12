@@ -9,9 +9,11 @@ import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { rutaDetalleAtencion } from '@/router/rutasApp'
 import type {
   ClaveIndicadorPanel,
+  FilaActividadCampo,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
+  FilaParticipacionOperario,
 } from '@/types/reportesGestion'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import { insigniaEstadoAtencion, numeroDeDecimal } from '@/utils/reportesGestion'
@@ -29,7 +31,12 @@ const COLUMNAS_ATENCIONES_ESPACIO: ColumnaTabla<FilaAtencionEspacio>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    ordenable: true,
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
+  },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
 ]
 
@@ -37,14 +44,30 @@ const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    ordenable: true,
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
+  },
   { clave: 'proveedor', titulo: 'Proveedor', ordenable: true },
 ]
 
-/**
- * MOD-04 aún no registra el material. En desarrollo, con `MOD06_DATOS_EJEMPLO=true` en el back-end, llegan
- * registros de EJEMPLO; esto variará cuando se programe MOD-04 (sus columnas reales pueden cambiar).
- */
+const COLUMNAS_ACTIVIDADES: ColumnaTabla<FilaActividadCampo>[] = [
+  { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
+  { clave: 'tipo_actividad', titulo: 'Actividad', ordenable: true },
+  { clave: 'estado', titulo: 'Parte diario', ordenable: true },
+  { clave: 'cuadrilla', titulo: 'Cuadrilla', ordenable: true },
+  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+]
+
+const COLUMNAS_OPERARIOS: ColumnaTabla<FilaParticipacionOperario>[] = [
+  { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
+  { clave: 'operario', titulo: 'Operario', ordenable: true },
+  { clave: 'cuadrilla', titulo: 'Cuadrilla', ordenable: true },
+  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+]
+
 const COLUMNAS_CONSUMO: ColumnaTabla<FilaMovimientoMaterial>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
@@ -106,13 +129,37 @@ export default function TablaRegistros({ clave, titulo, filas, incompleto = fals
         />
       )
       break
-    default:
-      return <AvisoEnLinea tono="info">El detalle de este indicador todavía no se puede mostrar</AvisoEnLinea>
+    case 'actividades-por-estado':
+      tabla = (
+        <TablaDatos
+          titulo={titulo}
+          columnas={COLUMNAS_ACTIVIDADES}
+          filas={filas as FilaActividadCampo[]}
+          claveFila={(f) => String(f.id)}
+          ordenInicial={{ clave: 'fecha', direccion: 'desc' }}
+        />
+      )
+      break
+    case 'distribucion-operarios':
+      tabla = (
+        <TablaDatos
+          titulo={titulo}
+          columnas={COLUMNAS_OPERARIOS}
+          filas={filas as FilaParticipacionOperario[]}
+          // Una fila por operario en cada actividad.
+          claveFila={(f) => `${f.actividad_id}-${f.operario_id}`}
+          ordenInicial={{ clave: 'fecha', direccion: 'desc' }}
+        />
+      )
+      break
   }
   return (
     <>
       {incompleto && (
-        <AvisoEnLinea tono="advertencia" titulo={`Se muestran los primeros ${formatearNumero(MAXIMO_REGISTROS)} registros`}>
+        <AvisoEnLinea
+          tono="advertencia"
+          titulo={`Se muestran los primeros ${formatearNumero(MAXIMO_REGISTROS)} registros`}
+        >
           Hay más registros con estos filtros. Acota el periodo o añade filtros para verlos todos.
         </AvisoEnLinea>
       )}

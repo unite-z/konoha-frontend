@@ -90,6 +90,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Ejemplares y especies', icono: 'tree', ruta: RUTAS_INVENTARIO.ejemplares },
       { texto: 'Mapa del campus', icono: 'map', ruta: RUTAS_INVENTARIO.mapa },
       { texto: 'Campañas de poda', icono: 'scissors', ruta: RUTAS_INVENTARIO.campanasPoda },
+      { texto: 'Poda a demanda', icono: 'scissors', ruta: RUTAS_INVENTARIO.podaAltura, permiso: 'INV.PODA.PLANIFICAR' },
     ],
   },
   {
@@ -129,7 +130,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
     hijos: [{ texto: 'Bandeja', icono: 'list', ruta: RUTAS_INCIDENCIAS.bandeja }],
   },
   // Reportar y seguir las incidencias propias (AV-282), para cualquier usuario y sobre todo en el móvil.
-  { clave: 'misIncidencias', texto: 'Mis incidencias', icono: 'clipboard', ruta: RUTAS_MIS_INCIDENCIAS.lista, prefijos: [RUTAS_MIS_INCIDENCIAS.lista] },
+  {
+    clave: 'misIncidencias',
+    texto: 'Mis incidencias',
+    icono: 'clipboard',
+    ruta: RUTAS_MIS_INCIDENCIAS.lista,
+    prefijos: [RUTAS_MIS_INCIDENCIAS.lista],
+  },
   {
     clave: 'reportes',
     texto: 'Reportes e indicadores',
@@ -144,7 +151,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Asistencia IA', icono: 'search', ruta: RUTAS.asistenciaIa },
     ],
   },
-  { clave: 'repositorio', texto: 'Repositorio', icono: 'paperclip', ruta: RUTAS_CORE.repositorio, prefijos: [RUTAS_CORE.repositorio] },
+  {
+    clave: 'repositorio',
+    texto: 'Repositorio',
+    icono: 'paperclip',
+    ruta: RUTAS_CORE.repositorio,
+    prefijos: [RUTAS_CORE.repositorio],
+  },
   {
     clave: 'usuarios',
     texto: 'Usuarios y roles',

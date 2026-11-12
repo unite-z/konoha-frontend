@@ -7,7 +7,8 @@
  *   resumen en un gráfico; al elegir una barra, «Ver detalles» abre sus registros en un diálogo, y
  *   «Ver todos los registros» abre la tabla completa.
  * - Clave desconocida: no se consulta y se muestra «No existe ese indicador» (también con el 404 del back-end).
- * - Indicadores de MOD-04 (actividades y operarios): su detalle aún no se puede mostrar.
+ * - Indicadores de MOD-04 (actividades y operarios): sus registros son las actividades y las participaciones de
+ *   cada operario; el estado de una actividad es el de su parte diario.
  */
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router'
@@ -22,9 +23,11 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
 import type {
   ClaveIndicadorPanel,
+  FilaActividadCampo,
   FilaAtencionEspacio,
   FilaAtencionPeriodo,
   FilaMovimientoMaterial,
+  FilaParticipacionOperario,
 } from '@/types/reportesGestion'
 import { formatearFecha, formatearNumero } from '@/utils/formato'
 import { esClaveIndicador, notasUnicas, rutaDetalleConFiltros } from '@/utils/reportesGestion'
@@ -33,7 +36,9 @@ import estilos from '../reportes/Reportes.module.css'
 import BarraFiltrosPanel from './BarraFiltrosPanel'
 import estilosPanel from './PanelIndicadores.module.css'
 import {
+  AGRUPACIONES_ACTIVIDADES,
   AGRUPACIONES_ATENCIONES_ESPACIO,
+  AGRUPACIONES_OPERARIOS,
   AGRUPACIONES_CONSUMO,
   AGRUPACIONES_CUMPLIMIENTO,
   cargarRegistros,
@@ -76,8 +81,7 @@ function IndicadorInexistente() {
 
 interface ContenidoDetalleProps<F> {
   clave: ClaveIndicadorPanel
-  /** `null`: el indicador aún no tiene registros que mostrar (sus datos son de MOD-04). */
-  agrupaciones: Agrupacion<F>[] | null
+  agrupaciones: Agrupacion<F>[]
   unidadDe?: (fila: F) => string
 }
 
@@ -96,8 +100,7 @@ function ContenidoDetalle<F>({ clave, agrupaciones, unidadDe }: ContenidoDetalle
 
   const consulta = useConsulta<DetalleCompleto<F>>(
     `detalle|${clave}|${filtros.desde}|${filtros.hasta}|${claveAplicados}`,
-    // Sin agrupaciones (MOD-04) basta la primera página: sus registros aún no se muestran.
-    (signal) => cargarRegistros<F>(clave, parametros, signal, agrupaciones ? undefined : 25),
+    (signal) => cargarRegistros<F>(clave, parametros, signal),
     (datos) => datos.sin_datos,
   )
   const consultaConCatalogos = {
@@ -148,37 +151,35 @@ function ContenidoDetalle<F>({ clave, agrupaciones, unidadDe }: ContenidoDetalle
               <p className={estilos.ayuda}>Unidad: {datos.indicador.unidad}</p>
             </section>
 
-            {agrupaciones ? (
-              <section className={estilos.seccion} aria-labelledby="titulo-registros">
-                <h2 id="titulo-registros" className={estilos.tituloSeccion}>
-                  Registros del periodo
-                </h2>
-                {!datos.completo && (
-                  <AvisoEnLinea tono="advertencia" titulo="El gráfico resume solo una parte de los registros">
-                    Hay {formatearNumero(datos.count)} registros con estos filtros y se descargaron{' '}
-                    {formatearNumero(datos.results.length)}. Acota el periodo o añade filtros para verlos todos.
-                  </AvisoEnLinea>
-                )}
-                <GraficoAgrupado<F>
-                  // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
-                  key={datos.generado_en}
-                  filas={datos.results}
-                  agrupaciones={agrupaciones}
-                  unidadDe={unidadDe}
-                  onVerDetalle={(t, filas) => setEleccion({ titulo: t, filas })}
-                />
-                <div className={estilosPanel.acciones}>
-                  <Boton
-                    variante="secundario"
-                    onClick={() => setEleccion({ titulo: `Registros de ${datos.indicador.nombre}`, filas: datos.results })}
-                  >
-                    Ver todos los registros ({formatearNumero(datos.results.length)})
-                  </Boton>
-                </div>
-              </section>
-            ) : (
-              <AvisoEnLinea tono="info">El detalle de este indicador todavía no se puede mostrar</AvisoEnLinea>
-            )}
+            <section className={estilos.seccion} aria-labelledby="titulo-registros">
+              <h2 id="titulo-registros" className={estilos.tituloSeccion}>
+                Registros del periodo
+              </h2>
+              {!datos.completo && (
+                <AvisoEnLinea tono="advertencia" titulo="El gráfico resume solo una parte de los registros">
+                  Hay {formatearNumero(datos.count)} registros con estos filtros y se descargaron{' '}
+                  {formatearNumero(datos.results.length)}. Acota el periodo o añade filtros para verlos todos.
+                </AvisoEnLinea>
+              )}
+              <GraficoAgrupado<F>
+                // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
+                key={datos.generado_en}
+                filas={datos.results}
+                agrupaciones={agrupaciones}
+                unidadDe={unidadDe}
+                onVerDetalle={(t, filas) => setEleccion({ titulo: t, filas })}
+              />
+              <div className={estilosPanel.acciones}>
+                <Boton
+                  variante="secundario"
+                  onClick={() =>
+                    setEleccion({ titulo: `Registros de ${datos.indicador.nombre}`, filas: datos.results })
+                  }
+                >
+                  Ver todos los registros ({formatearNumero(datos.results.length)})
+                </Boton>
+              </div>
+            </section>
 
             {notasUnicas(datos.notas).map((nota) => (
               <AvisoEnLinea key={nota} tono="info">
@@ -228,7 +229,11 @@ export default function DetalleIndicadorPage() {
       )
     case 'cumplimiento-tercerizados':
       return (
-        <ContenidoDetalle<FilaAtencionPeriodo> key={indicador} clave={indicador} agrupaciones={AGRUPACIONES_CUMPLIMIENTO} />
+        <ContenidoDetalle<FilaAtencionPeriodo>
+          key={indicador}
+          clave={indicador}
+          agrupaciones={AGRUPACIONES_CUMPLIMIENTO}
+        />
       )
     case 'consumo-materiales':
       return (
@@ -240,11 +245,20 @@ export default function DetalleIndicadorPage() {
         />
       )
     case 'actividades-por-estado':
+      return (
+        <ContenidoDetalle<FilaActividadCampo>
+          key={indicador}
+          clave={indicador}
+          agrupaciones={AGRUPACIONES_ACTIVIDADES}
+        />
+      )
     case 'distribucion-operarios':
-      // TODO: definir sus registros cuando MOD-04 publique los partes diarios. Sin datos se ve el vacío con el
-      // motivo del back-end. En desarrollo, con `MOD06_DATOS_EJEMPLO=true`, llegan datos de EJEMPLO (estado del
-      // parte diario: «Abierto» o «Cerrado») y aquí se ve el aviso de que el detalle aún no se puede mostrar.
-      // Esto variará cuando se programe MOD-04: el estado y los campos de cada registro pueden cambiar.
-      return <ContenidoDetalle<unknown> key={indicador} clave={indicador} agrupaciones={null} />
+      return (
+        <ContenidoDetalle<FilaParticipacionOperario>
+          key={indicador}
+          clave={indicador}
+          agrupaciones={AGRUPACIONES_OPERARIOS}
+        />
+      )
   }
 }

@@ -81,6 +81,31 @@ export interface FilaAtencionPeriodo {
   proveedor: string
 }
 
+/**
+ * Fila del detalle de «actividades-por-estado» (`ActividadCampo.java`, MOD-04). `estado`: el del parte diario
+ * («Abierto» o «Cerrado»); la actividad no tiene estado propio.
+ */
+export interface FilaActividadCampo {
+  id: number
+  fecha: FechaIso
+  estado: string
+  tipo_actividad: string
+  area_verde_id: number | null
+  espacio: string | null
+  cuadrilla: string
+}
+
+/** Fila del detalle de «distribucion-operarios» (`ParticipacionOperario.java`, MOD-04): un operario en una actividad. */
+export interface FilaParticipacionOperario {
+  actividad_id: number
+  fecha: FechaIso
+  operario_id: number
+  operario: string
+  cuadrilla: string
+  area_verde_id: number | null
+  espacio: string | null
+}
+
 /** Fila del detalle de «consumo-materiales» (`MovimientoConsumo.java`). `cantidad`: texto decimal. */
 export interface FilaMovimientoMaterial {
   id: number
