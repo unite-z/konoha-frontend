@@ -9,6 +9,7 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
+import ConfiguracionUsuarioPage from '../pages/configuracion/ConfiguracionPage'
 import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
 import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
 import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
@@ -134,6 +135,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <InicioRol /> },
           { path: RUTAS_CORE.pendientes, element: <PendientesPage /> }, // RF-T-012: cualquier sesión
+          { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-389: cualquier sesión
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
             children: [
