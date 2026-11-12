@@ -10,7 +10,10 @@ const CAPATAZ = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.REGISTRAR']
 const JEFE = ['CAM.CUADRILLA.GESTIONAR', 'CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR', 'CAM.PARTE.VERIFICAR']
 const sesionPrueba = vi.hoisted(() => ({ rol: 'Capataz', permisos: [] as string[] }))
 
-vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => sesionPrueba.permisos, useSesionActiva: () => ({ usuario: { id: 4, nombre: 'Prueba' } }) }))
+vi.mock('@/sesion/ContextoSesion', () => ({
+  usePermisos: () => sesionPrueba.permisos,
+  useSesionActiva: () => ({ usuario: { id: 4, nombre: 'Prueba' } }),
+}))
 vi.mock('@/sesion/ContextoSesionCampo', () => ({
   useSesionCampo: () => ({ usuario: { id: 4, rol: sesionPrueba.rol, personal_id: 12 } }),
 }))
@@ -18,8 +21,12 @@ vi.mock('@/sesion/ContextoSesionCampo', () => ({
 vi.mock('@/components/core/ExportarExcel', () => ({ default: () => null }))
 
 beforeAll(() => {
-  HTMLDialogElement.prototype.showModal ??= function () { this.open = true }
-  HTMLDialogElement.prototype.close ??= function () { this.open = false }
+  HTMLDialogElement.prototype.showModal ??= function () {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.close ??= function () {
+    this.open = false
+  }
 })
 
 beforeEach(() => {
@@ -72,29 +79,36 @@ const pagina = (results: unknown[]) => ({ count: results.length, results, next: 
 it('muestra una tabla compacta y permite al capataz actualizar participantes desde el detalle', async () => {
   let participantes = [operario]
   const escrituras: unknown[] = []
-  vi.stubGlobal('fetch', vi.fn(async (ruta: string, opciones: RequestInit = {}) => {
-    const url = new URL(ruta, 'http://localhost')
-    if (url.pathname.endsWith('/cuadrillas/')) {
-      return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
-    }
-    if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([actividad]))
-    if (url.pathname.endsWith('/operarios-disponibles/')) {
-      return Response.json([operario, { id: 22, nombres: 'Luis', apellidos: 'Rojas', activo: true }])
-    }
-    if (url.pathname.endsWith('/participantes/')) {
-      if (opciones.method === 'PUT') {
-        const cuerpo = JSON.parse(String(opciones.body)) as { operarios: number[] }
-        escrituras.push(cuerpo)
-        participantes = cuerpo.operarios.includes(22)
-          ? [operario, { id: 22, nombres: 'Luis', apellidos: 'Rojas', activo: true }]
-          : [operario]
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string, opciones: RequestInit = {}) => {
+      const url = new URL(ruta, 'http://localhost')
+      if (url.pathname.endsWith('/cuadrillas/')) {
+        return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
       }
-      return Response.json({ actividad_id: 8, cantidad_operarios: participantes.length, operarios: participantes })
-    }
-    return Response.json(pagina([]))
-  }))
+      if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([actividad]))
+      if (url.pathname.endsWith('/operarios-disponibles/')) {
+        return Response.json([operario, { id: 22, nombres: 'Luis', apellidos: 'Rojas', activo: true }])
+      }
+      if (url.pathname.endsWith('/participantes/')) {
+        if (opciones.method === 'PUT') {
+          const cuerpo = JSON.parse(String(opciones.body)) as { operarios: number[] }
+          escrituras.push(cuerpo)
+          participantes = cuerpo.operarios.includes(22)
+            ? [operario, { id: 22, nombres: 'Luis', apellidos: 'Rojas', activo: true }]
+            : [operario]
+        }
+        return Response.json({ actividad_id: 8, cantidad_operarios: participantes.length, operarios: participantes })
+      }
+      return Response.json(pagina([]))
+    }),
+  )
 
-  render(<MemoryRouter><ParticipantesPage /></MemoryRouter>)
+  render(
+    <MemoryRouter>
+      <ParticipantesPage />
+    </MemoryRouter>,
+  )
   const usuario = userEvent.setup()
   const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
   expect(within(tabla).getAllByRole('columnheader')).toHaveLength(5)
@@ -116,14 +130,21 @@ it('muestra una tabla compacta y permite al capataz actualizar participantes des
 it('ubica la acción autorizada junto a los datos de verificación', async () => {
   sesionPrueba.rol = 'Jefe de sección'
   sesionPrueba.permisos = JEFE
-  vi.stubGlobal('fetch', vi.fn(async (ruta: string) => {
-    const url = new URL(ruta, 'http://localhost')
-    if (url.pathname.endsWith('/cuadrillas/')) return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
-    if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([actividad]))
-    return Response.json(pagina([]))
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string) => {
+      const url = new URL(ruta, 'http://localhost')
+      if (url.pathname.endsWith('/cuadrillas/')) return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
+      if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([actividad]))
+      return Response.json(pagina([]))
+    }),
+  )
 
-  render(<MemoryRouter><ParticipantesPage /></MemoryRouter>)
+  render(
+    <MemoryRouter>
+      <ParticipantesPage />
+    </MemoryRouter>,
+  )
   const usuario = userEvent.setup()
   const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
   await usuario.click(within(tabla).getByRole('button', { name: 'Ver detalle de Riego manual' }))
@@ -134,4 +155,47 @@ it('ubica la acción autorizada junto a los datos de verificación', async () =>
   expect(verificacion).not.toBeNull()
   expect(within(registro as HTMLElement).queryByRole('button', { name: 'Verificar actividad' })).toBeNull()
   expect(within(verificacion as HTMLElement).getByRole('button', { name: 'Verificar actividad' })).toBeTruthy()
+})
+
+it('avisa de las actividades pendientes, filtra por verificación y amplía el diálogo de fotografías', async () => {
+  sesionPrueba.rol = 'Jefe de sección'
+  sesionPrueba.permisos = JEFE
+  const verificada = {
+    ...actividad,
+    id: 9,
+    tipo_actividad_nombre: 'Limpieza de sendero',
+    fecha_verificacion: '2026-11-10T12:00:00-05:00',
+    verificado_por_usuario_id: 4,
+    verificado_por_nombre: 'Jefa de sección',
+    verificacion_observaciones: 'Trabajo conforme',
+  }
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string) => {
+      const url = new URL(ruta, 'http://localhost')
+      if (url.pathname.endsWith('/cuadrillas/')) return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
+      if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([actividad, verificada]))
+      if (url.pathname.includes('/adjuntos')) return Response.json([])
+      return Response.json(pagina([]))
+    }),
+  )
+
+  render(
+    <MemoryRouter>
+      <ParticipantesPage />
+    </MemoryRouter>,
+  )
+  const usuario = userEvent.setup()
+
+  expect(await screen.findByText('1 actividad pendiente de verificación')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).toBeNull()
+  await usuario.selectOptions(screen.getByLabelText('Estado de verificación'), 'verificada')
+
+  const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
+  await waitFor(() => expect(within(tabla).queryByText('Riego manual')).toBeNull())
+  expect(within(tabla).getByText('Limpieza de sendero')).toBeTruthy()
+
+  await usuario.click(within(tabla).getByRole('button', { name: 'Ver detalle de Limpieza de sendero' }))
+  await usuario.click(screen.getByRole('button', { name: 'Ver fotografías' }))
+  expect(screen.getByRole('dialog', { name: 'Fotografías de la actividad' }).className).toMatch(/amplio/)
 })
