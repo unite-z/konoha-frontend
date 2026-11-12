@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import Selector from '@/components/ui/Selector'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import Selector from '@/design-system/Selector'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { conCache } from '@/sincronizacion/datosDescargados'
@@ -10,7 +10,14 @@ import { encolarActividad, esSinRed, partesDe } from './actividadSinConexion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import { clasesActividadParaParte, listarTiposActividad } from '@/services/api/catalogoActividadesCampo'
 import { ErrorApi, aErrorApi } from '@/services/api/cliente'
-import type { ActividadCampo, CatalogoCampo, CuadrillaCampo, EncargoCampo, ParteCampo, UnidadMedidaCampo } from '@/types/operacionCampo'
+import type {
+  ActividadCampo,
+  CatalogoCampo,
+  CuadrillaCampo,
+  EncargoCampo,
+  ParteCampo,
+  UnidadMedidaCampo,
+} from '@/types/operacionCampo'
 import { aInstanteLima, esFuturo, esLocalValido, hoyLima } from '@/utils/instanteLima'
 import { EstadoCatalogos } from './ComponentesCampo'
 import { useMutacionCampo } from './useCampo'
@@ -47,16 +54,18 @@ export default function DialogoNuevaActividad({
   const mutacion = useMutacionCampo()
   const intento = useRef<{ cuerpo: string; clave: string } | null>(null)
   // Con copia en el dispositivo para registrar sin conexión (RF-T-012).
-  const catalogos = useConsulta('catalogos-actividad', (signal) => conCache('catalogos-actividad', async () => {
-    const [cuadrillas, tipos, areas, clases, unidades] = await Promise.all([
-      todosCampo<CuadrillaCampo>('cuadrillas/', { activa: true }, signal),
-      listarTiposActividad(true, signal),
-      todosCampo<CatalogoCampo>('catalogos/areas-verdes/', { activo: true }, signal),
-      clasesActividadParaParte(signal),
-      todosCampo<UnidadMedidaCampo>('catalogos/unidades-medida/', {}, signal),
-    ])
-    return { cuadrillas, tipos, areas, clases, unidades }
-  }))
+  const catalogos = useConsulta('catalogos-actividad', (signal) =>
+    conCache('catalogos-actividad', async () => {
+      const [cuadrillas, tipos, areas, clases, unidades] = await Promise.all([
+        todosCampo<CuadrillaCampo>('cuadrillas/', { activa: true }, signal),
+        listarTiposActividad(true, signal),
+        todosCampo<CatalogoCampo>('catalogos/areas-verdes/', { activo: true }, signal),
+        clasesActividadParaParte(signal),
+        todosCampo<UnidadMedidaCampo>('catalogos/unidades-medida/', {}, signal),
+      ])
+      return { cuadrillas, tipos, areas, clases, unidades }
+    }),
+  )
   const encargos = useConsulta(cuadrilla && fecha ? `encargos-actividad-${cuadrilla}-${fecha}` : null, (signal) =>
     conCache(`encargos-actividad-${cuadrilla}-${fecha}`, () =>
       todosCampo<EncargoCampo>('encargos/', { cuadrilla_id: cuadrilla, desde: fecha, hasta: fecha }, signal),
@@ -92,14 +101,19 @@ export default function DialogoNuevaActividad({
     if (catalogos.datos?.clases.length && !clase) errors.clase = 'Selecciona una clase'
     if (!area) errors.area = 'Selecciona un espacio'
     if (!fecha || fecha > hoyLima()) errors.fecha = 'Selecciona una fecha válida que no sea futura'
-    if (fechaSolicitud && fechaSolicitud > fecha) errors.fechaSolicitud = 'La solicitud no puede ser posterior a la actividad'
-    if (incidencia && (!Number.isSafeInteger(Number(incidencia.replace(',', '.'))) || Number(incidencia.replace(',', '.')) <= 0))
+    if (fechaSolicitud && fechaSolicitud > fecha)
+      errors.fechaSolicitud = 'La solicitud no puede ser posterior a la actividad'
+    if (
+      incidencia &&
+      (!Number.isSafeInteger(Number(incidencia.replace(',', '.'))) || Number(incidencia.replace(',', '.')) <= 0)
+    )
       errors.incidencia = 'Indica un identificador de incidencia válido'
     if (incidencia && encargo) errors.incidencia = 'Selecciona una incidencia o un encargo de origen'
     for (const [campo, valor] of Object.entries({ superficie, solicitada, ejecutada }))
       if (valor && (!Number.isFinite(Number(valor.replace(',', '.'))) || Number(valor.replace(',', '.')) < 0))
         errors[campo] = 'Indica una cantidad no negativa'
-    if (Boolean(solicitada || ejecutada) !== Boolean(unidad)) errors.unidad = 'Las cantidades requieren una unidad de medida'
+    if (Boolean(solicitada || ejecutada) !== Boolean(unidad))
+      errors.unidad = 'Las cantidades requieren una unidad de medida'
     if (tiempo && (!Number.isInteger(Number(tiempo)) || Number(tiempo) < 1 || Number(tiempo) > 1440))
       errors.tiempo = 'Indica entre 1 y 1440 minutos'
     if (!/^\d{2}:\d{2}$/.test(hora)) errors.hora = 'Indica la hora de la actividad'
@@ -163,7 +177,8 @@ export default function DialogoNuevaActividad({
           )
         const cuerpo = { parte_id: parte.id, ...datosActividad }
         const firma = JSON.stringify(cuerpo)
-        if (!intento.current || intento.current.cuerpo !== firma) intento.current = { cuerpo: firma, clave: crypto.randomUUID() }
+        if (!intento.current || intento.current.cuerpo !== firma)
+          intento.current = { cuerpo: firma, clave: crypto.randomUUID() }
         let actividad: ActividadCampo
         try {
           actividad = await campoApi<ActividadCampo>('actividades/', {
@@ -292,8 +307,12 @@ export default function DialogoNuevaActividad({
                 valor={encargo}
                 opcionTodos="Sin encargo asociado"
                 opciones={(encargos.datos ?? [])
-                  .filter((e) => e.estado !== 'Cancelado' &&
-                    e.tipo_actividad_id === Number(tipo) && e.area_verde_id === Number(area))
+                  .filter(
+                    (e) =>
+                      e.estado !== 'Cancelado' &&
+                      e.tipo_actividad_id === Number(tipo) &&
+                      e.area_verde_id === Number(area),
+                  )
                   .map((e) => ({ valor: String(e.id), texto: e.descripcion }))}
                 onCambiar={(v) => cambiar(() => setEncargo(v))}
                 ayuda="Se muestran los encargos que coinciden con la cuadrilla, fecha, actividad y espacio."

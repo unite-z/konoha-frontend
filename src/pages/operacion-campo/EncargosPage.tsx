@@ -1,22 +1,28 @@
 import { useState } from 'react'
-import Boton from '@/components/ui/Boton'
-import Tarjeta from '@/components/ui/Tarjeta'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import Selector from '@/components/ui/Selector'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/design-system/Boton'
+import Tarjeta from '@/design-system/Tarjeta'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import Selector from '@/design-system/Selector'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
-import { esJefeCampo, hoyLima, puedeCambiarEstadoEncargo, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
+import {
+  esJefeCampo,
+  hoyLima,
+  puedeCambiarEstadoEncargo,
+  sumarDiasCampo,
+  validarEncargoCampo,
+} from '@/utils/operacionCampo'
 import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
-import Estado, { type TonoEstado } from '@/components/ui/Estado'
+import Estado, { type TonoEstado } from '@/design-system/Estado'
 
 const tonosEncargo: Record<EstadoEncargo, TonoEstado> = {
   'Por completar': 'neutro',
@@ -44,12 +50,8 @@ export default function EncargosPage() {
     [aviso, setAviso] = useState('')
   return (
     <div className={estilos.pagina}>
-      <AccionesPagina>
-        {jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}
-      </AccionesPagina>
-      <p className={estilos.descripcion}>
-        Consulta y organiza los encargos directos y periódicos por capataz.
-      </p>
+      <AccionesPagina>{jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}</AccionesPagina>
+      <p className={estilos.descripcion}>Consulta y organiza los encargos directos y periódicos por capataz.</p>
       {aviso && (
         <AvisoEnLinea tono="exito" accion={{ texto: 'Cerrar aviso', onClick: () => setAviso('') }}>
           {aviso}
@@ -84,10 +86,7 @@ export default function EncargosPage() {
             value={String(listado.params.hasta ?? '')}
             onChange={(e) => listado.filtrar({ hasta: e.target.value })}
           />
-          <Boton
-            variante="fantasma"
-            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}
-          >
+          <Boton variante="fantasma" onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}>
             Limpiar filtros
           </Boton>
         </div>
@@ -320,12 +319,11 @@ function DialogoEncargo({
                   { valor: 'Directo', texto: 'Directo · con plazo' },
                 ]}
                 onCambiar={(v) => {
-                  const inicio =
-                    v === 'Directo' && actual?.periodicidad !== 'Directo' ? hoy : body.fecha_inicio
+                  const inicio = v === 'Directo' && actual?.periodicidad !== 'Directo' ? hoy : body.fecha_inicio
                   const fin = v === 'Directo' ? inicio : sumarDiasCampo(inicio, v === 'Semanal' ? 6 : 13)
                   cambiar({
                     periodicidad: v as EntradaEncargo['periodicidad'],
-                    fecha_reunion: v === 'Directo' ? null : body.fecha_reunion ?? hoy,
+                    fecha_reunion: v === 'Directo' ? null : (body.fecha_reunion ?? hoy),
                     fecha_inicio: inicio,
                     fecha_fin: fin,
                     plazo_previsto: fin,
@@ -398,7 +396,6 @@ function DialogoEncargo({
   )
 }
 
-
 function DialogoSeguimiento({
   id,
   puedeCambiar,
@@ -436,14 +433,17 @@ function DialogoSeguimiento({
       return
     }
     if (requiereMotivo && !observaciones.trim()) {
-      mutacion.setDetalle(estado === 'Cancelado' ? 'Indica el motivo de la cancelación' : 'Indica el motivo de la observación')
+      mutacion.setDetalle(
+        estado === 'Cancelado' ? 'Indica el motivo de la cancelación' : 'Indica el motivo de la observación',
+      )
       return
     }
     void mutacion.enviar(
-      () => campoApi(`encargos/${id}/estado/`, {
-        metodo: 'POST',
-        cuerpo: { estado_anterior: actual.estado, estado, observaciones: observaciones.trim() },
-      }),
+      () =>
+        campoApi(`encargos/${id}/estado/`, {
+          metodo: 'POST',
+          cuerpo: { estado_anterior: actual.estado, estado, observaciones: observaciones.trim() },
+        }),
       onGuardado,
     )
   }
@@ -491,13 +491,19 @@ function DialogoSeguimiento({
               <ul>
                 {encargo.historial_estados.map((cambio) => (
                   <li key={cambio.id}>
-                    <strong>{cambio.estado_anterior} → {cambio.estado_nuevo}</strong>
-                    <span className={estilos.secundario}>{cambio.autor} · {formatearFechaHora(cambio.fecha)}</span>
+                    <strong>
+                      {cambio.estado_anterior} → {cambio.estado_nuevo}
+                    </strong>
+                    <span className={estilos.secundario}>
+                      {cambio.autor} · {formatearFechaHora(cambio.fecha)}
+                    </span>
                     {cambio.observaciones && <p>{cambio.observaciones}</p>}
                   </li>
                 ))}
               </ul>
-            ) : <p>Sin cambios de estado registrados.</p>}
+            ) : (
+              <p>Sin cambios de estado registrados.</p>
+            )}
           </>
         )}
       </EstadoCatalogos>
