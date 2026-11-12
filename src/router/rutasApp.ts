@@ -99,6 +99,7 @@ export const RUTAS_INVENTARIO = {
   nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
   podaAltura: `${BASE_INVENTARIO}/poda-altura`,
   fichaTecnica: `${BASE_INVENTARIO}/ejemplares/ficha-tecnica`, // RF-INV-005
+  rutaCorte: `${BASE_INVENTARIO}/ruta-corte`, // RF-INV-004
 } as const
 
 export function rutaCampanaPoda(id: number): string {

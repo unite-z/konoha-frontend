@@ -63,6 +63,7 @@ import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
 import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
 import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
 import FichaTecnicaEjemplarPage from '../pages/inventario/FichaTecnicaEjemplarPage'
+import RutaCortePage from '../pages/inventario/RutaCortePage'
 import EspeciesCampanaPage from '../pages/inventario/EspeciesCampanaPage'
 import SolicitarPodaAlturaPage from '../pages/inventario/SolicitarPodaAlturaPage'
 import RendimientoCampanaPage from '../pages/inventario/RendimientoCampanaPage'
@@ -196,6 +197,7 @@ export const router = createBrowserRouter([
                   { path: 'catalogos', element: <CatalogosPage /> },
                   { path: 'ejemplares', element: <EjemplaresPage /> },
                   { path: 'ejemplares/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
+                  { path: 'ruta-corte', element: <RutaCortePage /> },
                   { path: 'ejemplares/:id/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
                   { path: 'campanas-poda', element: <CampanasPodaPage /> },
                   { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
