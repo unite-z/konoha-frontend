@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ts,src/**/*.tsx,src/**/*.css"
+applyTo: 'src/**/*.ts,src/**/*.tsx,src/**/*.css'
 ---
 
 # TypeScript, React y estilos (konoha-frontend)

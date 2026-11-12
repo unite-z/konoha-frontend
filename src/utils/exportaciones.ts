@@ -17,7 +17,14 @@ import { formatearFecha, formatearMes } from './formato'
 import { enteroPositivo, validarMes } from './reportesGestion'
 
 /** Campos del formulario, tal como viven en la URL (texto; vacío = sin filtro). */
-export type CampoExportacion = 'desde' | 'hasta' | 'mes' | 'tipo_servicio_id' | 'proveedor_id' | 'area_verde_id' | 'modalidad'
+export type CampoExportacion =
+  | 'desde'
+  | 'hasta'
+  | 'mes'
+  | 'tipo_servicio_id'
+  | 'proveedor_id'
+  | 'area_verde_id'
+  | 'modalidad'
 
 export type FiltrosExportacion = Record<CampoExportacion, string>
 
@@ -54,7 +61,10 @@ export function parametrosParaTipo(tipo: TipoExportable, filtros: FiltrosExporta
 }
 
 /** Errores de los campos obligatorios del tipo (periodo o mes), antes de llamar a la API. */
-export function validarExportacion(tipo: TipoExportable, filtros: FiltrosExportacion): Partial<Record<CampoExportacion, string>> {
+export function validarExportacion(
+  tipo: TipoExportable,
+  filtros: FiltrosExportacion,
+): Partial<Record<CampoExportacion, string>> {
   const errores: Partial<Record<CampoExportacion, string>> = {}
   if (tipo.filtros.includes('periodo')) Object.assign(errores, validarPeriodo(filtros.desde, filtros.hasta))
   if (tipo.filtros.includes('mes')) {
@@ -74,7 +84,8 @@ export interface NombresCatalogo {
 /** Texto del periodo de unos parámetros, o `null` si no tienen. */
 export function textoPeriodo(parametros: ParametrosExportacion): string | null {
   if (parametros.mes) return formatearMes(parametros.mes)
-  if (parametros.desde && parametros.hasta) return `Del ${formatearFecha(parametros.desde)} al ${formatearFecha(parametros.hasta)}`
+  if (parametros.desde && parametros.hasta)
+    return `Del ${formatearFecha(parametros.desde)} al ${formatearFecha(parametros.hasta)}`
   return null
 }
 
@@ -89,7 +100,8 @@ export function resumenExportacion(
   const partes = [
     tipo.nombre,
     textoPeriodo(parametros),
-    parametros.tipo_servicio_id !== undefined && `Servicio: ${nombre(catalogos.servicios, parametros.tipo_servicio_id)}`,
+    parametros.tipo_servicio_id !== undefined &&
+      `Servicio: ${nombre(catalogos.servicios, parametros.tipo_servicio_id)}`,
     parametros.proveedor_id !== undefined && `Proveedor: ${nombre(catalogos.proveedores, parametros.proveedor_id)}`,
     parametros.area_verde_id !== undefined && `Espacio: ${nombre(catalogos.espacios, parametros.area_verde_id)}`,
     parametros.modalidad &&

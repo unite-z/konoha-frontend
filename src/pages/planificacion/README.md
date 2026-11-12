@@ -8,15 +8,16 @@ Planificación de servicios, en cuatro secciones desde el rediseño (AV-265): Re
 - **Configuración** (`configuracion/ConfiguracionPage.tsx`, HU-MOD03-001 y 002, AV-268): tabla de servicios periódicos, como en Figma 348-1743: el servicio con su vía y si es ruidoso («Tercerizado · ruidoso», la vía es la de AV-363), la frecuencia de la estación en curso («Anual» si es una vez al año), la duración, el estado (configurado o incompleto) y «Editar» o «Configurar» en una columna sin título. El panel lateral `PanelEditarServicio` (como en Figma 348-1997, 367-3334 y 367-3617: vía y proveedor en el subtítulo, «Usar valores iniciales», el aviso de que los cambios solo afectan a lo que se programe y de los ciclos en curso que ya superan el máximo, y la última modificación con «Ver historial», que abre `DialogoHistorialServicio` (367-3527, `GET servicios/{id}/historial/` de AV-256)) une la tabla de frecuencias de las cuatro estaciones y la duración (días de servicio, de limpieza y franja horaria), valida en línea con los errores bajo la tabla, solo envía lo que cambia y avisa si un ciclo en curso supera la duración nueva. Lógica en `configuracion/configuracionServicios.ts`, con prueba. La pestaña «Series de restricciones» (`SeriesRestricciones`, lógica en `configuracion/series.ts`, con prueba) lista, como en Figma 366-3687, las restricciones de hoy en adelante, una fila por serie o por restricción suelta: nombre y tipo, nivel, fechas («Cada jueves · hasta 31/12», «23 al 28/11») y alcance («Ruidosos · todo el campus»). El jefe da de baja la serie entera o la restricción suelta, y «Nueva restricción» abre el mismo panel que el Calendario. El alcance lleva el nombre del área verde (AV-365) y «Nueva restricción» muestra el aviso de duplicado del backend (AV-257); los ciclos que coinciden se calculan en el front.
 - Las rutas anteriores (`servicios-periodicos` y `calendario-restricciones`) redirigen a su sección (`RUTAS_PLANIFICACION_ANTIGUAS`).
 
-| Qué | Dónde |
-|---|---|
-| Servicios | `services/api/planificacion.ts`, `clientePlanificacion.ts` |
-| Tipos | `types/planificacion.ts` |
-| Lógica pura | `utils/planificacion.ts`, `validacionPlanificacion.ts`, `calendarioRestricciones.ts` |
-| Permisos | `config/permisosPlanificacion.ts` |
-| Rutas | `RUTAS_PLANIFICACION` (prefijo `/planificacion`) y `RUTAS_PLANIFICACION_ANTIGUAS` (redirecciones) |
+| Qué         | Dónde                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| Servicios   | `services/api/planificacion.ts`, `clientePlanificacion.ts`                                        |
+| Tipos       | `types/planificacion.ts`                                                                          |
+| Lógica pura | `utils/planificacion.ts`, `validacionPlanificacion.ts`, `calendarioRestricciones.ts`              |
+| Permisos    | `config/permisosPlanificacion.ts`                                                                 |
+| Rutas       | `RUTAS_PLANIFICACION` (prefijo `/planificacion`) y `RUTAS_PLANIFICACION_ANTIGUAS` (redirecciones) |
 
 **Pantallas nuevas (AV-265 a 271 y AV-282 a 285):**
+
 - Se construyen sobre la página de Figma «MOD-03 · Propuesta SaaS» y solo con componentes de `design-system`.
 - Los componentes de calendario (Chip de actividad, Celda y Evento de calendario) van a `design-system`, no a esta carpeta.
 

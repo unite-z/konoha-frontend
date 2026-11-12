@@ -13,7 +13,12 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { listarTiposExportables } from '@/services/api/exportaciones'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { FormatoSalida, ParametrosExportacion, TipoReporte } from '@/types/exportaciones'
-import { clasificarErrorExportacion, formatoAlternativo, formatosPermitidos, TEXTO_FORMATO } from '@/utils/exportaciones'
+import {
+  clasificarErrorExportacion,
+  formatoAlternativo,
+  formatosPermitidos,
+  TEXTO_FORMATO,
+} from '@/utils/exportaciones'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import AvisoTemporal from '@/design-system/AvisoTemporal'
 import Boton from '@/design-system/Boton'
@@ -70,7 +75,9 @@ export default function BotonExportar({ tipo, parametros, resumen, sinDatos }: B
         <Boton variante="secundario" deshabilitado={sinDatos} onClick={() => setAbierto(true)}>
           <Icono nombre="documento" /> Exportar
         </Boton>
-        {sinDatos && <AyudaEmergente id={`exportar-${tipo}-sin-datos`} tema="la exportación" texto={MOTIVO_SIN_DATOS} />}
+        {sinDatos && (
+          <AyudaEmergente id={`exportar-${tipo}-sin-datos`} tema="la exportación" texto={MOTIVO_SIN_DATOS} />
+        )}
       </span>
 
       <DialogoFormulario
@@ -79,12 +86,18 @@ export default function BotonExportar({ tipo, parametros, resumen, sinDatos }: B
         descripcion={resumen}
         textoConfirmar="Generar y descargar"
         enviando={enviando}
-        error={clase === 'general' || clase === 'campos' ? { titulo: 'No se pudo generar el reporte', detalle: error?.detalle ?? '' } : null}
+        error={
+          clase === 'general' || clase === 'campos'
+            ? { titulo: 'No se pudo generar el reporte', detalle: error?.detalle ?? '' }
+            : null
+        }
         onEnviar={() => void enviar()}
         onCerrar={cerrar}
       >
         {tipoExportable && !tipoExportable.disponible ? (
-          <AvisoEnLinea tono="info">{tipoExportable.motivo_no_disponible ?? 'Este reporte aún no se puede exportar'}</AvisoEnLinea>
+          <AvisoEnLinea tono="info">
+            {tipoExportable.motivo_no_disponible ?? 'Este reporte aún no se puede exportar'}
+          </AvisoEnLinea>
         ) : (
           <SelectorFormato
             nombre={`exportar-${tipo}`}

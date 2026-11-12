@@ -25,13 +25,19 @@ export default function LineaEstados({ estado, historial }: LineaEstadosProps) {
         const situacion = indice < actual ? 'completado' : indice === actual ? 'actual' : 'pendiente'
         const fecha = indice <= actual ? fechas[paso] : undefined
         return (
-          <li key={paso} className={`${estilos.paso} ${estilos[situacion]}`} aria-current={situacion === 'actual' ? 'step' : undefined}>
+          <li
+            key={paso}
+            className={`${estilos.paso} ${estilos[situacion]}`}
+            aria-current={situacion === 'actual' ? 'step' : undefined}
+          >
             <span className={estilos.marca} aria-hidden="true">
               {situacion === 'completado' ? <Icono nombre="verificacion" tamano="sm" /> : indice + 1}
             </span>
             <span className={estilos.texto}>
               <span className={estilos.nombre}>{paso}</span>
-              <span className={estilos.fecha}>{fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}</span>
+              <span className={estilos.fecha}>
+                {fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}
+              </span>
               <span className="sr-only">
                 {situacion === 'completado' ? ' (completado)' : situacion === 'actual' ? ' (estado actual)' : ''}
               </span>

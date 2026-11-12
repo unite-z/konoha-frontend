@@ -65,18 +65,18 @@ function DetalleActividad({ entrada }: { entrada: EntradaHistorial }) {
     const antes = entrada.valores_anteriores[campo.clave]
     const despues = entrada.valores_nuevos[campo.clave]
     if (alta) {
-      return tieneValor(despues)
-        ? [{ etiqueta: campo.etiqueta, valor: formatearValor(despues, campo.formato) }]
-        : []
+      return tieneValor(despues) ? [{ etiqueta: campo.etiqueta, valor: formatearValor(despues, campo.formato) }] : []
     }
     if (JSON.stringify(antes) === JSON.stringify(despues)) return []
     if (!tieneValor(antes) && !tieneValor(despues)) return []
-    return [{
-      etiqueta: campo.etiqueta,
-      valor: `${tieneValor(antes) ? formatearValor(antes, campo.formato) : 'Sin registrar'} → ${
-        tieneValor(despues) ? formatearValor(despues, campo.formato) : 'Sin registrar'
-      }`,
-    }]
+    return [
+      {
+        etiqueta: campo.etiqueta,
+        valor: `${tieneValor(antes) ? formatearValor(antes, campo.formato) : 'Sin registrar'} → ${
+          tieneValor(despues) ? formatearValor(despues, campo.formato) : 'Sin registrar'
+        }`,
+      },
+    ]
   })
   const antesVerificada = tieneValor(entrada.valores_anteriores.fecha_verificacion)
   const despuesVerificada = tieneValor(entrada.valores_nuevos.fecha_verificacion)
@@ -112,11 +112,14 @@ export default function HistorialCambios({ entidad, registroId, presentacion = '
     (datos) => datos.length === 0,
   )
   const sinPermiso = consulta.error?.estado === 403
-  const columnas = presentacion === 'actividad'
-    ? COLUMNAS_BASE.map((columna) => columna.clave === 'detalle'
-      ? { ...columna, render: (entrada: EntradaHistorial) => <DetalleActividad entrada={entrada} /> }
-      : columna)
-    : COLUMNAS_BASE
+  const columnas =
+    presentacion === 'actividad'
+      ? COLUMNAS_BASE.map((columna) =>
+          columna.clave === 'detalle'
+            ? { ...columna, render: (entrada: EntradaHistorial) => <DetalleActividad entrada={entrada} /> }
+            : columna,
+        )
+      : COLUMNAS_BASE
   return (
     <div className={presentacion === 'actividad' ? estilos.actividad : undefined}>
       <TablaDatos
@@ -129,7 +132,9 @@ export default function HistorialCambios({ entidad, registroId, presentacion = '
         vacio={{ titulo: 'Sin cambios registrados', nivel: 3 }}
         error={{
           titulo: sinPermiso ? 'No tiene permiso para ver el historial' : 'No pudimos cargar el historial',
-          descripcion: sinPermiso ? 'Tu rol no incluye la consulta del historial de este registro.' : (consulta.error?.detalle ?? ''),
+          descripcion: sinPermiso
+            ? 'Tu rol no incluye la consulta del historial de este registro.'
+            : (consulta.error?.detalle ?? ''),
           onReintentar: consulta.reintentar,
           nivel: 3,
         }}

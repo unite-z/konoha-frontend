@@ -25,7 +25,10 @@ export function fechaCorta(fecha: FechaIso): string {
 }
 
 /** Insignia de una restricción considerada, como en Planificación: nunca solo color, siempre texto e icono. */
-export const PRESENTACION_RESTRICCION: Record<RestriccionConsiderada['tipo'], { texto: string; tono: Tono; icono: NombreIcono }> = {
+export const PRESENTACION_RESTRICCION: Record<
+  RestriccionConsiderada['tipo'],
+  { texto: string; tono: Tono; icono: NombreIcono }
+> = {
   Prohibicion: { texto: 'Prohibición', tono: 'error', icono: 'aspa' },
   Advertencia: { texto: 'Advertencia', tono: 'advertencia', icono: 'triangulo' },
 }
@@ -65,7 +68,9 @@ export interface SemanaCronograma {
 /** Propuestas agrupadas por semana (de lunes a domingo) según su fecha de inicio, en orden. */
 export function agruparPorSemana(propuestas: PropuestaCronograma[]): SemanaCronograma[] {
   const semanas = new Map<FechaIso, PropuestaCronograma[]>()
-  const ordenadas = [...propuestas].sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio) || a.actividad.localeCompare(b.actividad, 'es'))
+  const ordenadas = [...propuestas].sort(
+    (a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio) || a.actividad.localeCompare(b.actividad, 'es'),
+  )
   for (const p of ordenadas) {
     const lunes = lunesDe(p.fecha_inicio)
     semanas.set(lunes, [...(semanas.get(lunes) ?? []), p])
@@ -110,7 +115,8 @@ export function validarDecisiones(
     const d = decisiones[p.clave]
     if (!d?.accion) errores[p.clave] = MENSAJES_CRONOGRAMA.sinDecision
     else if (d.accion === 'corregir' && !d.valores) errores[p.clave] = MENSAJES_CRONOGRAMA.sinValores
-    else if (d.accion !== 'descartar' && coincideConProhibicion(p) && !d.confirma) errores[p.clave] = MENSAJES_CRONOGRAMA.sinConfirmar
+    else if (d.accion !== 'descartar' && coincideConProhibicion(p) && !d.confirma)
+      errores[p.clave] = MENSAJES_CRONOGRAMA.sinConfirmar
   }
   return errores
 }
@@ -135,7 +141,9 @@ export function cuerpoConfirmacion(
 }
 
 /** Recuento para la confirmación: se programan las aceptadas y las modificadas. */
-export function resumenConfirmacion(decisiones: (DecisionEnCursoCronograma | { accion?: AccionDecision } | undefined)[]): {
+export function resumenConfirmacion(
+  decisiones: (DecisionEnCursoCronograma | { accion?: AccionDecision } | undefined)[],
+): {
   aceptadas: number
   modificadas: number
   descartadas: number
@@ -164,21 +172,26 @@ export interface RecursoOpcion {
 }
 
 /** Cuadrillas y proveedores que aparecen en la propuesta, sin repetir y por nombre. */
-export function recursosDisponibles(propuestas: PropuestaCronograma[]): { cuadrillas: RecursoOpcion[]; proveedores: RecursoOpcion[] } {
+export function recursosDisponibles(propuestas: PropuestaCronograma[]): {
+  cuadrillas: RecursoOpcion[]
+  proveedores: RecursoOpcion[]
+} {
   const cuadrillas = new Map<number, string>()
   const proveedores = new Map<number, string>()
   for (const { recursos: r } of propuestas) {
     if (r.cuadrilla_id !== null) cuadrillas.set(r.cuadrilla_id, r.cuadrilla ?? `Cuadrilla n.º ${r.cuadrilla_id}`)
     if (r.proveedor_id !== null) proveedores.set(r.proveedor_id, r.proveedor ?? `Proveedor n.º ${r.proveedor_id}`)
   }
-  const lista = (m: Map<number, string>) => [...m].map(([id, nombre]) => ({ id, nombre })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+  const lista = (m: Map<number, string>) =>
+    [...m].map(([id, nombre]) => ({ id, nombre })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
   return { cuadrillas: lista(cuadrillas), proveedores: lista(proveedores) }
 }
 
 /** «Cuadrilla 1 (demo) · 4 operarios» o el proveedor. */
 export function textoRecursos(r: RecursosSugeridos): string {
   const responsable = r.modalidad === 'PersonalPropio' ? r.cuadrilla : r.proveedor
-  const operarios = r.operarios === null ? null : `${formatearNumero(r.operarios)} ${r.operarios === 1 ? 'operario' : 'operarios'}`
+  const operarios =
+    r.operarios === null ? null : `${formatearNumero(r.operarios)} ${r.operarios === 1 ? 'operario' : 'operarios'}`
   return [responsable ?? 'Sin responsable', operarios].filter(Boolean).join(' · ')
 }
 
@@ -198,16 +211,25 @@ export function valoresDePropuesta(p: PropuestaCronograma): ValoresCronograma {
 export function textoCambios(
   propuesta: PropuestaCronograma,
   valores: ValoresCronograma,
-  nombres: { espacio: (id: number | null) => string; cuadrilla: (id: number | null) => string; proveedor: (id: number | null) => string },
+  nombres: {
+    espacio: (id: number | null) => string
+    cuadrilla: (id: number | null) => string
+    proveedor: (id: number | null) => string
+  },
 ): string {
   const cambios: string[] = []
   const antes = valoresDePropuesta(propuesta)
   if (antes.fecha_inicio !== valores.fecha_inicio || antes.fecha_fin !== valores.fecha_fin) {
-    cambios.push(`${textoPeriodoCorto(antes.fecha_inicio, antes.fecha_fin)} → ${textoPeriodoCorto(valores.fecha_inicio, valores.fecha_fin)}`)
+    cambios.push(
+      `${textoPeriodoCorto(antes.fecha_inicio, antes.fecha_fin)} → ${textoPeriodoCorto(valores.fecha_inicio, valores.fecha_fin)}`,
+    )
   }
-  if (antes.area_verde_id !== valores.area_verde_id) cambios.push(`${propuesta.ubicacion} → ${nombres.espacio(valores.area_verde_id)}`)
-  if (antes.cuadrilla_id !== valores.cuadrilla_id) cambios.push(`${nombres.cuadrilla(antes.cuadrilla_id)} → ${nombres.cuadrilla(valores.cuadrilla_id)}`)
-  if (antes.proveedor_id !== valores.proveedor_id) cambios.push(`${nombres.proveedor(antes.proveedor_id)} → ${nombres.proveedor(valores.proveedor_id)}`)
+  if (antes.area_verde_id !== valores.area_verde_id)
+    cambios.push(`${propuesta.ubicacion} → ${nombres.espacio(valores.area_verde_id)}`)
+  if (antes.cuadrilla_id !== valores.cuadrilla_id)
+    cambios.push(`${nombres.cuadrilla(antes.cuadrilla_id)} → ${nombres.cuadrilla(valores.cuadrilla_id)}`)
+  if (antes.proveedor_id !== valores.proveedor_id)
+    cambios.push(`${nombres.proveedor(antes.proveedor_id)} → ${nombres.proveedor(valores.proveedor_id)}`)
   if (antes.operarios !== valores.operarios) {
     cambios.push(`${formatearNumero(antes.operarios)} → ${formatearNumero(valores.operarios)} operarios`)
   }
@@ -236,14 +258,17 @@ export function fechasEfectivas(
   propuesta: Pick<PropuestaCronograma, 'fecha_inicio' | 'fecha_fin'>,
   valores: ValoresCronograma | null | undefined,
 ): { desde: FechaIso; hasta: FechaIso } {
-  return valores ? { desde: valores.fecha_inicio, hasta: valores.fecha_fin } : { desde: propuesta.fecha_inicio, hasta: propuesta.fecha_fin }
+  return valores
+    ? { desde: valores.fecha_inicio, hasta: valores.fecha_fin }
+    : { desde: propuesta.fecha_inicio, hasta: propuesta.fecha_fin }
 }
 
 /** Programaciones existentes del mismo espacio que se cruzan en fechas con la propuesta. */
-export function crucesConProgramado<P extends { area_verde_id: number | null; fecha_inicio: FechaIso; fecha_fin: FechaIso }>(
-  rango: { area_verde_id: number | null; desde: FechaIso; hasta: FechaIso },
-  existentes: P[],
-): P[] {
+export function crucesConProgramado<
+  P extends { area_verde_id: number | null; fecha_inicio: FechaIso; fecha_fin: FechaIso },
+>(rango: { area_verde_id: number | null; desde: FechaIso; hasta: FechaIso }, existentes: P[]): P[] {
   if (rango.area_verde_id === null) return []
-  return existentes.filter((e) => e.area_verde_id === rango.area_verde_id && e.fecha_inicio <= rango.hasta && e.fecha_fin >= rango.desde)
+  return existentes.filter(
+    (e) => e.area_verde_id === rango.area_verde_id && e.fecha_inicio <= rango.hasta && e.fecha_fin >= rango.desde,
+  )
 }

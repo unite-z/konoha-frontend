@@ -72,7 +72,9 @@ export default function Adjuntos({
 }: AdjuntosProps) {
   const usuarioId = useSesionActiva()?.usuario.id ?? null
   const enCola = porSincronizar(useCola(), 'core.adjunto').filter((p) =>
-    registroPendiente ? p.depende_de === registroPendiente : p.carga.entidad === entidad && p.carga.registro_id === registroId,
+    registroPendiente
+      ? p.depende_de === registroPendiente
+      : p.carga.entidad === entidad && p.carga.registro_id === registroId,
   )
   const [version, setVersion] = useState(0)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
@@ -88,10 +90,13 @@ export default function Adjuntos({
     (datos) => datos.length === 0,
   )
 
-  useEffect(() => () => {
-    urlsTemporales.current.forEach((url) => URL.revokeObjectURL(url))
-    urlsTemporales.current.clear()
-  }, [])
+  useEffect(
+    () => () => {
+      urlsTemporales.current.forEach((url) => URL.revokeObjectURL(url))
+      urlsTemporales.current.clear()
+    },
+    [],
+  )
 
   function crearVistaPrevia(archivo: File): string {
     const url = URL.createObjectURL(archivo)
@@ -146,7 +151,10 @@ export default function Adjuntos({
     setSubiendo(true)
     setPendiente({ ...objetivo, error: null })
     try {
-      const enLaCola = await subirOEncolar(objetivo, prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo)
+      const enLaCola = await subirOEncolar(
+        objetivo,
+        prepararArchivo ? await prepararArchivo(objetivo.archivo) : objetivo.archivo,
+      )
       setPendiente(null)
       if (enLaCola) return
       setVersion((v) => v + 1)
@@ -254,11 +262,16 @@ export default function Adjuntos({
   ]
   const sinPermiso = consulta.error?.estado === 403
   const modoFoto = presentacion === 'foto'
-  const mostrarArchivos = !registroPendiente && (!modoFoto || consulta.estado === 'error' || Boolean(consulta.datos?.length))
+  const mostrarArchivos =
+    !registroPendiente && (!modoFoto || consulta.estado === 'error' || Boolean(consulta.datos?.length))
 
   return (
     <>
-      {errorDescarga && <AvisoEnLinea tono="error" titulo="No se pudo descargar">{errorDescarga}</AvisoEnLinea>}
+      {errorDescarga && (
+        <AvisoEnLinea tono="error" titulo="No se pudo descargar">
+          {errorDescarga}
+        </AvisoEnLinea>
+      )}
       {mostrarArchivos && (
         <TablaDatos
           titulo={modoFoto ? 'Archivos adjuntos' : 'Evidencias'}
@@ -270,9 +283,15 @@ export default function Adjuntos({
           vacio={{ titulo: 'Sin fotografías ni documentos', nivel: 3 }}
           error={{
             titulo: sinPermiso
-              ? modoFoto ? 'Sin permiso para ver los archivos' : 'No tiene permiso para ver las evidencias'
-              : modoFoto ? 'No pudimos cargar los archivos' : 'No pudimos cargar las evidencias',
-            descripcion: sinPermiso ? 'Tu rol no incluye la consulta de este registro.' : (consulta.error?.detalle ?? ''),
+              ? modoFoto
+                ? 'Sin permiso para ver los archivos'
+                : 'No tiene permiso para ver las evidencias'
+              : modoFoto
+                ? 'No pudimos cargar los archivos'
+                : 'No pudimos cargar las evidencias',
+            descripcion: sinPermiso
+              ? 'Tu rol no incluye la consulta de este registro.'
+              : (consulta.error?.detalle ?? ''),
             onReintentar: consulta.reintentar,
             nivel: 3,
           }}
@@ -291,21 +310,30 @@ export default function Adjuntos({
                     <Boton
                       variante="fantasma"
                       className={estilos.botonVistaPrevia}
-                      onClick={() => setVistaPrevia({
-                        nombre: pendienteSeleccionado.archivo.name,
-                        url: pendienteSeleccionado.vistaPrevia,
-                        revocarAlCerrar: false,
-                      })}
+                      onClick={() =>
+                        setVistaPrevia({
+                          nombre: pendienteSeleccionado.archivo.name,
+                          url: pendienteSeleccionado.vistaPrevia,
+                          revocarAlCerrar: false,
+                        })
+                      }
                     >
                       <img
                         className={estilos.miniatura}
                         src={pendienteSeleccionado.vistaPrevia}
                         alt={`Vista previa de ${pendienteSeleccionado.archivo.name}`}
-                        onError={() => setSeleccionados((actuales) => actuales.map((item) =>
-                          item.clave === pendienteSeleccionado.clave
-                            ? { ...item, error: item.error ?? 'No se pudo mostrar la vista previa de esta fotografía.' }
-                            : item,
-                        ))}
+                        onError={() =>
+                          setSeleccionados((actuales) =>
+                            actuales.map((item) =>
+                              item.clave === pendienteSeleccionado.clave
+                                ? {
+                                    ...item,
+                                    error: item.error ?? 'No se pudo mostrar la vista previa de esta fotografía.',
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
                       />
                     </Boton>
                     <div className={estilos.datosPendiente}>
@@ -364,12 +392,12 @@ export default function Adjuntos({
         </>
       )}
       {vistaPrevia && (
-        <DialogoDetalle
-          abierto
-          titulo={vistaPrevia.nombre}
-          onCerrar={cerrarVistaPrevia}
-        >
-          <img className={estilos.imagenAmpliada} src={vistaPrevia.url} alt={`Vista ampliada de ${vistaPrevia.nombre}`} />
+        <DialogoDetalle abierto titulo={vistaPrevia.nombre} onCerrar={cerrarVistaPrevia}>
+          <img
+            className={estilos.imagenAmpliada}
+            src={vistaPrevia.url}
+            alt={`Vista ampliada de ${vistaPrevia.nombre}`}
+          />
         </DialogoDetalle>
       )}
     </>

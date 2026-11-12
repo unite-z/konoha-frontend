@@ -79,9 +79,9 @@ export function textoClase(clase: ClaseAtencion): string {
   return TEXTO_CLASE[clase] ?? clase
 }
 
-export const OPCIONES_CLASE: { valor: ClaseAtencion; texto: string }[] = (Object.keys(TEXTO_CLASE) as ClaseAtencion[]).map(
-  (valor) => ({ valor, texto: TEXTO_CLASE[valor] }),
-)
+export const OPCIONES_CLASE: { valor: ClaseAtencion; texto: string }[] = (
+  Object.keys(TEXTO_CLASE) as ClaseAtencion[]
+).map((valor) => ({ valor, texto: TEXTO_CLASE[valor] }))
 
 /** La extraordinaria se tramita con orden de servicio; la programada, con la orden de compra de Logística. */
 export function textoOrden(clase: ClaseAtencion, mayuscula = false): string {

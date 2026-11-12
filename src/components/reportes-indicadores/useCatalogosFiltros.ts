@@ -25,7 +25,8 @@ export interface CatalogosFiltros {
 }
 
 /** Motivo del selector bloqueado cuando su catálogo no se pudo cargar. */
-export const MOTIVO_CATALOGO_NO_DISPONIBLE = 'No se pudo cargar la lista. Usa «Actualizar» o vuelve a intentarlo más tarde'
+export const MOTIVO_CATALOGO_NO_DISPONIBLE =
+  'No se pudo cargar la lista. Usa «Actualizar» o vuelve a intentarlo más tarde'
 
 /** Ayuda del selector cuando el catálogo tiene más elementos que los cargados. */
 export const AYUDA_CATALOGO_INCOMPLETO = 'Se muestran los primeros resultados'

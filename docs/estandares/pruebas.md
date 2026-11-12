@@ -11,12 +11,12 @@ CI ejecuta las cuatro órdenes en cada PR.
 
 ## Qué se prueba
 
-| Qué | Cómo |
-|---|---|
-| Lógica pura (`utils/`, `config/`, `router/`, `sesion/`) | Vitest, sin DOM. Es lo prioritario |
-| Clientes de la API (`services/api/`) | Vitest con `fetch` simulado: rutas, cabeceras, errores y reintentos |
-| Cola sin conexión | Vitest con IndexedDB simulado: orden, reintentos, idempotencia |
-| Componentes (`design-system/` primero) | Vitest con Testing Library y jsdom: comportamiento y accesibilidad. La lógica compleja se sigue sacando a `utils/` |
+| Qué                                                     | Cómo                                                                                                               |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Lógica pura (`utils/`, `config/`, `router/`, `sesion/`) | Vitest, sin DOM. Es lo prioritario                                                                                 |
+| Clientes de la API (`services/api/`)                    | Vitest con `fetch` simulado: rutas, cabeceras, errores y reintentos                                                |
+| Cola sin conexión                                       | Vitest con IndexedDB simulado: orden, reintentos, idempotencia                                                     |
+| Componentes (`design-system/` primero)                  | Vitest con Testing Library y jsdom: comportamiento y accesibilidad. La lógica compleja se sigue sacando a `utils/` |
 
 ## Pruebas de componentes
 

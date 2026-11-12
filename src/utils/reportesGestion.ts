@@ -170,7 +170,13 @@ export function filasComparacion(comparacion: ComparacionMes[]): FilaComparacion
       ['Trasladado', mes.trasladado],
     ]
     return grupos.flatMap(([movimiento, totales]) =>
-      totales.map((t) => ({ mes: mes.mes, movimiento, tipo_material: t.tipo_material, unidad: t.unidad, cantidad: t.cantidad })),
+      totales.map((t) => ({
+        mes: mes.mes,
+        movimiento,
+        tipo_material: t.tipo_material,
+        unidad: t.unidad,
+        cantidad: t.cantidad,
+      })),
     )
   })
 }
