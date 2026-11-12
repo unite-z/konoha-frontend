@@ -195,6 +195,7 @@ export const router = createBrowserRouter([
                   { path: 'coberturas', element: <CoberturasPage /> },
                   { path: 'catalogos', element: <CatalogosPage /> },
                   { path: 'ejemplares', element: <EjemplaresPage /> },
+                  { path: 'ejemplares/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
                   { path: 'ejemplares/:id/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
                   { path: 'campanas-poda', element: <CampanasPodaPage /> },
                   { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },

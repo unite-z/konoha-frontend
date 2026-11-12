@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
@@ -17,7 +17,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import ExportarExcel from '@/components/core/ExportarExcel'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
-import { MIGAS_INVENTARIO, rutaFichaTecnicaEjemplar } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplarPorCodigo, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
@@ -83,7 +83,6 @@ export default function EjemplaresPage() {
 
 function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   usePaginaActual('Ejemplares y especies', [MIGAS_INVENTARIO.areasVerdes, { texto: 'Ejemplares y especies' }])
-  const navegar = useNavigate()
   const sesion = useSesionActiva()
   const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
   const puedeGestionar = puede(sesion, PERMISOS.gestionarCatalogos)
@@ -537,9 +536,6 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
                         </form>
                       )}
                       {alturaSinGuardar && <p className={estilos.descripcion} role="status">Altura sin guardar. La sugerencia se actualiza al guardar.</p>}
-                      <Boton variante="secundario" onClick={() => navegar(rutaFichaTecnicaEjemplar(ejemplarSeleccionado.id))}>
-                        Ficha técnica y evaluación
-                      </Boton>
                     </section>
                   </div>
                   <section key={`fotos-${ejemplarSeleccionado.id}`} className={estilos.seccionFicha} aria-labelledby="foto-del-ejemplar">

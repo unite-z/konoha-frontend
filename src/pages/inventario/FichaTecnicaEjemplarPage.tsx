@@ -14,8 +14,9 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_INVENTARIO, RUTAS_INVENTARIO } from '@/router/rutasApp'
+import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaFichaTecnicaEjemplar } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
+import { listarEjemplares } from '@/services/api/ejemplares'
 import { cambiarFichaTecnica, obtenerFichaTecnica, registrarEvaluacion } from '@/services/api/fichaTecnica'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type {
@@ -303,18 +304,88 @@ function NuevaEvaluacion({ ejemplarId, alGuardar }: { ejemplarId: number; alGuar
   )
 }
 
+/** Entrada desde el menú: busca el ejemplar y abre su ficha. */
+function ElegirEjemplar() {
+  const navegar = useNavigate()
+  const [busqueda, setBusqueda] = useState('')
+  const [termino, setTermino] = useState('')
+  const [ejemplarId, setEjemplarId] = useState('')
+  const ejemplares = useConsulta(`ficha-tecnica-ejemplares|${termino}`, (signal) =>
+    listarEjemplares(termino, 1, signal),
+  )
+
+  if (ejemplares.error?.estado === 403) return <EstadoSinAcceso descripcion={ejemplares.error.detalle} />
+
+  return (
+    <form
+      className={estilos.pagina}
+      onSubmit={(evento) => {
+        evento.preventDefault()
+        if (ejemplarId) navegar(rutaFichaTecnicaEjemplar(Number(ejemplarId)))
+      }}
+    >
+      <p className={estilos.descripcion}>
+        Datos dasométricos, estado de salud y evaluaciones fitosanitarias y estructurales de cada ejemplar.
+      </p>
+      <Tarjeta titulo="Elegir ejemplar" relleno="amplio">
+        <div className={estilos.busqueda} role="search" aria-label="Buscar ejemplares">
+          <CampoFormulario
+            id="buscar-ejemplar-ficha"
+            etiqueta="Buscar por código o especie"
+            type="search"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+          />
+          <Boton type="button" variante="secundario" onClick={() => setTermino(busqueda.trim())}>
+            Buscar
+          </Boton>
+        </div>
+        {ejemplares.estado === 'error' && (
+          <EstadoError
+            titulo="No se pudieron cargar los ejemplares"
+            descripcion={ejemplares.error?.detalle ?? ''}
+            onReintentar={ejemplares.reintentar}
+            nivel={3}
+          />
+        )}
+        <div className={estilos.campos}>
+          <Selector
+            id="ejemplar-ficha"
+            etiqueta="Ejemplar"
+            valor={ejemplarId}
+            onCambiar={setEjemplarId}
+            opcionTodos="Selecciona un ejemplar"
+            opciones={(ejemplares.datos ?? []).map((e) => ({
+              valor: String(e.id),
+              texto: `${e.codigo} · ${e.especie_nombre_comun ?? 'Especie sin asignar'}`,
+            }))}
+          />
+        </div>
+      </Tarjeta>
+      <div className={estilos.acciones}>
+        <Boton type="submit" variante="primario" deshabilitado={!ejemplarId}>
+          Ver ficha técnica
+        </Boton>
+      </div>
+    </form>
+  )
+}
+
 export default function FichaTecnicaEjemplarPage() {
-  const id = Number(useParams().id)
+  const idRuta = useParams().id
+  const id = Number(idRuta)
   const navegar = useNavigate()
   const sesion = useSesionActiva()
   const puedeRegistrar = puede(sesion, PERMISOS.registrarInventario)
-  const consulta = useConsulta(`ficha-tecnica|${id}`, (signal) => obtenerFichaTecnica(id, signal))
-  const ficha = consulta.datos
+  const consulta = useConsulta(idRuta ? `ficha-tecnica|${id}` : null, (signal) => obtenerFichaTecnica(id, signal))
+  const ficha = consulta.datos?.id === id ? consulta.datos : null
   usePaginaActual(ficha ? `Ficha técnica · ${ficha.codigo}` : 'Ficha técnica', [
     MIGAS_INVENTARIO.areasVerdes,
     MIGAS_INVENTARIO.ejemplares,
     { texto: 'Ficha técnica' },
   ])
+
+  if (!idRuta) return <ElegirEjemplar />
 
   if (consulta.error?.estado === 403) return <EstadoSinAcceso descripcion={consulta.error.detalle} />
   if (consulta.estado === 'error' && !ficha) {
@@ -375,8 +446,8 @@ export default function FichaTecnicaEjemplarPage() {
       />
 
       <div className={estilos.acciones}>
-        <Boton variante="secundario" onClick={() => navegar(RUTAS_INVENTARIO.ejemplares)}>
-          Volver a ejemplares
+        <Boton variante="secundario" onClick={() => navegar(RUTAS_INVENTARIO.fichaTecnica)}>
+          Elegir otro ejemplar
         </Boton>
       </div>
     </div>

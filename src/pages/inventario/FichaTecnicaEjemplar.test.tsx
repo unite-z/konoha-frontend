@@ -47,6 +47,8 @@ const api = vi.hoisted(() => ({
 const permiso = vi.hoisted(() => ({ registrar: true }))
 
 vi.mock('@/services/api/fichaTecnica', () => api)
+const listarEjemplares = vi.hoisted(() => vi.fn())
+vi.mock('@/services/api/ejemplares', () => ({ listarEjemplares }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 7 } }) }))
 vi.mock('@/config/permisosCore', () => ({
@@ -54,10 +56,11 @@ vi.mock('@/config/permisosCore', () => ({
   puede: () => permiso.registrar,
 }))
 
-function pagina() {
+function pagina(ruta = '/areas-verdes/ejemplares/5/ficha-tecnica') {
   return render(
-    <MemoryRouter initialEntries={['/areas-verdes/ejemplares/5/ficha-tecnica']}>
+    <MemoryRouter initialEntries={[ruta]}>
       <Routes>
+        <Route path="/areas-verdes/ejemplares/ficha-tecnica" element={<FichaTecnicaEjemplarPage />} />
         <Route path="/areas-verdes/ejemplares/:id/ficha-tecnica" element={<FichaTecnicaEjemplarPage />} />
       </Routes>
     </MemoryRouter>,
@@ -156,6 +159,16 @@ describe('Ficha técnica del ejemplar', () => {
     expect(await screen.findByText('Enfermedades o plagas: Pulgón en hojas')).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Guardar ficha técnica' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Guardar evaluación' })).toBeNull()
+  })
+
+  it('desde el menú, busca el ejemplar y abre su ficha', async () => {
+    listarEjemplares.mockResolvedValue([{ id: 5, codigo: 'EJ-0005', especie_nombre_comun: 'Molle' }])
+    pagina('/areas-verdes/ejemplares/ficha-tecnica')
+    await screen.findByRole('option', { name: 'EJ-0005 · Molle' })
+    fireEvent.change(document.getElementById('ejemplar-ficha') as HTMLSelectElement, { target: { value: '5' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Ver ficha técnica' }))
+    expect(await screen.findByText('Ejemplar EJ-0005')).toBeTruthy()
+    expect(api.obtenerFichaTecnica).toHaveBeenCalledWith(5, expect.anything())
   })
 
   it('muestra el acceso denegado si el backend responde 403', async () => {
