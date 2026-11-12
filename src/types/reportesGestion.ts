@@ -155,6 +155,28 @@ export interface SeccionNoDisponible {
   mensaje_sin_datos: string | null
 }
 
+/**
+ * Producto agronómico aplicado por un proveedor en el mes (`TotalProductoProveedor.java`). La dosis es texto libre
+ * en MOD-05: llegan las distintas, sin sumar.
+ */
+export interface ProductoProveedor {
+  producto_id: number
+  producto: string
+  principio_activo: string | null
+  proveedor_id: number
+  proveedor: string
+  /** Atenciones del mes en las que el proveedor aplicó el producto. */
+  aplicaciones: number
+  dosis: string[]
+  /** Códigos de esas atenciones, en orden de fecha. */
+  atenciones: string[]
+}
+
+/** Productos aplicados por proveedores, en una vista aparte del material (`ProductosProveedor.java`). */
+export interface ProductosProveedor extends SeccionNoDisponible {
+  productos: ProductoProveedor[]
+}
+
 /** `filtros_aplicados` del material vegetal (`FiltrosMaterialVegetal.java`). */
 export interface FiltrosMaterialVegetal {
   mes: string
@@ -168,7 +190,7 @@ export interface ResultadoMaterialVegetal extends ReporteBase<FiltrosMaterialVeg
   propagado: TotalMaterial[]
   trasladado: TotalTraslado[]
   comparacion: ComparacionMes[]
-  productos_proveedor: SeccionNoDisponible
+  productos_proveedor: ProductosProveedor
   notas: string[]
 }
 
