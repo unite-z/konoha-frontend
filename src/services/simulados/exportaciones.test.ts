@@ -19,8 +19,12 @@ describe('generarSimulado (RF-REP-009)', () => {
 
   it('valida el periodo y el formato', () => {
     expect(() => generarSimulado({ tipo: 'GestionOSG', formato: 'PDF', parametros: {} })).toThrow('Indica el mes')
-    expect(() => generarSimulado({ tipo: 'DistribucionPersonal', formato: 'PDF', parametros: {} })).toThrow('ese formato')
-    expect(() => generarSimulado({ tipo: 'MatrizIncidencias', formato: 'PDF', parametros: {} })).toThrow('Indica el periodo')
+    expect(() => generarSimulado({ tipo: 'DistribucionPersonal', formato: 'PDF', parametros: {} })).toThrow(
+      'ese formato',
+    )
+    expect(() => generarSimulado({ tipo: 'MatrizIncidencias', formato: 'PDF', parametros: {} })).toThrow(
+      'Indica el periodo',
+    )
   })
 
   it('la matriz de incidencias se exporta con su periodo', () => {
@@ -34,8 +38,12 @@ describe('generarSimulado (RF-REP-009)', () => {
 
   it('?simular=volumen-excedido solo afecta al PDF; ?simular=vacio no genera', () => {
     vi.stubGlobal('location', { search: '?simular=volumen-excedido' })
-    expect(() => generarSimulado({ tipo: 'GestionOSG', formato: 'PDF', parametros: { mes: '2026-10' } })).toThrow('7 250 filas')
-    expect(generarSimulado({ tipo: 'GestionOSG', formato: 'Excel', parametros: { mes: '2026-10' } }).formato).toBe('Excel')
+    expect(() => generarSimulado({ tipo: 'GestionOSG', formato: 'PDF', parametros: { mes: '2026-10' } })).toThrow(
+      '7 250 filas',
+    )
+    expect(generarSimulado({ tipo: 'GestionOSG', formato: 'Excel', parametros: { mes: '2026-10' } }).formato).toBe(
+      'Excel',
+    )
     vi.stubGlobal('location', { search: '?simular=vacio' })
     expect(() => generarSimulado({ tipo: 'GestionOSG', formato: 'Excel', parametros: { mes: '2026-10' } })).toThrow(
       'No hay datos para exportar',
