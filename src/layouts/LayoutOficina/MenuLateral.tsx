@@ -4,7 +4,7 @@
  * Las entradas salen de `MODULOS_MENU` (`entradasMenuLateral.ts`) y el activo, de `activoEnMenu`: una única regla
  * (prefijo más largo) para el módulo y para la entrada de segundo nivel, así que nunca hay dos marcados.
  * Las entradas sin ruta aún no están disponibles: sin enlace (`aria-disabled`), atenuadas y con
- * «Próximamente». «Configuración» solo es visible para quien gestiona catálogos.
+ * «Próximamente». «Configuración» (ajustes de cada usuario, AV-389) está al final, para todos.
  *
  * Comprimido por defecto («Menú lateral · Comprimido» y «Elemento compacto» de Figma): el logo arriba y solo los
  * iconos de primer nivel, con el nombre como texto accesible y `title`. Al pasar el cursor, o con el foco del
@@ -21,7 +21,8 @@
  */
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
-import { PERMISOS, entradasMenu, puede } from '@/config/permisosCore'
+import { entradasMenu } from '@/config/permisosCore'
+import { RUTAS_CORE } from '@/router/rutasApp'
 import Icono, { type NombreIconoFigma } from '@/components/ui/Icono'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { MODULOS_MENU, activoEnMenu, hijosVisibles } from './entradasMenuLateral'
@@ -149,7 +150,8 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
           </p>
           <ul className={estilos.lista}>
             {MODULOS_MENU.map((modulo) => {
-              if (!modulo.clave || !modulo.ruta) return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
+              if (!modulo.clave || !modulo.ruta)
+                return <SinEnlace key={modulo.texto} texto={modulo.texto} icono={modulo.icono} />
               if (!permitidas.has(modulo.clave)) return null
               const esActivo = activo.modulo === modulo
               const abierto = abiertos.has(modulo.texto)
@@ -203,8 +205,15 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
               )
             })}
 
-            {/* Catálogos y parámetros: otro requisito; solo para quien los gestiona. */}
-            {puede(sesion, PERMISOS.gestionarCatalogos) && <SinEnlace texto="Configuración" icono="settings" />}
+            {/* Ajustes de cada usuario (AV-389): para todos. */}
+            <li>
+              <Entrada
+                texto="Configuración"
+                icono="settings"
+                ruta={RUTAS_CORE.configuracion}
+                activa={pathname === RUTAS_CORE.configuracion}
+              />
+            </li>
           </ul>
         </nav>
       </div>

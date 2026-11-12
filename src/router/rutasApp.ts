@@ -332,6 +332,7 @@ export const RUTAS_CORE = {
   rolesPermisos: `${BASE_USUARIOS}/roles`, // AV-381: solo el superadministrador
   repositorio: '/repositorio', // RF-T-010
   pendientes: '/pendientes', // RF-T-012: lo que falta por sincronizar desde este dispositivo
+  configuracion: '/configuracion', // AV-389: ajustes de cada usuario (Apariencia)
 } as const
 
 /** Prefijo de «Usuarios y roles» (menú). */

@@ -181,6 +181,55 @@
 }
 
 /*
+ * Color de acento elegido en Configuración → Apariencia (AV-389): data-acento en <html>. Sin atributo, el azul
+ * institucional. Secundarios oficiales PUCP; todos los pares cumplen WCAG AA.
+ */
+
+/* Azul PUCP #004EA8 */
+:root[data-acento='azul'] {
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #003e86;
+  --color-action-text: #004ea8;
+  --color-action-subtle: #ebf1f8;
+  --color-sidebar-active-bg: #dbe6f3;
+  --color-sidebar-active-text: #003e86;
+  --web-focus-ring-color: #0a7bc2;
+}
+
+/* Verde PUCP #008768 (oscurecido a #007a5e para AA) */
+:root[data-acento='verde'] {
+  --color-action-primary: #007a5e;
+  --color-action-primary-hover: #00624b;
+  --color-action-text: #007a5e;
+  --color-action-subtle: #ebf4f2;
+  --color-sidebar-active-bg: #dbece8;
+  --color-sidebar-active-text: #00624b;
+  --web-focus-ring-color: #008768;
+}
+
+/* Morado PUCP #7F32C8 */
+:root[data-acento='morado'] {
+  --color-action-primary: #7f32c8;
+  --color-action-primary-hover: #6628a0;
+  --color-action-text: #7f32c8;
+  --color-action-subtle: #f5effb;
+  --color-sidebar-active-bg: #ede2f7;
+  --color-sidebar-active-text: #6628a0;
+  --web-focus-ring-color: #7f32c8;
+}
+
+/* Magenta PUCP #A31598 */
+:root[data-acento='magenta'] {
+  --color-action-primary: #a31598;
+  --color-action-primary-hover: #82117a;
+  --color-action-text: #a31598;
+  --color-action-subtle: #f8ecf7;
+  --color-sidebar-active-bg: #f2def1;
+  --color-sidebar-active-text: #82117a;
+  --web-focus-ring-color: #a31598;
+}
+
+/*
  * AV · Color, modo Oscuro. Preparado, sin selector visible para el usuario (D6):
  * se prueba poniendo data-tema="oscuro" en <html>.
  */
@@ -221,4 +270,38 @@
   --web-nodos-alfa-linea: 0.5;
   --web-nodos-alfa-onda: 0.85;
   color-scheme: dark;
+}
+
+/* Acentos en el modo oscuro: más especificidad que el bloque oscuro. */
+
+:root[data-tema='oscuro'][data-acento='azul'] {
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #0a7bc2;
+  --color-action-text: #41b9e4;
+  --color-sidebar-active-text: #41b9e4;
+  --web-focus-ring-color: #41b9e4;
+}
+
+:root[data-tema='oscuro'][data-acento='verde'] {
+  --color-action-primary: #008768;
+  --color-action-primary-hover: #007a5e;
+  --color-action-text: #16c78e;
+  --color-sidebar-active-text: #16c78e;
+  --web-focus-ring-color: #16c78e;
+}
+
+:root[data-tema='oscuro'][data-acento='morado'] {
+  --color-action-primary: #7f32c8;
+  --color-action-primary-hover: #6628a0;
+  --color-action-text: #c080fc;
+  --color-sidebar-active-text: #c080fc;
+  --web-focus-ring-color: #c080fc;
+}
+
+:root[data-tema='oscuro'][data-acento='magenta'] {
+  --color-action-primary: #a31598;
+  --color-action-primary-hover: #82117a;
+  --color-action-text: #f56eb4;
+  --color-sidebar-active-text: #f56eb4;
+  --web-focus-ring-color: #f56eb4;
 }
