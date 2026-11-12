@@ -88,3 +88,31 @@ it('muestra únicamente cambios funcionales con sus valores anterior y nuevo', a
   expect(within(tabla).queryByText(/id:/)).toBeNull()
   expect(screen.getByRole('region', { name: 'Historial de cambios' })).toBeTruthy()
 })
+
+it('presenta la anulación con responsable, motivo y transición sin campos redundantes de verificación', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () =>
+      Response.json([
+        {
+          accion: 'Anulacion',
+          usuario: 'Mateo Recoba',
+          fecha_hora: '2026-11-10T11:00:00-05:00',
+          valores_anteriores: { estado_actividad: 'Registrada', fecha_verificacion: null },
+          valores_nuevos: { estado_actividad: 'Anulada', fecha_verificacion: null },
+          motivo: 'Registro duplicado',
+        },
+      ]),
+    ),
+  )
+
+  render(<HistorialCambios entidad="actividad" registroId={1} presentacion="actividad" />)
+
+  const tabla = await screen.findByRole('table', { name: 'Historial de cambios' })
+  expect(within(tabla).getByText('Anulación')).toBeTruthy()
+  expect(within(tabla).getByText('Estado de la actividad')).toBeTruthy()
+  expect(within(tabla).getByText('Registrada → Anulada')).toBeTruthy()
+  expect(within(tabla).getByText('Motivo de anulación')).toBeTruthy()
+  expect(within(tabla).getByText('Registro duplicado')).toBeTruthy()
+  expect(within(tabla).queryByText(/Estado de verificación|Fecha de verificación/)).toBeNull()
+})
