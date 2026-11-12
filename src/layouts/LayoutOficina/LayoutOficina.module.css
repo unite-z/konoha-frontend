@@ -39,8 +39,11 @@
   /*
    * El panel es lo que se desplaza, no la ventana (AV-393): la cabecera con las migas queda fija arriba y el panel
    * conserva su borde y sus esquinas redondeadas al bajar, como en las aplicaciones SaaS.
+   * `position: relative` lo hace bloque contenedor de lo absoluto de dentro (los `.sr-only` de los campos): si no,
+   * se colocan respecto al body y lo alargan, y la ventana también se desplaza con un hueco vacío debajo.
    */
   .columna {
+    position: relative;
     height: calc(100vh - 2 * var(--space-2));
     height: calc(100dvh - 2 * var(--space-2));
     margin: var(--space-2) var(--space-2) var(--space-2) 0;
