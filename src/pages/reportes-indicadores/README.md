@@ -18,7 +18,7 @@ El módulo más grande (un 37 % del código). Una subcarpeta por sección del me
 | Permisos | `config/permisos.ts` (códigos de MOD-01 de la sesión, AV-382) |
 | Rutas | `RUTAS`, `MIGAS` y `rutaRevision*()` en `router/rutasApp.ts` |
 
-**Entre módulos:** `asistencia-ia/extraccion/consultasApoyo.ts` encadena llamadas a MOD-05 (atención a atención e informe a informe). No hay que copiarlo: el objetivo es que el endpoint de IA devuelva ese contexto (vía backend). Para enlazar a una atención se usa `rutaDetalleAtencion(id)`.
+**Entre módulos:** `ia/extracciones/` devuelve la atención y el informe de MOD-05 de cada propuesta (AV-355): no se piden aparte. Para enlazar a una atención se usa `rutaDetalleAtencion(id)`.
 
 **Deuda que no se copia:** tarjetas y botones propios en el CSS de cada reporte. En código nuevo, `TarjetaIndicador`, `Boton` y los componentes de `components/ui`.
 

@@ -26,13 +26,11 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionExtraccion } from '@/router/rutasApp'
 import { listarExtracciones } from '@/services/api/ia'
-import type { EstadoSugerencia, SugerenciaIA } from '@/types/ia'
-import type { Atencion } from '@/types/tercerizados'
+import type { AtencionExtraccion, EstadoSugerencia, SugerenciaIA } from '@/types/ia'
 import { insigniaSugerencia } from '@/utils/estados'
 import { formatearFecha, formatearFechaHora, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import estilos from '../reportes/Reportes.module.css'
 import estilosIa from './AsistenciaIa.module.css'
-import { cargarAtenciones } from './extraccion/consultasApoyo'
 import SolicitudAnalisis from './extraccion/SolicitudAnalisis'
 import { coberturaSugerencia } from './extraccion/valoresCampo'
 import Estado from '@/components/ui/Estado'
@@ -57,13 +55,13 @@ export interface EstadoNavegacionRevision {
 }
 
 /** Código de la atención y, debajo, proveedor y tipo de servicio. */
-function CeldaAtencion({ atencion, atencionId }: { atencion: Atencion | undefined; atencionId: number }) {
+function CeldaAtencion({ atencion, atencionId }: { atencion: AtencionExtraccion | null | undefined; atencionId: number }) {
   if (!atencion) return <span className="cifra">n.º {atencionId}</span>
   return (
     <span className={estilosIa.celdaAtencion}>
       <span className={estilosIa.codigoAtencion}>{atencion.codigo}</span>
       <span className={estilosIa.metaAtencion}>
-        {atencion.proveedor_nombre ?? SIN_VALOR} · {atencion.tipo_servicio_nombre ?? SIN_VALOR}
+        {atencion.proveedor ?? SIN_VALOR} · {atencion.tipo_servicio ?? SIN_VALOR}
       </span>
     </span>
   )
@@ -85,7 +83,7 @@ function CeldaDatos({ sugerencia }: { sugerencia: SugerenciaIA }) {
   )
 }
 
-function columnas(atenciones: Map<number, Atencion>): ColumnaTabla<SugerenciaIA>[] {
+function columnas(): ColumnaTabla<SugerenciaIA>[] {
   return [
     {
       clave: 'id',
@@ -102,7 +100,7 @@ function columnas(atenciones: Map<number, Atencion>): ColumnaTabla<SugerenciaIA>
       titulo: 'Atención',
       subtitulo: 'proveedor · tipo de servicio',
       render: (s) => (
-        <CeldaAtencion atencion={atenciones.get(s.contenido.entrada.atencion_id)} atencionId={s.contenido.entrada.atencion_id} />
+        <CeldaAtencion atencion={s.atencion} atencionId={s.contenido.entrada.atencion_id} />
       ),
     },
     { clave: 'registro_id', titulo: 'Reporte', render: (s) => <span className="cifra">n.º {s.registro_id}</span> },
@@ -119,13 +117,12 @@ function columnas(atenciones: Map<number, Atencion>): ColumnaTabla<SugerenciaIA>
 /** Ficha de una propuesta (móvil). */
 function FichaPropuesta({
   sugerencia: s,
-  atencion,
   onAbrir,
 }: {
   sugerencia: SugerenciaIA
-  atencion: Atencion | undefined
   onAbrir: () => void
 }) {
+  const { atencion } = s
   return (
     <li>
       <button type="button" className={estilosIa.ficha} onClick={onAbrir}>
@@ -135,7 +132,7 @@ function FichaPropuesta({
         </span>
         {atencion && (
           <span className={estilosIa.metaAtencion}>
-            {atencion.proveedor_nombre ?? SIN_VALOR} · {atencion.tipo_servicio_nombre ?? SIN_VALOR}
+            {atencion.proveedor ?? SIN_VALOR} · {atencion.tipo_servicio ?? SIN_VALOR}
           </span>
         )}
         <span className={estilosIa.datosFicha}>
@@ -174,13 +171,6 @@ export default function ExtraccionReporteProveedorPage() {
     (datos) => datos.count === 0,
   )
   const propuestas = consulta.datos?.results ?? []
-
-  // Atenciones de MOD-05 de la página, para identificar cada propuesta.
-  const idsAtencion = [...new Set(propuestas.map((s) => s.contenido.entrada.atencion_id))].sort((a, b) => a - b)
-  const consultaAtenciones = useConsulta(idsAtencion.length > 0 ? `atenciones|${idsAtencion.join(',')}` : null, (signal) =>
-    cargarAtenciones(idsAtencion, signal),
-  )
-  const atenciones = consultaAtenciones.datos ?? new Map<number, Atencion>()
 
   let estadoTabla: EstadoTabla | null = null
   if (consulta.estado === 'error') estadoTabla = 'error'
@@ -248,7 +238,6 @@ export default function ExtraccionReporteProveedorPage() {
                     <FichaPropuesta
                       key={s.id}
                       sugerencia={s}
-                      atencion={atenciones.get(s.contenido.entrada.atencion_id)}
                       onAbrir={() => abrirRevision(s)}
                     />
                   ))}
@@ -274,7 +263,7 @@ export default function ExtraccionReporteProveedorPage() {
             ) : (
               <TablaDatos
                 titulo="Propuestas de extracción"
-                columnas={columnas(atenciones)}
+                columnas={columnas()}
                 filas={propuestas}
                 claveFila={(s) => String(s.id)}
                 estado={estadoTabla}
