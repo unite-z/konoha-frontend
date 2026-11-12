@@ -15,12 +15,17 @@ import { alPerderSesion } from '../services/api/clienteCore'
 import { cerrarSesionCore, iniciarSesion, obtenerSesion } from '../services/api/core'
 import type { Credenciales, SesionCore } from '../types/core'
 import { olvidarDatos } from '@/sincronizacion/datosDescargados'
+import { cambiarApariencia } from '@/utils/apariencia'
 import { ContextoSesion, type EstadoSesion, type ValorSesion } from './ContextoSesion'
 import { borrarInstantanea, guardarInstantanea, leerInstantanea } from './instantaneaSesion'
 
-/** Activa: se guarda la instantánea para la próxima vez que se abra sin conexión. */
+/**
+ * Activa: se guarda la instantánea para la próxima vez que se abra sin conexión, y se aplica la apariencia de la
+ * cuenta (AV-391), que queda también en el navegador para el próximo arranque.
+ */
 function activa(sesion: SesionCore): EstadoSesion {
   void guardarInstantanea(sesion)
+  if (sesion.apariencia) cambiarApariencia(sesion.apariencia)
   return { tipo: 'activa', sesion }
 }
 
