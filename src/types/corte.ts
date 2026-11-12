@@ -113,8 +113,8 @@ export interface NuevaMarca {
  * actividades de su cuadrilla y las restricciones del periodo.
  */
 export interface CalendarioCuadrilla {
-  /** «Cuadrilla B». */
-  cuadrilla: string
+  /** «Cuadrilla B». Vacío o nulo si quien consulta no tiene cuadrilla (jefe, superadministrador). */
+  cuadrilla: string | null
   programaciones: Programacion[]
   restricciones: Restriccion[]
 }
