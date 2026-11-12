@@ -9,6 +9,8 @@
   --focus-ring-offset: 2px; /* Guía Web 5.2 */
   --duracion-transicion: 150ms; /* Guía Web 4.1: transiciones de 120 a 200 ms */
   --duracion-panel: 200ms; /* Guía Web 4.1: entrada y salida del panel lateral */
+  --duracion-menu: 280ms; /* menú lateral: abrir y plegar grupos, ensancharse y el panel del móvil (AV-388) */
+  --curva-menu: cubic-bezier(0.2, 0, 0, 1); /* arranca rápido y frena suave */
 }
 
 *,
