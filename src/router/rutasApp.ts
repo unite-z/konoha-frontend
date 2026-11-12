@@ -97,6 +97,7 @@ export const RUTAS_INVENTARIO = {
   ejemplares: `${BASE_INVENTARIO}/ejemplares`,
   campanasPoda: `${BASE_INVENTARIO}/campanas-poda`,
   nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
+  podaAltura: `${BASE_INVENTARIO}/poda-altura`,
 } as const
 
 export function rutaCampanaPoda(id: number): string {
@@ -142,6 +143,7 @@ export const MIGAS_INVENTARIO = {
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
   campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
+  podaAltura: { texto: 'Poda a demanda', ruta: RUTAS_INVENTARIO.podaAltura },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
