@@ -68,7 +68,10 @@ describe('envoltorios sobre el cliente único', () => {
     const perdida = vi.fn()
     alPerderSesion(perdida)
     simular(() => new Response(JSON.stringify({ codigo: 'no-autenticado', detalle: 'Inicia sesión' }), { status: 401 }))
-    await expect(descargarReportesGestion('exportar/', 'a.xlsx')).rejects.toMatchObject({ estado: 401, detalle: 'Inicia sesión' })
+    await expect(descargarReportesGestion('exportar/', 'a.xlsx')).rejects.toMatchObject({
+      estado: 401,
+      detalle: 'Inicia sesión',
+    })
     expect(perdida).not.toHaveBeenCalled()
   })
 })

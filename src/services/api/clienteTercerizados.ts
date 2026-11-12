@@ -7,7 +7,14 @@
  * - Descarga de archivos autenticada (blob).
  * Es un envoltorio del cliente único (`cliente.ts`): los errores se interpretan igual que en MOD-06 (`ErrorApi`).
  */
-import { construirUrlHttp, descargarHttp, guardarArchivo, solicitarHttp, type OpcionesHttp, type ValorParametro } from './cliente'
+import {
+  construirUrlHttp,
+  descargarHttp,
+  guardarArchivo,
+  solicitarHttp,
+  type OpcionesHttp,
+  type ValorParametro,
+} from './cliente'
 
 export const API_TERCERIZADOS_URL: string = import.meta.env.VITE_API_TERCERIZADOS_URL || '/api/tercerizados'
 

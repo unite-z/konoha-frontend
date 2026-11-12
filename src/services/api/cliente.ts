@@ -79,7 +79,10 @@ export function avisarSesionPerdida(): void {
 }
 
 /** Valor de una cookie legible por scripts (solo `XSRF-TOKEN`; la de sesión es `HttpOnly`). */
-export function leerCookie(nombre: string, cookies: string = typeof document === 'undefined' ? '' : document.cookie): string | null {
+export function leerCookie(
+  nombre: string,
+  cookies: string = typeof document === 'undefined' ? '' : document.cookie,
+): string | null {
   for (const parte of cookies.split(';')) {
     const [clave, ...valor] = parte.trim().split('=')
     if (clave === nombre) return decodeURIComponent(valor.join('='))
@@ -166,7 +169,11 @@ function errorDe(estado: number, datos: unknown): ErrorApi {
 }
 
 /** Construye la URL de la ruta relativa a `base`, con los parámetros no vacíos. */
-export function construirUrlHttp(ruta: string, parametros?: Record<string, ValorParametro>, base: string = API_BASE_URL): string {
+export function construirUrlHttp(
+  ruta: string,
+  parametros?: Record<string, ValorParametro>,
+  base: string = API_BASE_URL,
+): string {
   const consulta = new URLSearchParams()
   for (const [clave, valor] of Object.entries(parametros ?? {})) {
     if (valor === null || valor === undefined || valor === '') continue
@@ -227,12 +234,16 @@ export async function solicitarHttp<T>(ruta: string, opciones: OpcionesHttp = {}
   const { datos, legible } = leerJson(texto)
   if (!respuesta.ok) throw errorDe(respuesta.status, datos)
   const modo = opciones.cuerpoOk ?? 'tolerante'
-  if (!legible && (modo === 'obligatorio' || (modo === 'estricto' && texto !== ''))) throw interpretarError(respuesta.status, null)
+  if (!legible && (modo === 'obligatorio' || (modo === 'estricto' && texto !== '')))
+    throw interpretarError(respuesta.status, null)
   return datos as T
 }
 
 /** Descarga un archivo con la sesión: el blob y las cabeceras (para `Content-Disposition`). */
-export async function descargarHttp(ruta: string, opciones: OpcionesHttp = {}): Promise<{ blob: Blob; cabeceras: Headers }> {
+export async function descargarHttp(
+  ruta: string,
+  opciones: OpcionesHttp = {},
+): Promise<{ blob: Blob; cabeceras: Headers }> {
   const respuesta = await enviarHttp(ruta, { ...opciones, acepta: '*/*' })
   if (!respuesta.ok) throw errorDe(respuesta.status, leerJson(await respuesta.text()).datos)
   try {

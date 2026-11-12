@@ -19,6 +19,11 @@ export function solicitarReportesGestion<T>(ruta: string, opciones: OpcionesTerc
 
 /** Descarga (GET) un archivo de la API de reportes con la sesión de la cookie (un 401 no avisa a la sesión, como antes). */
 export async function descargarReportesGestion(ruta: string, nombre: string, signal?: AbortSignal): Promise<void> {
-  const { blob, cabeceras } = await descargarHttp(ruta, { base: API_REPORTES_GESTION_URL, sinCache: true, avisarSesion: false, signal })
+  const { blob, cabeceras } = await descargarHttp(ruta, {
+    base: API_REPORTES_GESTION_URL,
+    sinCache: true,
+    avisarSesion: false,
+    signal,
+  })
   guardarArchivo(blob, nombreDeDisposicion(cabeceras.get('Content-Disposition')) ?? nombre)
 }
