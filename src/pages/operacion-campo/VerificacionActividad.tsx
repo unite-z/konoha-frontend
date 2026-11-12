@@ -51,11 +51,18 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
       hayCambios={hayCambios}
       envioDeshabilitado={!hayCambios}
       ancho="extraAmplio"
+      conObligatorios={false}
     >
       <div className={estilos.detalleVerificacion}>
-        <p><strong>Observaciones de ejecución:</strong> {actividad.observaciones?.trim() || 'Sin observaciones del capataz'}</p>
+        <p>
+          <strong>Observaciones de ejecución:</strong>{' '}
+          {actividad.observaciones?.trim() || 'Sin observaciones del capataz'}
+        </p>
         {actividad.fecha_verificacion && (
-          <p><strong>Última verificación:</strong> {actividad.verificado_por_nombre ?? 'Jefe de sección'} · {formatearFechaHora(actividad.fecha_verificacion)}</p>
+          <p>
+            <strong>Última verificación:</strong> {actividad.verificado_por_nombre ?? 'Jefe de sección'} ·{' '}
+            {formatearFechaHora(actividad.fecha_verificacion)}
+          </p>
         )}
       </div>
       <AreaTexto
@@ -64,7 +71,10 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
         obligatorio
         maxLength={1000}
         value={observaciones}
-        onChange={(evento) => { setObservaciones(evento.target.value); setError('') }}
+        onChange={(evento) => {
+          setObservaciones(evento.target.value)
+          setError('')
+        }}
         error={error}
         ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
       />

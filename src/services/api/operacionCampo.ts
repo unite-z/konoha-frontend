@@ -1,5 +1,5 @@
 import { ErrorApi, construirUrlHttp, solicitarHttp } from './cliente'
-import type { PaginaCampo } from '@/types/operacionCampo'
+import type { CuadrillaCampo, PaginaCampo } from '@/types/operacionCampo'
 
 const BASE = '/api/v1/operacion-campo'
 export type ParametrosCampo = Record<string, string | number | boolean | null | undefined>
@@ -37,4 +37,9 @@ export async function todosCampo<T>(
     if (!datos.next) return resultados
   }
   throw new ErrorApi(0, null, 'Hay demasiados registros para cargar el selector. Contacta al administrador')
+}
+
+/** `GET cuadrillas/` de MOD-04: todas las cuadrillas, para los selectores de otros módulos. */
+export function listarCuadrillasCampo(signal?: AbortSignal): Promise<CuadrillaCampo[]> {
+  return todosCampo<CuadrillaCampo>('cuadrillas/', {}, signal)
 }

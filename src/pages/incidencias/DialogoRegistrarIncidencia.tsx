@@ -6,43 +6,40 @@
  * Antes de registrar busca una abierta del mismo tipo en el mismo ejemplar o espacio (HU-020, escenario 2), como el
  * reporte móvil: «Ya hay una incidencia abierta», con «Añadir a la existente» o «Registrar igualmente».
  */
-import { useState } from "react";
-import CampoFormulario from "@/components/ui/CampoFormulario";
-import DialogoFormulario from "@/components/ui/DialogoFormulario";
-import GrupoOpciones from "@/components/ui/GrupoOpciones";
-import Selector from "@/components/ui/Selector";
-import ZonaCarga from "@/components/ui/ZonaCarga";
-import { useConsulta } from "@/hooks/useConsulta";
+import { useState } from 'react'
+import CampoFormulario from '@/components/ui/CampoFormulario'
+import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import GrupoOpciones from '@/components/ui/GrupoOpciones'
+import Selector from '@/components/ui/Selector'
+import ZonaCarga from '@/components/ui/ZonaCarga'
+import { motivoSinEspacios } from './sinEspacios'
+import { useConsulta } from '@/hooks/useConsulta'
 import {
   buscarPosiblesDuplicados,
   obtenerCatalogosRegistro,
   registrarIncidencia,
   sumarReporte,
-} from "@/services/api/incidencias";
-import type {
-  CanalIncidencia,
-  IncidenciaDetalle,
-  PosibleDuplicado,
-} from "@/types/incidencias";
-import estilos from "./Incidencias.module.css";
-import { textoDuplicado } from "./misIncidencias";
+} from '@/services/api/incidencias'
+import type { CanalIncidencia, IncidenciaDetalle, PosibleDuplicado } from '@/types/incidencias'
+import estilos from './Incidencias.module.css'
+import { textoDuplicado } from './misIncidencias'
 
 /** Canales de la oficina (el de la app es el del reporte móvil, AV-282). */
 const CANALES: { valor: CanalIncidencia; texto: string }[] = [
-  { valor: "Telefono", texto: "Teléfono" },
-  { valor: "WhatsApp", texto: "WhatsApp" },
-  { valor: "Correo", texto: "Correo" },
-  { valor: "Presencial", texto: "En persona" },
-  { valor: "Web", texto: "Web" },
-];
+  { valor: 'Telefono', texto: 'Teléfono' },
+  { valor: 'WhatsApp', texto: 'WhatsApp' },
+  { valor: 'Correo', texto: 'Correo' },
+  { valor: 'Presencial', texto: 'En persona' },
+  { valor: 'Web', texto: 'Web' },
+]
 
-type Reportante = "usuario" | "externa";
+type Reportante = 'usuario' | 'externa'
 
 export interface DialogoRegistrarIncidenciaProps {
-  onCerrar: () => void;
-  onRegistrada: (incidencia: IncidenciaDetalle) => void;
+  onCerrar: () => void
+  onRegistrada: (incidencia: IncidenciaDetalle) => void
   /** El reporte se sumó a una incidencia abierta igual, en lugar de crear otra. */
-  onAnadida: (codigo: string) => void;
+  onAnadida: (codigo: string) => void
 }
 
 export default function DialogoRegistrarIncidencia({
@@ -50,90 +47,74 @@ export default function DialogoRegistrarIncidencia({
   onRegistrada,
   onAnadida,
 }: DialogoRegistrarIncidenciaProps) {
-  const catalogos = useConsulta(
-    "incidencias-catalogos-registro",
-    obtenerCatalogosRegistro,
-  );
-  const [canal, setCanal] = useState<CanalIncidencia>("Telefono");
-  const [tipo, setTipo] = useState("");
-  const [reportante, setReportante] = useState<Reportante>("externa");
-  const [usuario, setUsuario] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [contacto, setContacto] = useState("");
-  const [espacio, setEspacio] = useState("");
-  const [ejemplar, setEjemplar] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [foto, setFoto] = useState<File | null>(null);
-  const [mostrarErrores, setMostrarErrores] = useState(false);
-  const [enviando, setEnviando] = useState(false);
+  const catalogos = useConsulta('incidencias-catalogos-registro', obtenerCatalogosRegistro)
+  const [canal, setCanal] = useState<CanalIncidencia>('Telefono')
+  const [tipo, setTipo] = useState('')
+  const [reportante, setReportante] = useState<Reportante>('externa')
+  const [usuario, setUsuario] = useState('')
+  const [nombre, setNombre] = useState('')
+  const [contacto, setContacto] = useState('')
+  const [espacio, setEspacio] = useState('')
+  const [ejemplar, setEjemplar] = useState('')
+  const [descripcion, setDescripcion] = useState('')
+  const [foto, setFoto] = useState<File | null>(null)
+  const [mostrarErrores, setMostrarErrores] = useState(false)
+  const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<{
-    titulo: string;
-    detalle: string;
-  } | null>(null);
-  const [duplicado, setDuplicado] = useState<PosibleDuplicado | null>(null);
+    titulo: string
+    detalle: string
+  } | null>(null)
+  const [duplicado, setDuplicado] = useState<PosibleDuplicado | null>(null)
 
-  const ejemplares =
-    catalogos.datos?.espacios.find((e) => e.nombre === espacio)?.ejemplares ??
-    [];
+  const ejemplares = catalogos.datos?.espacios.find((e) => e.nombre === espacio)?.ejemplares ?? []
   const errores = {
-    tipo: !tipo ? "Elige el tipo." : undefined,
-    usuario:
-      reportante === "usuario" && !usuario
-        ? "Elige quién la reporta."
-        : undefined,
-    nombre:
-      reportante === "externa" && !nombre.trim()
-        ? "Escribe el nombre."
-        : undefined,
-    espacio: !espacio ? "Elige el espacio." : undefined,
-    descripcion: !descripcion.trim() ? "Describe la incidencia." : undefined,
-  };
-  const mostrar = (clave: keyof typeof errores) =>
-    mostrarErrores ? errores[clave] : undefined;
+    tipo: !tipo ? 'Elige el tipo.' : undefined,
+    usuario: reportante === 'usuario' && !usuario ? 'Elige quién la reporta.' : undefined,
+    nombre: reportante === 'externa' && !nombre.trim() ? 'Escribe el nombre.' : undefined,
+    espacio: !espacio ? 'Elige el espacio.' : undefined,
+    descripcion: !descripcion.trim() ? 'Describe la incidencia.' : undefined,
+  }
+  const mostrar = (clave: keyof typeof errores) => (mostrarErrores ? errores[clave] : undefined)
 
   async function enviar() {
-    setMostrarErrores(true);
-    if (Object.values(errores).some(Boolean)) return;
-    setEnviando(true);
-    setError(null);
-    const parecidas = await buscarPosiblesDuplicados(
-      tipo,
-      espacio,
-      ejemplar || null,
-    ).catch(() => []);
+    setMostrarErrores(true)
+    if (Object.values(errores).some(Boolean)) return
+    setEnviando(true)
+    setError(null)
+    const parecidas = await buscarPosiblesDuplicados(tipo, espacio, ejemplar || null).catch(() => [])
     if (parecidas.length > 0) {
-      setEnviando(false);
-      setDuplicado(parecidas[0]);
-      return;
+      setEnviando(false)
+      setDuplicado(parecidas[0])
+      return
     }
-    await registrar();
+    await registrar()
   }
 
   async function anadirAExistente(existente: PosibleDuplicado) {
-    setEnviando(true);
+    setEnviando(true)
     try {
-      await sumarReporte(existente.id, descripcion.trim(), foto);
-      onAnadida(existente.codigo);
+      await sumarReporte(existente.id, descripcion.trim(), foto)
+      onAnadida(existente.codigo)
     } catch (causa) {
       setError({
-        titulo: "No se pudo añadir el reporte",
-        detalle: causa instanceof Error ? causa.message : "Inténtalo de nuevo.",
-      });
-      setEnviando(false);
-      setDuplicado(null);
+        titulo: 'No se pudo añadir el reporte',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
+      setEnviando(false)
+      setDuplicado(null)
     }
   }
 
   async function registrar() {
-    setEnviando(true);
-    setError(null);
+    setEnviando(true)
+    setError(null)
     try {
       const registrada = await registrarIncidencia(
         {
           canal,
           tipo,
           reportado_por:
-            reportante === "usuario"
+            reportante === 'usuario'
               ? { usuario_id: Number(usuario) }
               : { nombre: nombre.trim(), contacto: contacto.trim() || null },
           espacio,
@@ -141,14 +122,14 @@ export default function DialogoRegistrarIncidencia({
           descripcion: descripcion.trim(),
         },
         foto,
-      );
-      onRegistrada(registrada);
+      )
+      onRegistrada(registrada)
     } catch (causa) {
       setError({
-        titulo: "No se pudo registrar la incidencia",
-        detalle: causa instanceof Error ? causa.message : "Inténtalo de nuevo.",
-      });
-      setEnviando(false);
+        titulo: 'No se pudo registrar la incidencia',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
+      setEnviando(false)
     }
   }
 
@@ -186,7 +167,7 @@ export default function DialogoRegistrarIncidencia({
               texto: t,
             }))}
             onCambiar={setTipo}
-            error={mostrar("tipo")}
+            error={mostrar('tipo')}
           />
         </div>
         <GrupoOpciones<Reportante>
@@ -195,13 +176,13 @@ export default function DialogoRegistrarIncidencia({
           horizontal
           repartido
           opciones={[
-            { valor: "usuario", texto: "Usuario del sistema" },
-            { valor: "externa", texto: "Persona externa" },
+            { valor: 'usuario', texto: 'Usuario del sistema' },
+            { valor: 'externa', texto: 'Persona externa' },
           ]}
           valor={reportante}
           onCambiar={setReportante}
         />
-        {reportante === "externa" ? (
+        {reportante === 'externa' ? (
           <div className={estilos.dosColumnas}>
             <CampoFormulario
               id="registrar-nombre"
@@ -210,7 +191,7 @@ export default function DialogoRegistrarIncidencia({
               value={nombre}
               maxLength={120}
               onChange={(e) => setNombre(e.target.value)}
-              error={mostrar("nombre")}
+              error={mostrar('nombre')}
             />
             <CampoFormulario
               id="registrar-contacto"
@@ -232,7 +213,7 @@ export default function DialogoRegistrarIncidencia({
               texto: u.nombre,
             }))}
             onCambiar={setUsuario}
-            error={mostrar("usuario")}
+            error={mostrar('usuario')}
           />
         )}
         <div className={estilos.dosColumnas}>
@@ -247,10 +228,11 @@ export default function DialogoRegistrarIncidencia({
               texto: e.nombre,
             }))}
             onCambiar={(valor) => {
-              setEspacio(valor);
-              setEjemplar("");
+              setEspacio(valor)
+              setEjemplar('')
             }}
-            error={mostrar("espacio")}
+            error={mostrar('espacio')}
+            bloqueadoMotivo={motivoSinEspacios(catalogos.datos?.espacios)}
           />
           <Selector
             id="registrar-ejemplar"
@@ -268,14 +250,14 @@ export default function DialogoRegistrarIncidencia({
           value={descripcion}
           maxLength={300}
           onChange={(e) => setDescripcion(e.target.value)}
-          error={mostrar("descripcion")}
+          error={mostrar('descripcion')}
         />
         <ZonaCarga
           compacta
           multiple={false}
           acepta="image/*"
           textoBoton="Adjuntar foto"
-          ayuda={foto?.name ?? ""}
+          ayuda={foto?.name ?? ''}
           onArchivos={(archivos) => setFoto(archivos[0] ?? null)}
         />
       </DialogoFormulario>
@@ -293,8 +275,8 @@ export default function DialogoRegistrarIncidencia({
           enviando={enviando}
           onEnviar={() => void anadirAExistente(duplicado)}
           onCancelar={() => {
-            setDuplicado(null);
-            void registrar();
+            setDuplicado(null)
+            void registrar()
           }}
           onCerrar={() => setDuplicado(null)}
         >
@@ -302,5 +284,5 @@ export default function DialogoRegistrarIncidencia({
         </DialogoFormulario>
       )}
     </>
-  );
+  )
 }

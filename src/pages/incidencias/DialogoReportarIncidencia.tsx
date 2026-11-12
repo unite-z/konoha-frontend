@@ -13,8 +13,14 @@ import GrupoOpciones from '@/components/ui/GrupoOpciones'
 import Icono from '@/components/ui/Icono'
 import Selector from '@/components/ui/Selector'
 import ZonaCarga from '@/components/ui/ZonaCarga'
+import { motivoSinEspacios } from './sinEspacios'
 import { useConsulta } from '@/hooks/useConsulta'
-import { buscarPosiblesDuplicados, obtenerCatalogosRegistro, registrarIncidencia, sumarReporte } from '@/services/api/incidencias'
+import {
+  buscarPosiblesDuplicados,
+  obtenerCatalogosRegistro,
+  registrarIncidencia,
+  sumarReporte,
+} from '@/services/api/incidencias'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { NuevaIncidencia, PosibleDuplicado } from '@/types/incidencias'
 import { useEnLinea } from '@/hooks/useEnLinea'
@@ -45,7 +51,12 @@ export interface DialogoReportarIncidenciaProps {
   ejemplarInicial?: string
 }
 
-export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacioInicial, ejemplarInicial }: DialogoReportarIncidenciaProps) {
+export default function DialogoReportarIncidencia({
+  onCerrar,
+  onEnviado,
+  espacioInicial,
+  ejemplarInicial,
+}: DialogoReportarIncidenciaProps) {
   const sesion = useSesionActiva()
   const enLinea = useEnLinea()
   const catalogos = useConsulta('incidencias-catalogos-registro', obtenerCatalogosRegistro)
@@ -64,7 +75,11 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
   const sugerido = catalogos.datos?.espacio_sugerido ?? ''
   const espacio = espacioElegido ?? sugerido
   const ejemplares = catalogos.datos?.espacios.find((e) => e.nombre === espacio)?.ejemplares ?? []
-  const errores = { tipo: !tipo ? 'Elige el tipo.' : undefined, foto: !foto ? 'Añade una foto.' : undefined, espacio: !espacio ? 'Elige el espacio.' : undefined }
+  const errores = {
+    tipo: !tipo ? 'Elige el tipo.' : undefined,
+    foto: !foto ? 'Añade una foto.' : undefined,
+    espacio: !espacio ? 'Elige el espacio.' : undefined,
+  }
 
   function cuerpo(): NuevaIncidencia {
     return {
@@ -84,7 +99,10 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
       const registrada = await registrarIncidencia(cuerpo(), foto)
       onEnviado(`${registrada.codigo} reportada`)
     } catch (causa) {
-      setError({ titulo: 'No se pudo enviar el reporte', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setError({
+        titulo: 'No se pudo enviar el reporte',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
       setEnviando(false)
     }
   }
@@ -98,7 +116,10 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
         await anadirPendiente(cuerpo(), foto, sesion.usuario.id)
         onEnviado('Sin conexión: se enviará al reconectar')
       } catch {
-        setError({ titulo: 'No se pudo guardar el reporte', detalle: 'Este dispositivo no permite guardar datos sin conexión.' })
+        setError({
+          titulo: 'No se pudo guardar el reporte',
+          detalle: 'Este dispositivo no permite guardar datos sin conexión.',
+        })
       }
       return
     }
@@ -118,7 +139,10 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
       await sumarReporte(existente.id, descripcion.trim(), foto)
       onEnviado(`Añadido a ${existente.codigo}`)
     } catch (causa) {
-      setError({ titulo: 'No se pudo añadir el reporte', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setError({
+        titulo: 'No se pudo añadir el reporte',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
       setEnviando(false)
       setDuplicado(null)
     }
@@ -154,7 +178,11 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
           <div className={estilos.fotos}>
             {foto && (
               <span className={estilos.fotoElegida}>
-                {vistaPrevia ? <img src={vistaPrevia} alt="Foto elegida" /> : <Icono nombre="image" tamano="md" titulo="Foto elegida" />}
+                {vistaPrevia ? (
+                  <img src={vistaPrevia} alt="Foto elegida" />
+                ) : (
+                  <Icono nombre="image" tamano="md" titulo="Foto elegida" />
+                )}
               </span>
             )}
             <ZonaCarga
@@ -182,9 +210,23 @@ export default function DialogoReportarIncidencia({ onCerrar, onEnviado, espacio
           }}
           ayuda={espacio && espacio === sugerido ? 'Según tu ubicación' : undefined}
           error={mostrarErrores ? errores.espacio : undefined}
+          bloqueadoMotivo={motivoSinEspacios(catalogos.datos?.espacios)}
         />
-        <Selector id="reportar-ejemplar" etiqueta="Ejemplar" valor={ejemplar} opcionTodos="Sin ejemplar" opciones={ejemplares.map((e) => ({ valor: e, texto: e }))} onCambiar={setEjemplar} />
-        <CampoFormulario id="reportar-descripcion" etiqueta="Descripción" value={descripcion} maxLength={300} onChange={(e) => setDescripcion(e.target.value)} />
+        <Selector
+          id="reportar-ejemplar"
+          etiqueta="Ejemplar"
+          valor={ejemplar}
+          opcionTodos="Sin ejemplar"
+          opciones={ejemplares.map((e) => ({ valor: e, texto: e }))}
+          onCambiar={setEjemplar}
+        />
+        <CampoFormulario
+          id="reportar-descripcion"
+          etiqueta="Descripción"
+          value={descripcion}
+          maxLength={300}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
       </DialogoFormulario>
 
       {duplicado && (

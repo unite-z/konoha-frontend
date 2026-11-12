@@ -35,7 +35,6 @@ const CAMPOS_ACTIVIDAD: CampoActividad[] = [
   { clave: 'cantidad_solicitada', etiqueta: 'Cantidad solicitada', formato: 'numero' },
   { clave: 'unidad_medida_nombre', etiqueta: 'Unidad de medida' },
   { clave: 'observaciones', etiqueta: 'Observaciones' },
-  { clave: 'fecha_verificacion', etiqueta: 'Fecha de verificación', formato: 'fecha' },
   { clave: 'verificacion_observaciones', etiqueta: 'Observaciones de verificación' },
 ]
 
@@ -78,14 +77,6 @@ function DetalleActividad({ entrada }: { entrada: EntradaHistorial }) {
       },
     ]
   })
-  const antesVerificada = tieneValor(entrada.valores_anteriores.fecha_verificacion)
-  const despuesVerificada = tieneValor(entrada.valores_nuevos.fecha_verificacion)
-  if (!alta && antesVerificada !== despuesVerificada) {
-    elementos.unshift({
-      etiqueta: 'Estado de verificación',
-      valor: `${antesVerificada ? 'Verificada' : 'Sin verificar'} → ${despuesVerificada ? 'Verificada' : 'Sin verificar'}`,
-    })
-  }
   if (!elementos.length) return <span>Cambio registrado sin datos funcionales adicionales.</span>
   return (
     <dl className={estilos.detalle}>
