@@ -7,7 +7,7 @@
  * - Si viene incompleto, se muestran las opciones cargadas con una ayuda.
  */
 import { useCallback } from 'react'
-import type { OpcionSelector } from '../ui/Selector'
+import type { OpcionSelector } from '@/design-system/Selector'
 import { useConsulta } from '@/hooks/useConsulta'
 import { listarAreasVerdes, listarTiposServicio, listarTodo } from '@/services/api/tercerizados'
 

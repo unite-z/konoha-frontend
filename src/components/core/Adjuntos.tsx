@@ -11,11 +11,11 @@
  *   la foto espera a que exista y toma su `id`.
  */
 import { useEffect, useRef, useState } from 'react'
-import Boton from '../ui/Boton'
-import AvisoEnLinea from '../ui/AvisoEnLinea'
-import DialogoDetalle from '../ui/DialogoDetalle'
-import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
-import ZonaCarga from '../ui/ZonaCarga'
+import Boton from '@/design-system/Boton'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
+import DialogoDetalle from '@/design-system/DialogoDetalle'
+import TablaDatos, { type ColumnaTabla } from '@/design-system/TablaDatos'
+import ZonaCarga from '@/design-system/ZonaCarga'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi, ErrorApi } from '@/services/api/cliente'
 import { useSesionActiva } from '@/sesion/ContextoSesion'

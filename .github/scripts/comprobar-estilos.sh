@@ -7,7 +7,7 @@
 #      calculados marcados con el comentario estilo-calculado);
 #   4. en todo src/: imports con más de un ../ (usa el alias @/, AV-333);
 #   5. en todo src/ (AV-351): nada de primitivos de color (--green-*,
-#      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
+#      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de design-system y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
 #   6. solo en las líneas añadidas del PR (AV-246): new Date(, toLocaleDateString y toLocaleString fuera de
 #      utils/instanteLima.ts (las fechas van en America/Lima).
@@ -20,9 +20,9 @@ falla() { echo "::error file=$1,line=$2::$3"; errores=1; }
 sin_comentarios() { grep -vE '^[^:]+:[0-9]+:[[:space:]]*(//|\*|/\*)' || true; }
 
 while IFS=: read -r fichero linea _; do
-  falla "$fichero" "$linea" "Color escrito a mano: usa un token de src/styles/tokens.css."
+  falla "$fichero" "$linea" "Color escrito a mano: usa un token de src/design-system/tokens.css."
 done < <(git grep -nE '#[0-9a-fA-F]{3,8}([^0-9a-zA-Z_-]|$)|(^|[^a-zA-Z_-])(rgba?|hsla?)\(' -- 'src/*.css' 'src/*.tsx' \
-  ':!src/styles/tokens.css' ':!*.test.tsx' | sin_comentarios)
+  ':!src/design-system/tokens.css' ':!*.test.tsx' | sin_comentarios)
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Llamada a fetch fuera de src/services/api/: usa el cliente del módulo."
@@ -30,7 +30,7 @@ done < <(git grep -nE '(^|[^a-zA-Z0-9_])fetch\(' -- 'src/*.ts' 'src/*.tsx' ':!sr
   | sin_comentarios)
 
 # --- Medidas y tipografía con tokens en todo src/ (AV-351) ------------------------------------------------
-excluidas=(':!src/styles/tokens.css' ':!*.test.ts' ':!*.test.tsx')
+excluidas=(':!src/design-system/tokens.css' ':!*.test.ts' ':!*.test.tsx')
 
 while IFS=: read -r fichero linea _; do
   falla "$fichero" "$linea" "Medida en px: usa un token (--space-*, --radius-*...) o rem. Se admiten 1-2 px en bordes y px en @media."
@@ -57,16 +57,16 @@ done < <(git grep -nE "(from|import|import\(|vi\.mock\(|importActual[^(]*\()[[:s
 migradas=(src)
 
 while IFS=: read -r fichero linea _; do
-  falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/styles/tokens.css (DESIGN.md, 3.1)."
+  falla "$fichero" "$linea" "Primitivo de color: usa el token semántico de src/design-system/tokens.css (DESIGN.md, 3.1)."
 done < <(git grep -nE 'var\(--(green|neutral|blue|red|amber|slate|gray)-[0-9]' -- "${migradas[@]/%//*.css}" "${migradas[@]/%//*.tsx}" \
   | sin_comentarios)
 
 while IFS=: read -r fichero linea _; do
   if ! grep -q 'Excepción al sistema (AV-351)' "$fichero"; then
-    falla "$fichero" "$linea" "Control crudo fuera de components/ui: usa Boton, Casilla, GrupoOpciones, Selector, DialogoFormulario o TablaDatos. Si es un dato interactivo, documéntalo con «Excepción al sistema (AV-351): motivo»."
+    falla "$fichero" "$linea" "Control crudo fuera de design-system: usa Boton, Casilla, GrupoOpciones, Selector, DialogoFormulario o TablaDatos. Si es un dato interactivo, documéntalo con «Excepción al sistema (AV-351): motivo»."
   fi
 done < <(git grep -nE '<(button|input|select|textarea|dialog|table)([[:space:]>]|$)' -- "${migradas[@]/%//*.tsx}" \
-  ':!src/components/ui' ':!src/layouts' ':!*.test.tsx' | sin_comentarios)
+  ':!src/design-system' ':!src/layouts' ':!*.test.tsx' | sin_comentarios)
 
 # Variables definidas en cualquier CSS o como propiedad calculada en TSX; usadas en todo src/.
 definidas=$(git grep -hoE -- '--[a-zA-Z0-9-]+[[:space:]]*:' -- 'src/*.css' | sed -E 's/[[:space:]]*:$//'
@@ -74,7 +74,7 @@ definidas=$(git grep -hoE -- '--[a-zA-Z0-9-]+[[:space:]]*:' -- 'src/*.css' | sed
 while IFS=: read -r fichero linea uso; do
   nombre=${uso#var(}
   if ! grep -qxF -- "$nombre" <<< "$definidas"; then
-    falla "$fichero" "$linea" "La variable $nombre no está definida: usa un token de src/styles/tokens.css."
+    falla "$fichero" "$linea" "La variable $nombre no está definida: usa un token de src/design-system/tokens.css."
   fi
 done < <(git grep -noE 'var\(--[a-zA-Z0-9-]+' -- "${migradas[@]/%//*.css}" "${migradas[@]/%//*.tsx}")
 
@@ -90,7 +90,7 @@ while IFS=$'\t' read -r fichero linea texto; do
         falla "$fichero" "$linea" "Estilo en línea: muévelo al .module.css del componente. Si es un valor calculado en tiempo de ejecución, márcalo con el comentario estilo-calculado."
       fi ;;
   esac
-done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.css' 'src/*.tsx' ':!src/styles/tokens.css' \
+done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.css' 'src/*.tsx' ':!src/design-system/tokens.css' \
   | awk '/^\+\+\+ b\// { f = substr($0, 7); next }
          /^@@/ { split($3, a, ","); n = substr(a[1], 2) + 0; next }
          /^\+/ { print f "\t" n "\t" substr($0, 2); n++ }')

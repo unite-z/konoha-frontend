@@ -13,8 +13,7 @@ Código de la PWA. Este fichero dice **dónde va cada cosa y quién puede import
 | `sesion/` | sesión de MOD-01 y guardianes de ruta | `app/sesion/` |
 | `config/` | permisos de interfaz por rol | `app/permisos/` (`datosSimulados.ts` a MOD-06) |
 | `layouts/` | `LayoutOficina`: cabecera, menú y migas | `app/layout/` |
-| `styles/` | `tokens.css` y `global.css` | `design-system/` |
-| `components/ui/` | componentes base del sistema de diseño | `design-system/` |
+| `design-system/` | componentes base, `tokens.css` y `global.css` (ficheros planos, AV-352) | se queda en `design-system/` |
 | `components/core/` | `Adjuntos` e `HistorialCambios` | `compartido/` |
 | `components/reportes-indicadores/` | componentes solo de MOD-06 | `modulos/reportes-indicadores/componentes/` |
 | `components/tercerizados/` | componentes solo de MOD-05 | `modulos/servicios-tercerizados/componentes/` |
@@ -35,14 +34,14 @@ Cada carpeta con README propio explica qué va y qué no.
 app (router, sesion, config, layouts)
   └─> pages/<modulo> + components/<modulo>     (un módulo)
         └─> components/core, hooks, utils genéricas, services/api/cliente.ts   (compartido)
-              └─> components/ui + styles        (sistema de diseño)
+              └─> design-system                   (sistema de diseño)
 ```
 
-- Se importa solo hacia abajo. `components/ui` no importa de páginas, servicios ni configuración. Hoy usa `utils/formato.ts` y los hooks genéricos `useConsulta` y `useDemora`; nada más.
+- Se importa solo hacia abajo. `design-system` no importa de páginas, servicios ni configuración. Hoy usa `utils/formato.ts` y los hooks genéricos `useConsulta` y `useDemora`; nada más.
 - Un módulo no importa pantallas, componentes ni `utils` de otro módulo.
 - Excepciones heredadas que no se copian:
-  - `components/ui/FiltroMes.tsx` importa `validarMes` de `utils/reportesGestion.ts`, que es de MOD-06;
-  - `utils/estados.ts` y `utils/estadosTercerizados.ts` importan tipos de `components/ui`;
+  - `design-system/FiltroMes.tsx` importa `validarMes` de `utils/reportesGestion.ts`, que es de MOD-06;
+  - `utils/estados.ts` y `utils/estadosTercerizados.ts` importan tipos de `design-system`;
   - `hooks/usePaginaActual.ts` importa de `layouts/`.
 
 ## Cómo habla un módulo con otro
@@ -62,8 +61,8 @@ Por orden de preferencia:
 
 ## Sistema de diseño en tres reglas
 
-1. **Solo componentes de `components/ui`.** Nada de `<button>`, `<input>`, `<select>`, `<dialog>` ni `<table>` crudos en páginas. Si falta un componente, se añade a `ui` (primero en Figma, ver `DESIGN.md`).
-2. **Solo tokens semánticos** de `styles/tokens.css`: `--color-*`, `--space-*`, `--radius-*` y `--type-*`. Nada de primitivos (`--green-700`, `--neutral-300`), colores, px (salvo bordes de 1 y 2 px) ni `style={…}`.
+1. **Solo componentes de `design-system`.** Nada de `<button>`, `<input>`, `<select>`, `<dialog>` ni `<table>` crudos en páginas. Si falta un componente, se añade a `ui` (primero en Figma, ver `DESIGN.md`).
+2. **Solo tokens semánticos** de `design-system/tokens.css`: `--color-*`, `--space-*`, `--radius-*` y `--type-*`. Nada de primitivos (`--green-700`, `--neutral-300`), colores, px (salvo bordes de 1 y 2 px) ni `style={…}`.
 3. **El CSS de una página solo coloca:** rejilla, huecos y anchos. Botones, tarjetas, chips y campos ya tienen su aspecto en `ui`.
 
 `comprobar-estilos.sh` ya rechaza colores a mano y, en líneas nuevas, px y `style={…}`. El resto lo revisa la persona que aprueba el PR hasta que entre en CI (fase 4 del plan).

@@ -2,7 +2,7 @@
  * Presentación de los valores de dominio de MOD-05 (Guía Web 5.6: el badge cambia de texto, no de patrón).
  * Los estados se muestran con el texto exacto del back-end.
  */
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
 import type {
   CambioEstado,
   CategoriaDocumento,

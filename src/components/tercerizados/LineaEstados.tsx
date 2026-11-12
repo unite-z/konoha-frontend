@@ -8,7 +8,7 @@
 import type { CambioEstado, EstadoAtencion } from '@/types/tercerizados'
 import { fechasPorEstado, indiceEstado, pasosCiclo } from '@/utils/estadosTercerizados'
 import { formatearFechaHora } from '@/utils/formato'
-import Icono from '../ui/Icono'
+import Icono from '@/design-system/Icono'
 import estilos from './LineaEstados.module.css'
 
 export interface LineaEstadosProps {

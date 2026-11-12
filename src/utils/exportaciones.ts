@@ -2,7 +2,7 @@
  * Lógica pura de la exportación de reportes (RF-REP-009): qué filtros se envían según el tipo, su validación, el
  * resumen de lo que se va a exportar (criterio 2) y los límites por formato (A1).
  */
-import { validarPeriodo } from '../components/ui/validacionPeriodo'
+import { validarPeriodo } from '@/design-system/validacionPeriodo'
 import type { ErrorApi } from '../services/api/cliente'
 import type {
   FiltroExportable,

@@ -9,7 +9,7 @@ Lógica pura con pruebas: formato, fechas, validaciones y transformaciones. Sin 
 **No va aquí:**
 - Llamadas a la API: van en `services/api/`.
 - Hooks: van en `hooks/` o en el módulo.
-- Componentes, ni imports de `components/`. Hoy `estados.ts`, `estadosTercerizados.ts` y `calendarioRestricciones.ts` importan tipos de `components/ui`: no se copia.
+- Componentes, ni imports de `components/`. Hoy `estados.ts`, `estadosTercerizados.ts` y `calendarioRestricciones.ts` importan tipos de `design-system`: no se copia.
 
 **Reglas:**
 - Cada fichero lleva su prueba al lado (`formato.test.ts`).

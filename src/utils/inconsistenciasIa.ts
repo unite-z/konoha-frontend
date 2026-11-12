@@ -3,8 +3,8 @@
  * lado a lado de los registros, los recuentos de los filtros y el enlace de cada registro a su módulo.
  * La IA solo señala posibles problemas: nada de aquí modifica registros.
  */
-import type { NombreIcono } from '../components/ui/Icono'
-import type { Tono } from '../components/ui/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
+import type { Tono } from '@/design-system/tonos'
 import { rutaDetalleAtencion, RUTAS_INVENTARIO, RUTAS_TERCERIZADOS } from '../router/rutasApp'
 import type { EstadoSugerencia } from '../types/ia'
 import type {

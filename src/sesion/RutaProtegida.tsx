@@ -9,10 +9,10 @@
  * - `InicioRol`: lleva a la primera sección que el rol puede usar.
  */
 import { Navigate, Outlet, useLocation } from 'react-router'
-import Boton, { BotonEnlace } from '../components/ui/Boton'
-import EstadoCarga from '../components/ui/EstadoCarga'
-import EstadoError from '../components/ui/EstadoError'
-import EstadoVacio from '../components/ui/EstadoVacio'
+import Boton, { BotonEnlace } from '@/design-system/Boton'
+import EstadoCarga from '@/design-system/EstadoCarga'
+import EstadoError from '@/design-system/EstadoError'
+import EstadoVacio from '@/design-system/EstadoVacio'
 import { entradasMenu, puede, type EntradaMenu } from '../config/permisosCore'
 import { usePaginaActual } from '../hooks/usePaginaActual'
 import { RUTAS, RUTAS_CORE, RUTAS_CORTE, RUTAS_PLANIFICACION, RUTAS_TERCERIZADOS, rutaIngresoCore } from '../router/rutasApp'

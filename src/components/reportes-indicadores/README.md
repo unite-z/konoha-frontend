@@ -10,8 +10,8 @@ Componentes y hooks que solo usa MOD-06 (Reportes e indicadores) en varias de su
 
 **No va aquí:**
 - Lo que solo usa una pantalla: va junto a esa pantalla en `pages/reportes-indicadores/<seccion>/`.
-- Lo que necesite otro módulo: se sube a `components/core/` (negocio) o a `components/ui/` (visual) cuando haya tres usuarios.
-- Variantes visuales nuevas de botón, tarjeta o diálogo: se piden a `components/ui/`, no se rehacen aquí (`DialogoDetalle` ya está en `components/ui/`; `TarjetaFiltro` sigue aquí como excepción documentada).
+- Lo que necesite otro módulo: se sube a `components/core/` (negocio) o a `design-system/` (visual) cuando haya tres usuarios.
+- Variantes visuales nuevas de botón, tarjeta o diálogo: se piden a `design-system/`, no se rehacen aquí (`DialogoDetalle` ya está en `design-system/`; `TarjetaFiltro` sigue aquí como excepción documentada).
 
 **Nombres:** componentes en PascalCase, hooks `useAlgo.ts` y lógica pura en camelCase con su `.test.ts` al lado.
 

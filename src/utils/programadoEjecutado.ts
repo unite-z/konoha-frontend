@@ -4,7 +4,7 @@
  * periodos rápidos de los meses anteriores.
  */
 import type { BarraGrafico } from '../components/reportes-indicadores/graficos/BarrasHorizontales'
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
 import type { FechaIso, InstanteIso, Periodo } from '../types/comun'
 import type { Modalidad } from '../types/reportes'
 import type {

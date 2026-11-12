@@ -6,7 +6,7 @@ Los README de `src/` dicen dónde va el código. Este documento dice cómo tiene
 
 ## 1. Principios
 
-1. **Todo sale del sistema de diseño.** Cada pantalla se compone con componentes de `src/components/ui` y tokens de `src/styles/tokens.css`.
+1. **Todo sale del sistema de diseño.** Cada pantalla se compone con componentes de `src/design-system` (código nuevo con `@/design-system/...`; los imports antiguos `@/components/ui/...` y `@/styles/...` siguen funcionando por alias y se migran al tocar cada fichero) y tokens de `src/design-system/tokens.css`.
 2. **Un cambio en un componente cambia todo el sistema.** Si un botón tiene que cambiar, se cambia `Boton`, no la pantalla.
 3. **Nada de componentes rehechos en páginas.** Ni botones, ni tarjetas, ni chips, ni campos con CSS propio.
 4. **Solo tokens semánticos.** `--color-*`, `--space-*`, `--radius-*` y `--type-*`. Nunca primitivos (`--green-700`), colores ni px.
@@ -106,7 +106,7 @@ Títulos de página y cifras llevan espaciado de letra negativo en Figma: se cop
 
 ## 4. Catálogo de componentes
 
-«Pendiente, fase 1» significa que todavía no existe en `components/ui`: hasta entonces, se pide a quien lleve el sistema de diseño antes de improvisar uno.
+«Pendiente, fase 1» significa que todavía no existe en `design-system`: hasta entonces, se pide a quien lleve el sistema de diseño antes de improvisar uno.
 
 ### 4.1 Básicos
 
@@ -207,10 +207,10 @@ Reglas que salen de la revisión del profesor del 29/10.
 
 ## 7. Cómo añadir o cambiar un componente
 
-**Lo vigila el CI** (`comprobar-estilos.sh`, AV-351). En todo `src/`: ninguna medida en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` y `border-radius` solo con `var(--type-*)` y `var(--radius-*)`. En las carpetas migradas, que hoy son todas salvo planificación: nada de primitivos de color, ninguna `var(--x)` sin definir y ningún control crudo fuera de `components/ui` y `layouts`. Un dato interactivo que no encaja en un componente (una barra de gráfico, una celda de mapa de calor, una ficha pulsable, la barra de herramientas de un lienzo) lleva el comentario `// Excepción al sistema (AV-351): motivo` en su fichero. Planificación entra en las dos reglas cuando la sustituya el rediseño de MOD-03.
+**Lo vigila el CI** (`comprobar-estilos.sh`, AV-351). En todo `src/`: ninguna medida en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` y `border-radius` solo con `var(--type-*)` y `var(--radius-*)`. En las carpetas migradas, que hoy son todas salvo planificación: nada de primitivos de color, ninguna `var(--x)` sin definir y ningún control crudo fuera de `design-system` y `layouts`. Un dato interactivo que no encaja en un componente (una barra de gráfico, una celda de mapa de calor, una ficha pulsable, la barra de herramientas de un lienzo) lleva el comentario `// Excepción al sistema (AV-351): motivo` en su fichero. Planificación entra en las dos reglas cuando la sustituya el rediseño de MOD-03.
 
 1. **Primero en Figma**, en la página del sistema de diseño, con sus variantes y las variables de «AV · Color» y «AV · Dimensiones». Lo revisa quien lleve diseño.
-2. **Después en `src/components/ui`**: mismo nombre (sin tildes, en PascalCase), mismas variantes, solo tokens, y su prueba.
+2. **Después en `src/design-system`**: mismo nombre (sin tildes, en PascalCase), mismas variantes, solo tokens, y su prueba.
 3. Se actualiza la fila del componente en este documento en el mismo PR.
 4. **Nunca al revés sin avisar a diseño.** Si una urgencia obliga a tocar el código antes, se abre una incidencia para llevarlo a Figma y se enlaza en el PR.
 5. Una variante para una sola pantalla no es motivo para crear un componente: o entra en el sistema para todos, o la pantalla usa lo que hay.

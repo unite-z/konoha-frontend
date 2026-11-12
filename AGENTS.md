@@ -20,7 +20,7 @@ Detalle por carpeta, reglas de dependencias y comunicación entre módulos: `src
 | `src/pages/<modulo>/` | Pantallas: `acceso/`, `usuarios-roles/` y `repositorio/` (MOD-01), `servicios-tercerizados/` (MOD-05) y `reportes-indicadores/` (MOD-06) |
 | `src/pages/operacion-campo/` | MOD-04: cuadrillas, encargos y participantes; sesión común de MOD-01, menú y rutas según `CAM.CUADRILLA.CONSULTAR` |
 | `src/components/core/` | Componentes comunes de MOD-01 para las fichas de otros módulos: `Adjuntos` e `HistorialCambios` |
-| `src/components/ui/` | Componentes base. Reutilízalos antes de crear otro |
+| `src/design-system/` | Componentes base, tokens y estilos globales. Reutilízalos antes de crear otro. Código nuevo: `@/design-system/...`. Los imports antiguos `@/components/ui/...` y `@/styles/...` siguen funcionando por un alias (`vite.config.ts` y `tsconfig.app.json`) y se migran al tocar cada fichero; no los uses en código nuevo. |
 | `src/components/reportes-indicadores/` | Componentes propios del MOD-06 (filtros compartidos de los reportes de gestión) |
 | `src/services/api/` | Clientes y servicios tipados por módulo |
 | `src/types/` | Tipos del contrato de la API |
@@ -28,7 +28,7 @@ Detalle por carpeta, reglas de dependencias y comunicación entre módulos: `src
 | `src/config/` | Permisos de interfaz por rol (`permisosCore.ts`: códigos de permiso de la sesión) |
 | `src/sesion/`, `src/router/` | Sesión, guardián de rutas y rutas |
 | `src/sincronizacion/` | Modo sin conexión (RF-T-012): cola común, lecturas descargadas y service worker |
-| `src/styles/tokens.css` | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`) |
+| `src/design-system/tokens.css` | Tokens de diseño: colores, espacios, tipografía (ver `DESIGN.md`) |
 | `Dockerfile`, `docker/Caddyfile` | Imagen `konoha-web`: la PWA servida por Caddy sin root |
 | `.github/workflows/` | `ci.yml`, `deploy-uat.yml`, `limpiar-imagenes.yml` y `tamano-pr.yml` (aviso si el PR pasa de 400 líneas) |
 | `.github/copilot-instructions.md`, `.github/instructions/` | Normas que usa Copilot al revisar los PR |
@@ -52,7 +52,7 @@ npm run typecheck && npm run lint && npm test && npm run build
 ```
 
 - El hook `pre-push` ya ejecuta typecheck y oxlint. Actívalo con `git config core.hooksPath .githooks`.
-- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css`, `fetch` fuera de `services/api/`, medidas en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` o `border-radius` sin `var(--type-*)` o `var(--radius-*)`, imports con más de un `../` (se usa el alias `@/`), y en las líneas nuevas, `style={…}`. En las carpetas migradas al sistema de diseño (todas las de `pages/`, `layouts` y `components`) rechaza además primitivos de color, variables `var(--x)` sin definir y controles crudos (`<button>`, `<input>`, `<table>`…) fuera de `components/ui` y `layouts`, salvo con el comentario `Excepción al sistema (AV-351): motivo`.
+- En el PR, CI comprueba además el título, la rama, los nombres de fichero, los artefactos y los secretos (gitleaks), y `comprobar-estilos.sh` rechaza colores fuera de `tokens.css`, `fetch` fuera de `services/api/`, medidas en px (salvo bordes de 1 y 2 px y `@media`) y `font-size` o `border-radius` sin `var(--type-*)` o `var(--radius-*)`, imports con más de un `../` (se usa el alias `@/`), y en las líneas nuevas, `style={…}`. En las carpetas migradas al sistema de diseño (todas las de `pages/`, `layouts` y `components`) rechaza además primitivos de color, variables `var(--x)` sin definir y controles crudos (`<button>`, `<input>`, `<table>`…) fuera de `design-system` y `layouts`, salvo con el comentario `Excepción al sistema (AV-351): motivo`.
 - oxlint rechaza `any`, `!` sin justificar (`// oxlint-disable-next-line typescript/no-non-null-assertion -- motivo`) y `console.*`.
 
 ## Reglas no negociables
@@ -102,7 +102,7 @@ Ningún PR puede ampliar estas brechas (por ejemplo, guardar credenciales en `lo
 ## Deuda conocida (no la arregles de paso: tiene ticket propio)
 
 - Dos formatos de error del backend (ADR 0004). El cliente acepta ambos hasta la migración.
-- Solo `Boton` tiene prueba de componente; el resto de `components/ui` las recibe al alinearse con Figma (AV-330).
+- Solo `Boton` tiene prueba de componente; el resto de `design-system` las recibe al alinearse con Figma (AV-330).
 
 ## Qué no entra al repo
 

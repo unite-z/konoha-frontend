@@ -3,8 +3,8 @@
  * prohibiciones (RI-25), validación y resumen de las decisiones, el texto de los cambios del usuario y la cuadrícula
  * del calendario. La IA solo propone: nada se programa hasta confirmar.
  */
-import type { NombreIcono } from '../components/ui/Icono'
-import type { Tono } from '../components/ui/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
+import type { Tono } from '@/design-system/tonos'
 import type { FechaIso, Periodo } from '../types/comun'
 import type { AccionDecision } from '../types/ia'
 import type {

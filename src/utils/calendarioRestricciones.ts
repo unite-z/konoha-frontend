@@ -1,8 +1,8 @@
 /** Lógica pura del calendario de restricciones de MOD-03. */
 import type { FechaIso } from '../types/comun'
 import type { EfectoRestriccion, Restriccion } from '../types/planificacion'
-import type { Tono } from '../components/ui/tonos'
-import type { NombreIcono } from '../components/ui/Icono'
+import type { Tono } from '@/design-system/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
 
 export interface Mes {
   anio: number

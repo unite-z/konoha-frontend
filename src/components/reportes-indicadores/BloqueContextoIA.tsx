@@ -5,10 +5,10 @@
  */
 import type { MetadatosIA } from '@/types/ia'
 import { insigniaSuficiencia } from '@/utils/estados'
-import AvisoEnLinea from '../ui/AvisoEnLinea'
-import Estado from '../ui/Estado'
-import Icono from '../ui/Icono'
-import { insigniaAEstado } from '../ui/tonos'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
+import Estado from '@/design-system/Estado'
+import Icono from '@/design-system/Icono'
+import { insigniaAEstado } from '@/design-system/tonos'
 import estilos from './BloqueContextoIA.module.css'
 
 export interface BloqueContextoIAProps {

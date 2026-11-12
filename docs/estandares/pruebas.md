@@ -16,11 +16,11 @@ CI ejecuta las cuatro órdenes en cada PR.
 | Lógica pura (`utils/`, `config/`, `router/`, `sesion/`) | Vitest, sin DOM. Es lo prioritario |
 | Clientes de la API (`services/api/`) | Vitest con `fetch` simulado: rutas, cabeceras, errores y reintentos |
 | Cola sin conexión | Vitest con IndexedDB simulado: orden, reintentos, idempotencia |
-| Componentes (`components/ui/` primero) | Vitest con Testing Library y jsdom: comportamiento y accesibilidad. La lógica compleja se sigue sacando a `utils/` |
+| Componentes (`design-system/` primero) | Vitest con Testing Library y jsdom: comportamiento y accesibilidad. La lógica compleja se sigue sacando a `utils/` |
 
 ## Pruebas de componentes
 
-Plantilla: `src/components/ui/Boton.test.tsx`.
+Plantilla: `src/design-system/Boton.test.tsx`.
 
 - Fichero `Componente.test.tsx` junto al componente, con `// @vitest-environment jsdom` en la primera línea. El resto de pruebas sigue en Node, que es más rápido.
 - `afterEach(cleanup)` al principio del fichero.
@@ -28,7 +28,7 @@ Plantilla: `src/components/ui/Boton.test.tsx`.
 - Interacción con `userEvent.setup()`, también con teclado (`usuario.tab()`, `usuario.keyboard('{Enter}')`).
 - Se prueba el comportamiento y los atributos ARIA, no las clases CSS ni la estructura interna.
 - Los componentes que navegan se envuelven en `MemoryRouter`.
-- Cada componente base de `components/ui/` lleva su prueba; los nuevos, desde el primer PR.
+- Cada componente base de `design-system/` lleva su prueba; los nuevos, desde el primer PR.
 
 ## Reglas
 

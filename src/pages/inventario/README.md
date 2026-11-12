@@ -2,7 +2,7 @@
 
 Áreas verdes y mapa del campus: `AreasVerdesPage`, `NuevaAreaVerdePage`, `CoberturasPage`, `CatalogosPage`, `EjemplaresPage`, `CampanasPodaPage`, `CampanaPodaDetallePage`, `PlanificarCampanaPage`, `RegistrarPodaPage`, `IntervencionPodaPage`, `RendimientoCampanaPage`, `EspeciesCampanaPage` y `MapaAreasVerdesPage` (carga diferida, con maplibre y `MapaVectorialLocal.tsx`).
 
-**Estado:** MOD-02 está en `main` desde #92 a #96; la rama `mod02` es una versión anterior y no se fusiona. Migrado al sistema de diseño (AV-349): todas las pantallas usan componentes de `components/ui` y su CSS es solo layout. `CatalogosPage` y `EjemplaresPage` comparten `Catalogos.module.css`. La barra de herramientas del lienzo de `MapaVectorialLocal` es una excepción documentada (AV-351).
+**Estado:** MOD-02 está en `main` desde #92 a #96; la rama `mod02` es una versión anterior y no se fusiona. Migrado al sistema de diseño (AV-349): todas las pantallas usan componentes de `design-system` y su CSS es solo layout. `CatalogosPage` y `EjemplaresPage` comparten `Catalogos.module.css`. La barra de herramientas del lienzo de `MapaVectorialLocal` es una excepción documentada (AV-351).
 
 | Qué | Dónde |
 |---|---|

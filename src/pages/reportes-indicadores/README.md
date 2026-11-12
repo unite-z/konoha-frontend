@@ -20,7 +20,7 @@ El módulo más grande (un 37 % del código). Una subcarpeta por sección del me
 
 **Entre módulos:** `ia/extracciones/` devuelve la atención y el informe de MOD-05 de cada propuesta (AV-355): no se piden aparte. Para enlazar a una atención se usa `rutaDetalleAtencion(id)`.
 
-**Deuda que no se copia:** tarjetas y botones propios en el CSS de cada reporte. En código nuevo, `TarjetaIndicador`, `Boton` y los componentes de `components/ui`.
+**Deuda que no se copia:** tarjetas y botones propios en el CSS de cada reporte. En código nuevo, `TarjetaIndicador`, `Boton` y los componentes de `design-system`.
 
 **Ejemplo:** `panel/TablaRegistros.tsx` enlaza cada fila con `<Link to={rutaDetalleAtencion(fila.atencion_id)}>`.
 

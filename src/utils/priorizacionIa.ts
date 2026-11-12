@@ -2,8 +2,8 @@
  * Lógica pura de RN-IA-002 (prioridades de atención con IA): insignias, resumen de la bandeja, orden y filtro del
  * ranking, decisiones por elemento y el cuerpo de la validación. La IA solo propone (RN-IA-001).
  */
-import type { NombreIcono } from '../components/ui/Icono'
-import type { Tono } from '../components/ui/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
+import type { Tono } from '@/design-system/tonos'
 import type { AccionDecision } from '../types/ia'
 import type {
   AlcancePriorizacion,
