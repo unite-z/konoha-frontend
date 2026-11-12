@@ -139,4 +139,3 @@ export function filtroDeBarra(clave: ClaveIndicadorPanel, etiqueta: string): (fi
 export function esConteo(clave: ClaveIndicadorPanel): boolean {
   return clave !== 'consumo-materiales'
 }
-

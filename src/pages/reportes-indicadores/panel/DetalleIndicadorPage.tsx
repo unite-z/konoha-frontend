@@ -152,32 +152,34 @@ function ContenidoDetalle<F>({ clave, agrupaciones, unidadDe }: ContenidoDetalle
             </section>
 
             <section className={estilos.seccion} aria-labelledby="titulo-registros">
-                <h2 id="titulo-registros" className={estilos.tituloSeccion}>
-                  Registros del periodo
-                </h2>
-                {!datos.completo && (
-                  <AvisoEnLinea tono="advertencia" titulo="El gráfico resume solo una parte de los registros">
-                    Hay {formatearNumero(datos.count)} registros con estos filtros y se descargaron{' '}
-                    {formatearNumero(datos.results.length)}. Acota el periodo o añade filtros para verlos todos.
-                  </AvisoEnLinea>
-                )}
-                <GraficoAgrupado<F>
-                  // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
-                  key={datos.generado_en}
-                  filas={datos.results}
-                  agrupaciones={agrupaciones}
-                  unidadDe={unidadDe}
-                  onVerDetalle={(t, filas) => setEleccion({ titulo: t, filas })}
-                />
-                <div className={estilosPanel.acciones}>
-                  <Boton
-                    variante="secundario"
-                    onClick={() => setEleccion({ titulo: `Registros de ${datos.indicador.nombre}`, filas: datos.results })}
-                  >
-                    Ver todos los registros ({formatearNumero(datos.results.length)})
-                  </Boton>
-                </div>
-              </section>
+              <h2 id="titulo-registros" className={estilos.tituloSeccion}>
+                Registros del periodo
+              </h2>
+              {!datos.completo && (
+                <AvisoEnLinea tono="advertencia" titulo="El gráfico resume solo una parte de los registros">
+                  Hay {formatearNumero(datos.count)} registros con estos filtros y se descargaron{' '}
+                  {formatearNumero(datos.results.length)}. Acota el periodo o añade filtros para verlos todos.
+                </AvisoEnLinea>
+              )}
+              <GraficoAgrupado<F>
+                // Al cambiar los datos (nueva consulta), el gráfico olvida la barra elegida.
+                key={datos.generado_en}
+                filas={datos.results}
+                agrupaciones={agrupaciones}
+                unidadDe={unidadDe}
+                onVerDetalle={(t, filas) => setEleccion({ titulo: t, filas })}
+              />
+              <div className={estilosPanel.acciones}>
+                <Boton
+                  variante="secundario"
+                  onClick={() =>
+                    setEleccion({ titulo: `Registros de ${datos.indicador.nombre}`, filas: datos.results })
+                  }
+                >
+                  Ver todos los registros ({formatearNumero(datos.results.length)})
+                </Boton>
+              </div>
+            </section>
 
             {notasUnicas(datos.notas).map((nota) => (
               <AvisoEnLinea key={nota} tono="info">
@@ -227,7 +229,11 @@ export default function DetalleIndicadorPage() {
       )
     case 'cumplimiento-tercerizados':
       return (
-        <ContenidoDetalle<FilaAtencionPeriodo> key={indicador} clave={indicador} agrupaciones={AGRUPACIONES_CUMPLIMIENTO} />
+        <ContenidoDetalle<FilaAtencionPeriodo>
+          key={indicador}
+          clave={indicador}
+          agrupaciones={AGRUPACIONES_CUMPLIMIENTO}
+        />
       )
     case 'consumo-materiales':
       return (
@@ -240,7 +246,11 @@ export default function DetalleIndicadorPage() {
       )
     case 'actividades-por-estado':
       return (
-        <ContenidoDetalle<FilaActividadCampo> key={indicador} clave={indicador} agrupaciones={AGRUPACIONES_ACTIVIDADES} />
+        <ContenidoDetalle<FilaActividadCampo>
+          key={indicador}
+          clave={indicador}
+          agrupaciones={AGRUPACIONES_ACTIVIDADES}
+        />
       )
     case 'distribucion-operarios':
       return (

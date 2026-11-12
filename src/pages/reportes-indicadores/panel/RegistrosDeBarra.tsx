@@ -41,5 +41,12 @@ export default function RegistrosDeBarra({ clave, etiqueta, titulo, consulta, cl
   if (filas.length === 0) {
     return <EstadoVacio nivel={3} titulo="Sin registros" descripcion="No hay registros para esta parte del gráfico." />
   }
-  return <TablaRegistros clave={clave} titulo={`Registros de ${titulo}`} filas={filas} incompleto={!registros.datos.completo} />
+  return (
+    <TablaRegistros
+      clave={clave}
+      titulo={`Registros de ${titulo}`}
+      filas={filas}
+      incompleto={!registros.datos.completo}
+    />
+  )
 }

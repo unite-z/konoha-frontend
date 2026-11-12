@@ -82,7 +82,10 @@ export default function GraficoDesglose({ resultado, onVerDetalle }: GraficoDesg
         indicacion="Haz clic en una barra para ver sus registros."
         onVerDetalle={() =>
           barraElegida &&
-          onVerDetalle({ etiqueta: barraElegida.etiqueta, titulo: `${resultado.indicador.nombre}: ${barraElegida.texto}` })
+          onVerDetalle({
+            etiqueta: barraElegida.etiqueta,
+            titulo: `${resultado.indicador.nombre}: ${barraElegida.texto}`,
+          })
         }
       />
       <BarrasHorizontales

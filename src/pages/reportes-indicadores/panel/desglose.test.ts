@@ -25,13 +25,20 @@ describe('gruposDesglose', () => {
   })
 
   it('agrupa el consumo por unidad', () => {
-    const grupos = gruposDesglose('consumo-materiales', [e('Compost (kg)', '16.5'), e('Plantón (unidades)', '30'), e('NPK (kg)', '25')])
+    const grupos = gruposDesglose('consumo-materiales', [
+      e('Compost (kg)', '16.5'),
+      e('Plantón (unidades)', '30'),
+      e('NPK (kg)', '25'),
+    ])
     expect(grupos.map((g) => g.texto)).toEqual(['kg', 'unidades'])
     expect(grupos[0].barras.map((b) => b.texto)).toEqual(['NPK', 'Compost'])
   })
 
   it('ordena el cumplimiento según el flujo de la atención', () => {
-    const [grupo] = gruposDesglose('cumplimiento-tercerizados', [e('Reporte adjunto', '1'), e('Requerimiento registrado', '4')])
+    const [grupo] = gruposDesglose('cumplimiento-tercerizados', [
+      e('Reporte adjunto', '1'),
+      e('Requerimiento registrado', '4'),
+    ])
     expect(grupo.enOrden).toBe(true)
     expect(grupo.barras.map((b) => b.etiqueta)).toEqual(['Requerimiento registrado', 'Reporte adjunto'])
   })

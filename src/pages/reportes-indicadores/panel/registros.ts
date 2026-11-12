@@ -19,7 +19,11 @@ import { numeroDeDecimal } from '@/utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
 
 // La agrupación es común a los gráficos del MOD-06.
-export { agruparRegistros, type Agrupacion, type GrupoRegistros } from '@/components/reportes-indicadores/graficos/agrupar'
+export {
+  agruparRegistros,
+  type Agrupacion,
+  type GrupoRegistros,
+} from '@/components/reportes-indicadores/graficos/agrupar'
 
 /** Tope de registros que se descargan para los gráficos (40 páginas de 25). */
 export const MAXIMO_REGISTROS = 1000

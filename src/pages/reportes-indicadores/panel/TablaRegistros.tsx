@@ -31,7 +31,12 @@ const COLUMNAS_ATENCIONES_ESPACIO: ColumnaTabla<FilaAtencionEspacio>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    ordenable: true,
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
+  },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
 ]
 
@@ -39,7 +44,12 @@ const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'codigo', titulo: 'Atención', ordenable: true, render: enlaceAtencion },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio', ordenable: true },
-  { clave: 'estado', titulo: 'Estado', ordenable: true, render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    ordenable: true,
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
+  },
   { clave: 'proveedor', titulo: 'Proveedor', ordenable: true },
 ]
 
@@ -146,7 +156,10 @@ export default function TablaRegistros({ clave, titulo, filas, incompleto = fals
   return (
     <>
       {incompleto && (
-        <AvisoEnLinea tono="advertencia" titulo={`Se muestran los primeros ${formatearNumero(MAXIMO_REGISTROS)} registros`}>
+        <AvisoEnLinea
+          tono="advertencia"
+          titulo={`Se muestran los primeros ${formatearNumero(MAXIMO_REGISTROS)} registros`}
+        >
           Hay más registros con estos filtros. Acota el periodo o añade filtros para verlos todos.
         </AvisoEnLinea>
       )}
