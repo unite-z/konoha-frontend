@@ -4,6 +4,11 @@
 
 - TypeScript en modo `strict`. `tsc -b` sin errores.
 - oxlint sin errores (`npm run lint`).
+- Formato con oxfmt (`.oxfmtrc.json`: sin punto y coma, comillas simples, 120 columnas, coma final). Un componente no puede quedar en una sola línea.
+  - Al formatear un fichero: `npx oxfmt <fichero>` (o `npm run format -- <fichero>`).
+  - CI (`comprobar-formato.sh`) comprueba con `--check` **solo los ficheros de `src/` que añade o modifica el PR** (como el ratchet de Spotless en el backend). Al tocar un fichero antiguo, se formatea entero; no hay que reformatear el resto del repo.
+  - En local: `bash .github/scripts/comprobar-formato.sh origin/main`.
+  - Se eligió oxfmt y no Prettier porque es de la misma familia que oxlint (un único binario, sin plugins ni `.prettierrc` que mantener) y el repo no tenía configuración de Prettier previa.
 - CSS Modules con los tokens de `src/styles/tokens.css`. Qué componente y qué token usar: `DESIGN.md`.
 
 ## Estructura de `src/`
