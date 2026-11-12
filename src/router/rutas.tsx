@@ -88,6 +88,7 @@ import IngresoPage from '../pages/acceso/IngresoPage'
 import RepositorioPage from '../pages/repositorio/RepositorioPage'
 import AccesosPage from '../pages/usuarios-roles/AccesosPage'
 import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
+import RolesPermisosPage from '../pages/usuarios-roles/RolesPermisosPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
 import { PERMISOS } from '../config/permisosCore'
@@ -196,6 +197,10 @@ export const router = createBrowserRouter([
               { path: RUTAS_CORE.accesos, element: <AccesosPage /> },
               { path: RUTAS_CORE.importacion, element: <ImportacionPage /> },
             ],
+          },
+          {
+            element: <RutaConPermiso permiso={PERMISOS.gestionarRoles} seccion="Roles y permisos" />,
+            children: [{ path: RUTAS_CORE.rolesPermisos, element: <RolesPermisosPage /> }], // AV-381
           },
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarRepositorio} />,

@@ -33,6 +33,8 @@ export interface EntradaSegundoNivel {
   textoMovil?: string
   /** Sin ruta: pertenece a otro requisito y se muestra sin enlace, con «Próximamente». */
   ruta?: string
+  /** Permiso que hace falta para verla (si falta, el módulo la oculta). */
+  permiso?: string
 }
 
 export interface ModuloMenu {
@@ -153,6 +155,7 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Usuarios', icono: 'list', ruta: RUTAS_CORE.usuarios },
       { texto: 'Registro de accesos', icono: 'clipboard', ruta: RUTAS_CORE.accesos },
       { texto: 'Importación', icono: 'paperclip', ruta: RUTAS_CORE.importacion },
+      { texto: 'Roles y permisos', icono: 'settings', ruta: RUTAS_CORE.rolesPermisos, permiso: 'CORE.ROL.GESTIONAR' },
     ],
   },
 ]
@@ -191,11 +194,19 @@ export function activoEnMenu(pathname: string, modulos: ModuloMenu[] = MODULOS_M
   return { modulo, hijo }
 }
 
+/** Subentradas que la sesión puede ver: las que no piden permiso o las que lo tiene. */
+export function hijosVisibles(hijos: EntradaSegundoNivel[], permisos: readonly string[]): EntradaSegundoNivel[] {
+  return hijos.filter((hijo) => !hijo.permiso || permisos.includes(hijo.permiso))
+}
+
 /** Subentradas con enlace del módulo activo, para la Barra inferior móvil (como mucho 5, como en Figma). */
 export function seccionesMoviles(
   pathname: string,
   modulos: ModuloMenu[] = MODULOS_MENU,
+  permisos: readonly string[] = [],
 ): (EntradaSegundoNivel & { ruta: string })[] {
   const { modulo } = activoEnMenu(pathname, modulos)
-  return (modulo?.hijos ?? []).filter((hijo): hijo is EntradaSegundoNivel & { ruta: string } => Boolean(hijo.ruta)).slice(0, 5)
+  return hijosVisibles(modulo?.hijos ?? [], permisos)
+    .filter((hijo): hijo is EntradaSegundoNivel & { ruta: string } => Boolean(hijo.ruta))
+    .slice(0, 5)
 }

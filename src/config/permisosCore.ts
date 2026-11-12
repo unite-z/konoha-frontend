@@ -7,6 +7,8 @@ import type { SesionCore } from '../types/core'
 
 export const PERMISOS = {
   gestionarUsuarios: 'CORE.USUARIO.GESTIONAR',
+  /** Editar los permisos de cada rol (AV-381): solo el superadministrador. */
+  gestionarRoles: 'CORE.ROL.GESTIONAR',
   gestionarCatalogos: 'CORE.CATALOGO.GESTIONAR',
   consultarRepositorio: 'CORE.REPOSITORIO.CONSULTAR',
   consultarHistorial: 'CORE.HISTORIAL.CONSULTAR',
