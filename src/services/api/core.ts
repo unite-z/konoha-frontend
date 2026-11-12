@@ -3,6 +3,7 @@
  * Las páginas nunca llaman a `fetch`: usan estas funciones.
  */
 import type {
+  AparienciaCuenta,
   Acceso,
   Adjunto,
   CanalAcceso,
@@ -20,6 +21,8 @@ import type {
   PaginaRepositorio,
   ResultadoAcceso,
   RolConPermisos,
+  PermisoCatalogo,
+  PermisosRol,
   RolUsuario,
   SesionCore,
   TipoImportacion,
@@ -45,6 +48,11 @@ export function cerrarSesionCore(): Promise<void> {
 
 export function cambiarContrasena(cambio: CambioContrasena): Promise<void> {
   return solicitarCore('auth/contrasena/', { metodo: 'POST', cuerpo: cambio })
+}
+
+/** `PUT auth/apariencia/` (AV-391): guarda en la cuenta el tema y el acento de Configuración. */
+export function guardarAparienciaCuenta(apariencia: AparienciaCuenta): Promise<AparienciaCuenta> {
+  return solicitarCore('auth/apariencia/', { metodo: 'PUT', cuerpo: apariencia })
 }
 
 // --- Usuarios y roles (RF-T-002 y RF-T-003) ------------------------------------------------------------
@@ -101,6 +109,21 @@ export function historialUsuario(id: number, signal?: AbortSignal): Promise<Camb
 
 export function listarRoles(signal?: AbortSignal): Promise<RolConPermisos[]> {
   return solicitarCore('roles/', { signal })
+}
+
+/** Catálogo de permisos (AV-381): jefe de sección y superadministrador. */
+export function listarPermisos(signal?: AbortSignal): Promise<PermisoCatalogo[]> {
+  return solicitarCore('permisos/', { signal })
+}
+
+/** Permisos de un rol y sus cambios (AV-381): solo el superadministrador. */
+export function obtenerPermisosRol(codigo: CodigoRol, signal?: AbortSignal): Promise<PermisosRol> {
+  return solicitarCore(`roles/${codigo}/permisos/`, { signal })
+}
+
+/** Sustituye todos los permisos del rol; valen desde la siguiente acción de sus usuarios (AV-381). */
+export function cambiarPermisosRol(codigo: CodigoRol, permisos: string[], motivo: string): Promise<PermisosRol> {
+  return solicitarCore(`roles/${codigo}/permisos/`, { metodo: 'PUT', cuerpo: { permisos, motivo } })
 }
 
 export function obtenerRolUsuario(id: number, signal?: AbortSignal): Promise<RolUsuario> {
@@ -169,7 +192,11 @@ export function validarImportacion(tipo: TipoImportacion, archivo: File): Promis
   return solicitarCore('importaciones/', { metodo: 'POST', formulario })
 }
 
-export function listarFilasImportacion(id: number, page: number, signal?: AbortSignal): Promise<PaginaCore<FilaImportacion>> {
+export function listarFilasImportacion(
+  id: number,
+  page: number,
+  signal?: AbortSignal,
+): Promise<PaginaCore<FilaImportacion>> {
   return solicitarCore(`importaciones/${id}/filas/`, { parametros: { page }, signal })
 }
 

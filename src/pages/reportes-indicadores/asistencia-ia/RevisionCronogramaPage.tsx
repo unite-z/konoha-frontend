@@ -9,7 +9,7 @@
  * - Vista «Calendario» (por defecto, al estilo de Teams: lo programado junto a la propuesta, con la ficha de la
  *   propuesta elegida en un panel lateral) y vista «Lista» por semanas. En móvil, solo la lista (agenda).
  *
- * Solo el jefe de sección confirma o descarta (ROLES_VALIDAR_IA); los demás la ven sin acciones.
+ * Solo el jefe de sección confirma o descarta (PERMISO_VALIDAR_IA); los demás la ven sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
@@ -26,7 +26,7 @@ import EstadoError from '@/components/ui/EstadoError'
 import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Pestanas from '@/components/ui/Pestanas'
-import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS, RUTAS_PLANIFICACION } from '@/router/rutasApp'
@@ -39,7 +39,7 @@ import {
   rechazarCronograma,
 } from '@/services/api/cronogramaIa'
 import { obtenerCatalogoComparacion } from '@/services/api/reportesGestion'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaCronograma, ValoresCronograma } from '@/types/cronogramaIa'
 import {
   cuerpoConfirmacion,
@@ -81,8 +81,8 @@ export default function RevisionCronogramaPage() {
   const location = useLocation()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaBandeja = `${RUTAS.cronogramaIa}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeConfirmar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
+  const permisos = usePermisos()
+  const puedeConfirmar = puede(permisos, PERMISO_VALIDAR_IA)
   const esMovil = useEsMovil()
 
   usePaginaActual(`Propuesta de cronograma n.º ${id}`, [

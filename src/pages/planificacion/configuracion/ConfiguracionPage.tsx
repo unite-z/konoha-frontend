@@ -6,6 +6,7 @@
  */
 import { useCallback, useState } from 'react'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
@@ -18,20 +19,27 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import PanelEditarServicio from './PanelEditarServicio'
 import PanelNuevaRestriccion from '../calendario/PanelNuevaRestriccion'
 import SeriesRestricciones from './SeriesRestricciones'
-import { SIN_CONFIGURAR, detalleServicio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia } from './configuracionServicios'
+import {
+  SIN_CONFIGURAR,
+  detalleServicio,
+  estacionDe,
+  estadoServicio,
+  textoDuracionServicio,
+  textoFrecuencia,
+} from './configuracionServicios'
 import { agruparSeries, rangoSeries } from './series'
 
 type PestanaConfiguracion = 'servicios' | 'series'
 
 export default function ConfiguracionPage() {
   usePaginaActual('Configuración', [MIGAS_PLANIFICACION.planificacion, { texto: 'Configuración' }])
-  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
+  const puedeEditar = puedeEditarPlanificacion(usePermisos())
   const hoy = hoyLima()
   const estacion = estacionDe(hoy)
   const consulta = useConsulta('servicios', listarServiciosPeriodicos)
@@ -44,7 +52,10 @@ export default function ConfiguracionPage() {
   const [editando, setEditando] = useState<ServicioPeriodico | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
-  const actualizar = useCallback((s: ServicioPeriodico) => setCambios((previos) => ({ ...previos, [s.id]: s })), [setCambios])
+  const actualizar = useCallback(
+    (s: ServicioPeriodico) => setCambios((previos) => ({ ...previos, [s.id]: s })),
+    [setCambios],
+  )
 
   const columnas: ColumnaTabla<ServicioPeriodico>[] = [
     {
@@ -89,17 +100,25 @@ export default function ConfiguracionPage() {
       render: (s) => {
         const completo = estadoServicio(s).texto === 'Configurado'
         return (
-          <Boton variante={completo ? 'fantasma' : 'secundario'} compacto onClick={() => setEditando(s)}>
-            <span aria-hidden="true">{completo ? 'Editar' : 'Configurar'}</span>
-            <span className="sr-only">{`${completo ? 'Editar' : 'Configurar'} ${s.nombre}`}</span>
-          </Boton>
+          <AccionFila
+            icono="pencil"
+            nombre={completo ? 'Editar' : 'Configurar'}
+            etiqueta={`${completo ? 'Editar' : 'Configurar'} ${s.nombre}`}
+            onClick={() => setEditando(s)}
+          />
         )
       },
     })
   }
 
   if (consulta.estado === 'error' && !consulta.datos) {
-    return <EstadoError titulo="No pudimos cargar los servicios periódicos" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar los servicios periódicos"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   }
 
   const servicios = (consulta.datos ?? []).map((s) => cambios[s.id] ?? s)
@@ -117,8 +136,16 @@ export default function ConfiguracionPage() {
       <Pestanas
         etiqueta="Configuración"
         pestanas={[
-          { valor: 'servicios', texto: 'Servicios periódicos', contador: consulta.datos ? servicios.length : undefined },
-          { valor: 'series', texto: 'Series de restricciones', contador: restricciones.datos ? series.length : undefined },
+          {
+            valor: 'servicios',
+            texto: 'Servicios periódicos',
+            contador: consulta.datos ? servicios.length : undefined,
+          },
+          {
+            valor: 'series',
+            texto: 'Series de restricciones',
+            contador: restricciones.datos ? series.length : undefined,
+          },
         ]}
         valor={pestana}
         onCambiar={(valor) => setPestana(valor as PestanaConfiguracion)}
@@ -130,10 +157,17 @@ export default function ConfiguracionPage() {
             filas={servicios}
             claveFila={(s) => String(s.id)}
             estado={consulta.datos ? 'exito' : 'cargando'}
-            vacio={{ titulo: 'No hay servicios periódicos', descripcion: 'Aparecerán aquí cuando se den de alta en el catálogo.' }}
+            vacio={{
+              titulo: 'No hay servicios periódicos',
+              descripcion: 'Aparecerán aquí cuando se den de alta en el catálogo.',
+            }}
           />
         ) : restricciones.estado === 'error' && !restricciones.datos ? (
-          <EstadoError titulo="No pudimos cargar las series" descripcion={restricciones.error?.detalle ?? ''} onReintentar={restricciones.reintentar} />
+          <EstadoError
+            titulo="No pudimos cargar las series"
+            descripcion={restricciones.error?.detalle ?? ''}
+            onReintentar={restricciones.reintentar}
+          />
         ) : (
           <SeriesRestricciones
             series={series}
@@ -141,7 +175,11 @@ export default function ConfiguracionPage() {
             puedeEditar={puedeEditar}
             onBaja={(serie) => {
               setBajas((previas) => [...previas, serie.clave])
-              setAviso(serie.serie ? `Serie ${serie.descripcion ?? serie.tipo} dada de baja.` : `${serie.descripcion ?? serie.tipo} dada de baja.`)
+              setAviso(
+                serie.serie
+                  ? `Serie ${serie.descripcion ?? serie.tipo} dada de baja.`
+                  : `${serie.descripcion ?? serie.tipo} dada de baja.`,
+              )
             }}
           />
         )}

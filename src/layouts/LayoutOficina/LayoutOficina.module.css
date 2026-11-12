@@ -3,6 +3,7 @@
   display: grid;
   grid-template-columns: var(--web-sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .menuComprimido {
@@ -15,7 +16,7 @@
  */
 @media (min-width: 768px) {
   .layout {
-    transition: grid-template-columns var(--duracion-transicion);
+    transition: grid-template-columns var(--duracion-menu) var(--curva-menu);
   }
 
   .menuComprimido:has(> aside:hover),
@@ -32,13 +33,19 @@
 
 /*
  * Escritorio: el contenido va en un panel redondeado separado del menú y del borde de la ventana, sin la línea
- * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
+ * recta entre los dos (Figma, pantallas de MOD-03).
  */
 @media (min-width: 768px) {
+  /*
+   * El panel es lo que se desplaza, no la ventana (AV-393): la cabecera con las migas queda fija arriba y el panel
+   * conserva su borde y sus esquinas redondeadas al bajar, como en las aplicaciones SaaS.
+   */
   .columna {
-    min-height: calc(100vh - 2 * var(--space-2));
+    height: calc(100vh - 2 * var(--space-2));
+    height: calc(100dvh - 2 * var(--space-2));
     margin: var(--space-2) var(--space-2) var(--space-2) 0;
-    overflow: clip;
+    overflow-x: hidden;
+    overflow-y: auto;
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-lg);
     background: var(--color-bg-surface);
@@ -161,7 +168,7 @@
     width: var(--web-sidebar-width);
     box-shadow: var(--web-elev-3);
     transform: translateX(-100%);
-    transition: transform var(--duracion-transicion);
+    transition: transform var(--duracion-menu) var(--curva-menu);
   }
 
   .menuAbierto > aside {
@@ -218,4 +225,15 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+}
+
+/* Bandas de toda la aplicación (sin conexión, pendientes, versión nueva): separadas del contenido. Sin bandas no ocupa. */
+.avisosGlobales {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.avisosGlobales:not(:empty) {
+  margin-bottom: var(--space-4);
 }

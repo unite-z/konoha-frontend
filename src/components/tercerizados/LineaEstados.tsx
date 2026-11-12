@@ -8,7 +8,7 @@
 import type { CambioEstado, EstadoAtencion } from '@/types/tercerizados'
 import { fechasPorEstado, indiceEstado, pasosCiclo } from '@/utils/estadosTercerizados'
 import { formatearFechaHora } from '@/utils/formato'
-import Icono from '../ui/Icono'
+import Icono from '@/design-system/Icono'
 import estilos from './LineaEstados.module.css'
 
 export interface LineaEstadosProps {
@@ -24,16 +24,27 @@ export default function LineaEstados({ estado, historial }: LineaEstadosProps) {
     <div className={estilos.contenedor}>
       <ol className={estilos.linea} aria-label="Ciclo de la atención">
         {pasosCiclo(estado).map((paso, indice) => {
-          const situacion = indice < actual || (cerrada && indice === actual) ? 'completado' : indice === actual ? 'actual' : 'pendiente'
+          const situacion =
+            indice < actual || (cerrada && indice === actual)
+              ? 'completado'
+              : indice === actual
+                ? 'actual'
+                : 'pendiente'
           const fecha = indice <= actual ? fechas[paso] : undefined
           return (
-            <li key={paso} className={`${estilos.paso} ${estilos[situacion]}`} aria-current={situacion === 'actual' ? 'step' : undefined}>
+            <li
+              key={paso}
+              className={`${estilos.paso} ${estilos[situacion]}`}
+              aria-current={situacion === 'actual' ? 'step' : undefined}
+            >
               <span className={estilos.marca} aria-hidden="true">
                 {situacion === 'completado' ? <Icono nombre="verificacion" tamano="sm" /> : indice + 1}
               </span>
               <span className={estilos.texto}>
                 <span className={estilos.nombre}>{paso}</span>
-                <span className={estilos.fecha}>{fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}</span>
+                <span className={estilos.fecha}>
+                  {fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}
+                </span>
                 <span className="sr-only">
                   {situacion === 'completado' ? ' (completado)' : situacion === 'actual' ? ' (estado actual)' : ''}
                 </span>

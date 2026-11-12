@@ -37,10 +37,16 @@ export default function RegistrosDeBarra({ clave, etiqueta, titulo, consulta, cl
   }
   if (!registros.datos) return registros.cargaVisible ? <EstadoCarga forma="tabla" /> : null
 
-  const filtro = filtroDeBarra(clave, etiqueta)
-  const filas = filtro ? registros.datos.results.filter(filtro) : []
+  const filas = registros.datos.results.filter(filtroDeBarra(clave, etiqueta))
   if (filas.length === 0) {
     return <EstadoVacio nivel={3} titulo="Sin registros" descripcion="No hay registros para esta parte del gráfico." />
   }
-  return <TablaRegistros clave={clave} titulo={`Registros de ${titulo}`} filas={filas} incompleto={!registros.datos.completo} />
+  return (
+    <TablaRegistros
+      clave={clave}
+      titulo={`Registros de ${titulo}`}
+      filas={filas}
+      incompleto={!registros.datos.completo}
+    />
+  )
 }

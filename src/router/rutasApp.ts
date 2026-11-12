@@ -97,6 +97,9 @@ export const RUTAS_INVENTARIO = {
   ejemplares: `${BASE_INVENTARIO}/ejemplares`,
   campanasPoda: `${BASE_INVENTARIO}/campanas-poda`,
   nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
+  podaAltura: `${BASE_INVENTARIO}/poda-altura`,
+  fichaTecnica: `${BASE_INVENTARIO}/ejemplares/ficha-tecnica`, // RF-INV-005
+  rutaCorte: `${BASE_INVENTARIO}/ruta-corte`, // RF-INV-004
 } as const
 
 export function rutaCampanaPoda(id: number): string {
@@ -127,6 +130,11 @@ export function rutaIntervencionPoda(id: number): string {
   return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
 }
 
+/** Ficha técnica y evaluación del ejemplar (AV-133). */
+export function rutaFichaTecnicaEjemplar(ejemplarId: number): string {
+  return `${RUTAS_INVENTARIO.ejemplares}/${ejemplarId}/ficha-tecnica`
+}
+
 export function rutaEditarCampanaPoda(id: number): string {
   return `${rutaCampanaPoda(id)}/editar`
 }
@@ -142,6 +150,8 @@ export const MIGAS_INVENTARIO = {
   coberturas: { texto: 'Coberturas vegetales', ruta: RUTAS_INVENTARIO.coberturas },
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
   campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
+  podaAltura: { texto: 'Poda a demanda', ruta: RUTAS_INVENTARIO.podaAltura },
+  ejemplares: { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
@@ -320,7 +330,10 @@ export const RUTAS_CORE = {
   usuarios: `${BASE_USUARIOS}/usuarios`, // RF-T-002 y RF-T-003
   accesos: `${BASE_USUARIOS}/accesos`, // CU-MOD01-007
   importacion: `${BASE_USUARIOS}/importacion`, // RF-T-009
+  rolesPermisos: `${BASE_USUARIOS}/roles`, // AV-381: solo el superadministrador
   repositorio: '/repositorio', // RF-T-010
+  pendientes: '/pendientes', // RF-T-012: lo que falta por sincronizar desde este dispositivo
+  configuracion: '/configuracion', // AV-389: ajustes de cada usuario (Apariencia)
 } as const
 
 /** Prefijo de «Usuarios y roles» (menú). */

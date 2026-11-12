@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import Casilla from '@/components/ui/Casilla'
@@ -10,7 +11,7 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
-import { useSesionCampo } from '@/sesion/ContextoSesionCampo'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { RUTAS_CORE } from '@/router/rutasApp'
 import { listarUsuarios } from '@/services/api/core'
 import type { UsuarioResumen } from '@/types/core'
@@ -26,8 +27,7 @@ import { TONO_ESTADO } from '@/components/ui/tonos'
 
 export default function CuadrillasPage() {
   usePaginaActual('Cuadrillas', [{ texto: 'Operación de campo' }, { texto: 'Cuadrillas' }])
-  const { usuario } = useSesionCampo(),
-    jefe = esJefeCampo(usuario)
+  const jefe = esJefeCampo(usePermisos())
   const listado = useListadoCampo<CuadrillaCampo>('cuadrillas', ['activa'])
   const [dialogo, setDialogo] = useState<CuadrillaCampo | 'nueva' | null>(null)
   const [personal, setPersonal] = useState(false),
@@ -107,14 +107,12 @@ export default function CuadrillasPage() {
             clave: 'acciones',
             titulo: 'Acciones',
             render: (c) => (
-              <Boton
-                variante="fantasma"
-                compacto
-                aria-label={`${jefe ? 'Editar' : 'Ver'} ${c.nombre}`}
+              <AccionFila
+                icono={jefe ? 'pencil' : 'eye'}
+                nombre={jefe ? 'Editar cuadrilla' : 'Ver integrantes'}
+                etiqueta={`${jefe ? 'Editar' : 'Ver'} ${c.nombre}`}
                 onClick={() => setDialogo(c)}
-              >
-                {jefe ? 'Editar cuadrilla' : 'Ver integrantes'}
-              </Boton>
+              />
             ),
           },
         ]}

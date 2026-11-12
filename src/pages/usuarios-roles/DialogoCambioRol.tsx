@@ -12,7 +12,8 @@ import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
-import { cambiarRol, listarRoles } from '@/services/api/core'
+import { cambiarRol, listarPermisos, listarRoles } from '@/services/api/core'
+import ResumenPermisosRol from './ResumenPermisosRol'
 import type { CodigoRol, RolUsuario, UsuarioResumen } from '@/types/core'
 import { validarMotivo } from '@/utils/validacionCore'
 
@@ -24,6 +25,8 @@ export interface DialogoCambioRolProps {
 
 export default function DialogoCambioRol({ cuenta, onCerrar, onCambiado }: DialogoCambioRolProps) {
   const roles = useConsulta('roles', (signal) => listarRoles(signal))
+  // Descripciones de los permisos (AV-381); si no cargan, el resumen muestra los códigos.
+  const catalogo = useConsulta('catalogo-permisos', (signal) => listarPermisos(signal))
   const [rol, setRol] = useState<CodigoRol>(cuenta.rol)
   const [motivo, setMotivo] = useState('')
   const [errores, setErrores] = useState<{ rol?: string; motivo?: string }>({})
@@ -92,6 +95,10 @@ export default function DialogoCambioRol({ cuenta, onCerrar, onCambiado }: Dialo
             error={errores.rol}
             deshabilitado={enviando}
           />
+          {(() => {
+            const elegido = roles.datos.find((r) => r.codigo === rol)
+            return elegido?.activo ? <ResumenPermisosRol nombreRol={elegido.nombre} permisos={elegido.permisos} catalogo={catalogo.datos ?? null} /> : null
+          })()}
         </div>
       )}
       <AreaTexto

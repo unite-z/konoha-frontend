@@ -16,7 +16,10 @@ import { BarraInferior, BarraSuperiorMovil } from './BarrasMoviles'
 import Cabecera from './Cabecera'
 import { ContextoPagina, type DatosPagina } from './ContextoPagina'
 import MenuLateral from './MenuLateral'
+import IndicadorSincronizacion from '@/pages/sincronizacion/IndicadorSincronizacion'
+import AvisoNuevaVersion from '@/sincronizacion/AvisoNuevaVersion'
 import estilos from './LayoutOficina.module.css'
+import { subirAlInicio } from '@/utils/desplazamiento'
 
 /** Preferencia de menú fijado abierto: comodidad por navegador, sin datos de la sesión. Por defecto, comprimido. */
 const CLAVE_MENU_COMPRIMIDO = 'areas-verdes:menu-comprimido'
@@ -63,6 +66,10 @@ export default function LayoutOficina() {
     setRutaAnterior(pathname)
     setMenuAbierto(false)
   }
+  // El panel conserva su desplazamiento entre pantallas: al cambiar de página se vuelve arriba (AV-393).
+  useEffect(() => {
+    subirAlInicio()
+  }, [pathname])
   useEffect(() => {
     if (!menuAbierto) return
     const alPulsar = (evento: KeyboardEvent) => {
@@ -88,7 +95,7 @@ export default function LayoutOficina() {
           onCerrarMovil={() => setMenuAbierto(false)}
         />
         {menuAbierto && <div className={estilos.velo} aria-hidden="true" onClick={() => setMenuAbierto(false)} />}
-        <div className={estilos.columna} inert={menuAbierto}>
+        <div className={estilos.columna} inert={menuAbierto} data-desplazable>
           <BarraSuperiorMovil
             titulo={pagina.movil?.titulo ?? pagina.titulo}
             volver={pagina.movil?.volver}
@@ -130,6 +137,10 @@ export default function LayoutOficina() {
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>
             )}
+            <div className={estilos.avisosGlobales}>
+              <AvisoNuevaVersion />
+              <IndicadorSincronizacion />
+            </div>
             <Outlet />
           </main>
           <BarraInferior />

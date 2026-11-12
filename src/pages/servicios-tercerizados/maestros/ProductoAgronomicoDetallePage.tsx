@@ -19,7 +19,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaEditarProductoAgronomico, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { obtenerProductoAgronomico } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ProductoAgronomico } from '@/types/maestrosTercerizados'
 import { SIN_VALOR } from '@/utils/formato'
 import AccionEstadoProductoAgronomico from './AccionEstadoProductoAgronomico'
@@ -31,8 +31,8 @@ export default function ProductoAgronomicoDetallePage() {
   const { state } = useLocation()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = volverALista(state)
-  const rol = useRolTercerizados()
-  const puedeAdministrar = puedeAdministrarProductosAgronomicos(rol)
+  const permisos = usePermisos()
+  const puedeAdministrar = puedeAdministrarProductosAgronomicos(permisos)
 
   const consulta = useConsulta(id === null ? null : `producto-agronomico|${id}`, (signal) => obtenerProductoAgronomico(id as number, signal))
   // Última versión que devolvió el servidor al cambiar el estado; vale mientras sea el mismo producto.

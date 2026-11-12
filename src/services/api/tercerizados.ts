@@ -16,6 +16,7 @@ import type {
   CrearAtencionEntrada,
   Ejemplar,
   FiltrosAtenciones,
+  FormatoReporteAtencion,
   OrdenCompraEntrada,
   Paginado,
   Proveedor,
@@ -95,7 +96,15 @@ export function listarReportes(id: number, pagina = 1, signal?: AbortSignal) {
   })
 }
 
-/** Cuerpo multipart: `documentos` (JSON) y un archivo por documento, en el mismo orden. */
+/**
+ * Formato estándar vigente del informe final para el tipo de servicio de la atención (RF-SER-009) y los datos de la
+ * última revisión registrada con él. `formato` es `null` si el tipo de servicio no tiene formato.
+ */
+export function obtenerFormatoReporte(id: number, signal?: AbortSignal) {
+  return solicitarTercerizados<FormatoReporteAtencion>(`atenciones/${id}/formato-reporte/`, { signal })
+}
+
+/** Cuerpo multipart: `documentos` (JSON), `datos_formato` (JSON, opcional) y un archivo por documento, en el mismo orden. */
 export function formularioReporte(entrada: ReporteEntrada): FormData {
   const formulario = new FormData()
   formulario.set('fecha_recepcion', entrada.fecha_recepcion)
@@ -106,6 +115,7 @@ export function formularioReporte(entrada: ReporteEntrada): FormData {
     ...(descripcion?.trim() ? { descripcion: descripcion.trim() } : {}),
   }))
   formulario.set('documentos', JSON.stringify(documentos))
+  if (entrada.datos_formato) formulario.set('datos_formato', JSON.stringify(entrada.datos_formato))
   for (const documento of entrada.documentos) formulario.append('archivos', documento.archivo, documento.archivo.name)
   return formulario
 }
@@ -191,4 +201,11 @@ export function listarUnidadesInstitucionales(
   signal?: AbortSignal,
 ) {
   return catalogo<UnidadInstitucional>('unidades-institucionales', { ...consulta }, signal)
+}
+
+/** Verificación previa al inicio de una atención de riesgo. */
+export function verificarSeguridad(id: number, medidas: string): Promise<Atencion> {
+  return solicitarTercerizados(`/atenciones/${id}/seguridad/`, {
+    base: '/api/v1/tercerizados', metodo: 'POST', cuerpo: { medidas, confirmado: true },
+  })
 }

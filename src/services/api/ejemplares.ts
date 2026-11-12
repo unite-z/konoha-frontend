@@ -5,8 +5,17 @@ import type { FechaIso, InstanteIso } from '@/types/comun'
 const BASE = '/api/v1/inventario'
 export const EJEMPLARES_POR_PAGINA = 25
 
-export function listarEjemplares(q = '', page = 1, signal?: AbortSignal, areaVerdeId?: number): Promise<EjemplarInventario[]> {
-  return solicitarTercerizados('ejemplares', { parametros: { q, page, area_verde_id: areaVerdeId }, signal, base: BASE })
+export function listarEjemplares(
+  q = '',
+  page = 1,
+  signal?: AbortSignal,
+  areaVerdeId?: number,
+): Promise<EjemplarInventario[]> {
+  return solicitarTercerizados('ejemplares', {
+    parametros: { q, page, area_verde_id: areaVerdeId },
+    signal,
+    base: BASE,
+  })
 }
 
 export function listarEjemplarPorCodigo(codigo: string, signal?: AbortSignal): Promise<EjemplarInventario[]> {
@@ -24,8 +33,13 @@ export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: Abort
 }
 
 export function crearEjemplar(entrada: {
-  codigo_placa_antigua?: string | null; especie_id?: number | null; tipo_vegetacion?: string | null
-  ubicacion?: string | null; latitud?: string | null; longitud?: string | null; cantidad?: number
+  codigo_placa_antigua?: string | null
+  especie_id?: number | null
+  tipo_vegetacion?: string | null
+  ubicacion?: string | null
+  latitud?: string | null
+  longitud?: string | null
+  cantidad?: number
   altura_total_m?: number | null
   area_verde_id?: number | null
 }): Promise<EjemplarInventario> {
@@ -33,10 +47,17 @@ export function crearEjemplar(entrada: {
 }
 
 export function vincularEjemplarConArea(id: number, areaVerdeId: number): Promise<EjemplarInventario> {
-  return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { area_verde_id: areaVerdeId }, base: BASE })
+  return solicitarTercerizados(`ejemplares/${id}`, {
+    metodo: 'PATCH',
+    cuerpo: { area_verde_id: areaVerdeId },
+    base: BASE,
+  })
 }
 
-export function corregirUbicacionEjemplar(id: number, punto: { latitud: number; longitud: number; area_verde_id?: number }): Promise<EjemplarInventario> {
+export function corregirUbicacionEjemplar(
+  id: number,
+  punto: { latitud: number; longitud: number; area_verde_id?: number },
+): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: punto, base: BASE })
 }
 
@@ -75,7 +96,9 @@ interface SituacionRegistrada {
 
 export function cambiarSituacionEjemplar(id: number, cambio: CambioSituacionEjemplar) {
   return solicitarTercerizados<EjemplarInventario>(`ejemplares/${id}/situacion`, {
-    metodo: 'PATCH', cuerpo: cambio, base: BASE,
+    metodo: 'PATCH',
+    cuerpo: cambio,
+    base: BASE,
   })
 }
 
@@ -89,6 +112,7 @@ interface EventoHistorialEjemplar {
   momento?: InstanteIso
   tipo: string
   origen: string
+  entidad: string
   ejecutor?: string | null
   detalle?: string | null
   evidencia_id?: number | null
@@ -98,7 +122,9 @@ interface EventoHistorialEjemplar {
 
 export function listarHistorialEjemplar(id: number, fuente: FuenteHistorialEjemplar, signal?: AbortSignal) {
   return solicitarTercerizados<EventoHistorialEjemplar[]>(`ejemplares/${id}/historial-intervenciones`, {
-    parametros: { fuente }, signal, base: BASE,
+    parametros: { fuente },
+    signal,
+    base: BASE,
   })
 }
 export function quitarPlacaAntigua(id: number): Promise<EjemplarInventario> {
@@ -108,7 +134,9 @@ export function listarEspecies(incluirInactivas = false, signal?: AbortSignal): 
   return solicitarTercerizados('especies', { parametros: { incluir_inactivas: incluirInactivas }, signal, base: BASE })
 }
 export function crearEspecie(entrada: {
-  nombre_comun: string; nombre_cientifico: string; forma_biologica: string
+  nombre_comun: string
+  nombre_cientifico: string
+  forma_biologica: string
 }): Promise<EspecieVegetal> {
   return solicitarTercerizados('especies', { metodo: 'POST', cuerpo: entrada, base: BASE })
 }

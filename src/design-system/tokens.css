@@ -1,0 +1,325 @@
+/*
+ * Tokens del sistema de diseño de Áreas Verdes (Figma KXRcYHPgVOkPZskPCFPoQj, página «Sistema de diseño · Áreas Verdes»).
+ * Los nombres son los «nombres de código» de las variables de Figma: cambiar un valor aquí lo cambia en toda la aplicación.
+ * En componentes y páginas, solo tokens semánticos (--color-*, --space-*, --radius-*, --type-*). Ver DESIGN.md.
+ */
+
+/*
+ * AV · Color, modo Claro. Paleta de la identidad PUCP (manuales «Medios digitales» y «Medios audiovisuales», AV-387):
+ * azul institucional #042354 y secundarios oficiales. Los fondos claros mezclan el color oficial con blanco;
+ * el gris secundario (#667892) y el verde (#008768) se oscurecen un 10 % para cumplir WCAG AA (4,5:1).
+ */
+:root {
+  --color-bg-page: #f6f7f9; /* fondo/app */
+  --color-bg-surface: #ffffff; /* fondo/panel */
+  --color-bg-subtle: #f0f2f5; /* fondo/sutil */
+  --color-bg-hover: #f0f2f5; /* fondo/hover */
+  --color-text-primary: #042354; /* texto/principal */
+  --color-text-muted: #5c6c83; /* texto/secundario */
+  --color-text-disabled: #959ea9; /* texto/deshabilitado */
+  --color-text-on-action: #ffffff; /* texto/sobre-acento */
+  --color-border-default: #e1e5ea; /* borde/default */
+  --color-border-strong: #bdc3c9; /* borde/fuerte */
+  --color-action-primary: #042354; /* acento/default */
+  --color-action-primary-hover: #004ea8; /* acento/hover */
+  --color-action-text: #004ea8; /* acento/texto */
+  --color-action-subtle: #ebf1f8; /* acento/sutil */
+  --color-sidebar-active-bg: #dbe6f3; /* menu/activo */
+  --color-sidebar-active-text: #042354; /* menu/texto-activo */
+  --web-focus-ring-color: #0a7bc2; /* foco */
+  --color-info: #004ea8; /* estado/info/texto */
+  --color-info-bg: #ecf8fc; /* estado/info/fondo */
+  --web-info-border: #b3e3f4; /* estado/info/borde */
+  --color-success: #007a5e; /* estado/exito/texto */
+  --color-success-bg: #e8f9f4; /* estado/exito/fondo */
+  --web-success-border: #a2e9d2; /* estado/exito/borde */
+  --color-warning: #73540c; /* estado/aviso/texto */
+  --color-warning-bg: #fef7e8; /* estado/aviso/fondo */
+  --web-warning-border: #f8db98; /* estado/aviso/borde */
+  --color-error: #c3094a; /* estado/error/texto */
+  --color-error-bg: #fbeef2; /* estado/error/fondo */
+  --web-error-border: #edb5c9; /* estado/error/borde */
+  --web-error-hover: #9c073b; /* hover del botón destructivo (sin variable en Figma) */
+  --web-scrim: rgba(4, 35, 84, 0.5); /* velo de diálogos y paneles */
+  /* Fondo de nodos del inicio de sesión (FondoNodos, referencia williamlin.io; sin variable en Figma) */
+  --web-nodos-punto: #959ea9;
+  --web-nodos-onda: #0096c8;
+  --web-nodos-linea: #959ea9;
+  --web-nodos-alfa-linea: 0.55;
+  --web-nodos-alfa-onda: 0.9;
+  color-scheme: light;
+}
+
+/* AV · Dimensiones */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+}
+
+/* Sombras: AV/Sombra sm y AV/Sombra lg */
+:root {
+  --web-elev-1: 0 1px 2px rgba(15, 23, 42, 0.06); /* AV/Sombra sm */
+  --web-elev-2: 0 4px 12px rgba(15, 23, 42, 0.1);
+  --web-elev-3: 0 12px 32px rgba(15, 23, 42, 0.14); /* AV/Sombra lg */
+}
+
+/* Estilos de texto AV/* (Geist). El espaciado de letra de Figma va en porcentaje: aquí, en em. */
+:root {
+  --font-family-base: Geist, system-ui, sans-serif;
+  --type-titulo-pagina-size: 24px;
+  --type-titulo-pagina-line: 32px;
+  --type-titulo-pagina-weight: 600;
+  --type-titulo-pagina-tracking: -0.015em;
+  --type-titulo-seccion-size: 18px;
+  --type-titulo-seccion-line: 28px;
+  --type-titulo-seccion-weight: 600;
+  --type-titulo-seccion-tracking: -0.01em;
+  --type-titulo-tarjeta-size: 15px;
+  --type-titulo-tarjeta-line: 22px;
+  --type-titulo-tarjeta-weight: 600;
+  --type-cifra-size: 30px;
+  --type-cifra-line: 36px;
+  --type-cifra-weight: 600;
+  --type-cifra-tracking: -0.015em;
+  --type-cuerpo-size: 14px;
+  --type-cuerpo-line: 20px;
+  --type-cuerpo-weight: 400;
+  --type-cuerpo-medio-weight: 500;
+  --type-pequeno-size: 13px;
+  --type-pequeno-line: 18px;
+  --type-pequeno-weight: 400;
+  --type-pequeno-medio-weight: 500;
+  --type-leyenda-size: 12px;
+  --type-leyenda-line: 16px;
+  --type-leyenda-weight: 400;
+  --type-etiqueta-size: 12px;
+  --type-etiqueta-line: 16px;
+  --type-etiqueta-weight: 500;
+  --type-cabecera-tabla-size: 11px;
+  --type-cabecera-tabla-line: 16px;
+  --type-cabecera-tabla-weight: 500;
+  --type-cabecera-tabla-tracking: 0.06em;
+}
+
+/*
+ * Nombres de la Guía Web antigua, como alias de los anteriores mientras se migra (AV-330).
+ * No se usan en código nuevo.
+ */
+:root {
+  --color-text-secondary: var(--color-text-muted); /* Figma llama «texto/secundario» a --color-text-muted (D5) */
+  --color-neutral-text: var(--color-text-muted);
+  --color-neutral-bg: var(--color-bg-subtle);
+  --web-border-subtle: var(--color-border-default);
+  --web-warning-text: var(--color-warning);
+  --type-display-sm-size: var(--type-cifra-size);
+  --type-display-sm-line: var(--type-cifra-line);
+  --type-display-sm-weight: var(--type-cifra-weight);
+  --type-heading-lg-size: var(--type-titulo-pagina-size);
+  --type-heading-lg-line: var(--type-titulo-pagina-line);
+  --type-heading-lg-weight: var(--type-titulo-pagina-weight);
+  --type-heading-md-size: var(--type-titulo-seccion-size);
+  --type-heading-md-line: var(--type-titulo-seccion-line);
+  --type-heading-md-weight: var(--type-titulo-seccion-weight);
+  --type-heading-sm-size: var(--type-titulo-tarjeta-size);
+  --type-heading-sm-line: var(--type-titulo-tarjeta-line);
+  --type-heading-sm-weight: var(--type-titulo-tarjeta-weight);
+  --type-body-lg-size: 16px; /* sin equivalente en Figma */
+  --type-body-lg-line: 24px;
+  --type-body-lg-weight: 400;
+  --type-body-md-size: var(--type-cuerpo-size);
+  --type-body-md-line: var(--type-cuerpo-line);
+  --type-body-md-weight: var(--type-cuerpo-weight);
+  --type-body-sm-size: var(--type-leyenda-size);
+  --type-body-sm-line: var(--type-leyenda-line);
+  --type-body-sm-weight: var(--type-leyenda-weight);
+  --type-label-md-size: var(--type-cuerpo-size);
+  --type-label-md-line: var(--type-cuerpo-line);
+  --type-label-md-weight: var(--type-cuerpo-medio-weight);
+  --type-label-sm-size: var(--type-etiqueta-size);
+  --type-label-sm-line: var(--type-etiqueta-line);
+  --type-label-sm-weight: var(--type-etiqueta-weight);
+}
+
+/* Medidas de layout sin variable en Figma */
+:root {
+  --web-header-height: 52px; /* Cabecera de Figma */
+  --web-sidebar-width: 288px; /* menú desplegado: caben los nombres largos de submódulo (AV-358) */
+  --web-sidebar-rail: 92px; /* menú comprimido: 24 de margen + elemento de 44 + 24 (referencia «Sidebar», AV-358) */
+  --web-content-max: 1440px;
+  --web-row-height: 48px;
+  --web-row-height-compact: 40px;
+  --web-table-head: 40px;
+  --web-control: 36px; /* alto de Botón y Campo en Figma */
+  --web-control-compact: 32px;
+  /* Mapa con capas (Guía Web 5.8) */
+  --web-map-marker: 14px; /* atención tercerizada: cuadrado de 14 px */
+  --web-map-height: 480px; /* SUPUESTO (pendiente de confirmar): la guía no fija el alto del mapa */
+  --web-map-panel-width: 320px; /* panel de capas: 300 a 320 px */
+}
+
+/* Colores de los mapas (maplibre). Fuera del sistema de diseño de Figma. */
+:root {
+  --map-uso-predeterminado: #1b5e20;
+  --map-grid-color: #e7eee9;
+  --map-outline-color: #c7d5cc;
+  --map-label-color: #84928a;
+  --map-label-strong-color: #37443d;
+  --map-label-outline-width: 3px;
+  --map-area-fill: #e8f5e9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-line: #43a047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-selected-stroke: #111827; /* contorno del área seleccionada en el mapa vectorial */
+  --map-swatch-outline: color-mix(in srgb, var(--map-selected-stroke) 55%, transparent);
+}
+
+/*
+ * Tema «Cálido» (AV-392): fondos crema y grises tostados, con el acento elegido. Todos los pares de texto cumplen AA.
+ * Va antes de los acentos para que el tinte del menú activo sea el del acento cuando se elige uno.
+ */
+:root[data-tema='calido'] {
+  --color-bg-page: #f6f1ea;
+  --color-bg-surface: #fffcf7;
+  --color-bg-subtle: #efe8dd;
+  --color-bg-hover: #efe8dd;
+  --color-text-primary: #2a2118;
+  --color-text-muted: #6a5a48;
+  --color-text-disabled: #a3937f;
+  --color-border-default: #e6dccd;
+  --color-border-strong: #c9baa5;
+  --color-sidebar-active-bg: #ebe1d2;
+  --web-scrim: rgba(42, 33, 24, 0.5);
+}
+
+/*
+ * Color de acento elegido en Configuración → Apariencia (AV-389): data-acento en <html>. Sin atributo, el azul
+ * institucional. Secundarios oficiales PUCP; todos los pares cumplen WCAG AA.
+ */
+
+/* Azul PUCP #004EA8 */
+:root[data-acento='azul'] {
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #003e86;
+  --color-action-text: #004ea8;
+  --color-action-subtle: #ebf1f8;
+  --color-sidebar-active-bg: #dbe6f3;
+  --color-sidebar-active-text: #003e86;
+  --web-focus-ring-color: #0a7bc2;
+}
+
+/* Verde PUCP #008768 (oscurecido a #007a5e para AA) */
+:root[data-acento='verde'] {
+  --color-action-primary: #007a5e;
+  --color-action-primary-hover: #00624b;
+  --color-action-text: #007a5e;
+  --color-action-subtle: #ebf4f2;
+  --color-sidebar-active-bg: #dbece8;
+  --color-sidebar-active-text: #00624b;
+  --web-focus-ring-color: #008768;
+}
+
+/* Morado PUCP #7F32C8 */
+:root[data-acento='morado'] {
+  --color-action-primary: #7f32c8;
+  --color-action-primary-hover: #6628a0;
+  --color-action-text: #7f32c8;
+  --color-action-subtle: #f5effb;
+  --color-sidebar-active-bg: #ede2f7;
+  --color-sidebar-active-text: #6628a0;
+  --web-focus-ring-color: #7f32c8;
+}
+
+/* Magenta PUCP #A31598 */
+:root[data-acento='magenta'] {
+  --color-action-primary: #a31598;
+  --color-action-primary-hover: #82117a;
+  --color-action-text: #a31598;
+  --color-action-subtle: #f8ecf7;
+  --color-sidebar-active-bg: #f2def1;
+  --color-sidebar-active-text: #82117a;
+  --web-focus-ring-color: #a31598;
+}
+
+/*
+ * AV · Color, modo Oscuro. Preparado, sin selector visible para el usuario (D6):
+ * se prueba poniendo data-tema="oscuro" en <html>.
+ */
+:root[data-tema='oscuro'] {
+  --color-bg-page: #020814;
+  --color-bg-surface: #112240;
+  --color-bg-subtle: #1b3156;
+  --color-bg-hover: #1b3156;
+  --color-text-primary: #f6f7f9;
+  --color-text-muted: #c2c9d2;
+  --color-text-disabled: #8391a8;
+  --color-text-on-action: #ffffff;
+  --color-border-default: #34507c;
+  --color-border-strong: #6a81a8;
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #0a7bc2;
+  --color-action-text: #41b9e4;
+  --color-action-subtle: #1b3156;
+  --color-sidebar-active-bg: #173059;
+  --color-sidebar-active-text: #41b9e4;
+  --web-focus-ring-color: #41b9e4;
+  --color-info: #41b9e4;
+  --color-info-bg: #0b2f5e;
+  --web-info-border: #0a7bc2;
+  --color-success: #16c78e;
+  --color-success-bg: #063a3b;
+  --web-success-border: #008768;
+  --color-warning: #fad634;
+  --color-warning-bg: #2e2b1e;
+  --web-warning-border: #73540c;
+  --color-error: #f56eb4;
+  --color-error-bg: #3a1636;
+  --web-error-border: #a31598;
+  --web-error-hover: #9c073b;
+  --web-nodos-punto: #bdc3c9;
+  --web-nodos-onda: #41b9e4;
+  --web-nodos-linea: #667892;
+  --web-nodos-alfa-linea: 0.5;
+  --web-nodos-alfa-onda: 0.85;
+  color-scheme: dark;
+}
+
+/* Acentos en el modo oscuro: más especificidad que el bloque oscuro. */
+
+:root[data-tema='oscuro'][data-acento='azul'] {
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #0a7bc2;
+  --color-action-text: #41b9e4;
+  --color-sidebar-active-text: #41b9e4;
+  --web-focus-ring-color: #41b9e4;
+}
+
+:root[data-tema='oscuro'][data-acento='verde'] {
+  --color-action-primary: #008768;
+  --color-action-primary-hover: #007a5e;
+  --color-action-text: #16c78e;
+  --color-sidebar-active-text: #16c78e;
+  --web-focus-ring-color: #16c78e;
+}
+
+:root[data-tema='oscuro'][data-acento='morado'] {
+  --color-action-primary: #7f32c8;
+  --color-action-primary-hover: #6628a0;
+  --color-action-text: #c080fc;
+  --color-sidebar-active-text: #c080fc;
+  --web-focus-ring-color: #c080fc;
+}
+
+:root[data-tema='oscuro'][data-acento='magenta'] {
+  --color-action-primary: #a31598;
+  --color-action-primary-hover: #82117a;
+  --color-action-text: #f56eb4;
+  --color-sidebar-active-text: #f56eb4;
+  --web-focus-ring-color: #f56eb4;
+}

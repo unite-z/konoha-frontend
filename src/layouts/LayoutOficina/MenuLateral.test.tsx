@@ -85,7 +85,11 @@ describe('MenuLateral', () => {
   it('en otra sección, el módulo anterior deja de estar marcado', () => {
     const menu = pintar(RUTAS_PLANIFICACION.calendario)
 
-    expect(within(menu).getAllByRole('link', { current: 'page' }).map((a) => a.textContent)).toEqual(['Calendario'])
+    expect(
+      within(menu)
+        .getAllByRole('link', { current: 'page' })
+        .map((a) => a.textContent),
+    ).toEqual(['Calendario'])
   })
 
   it('las entradas no disponibles no son enlaces y se anuncian deshabilitadas', () => {
@@ -113,13 +117,50 @@ describe('MenuLateral', () => {
     expect(planificacion.getAttribute('aria-expanded')).toBe('false')
     expect(within(menu).queryByRole('link', { name: 'Resumen' })).toBeNull()
 
+    await usuario.click(inventario)
+    expect(inventario.getAttribute('aria-expanded')).toBe('false')
+    expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
+
     await usuario.click(planificacion)
     expect(planificacion.getAttribute('aria-expanded')).toBe('true')
     expect(within(menu).getByRole('link', { name: 'Resumen' })).toBeTruthy()
+    expect(within(menu).getByRole('link', { name: 'Áreas verdes y mapa' }).hasAttribute('data-modulo-activo')).toBe(
+      true,
+    )
+  })
 
-    await usuario.click(inventario)
-    expect(within(menu).queryByRole('link', { name: 'Coberturas vegetales' })).toBeNull()
-    expect(within(menu).getByRole('link', { name: 'Áreas verdes y mapa' }).hasAttribute('data-modulo-activo')).toBe(true)
+  it('es un acordeón: abrir un grupo cierra el que estaba abierto (AV-388)', async () => {
+    const usuario = userEvent.setup()
+    const menu = pintar(RUTAS_INVENTARIO.coberturas)
+
+    await usuario.click(within(menu).getByRole('button', { name: 'Desplegar Operación de campo' }))
+
+    expect(within(menu).getByRole('button', { name: 'Plegar Operación de campo' }).getAttribute('aria-expanded')).toBe(
+      'true',
+    )
+    expect(
+      within(menu).getByRole('button', { name: 'Desplegar Áreas verdes y mapa' }).getAttribute('aria-expanded'),
+    ).toBe('false')
+    expect(within(menu).getAllByRole('button', { expanded: true })).toHaveLength(1)
+  })
+
+  it('al navegar a otro módulo solo queda abierto su grupo, aunque se abrieran otros a mano (AV-388)', async () => {
+    const usuario = userEvent.setup()
+    const menu = pintar(RUTAS_INVENTARIO.coberturas)
+
+    await usuario.click(within(menu).getByRole('button', { name: 'Desplegar Reportes e indicadores' }))
+    await usuario.click(within(menu).getByRole('button', { name: 'Desplegar Planificación' }))
+    await usuario.click(within(menu).getByRole('link', { name: 'Resumen' }))
+
+    expect(within(menu).getByRole('button', { name: 'Plegar Planificación' }).getAttribute('aria-expanded')).toBe(
+      'true',
+    )
+    expect(
+      within(menu).getByRole('button', { name: 'Desplegar Áreas verdes y mapa' }).getAttribute('aria-expanded'),
+    ).toBe('false')
+    expect(
+      within(menu).getByRole('button', { name: 'Desplegar Reportes e indicadores' }).getAttribute('aria-expanded'),
+    ).toBe('false')
   })
 })
 
@@ -137,9 +178,11 @@ describe('MenuLateral comprimido', () => {
   it('sigue habiendo un único elemento actual y el módulo queda marcado para la vista comprimida', () => {
     const { menu } = pintarComprimido(RUTAS_INVENTARIO.coberturas)
 
-    expect(within(menu).getAllByRole('link', { current: 'page' }).map((a) => a.textContent)).toEqual([
-      'Coberturas vegetales',
-    ])
+    expect(
+      within(menu)
+        .getAllByRole('link', { current: 'page' })
+        .map((a) => a.textContent),
+    ).toEqual(['Coberturas vegetales'])
     const modulo = within(menu).getByRole('link', { name: 'Áreas verdes y mapa' })
     expect(modulo.hasAttribute('data-modulo-activo')).toBe(true)
     expect(modulo.querySelector('svg')).not.toBeNull()

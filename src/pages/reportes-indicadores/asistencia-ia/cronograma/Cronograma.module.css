@@ -117,7 +117,7 @@
   flex-direction: column;
   gap: var(--space-3);
   position: sticky;
-  top: var(--space-4);
+  top: calc(var(--web-header-height) + var(--space-4)); /* bajo la cabecera fija (AV-393) */
 }
 
 .cabeceraPanel {

@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background: var(--color-bg-page);
 }
 
@@ -75,7 +76,7 @@
 .seDesvanece,
 .texto,
 .textoSinEnlace {
-  transition: opacity var(--duracion-transicion);
+  transition: opacity var(--duracion-menu) var(--curva-menu);
 }
 
 /* Botón «Fijar menú abierto» (icono panel-left del sistema): en la marca, visible con el menú desplegado. */
@@ -99,7 +100,7 @@
 }
 
 .desplegar svg {
-  transition: transform var(--duracion-transicion);
+  transition: transform var(--duracion-menu) var(--curva-menu);
 }
 
 .cerrarMovil {
@@ -208,7 +209,7 @@ a.item.activo:hover {
 .grupo {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows var(--duracion-transicion) ease-out;
+  transition: grid-template-rows var(--duracion-menu) var(--curva-menu);
 }
 
 .grupo[data-abierto] {

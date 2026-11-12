@@ -10,37 +10,39 @@ import { useId, useState } from 'react'
 import Boton from '@/components/ui/Boton'
 import { disponibilidad } from '@/config/permisosTercerizados'
 import { textoOrden } from '@/utils/estadosTercerizados'
-import type { Atencion, ReporteProveedor, RolTercerizados } from '@/types/tercerizados'
+import type { Atencion, ReporteProveedor } from '@/types/tercerizados'
 import DialogoAcuerdo from './DialogoAcuerdo'
 import DialogoConformidad from './DialogoConformidad'
 import DialogoEjecucion from './DialogoEjecucion'
 import DialogoOrdenCompra from './DialogoOrdenCompra'
+import DialogoSeguridad from './DialogoSeguridad'
 import DialogoOrigen from './DialogoOrigen'
 import DialogoReporte from './DialogoReporte'
 import estilos from '../Tercerizados.module.css'
 
-type Dialogo = 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | 'conformidad' | null
+type Dialogo = 'seguridad' | 'ordenCompra' | 'inicio' | 'fin' | 'reporte' | 'origen' | 'acuerdo' | 'conformidad' | null
 
 export interface AccionesAtencionProps {
   atencion: Atencion
-  rol: RolTercerizados | null
+  permisos: readonly string[] | null
   onActualizada: (atencion: Atencion) => void
   onExito: (mensaje: string) => void
   /** Se registró una revisión del reporte (la sección de documentos se recarga). */
   onReporteAdjunto: (reporte: ReporteProveedor | null) => void
 }
 
-export default function AccionesAtencion({ atencion, rol, onActualizada, onExito, onReporteAdjunto }: AccionesAtencionProps) {
+export default function AccionesAtencion({ atencion, permisos, onActualizada, onExito, onReporteAdjunto }: AccionesAtencionProps) {
   const [abierto, setAbierto] = useState<Dialogo>(null)
   const idMotivos = useId()
 
-  const oc = disponibilidad('ordenCompra', rol, atencion)
-  const inicio = disponibilidad('inicio', rol, atencion)
-  const fin = disponibilidad('fin', rol, atencion)
-  const reporte = disponibilidad('adjuntarReporte', rol, atencion)
-  const origen = disponibilidad('corregirOrigen', rol, atencion)
-  const acuerdo = disponibilidad('acuerdoUnidad', rol, atencion)
-  const conformidad = disponibilidad('conformidad', rol, atencion)
+  const seguridad = disponibilidad('seguridad', permisos, atencion)
+  const oc = disponibilidad('ordenCompra', permisos, atencion)
+  const inicio = disponibilidad('inicio', permisos, atencion)
+  const fin = disponibilidad('fin', permisos, atencion)
+  const reporte = disponibilidad('adjuntarReporte', permisos, atencion)
+  const origen = disponibilidad('corregirOrigen', permisos, atencion)
+  const acuerdo = disponibilidad('acuerdoUnidad', permisos, atencion)
+  const conformidad = disponibilidad('conformidad', permisos, atencion)
   const tieneOc = Boolean(atencion.numero_orden_compra)
 
   if (![oc, inicio, fin, reporte, origen, acuerdo, conformidad].some((d) => d.visible)) return null
@@ -65,6 +67,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
 
   // La primaria (siguiente paso del ciclo) va primero; luego las secundarias y al final las deshabilitadas.
   const botones = [
+    { clave: 'seguridad', d: seguridad, texto: atencion.verificaciones_seguridad?.length ? 'Corregir verificación de seguridad' : 'Verificar seguridad', dialogo: 'seguridad' as const, primaria: seguridad.habilitada && !atencion.verificaciones_seguridad?.length },
     { clave: 'fin', d: fin, texto: 'Registrar fin', dialogo: 'fin' as const, primaria: fin.habilitada },
     {
       clave: 'reporte',
@@ -127,6 +130,7 @@ export default function AccionesAtencion({ atencion, rol, onActualizada, onExito
         </ul>
       )}
 
+      <DialogoSeguridad abierto={abierto === 'seguridad'} {...comunes} />
       <DialogoOrdenCompra abierto={abierto === 'ordenCompra'} {...comunes} />
       <DialogoEjecucion modo="inicio" abierto={abierto === 'inicio'} {...comunes} />
       <DialogoEjecucion modo="fin" abierto={abierto === 'fin'} {...comunes} />

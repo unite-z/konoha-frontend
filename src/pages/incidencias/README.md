@@ -20,7 +20,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 - **Mis incidencias** (`MisIncidenciasPage.tsx`, `/mis-incidencias`, AV-282, Figma 391-8522 y 394-9964), en el móvil y para cualquier usuario con sesión:
   - las incidencias que reportó, con el espacio, cuándo («hoy», «ayer», «12/10») y el estado;
   - «+» en la barra superior para reportar;
-  - las reportadas sin conexión van arriba como «Pendiente de enviar» (`reportesPendientes.ts`, hasta la cola común de AV-226) y, sin conexión, una banda lo avisa.
+  - las reportadas sin conexión van arriba como «Pendiente de enviar» (`reportesPendientes.ts`, sobre la cola común de RF-T-012, tipo `incidencia.reporte`, con su foto, su hora real y su UUID como `Idempotency-Key`) y, sin conexión, una banda lo avisa.
 
   - «Reportar incidencia» (`DialogoReportarIncidencia.tsx`, `?reportar=`, 391-8394): el panel lateral, a pantalla completa en el móvil.
     - Pide el tipo en chips, la foto obligatoria, el espacio (entra con el que propone la ubicación), el ejemplar y la descripción.
@@ -30,7 +30,7 @@ Incidencias de MOD-03 (HU-020 a 024 y 027, RF-INC-001 a 005 y 008): bandeja del 
 
   Lógica en `misIncidencias.ts`, con prueba.
 
-**Backend:** `services/api/incidencias.ts` llama a los endpoints de AV-274 a AV-281. «Incidencias» y «Mis incidencias» aparecen en el menú con `PLA.INCIDENCIA.REGISTRAR` (los cuatro roles). El requerimiento a un proveedor (AV-278) va al backend, que lo crea en MOD-05; cuando el proveedor adjunta su informe, la incidencia pasa sola a Atendida («Sistema») y ese informe vale como evidencia para cerrarla (MOD-05 aún no registra la conformidad). El encargo a un capataz (AV-277) aún no tiene backend: solo responde con `VITE_DATOS_SIMULADOS=true` (`services/simulados/incidencias.ts`, D9); sin datos simulados, la ficha avisa de que el encargo aún no está disponible (`ENCARGO_DISPONIBLE`).
+**Backend:** `services/api/incidencias.ts` llama a los endpoints de AV-274 a AV-281. «Incidencias» y «Mis incidencias» aparecen en el menú con `PLA.INCIDENCIA.REGISTRAR` (los cuatro roles). El requerimiento a un proveedor (AV-278) va al backend, que lo crea en MOD-05; cuando el proveedor adjunta su informe, la incidencia pasa sola a Atendida («Sistema») y ese informe vale como evidencia para cerrarla (MOD-05 aún no registra la conformidad). El encargo a un capataz (AV-277) va al backend, que lo crea en Operación de campo y sincroniza la incidencia con el avance del encargo; con `VITE_DATOS_SIMULADOS=true` responde `services/simulados/incidencias.ts` (D9).
 
 | Qué | Dónde |
 |---|---|

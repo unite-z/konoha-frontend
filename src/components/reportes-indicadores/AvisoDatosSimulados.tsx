@@ -3,7 +3,7 @@
  * Con el backend real no pinta nada.
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import AvisoEnLinea from '../ui/AvisoEnLinea'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 
 export default function AvisoDatosSimulados() {
   if (!DATOS_SIMULADOS) return null

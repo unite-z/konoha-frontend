@@ -1,14 +1,24 @@
 /**
  * Servicios de incidencias de MOD-03 (AV-274 a AV-281). Base: `/api/v1/planificacion/incidencias/`.
- * El encargo a un capataz (AV-277) aún no tiene backend: solo responde con `VITE_DATOS_SIMULADOS=true` (D9).
- * El requerimiento a un proveedor (AV-278) ya va al backend.
+ * El encargo a un capataz (AV-277) y el requerimiento a un proveedor (AV-278) van al backend.
  */
 import { DATOS_SIMULADOS } from '@/config/datosSimulados'
-import type { CatalogosRegistro, NuevaIncidencia, PosibleDuplicado, CapatazDisponible, Clasificacion, IncidenciaDetalle, IncidenciaResumen, Inspector, NuevoEncargo, NuevoRequerimiento, ProveedorIncidencia, SeguimientoIncidencia, SolicitudInspeccion } from '@/types/incidencias'
+import type {
+  CatalogosRegistro,
+  NuevaIncidencia,
+  PosibleDuplicado,
+  CapatazDisponible,
+  Clasificacion,
+  IncidenciaDetalle,
+  IncidenciaResumen,
+  Inspector,
+  NuevoEncargo,
+  NuevoRequerimiento,
+  ProveedorIncidencia,
+  SeguimientoIncidencia,
+  SolicitudInspeccion,
+} from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
-
-/** El encargo a un capataz (AV-277) solo existe con datos simulados hasta su backend. */
-export const ENCARGO_DISPONIBLE = DATOS_SIMULADOS
 
 /** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
 export async function listarIncidencias(signal?: AbortSignal) {
@@ -17,7 +27,10 @@ export async function listarIncidencias(signal?: AbortSignal) {
 
 /** `POST incidencias/{id}/causa-retraso/` (AV-280): causa del retraso de una alerta de plazo, con autor. */
 export async function anotarCausaRetraso(incidenciaId: number, causa: string) {
-  return solicitarPlanificacion<void>(`incidencias/${incidenciaId}/causa-retraso/`, { metodo: 'POST', cuerpo: { causa } })
+  return solicitarPlanificacion<void>(`incidencias/${incidenciaId}/causa-retraso/`, {
+    metodo: 'POST',
+    cuerpo: { causa },
+  })
 }
 
 /**
@@ -25,7 +38,10 @@ export async function anotarCausaRetraso(incidenciaId: number, causa: string) {
  * incidencia; con `fecha`, con la carga de su cuadrilla ese día.
  */
 export async function listarCapatacesDisponibles(incidenciaId: number, signal?: AbortSignal, fecha?: string) {
-  return solicitarPlanificacion<CapatazDisponible[]>(`incidencias/${incidenciaId}/capataces/`, { parametros: { fecha }, signal })
+  return solicitarPlanificacion<CapatazDisponible[]>(`incidencias/${incidenciaId}/capataces/`, {
+    parametros: { fecha },
+    signal,
+  })
 }
 
 /** `GET incidencias/actividades/` (AV-277): actividades de campo que puede llevar un encargo. */
@@ -48,7 +64,10 @@ export async function crearEncargo(incidenciaId: number, cuerpo: NuevoEncargo) {
 
 /** `POST incidencias/{id}/reasignar/` (AV-280): cambia el capataz a cargo; devuelve la incidencia actualizada. */
 export async function reasignarIncidencia(incidenciaId: number, capatazId: number) {
-  return solicitarPlanificacion<IncidenciaResumen>(`incidencias/${incidenciaId}/reasignar/`, { metodo: 'POST', cuerpo: { capataz_id: capatazId } })
+  return solicitarPlanificacion<IncidenciaResumen>(`incidencias/${incidenciaId}/reasignar/`, {
+    metodo: 'POST',
+    cuerpo: { capataz_id: capatazId },
+  })
 }
 
 /** `GET incidencias/{id}/` (AV-274): ficha con la ubicación, el ejemplar, la descripción y quién la reportó. */
@@ -63,7 +82,10 @@ export async function clasificarIncidencia(id: number, cuerpo: Clasificacion) {
 
 /** `POST incidencias/{id}/descartar/` (AV-276): con motivo; devuelve la incidencia Descartada. */
 export async function descartarIncidencia(id: number, motivo: string) {
-  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${id}/descartar/`, { metodo: 'POST', cuerpo: { motivo } })
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${id}/descartar/`, {
+    metodo: 'POST',
+    cuerpo: { motivo },
+  })
 }
 
 /** `GET incidencias/inspectores/` (AV-276): ingenieros y practicantes que pueden inspeccionar en campo. */
@@ -86,17 +108,26 @@ export async function listarProveedoresIncidencia(incidenciaId: number, signal?:
  * tercerizada. Sin contrato responde 409 `sin-contrato` (MOD-05 aún no registra la extraordinaria sin contrato).
  */
 export async function crearRequerimiento(incidenciaId: number, cuerpo: NuevoRequerimiento) {
-  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/requerimiento/`, { metodo: 'POST', cuerpo })
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/requerimiento/`, {
+    metodo: 'POST',
+    cuerpo,
+  })
 }
 
 /** `POST incidencias/{id}/cerrar/` (AV-279): cierra una atendida con evidencia; 409 `sin-evidencia` si no la tiene. */
 export async function cerrarIncidencia(incidenciaId: number, observaciones?: string) {
-  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/cerrar/`, { metodo: 'POST', cuerpo: { observaciones } })
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/cerrar/`, {
+    metodo: 'POST',
+    cuerpo: { observaciones },
+  })
 }
 
 /** `POST incidencias/{id}/devolver/` (AV-279): la devuelve a En atención con observaciones obligatorias. */
 export async function devolverIncidencia(incidenciaId: number, observaciones: string) {
-  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/devolver/`, { metodo: 'POST', cuerpo: { observaciones } })
+  return solicitarPlanificacion<IncidenciaDetalle>(`incidencias/${incidenciaId}/devolver/`, {
+    metodo: 'POST',
+    cuerpo: { observaciones },
+  })
 }
 
 /** `GET incidencias/catalogos-registro/` (AV-274): tipos, espacios con sus ejemplares y usuarios para el registro. */
@@ -106,16 +137,18 @@ export async function obtenerCatalogosRegistro(signal?: AbortSignal) {
 
 /**
  * `POST incidencias/` (AV-274): registra la incidencia en nombre de otro; con foto, en multipart (`datos` en JSON y
- * `foto`). Devuelve la incidencia Registrada.
+ * `foto`). Devuelve la incidencia Registrada. `clave` va en `Idempotency-Key`: reenviar el mismo reporte desde la cola
+ * sin conexión (RF-T-012) devuelve el ya registrado en lugar de duplicarlo.
  */
-export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | null) {
+export async function registrarIncidencia(cuerpo: NuevaIncidencia, foto: File | null, clave?: string) {
+  const cabeceras = clave ? { 'Idempotency-Key': clave } : undefined
   if (foto) {
     const formulario = new FormData()
     formulario.append('datos', JSON.stringify(cuerpo))
     formulario.append('foto', foto)
-    return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', formulario })
+    return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', formulario, cabeceras })
   }
-  return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo })
+  return solicitarPlanificacion<IncidenciaDetalle>('incidencias/', { metodo: 'POST', cuerpo, cabeceras })
 }
 
 /** `GET incidencias/mias/` (AV-274 y AV-279): las incidencias que reportó el usuario, de la más reciente a la más antigua. */
@@ -129,8 +162,16 @@ export async function obtenerMiIncidencia(id: number, signal?: AbortSignal) {
 }
 
 /** `GET incidencias/posibles-duplicados/?tipo&espacio&ejemplar` (AV-274): abiertas del mismo tipo en el mismo sitio. */
-export async function buscarPosiblesDuplicados(tipo: string, espacio: string, ejemplar: string | null, signal?: AbortSignal) {
-  return solicitarPlanificacion<PosibleDuplicado[]>('incidencias/posibles-duplicados/', { parametros: { tipo, espacio, ejemplar }, signal })
+export async function buscarPosiblesDuplicados(
+  tipo: string,
+  espacio: string,
+  ejemplar: string | null,
+  signal?: AbortSignal,
+) {
+  return solicitarPlanificacion<PosibleDuplicado[]>('incidencias/posibles-duplicados/', {
+    parametros: { tipo, espacio, ejemplar },
+    signal,
+  })
 }
 
 /** `POST incidencias/{id}/reportes/` (AV-274): suma el reporte (descripción y foto) a una incidencia abierta. */

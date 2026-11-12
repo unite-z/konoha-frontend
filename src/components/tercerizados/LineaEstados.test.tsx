@@ -9,8 +9,11 @@ afterEach(cleanup)
 
 const fecha = '2026-11-10T19:41:00-05:00'
 const cambio = (estado: EstadoAtencion): CambioEstado => ({
-  estado_anterior: '', estado_nuevo: estado, usuario_id: 1,
-  usuario_nombre: 'Responsable', fecha_hora: fecha,
+  estado_anterior: '',
+  estado_nuevo: estado,
+  usuario_id: 1,
+  usuario_nombre: 'Responsable',
+  fecha_hora: fecha,
 })
 
 describe('Línea de estados', () => {

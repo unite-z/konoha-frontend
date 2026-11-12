@@ -3,10 +3,8 @@
  * guarda lo que devuelve `GET auth/sesion/` (usuario, rol y permisos), en memoria.
  */
 import { createContext, useContext } from 'react'
-import type { Rol } from '../config/sesion'
 import type { ErrorApi } from '../services/api/cliente'
-import type { CodigoRol, Credenciales, SesionCore } from '../types/core'
-import type { RolTercerizados } from '../types/tercerizados'
+import type { Credenciales, SesionCore } from '../types/core'
 
 export type EstadoSesion =
   /** Comprobando si hay una sesión abierta (al cargar la aplicación). */
@@ -14,6 +12,11 @@ export type EstadoSesion =
   /** Sin sesión. `motivo`: `cerrada` si la cerró el usuario, `perdida` si caducó o la cuenta se desactivó. */
   | { tipo: 'anonima'; motivo?: 'cerrada' | 'perdida' }
   | { tipo: 'activa'; sesion: SesionCore }
+  /**
+   * Sin conexión, con la última sesión comprobada en este dispositivo (RF-T-012): se puede consultar lo descargado y
+   * registrar en la cola. Al volver la red se comprueba de nuevo.
+   */
+  | { tipo: 'sinConexion'; sesion: SesionCore }
   /** No se pudo comprobar la sesión (sin conexión o error del servidor). */
   | { tipo: 'error'; error: ErrorApi }
 
@@ -34,31 +37,16 @@ export function useSesion(): ValorSesion {
   return valor
 }
 
-/** Sesión activa o `null`. */
+/** Sesión activa (o la última comprobada, si no hay conexión) o `null`. */
 export function useSesionActiva(): SesionCore | null {
   const { estado } = useSesion()
-  return estado.tipo === 'activa' ? estado.sesion : null
-}
-
-/** Nombre del rol de la sesión (el que usan los permisos de interfaz de MOD-06), o `null` sin sesión. */
-export function useRolActual(): Rol | null {
-  return (useSesionActiva()?.rol.nombre as Rol | undefined) ?? null
+  return estado.tipo === 'activa' || estado.tipo === 'sinConexion' ? estado.sesion : null
 }
 
 /**
- * Rol con el que MOD-05 y MOD-03 deciden qué mostrar. Es el mismo que el servidor deriva de la sesión
- * de MOD-01 (`SesionCompartida`): el capataz no tiene rol en esos módulos.
+ * Códigos de permiso de la sesión (AV-382): lo que decide qué se muestra en cada pantalla, nunca el nombre del rol.
+ * `null` sin sesión.
  */
-const ROL_TERCERIZADOS: Partial<Record<CodigoRol, RolTercerizados>> = {
-  'jefe-seccion': 'Jefe de sección',
-  'ingeniero-campo': 'Ingeniero de campo',
-  practicante: 'Practicante autorizado',
-}
-
-export function rolTercerizados(sesion: SesionCore | null): RolTercerizados | null {
-  return sesion ? (ROL_TERCERIZADOS[sesion.rol.codigo] ?? null) : null
-}
-
-export function useRolTercerizados(): RolTercerizados | null {
-  return rolTercerizados(useSesionActiva())
+export function usePermisos(): readonly string[] | null {
+  return useSesionActiva()?.permisos ?? null
 }

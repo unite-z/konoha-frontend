@@ -11,7 +11,7 @@ import {
   rutaDetalleUsuario,
   rutaRevisionExtraccion,
 } from '@/router/rutasApp'
-import { MODULOS_MENU, activoEnMenu, seccionesMoviles } from './entradasMenuLateral'
+import { MODULOS_MENU, activoEnMenu, hijosVisibles, seccionesMoviles } from './entradasMenuLateral'
 
 /** Todas las rutas con menú de la aplicación, más ejemplos de rutas con parámetros. */
 const RUTAS_CON_MENU = [
@@ -68,5 +68,15 @@ describe('seccionesMoviles', () => {
     expect(seccionesMoviles(RUTAS.panel)).toHaveLength(5)
     expect(seccionesMoviles(RUTAS_CORE.repositorio)).toEqual([])
     expect(seccionesMoviles('/')).toEqual([])
+  })
+})
+
+describe('Roles y permisos en el menú (AV-381)', () => {
+  const usuarios = MODULOS_MENU.find((m) => m.clave === 'usuarios')?.hijos ?? []
+  it('solo la ve quien tiene CORE.ROL.GESTIONAR', () => {
+    expect(hijosVisibles(usuarios, ['CORE.USUARIO.GESTIONAR']).map((h) => h.texto)).not.toContain('Roles y permisos')
+    expect(hijosVisibles(usuarios, ['CORE.USUARIO.GESTIONAR', 'CORE.ROL.GESTIONAR']).map((h) => h.texto)).toContain(
+      'Roles y permisos',
+    )
   })
 })

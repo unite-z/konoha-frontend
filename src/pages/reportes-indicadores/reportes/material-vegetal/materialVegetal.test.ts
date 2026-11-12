@@ -7,9 +7,20 @@ import {
   materialesComparacion,
   mesesComparacion,
   serieComparacion,
+  textoLista,
   totalesDelMes,
   unidadesComparacion,
 } from './materialVegetal'
+
+describe('textoLista (productos aplicados por proveedores)', () => {
+  it('une los valores con comas', () => {
+    expect(textoLista(['2 g/L', '3 g/L'])).toBe('2 g/L, 3 g/L')
+  })
+
+  it('sin valores muestra «—», nunca un texto vacío', () => {
+    expect(textoLista([])).toBe('—')
+  })
+})
 
 const material = (cambios: Partial<TotalMaterial>): TotalMaterial => ({
   area_verde_id: 1,

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -6,7 +7,7 @@ import type { EntradaTipoActividadCampo, TipoActividadCampo } from '@/types/oper
 import CatalogoActividadesPage from './CatalogoActividadesPage'
 import DialogoNuevaActividad from './DialogoNuevaActividad'
 
-const sesion = vi.hoisted(() => ({ permisos: ['CORE.CATALOGO.GESTIONAR'] }))
+const sesion = vi.hoisted(() => ({ usuario: { id: 4, nombre: 'J. Ramos' }, permisos: ['CORE.CATALOGO.GESTIONAR'] }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => sesion }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 

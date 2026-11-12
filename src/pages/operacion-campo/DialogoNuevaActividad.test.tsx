@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
 import DialogoNuevaActividad from './DialogoNuevaActividad'
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 4, nombre: 'J. Ramos' } }) }))
 
 const pagina = (results: unknown[]) => ({ count: results.length, results, next: null, previous: null })
 

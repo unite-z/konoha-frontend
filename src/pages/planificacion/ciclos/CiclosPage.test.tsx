@@ -26,7 +26,7 @@ vi.mock('@/services/api/planificacion', () => ({
   ],
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
+vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'] }))
 
 afterEach(cleanup)
 

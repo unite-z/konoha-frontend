@@ -4,6 +4,9 @@ import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import Selector from '@/components/ui/Selector'
 import { useConsulta } from '@/hooks/useConsulta'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
+import { conCache } from '@/sincronizacion/datosDescargados'
+import { encolarActividad, esSinRed, partesDe } from './actividadSinConexion'
 import { listarEjemplares } from '@/services/api/ejemplares'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { EjemplarInventario } from '@/types/ejemplares'
@@ -30,9 +33,12 @@ interface Props {
   onCerrar: () => void
   onGuardado: (actividad: ActividadCampo) => void
   onIncidencia: (aviso: string) => void
+  /** Sin conexión (RF-T-012): la poda quedó en la cola con este UUID (su foto de evidencia puede colgar de él). */
+  onEncolado?: (idCola: string) => void
 }
 
-export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia }: Props) {
+export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia, onEncolado }: Props) {
+  const usuarioId = useSesionActiva()?.usuario.id ?? null
   const [cuadrilla, setCuadrilla] = useState('')
   const [area, setArea] = useState('')
   const [ejemplar, setEjemplar] = useState('')
@@ -43,7 +49,7 @@ export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia }:
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [reportar, setReportar] = useState(false)
   const mutacion = useMutacionCampo()
-  const catalogos = useConsulta('poda-menor-catalogos', async (signal) => {
+  const catalogos = useConsulta('poda-menor-catalogos', (signal) => conCache('poda-menor-catalogos', async () => {
     const [cuadrillas, areas, tipos] = await Promise.all([
       todosCampo<CuadrillaCampo>('cuadrillas/', { activa: true }, signal),
       todosCampo<CatalogoCampo>('catalogos/areas-verdes/', { activo: true }, signal),
@@ -54,10 +60,10 @@ export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia }:
       areas,
       tipo: tipos.find((item) => item.nombre.toLocaleLowerCase('es') === 'poda menor') ?? null,
     }
-  })
+  }))
   const ejemplares = useConsulta(
     area ? `poda-menor-ejemplares-${area}` : null,
-    (signal) => listarEjemplares('', 1, signal, Number(area)),
+    (signal) => conCache(`poda-menor-ejemplares-${area}`, () => listarEjemplares('', 1, signal, Number(area))),
     (items) => items.length === 0,
   )
   const seleccionado = (ejemplares.datos ?? []).find((item) => item.id === Number(ejemplar))
@@ -66,7 +72,7 @@ export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia }:
   const areaNombre = catalogos.datos?.areas.find((item) => item.id === Number(area))?.nombre
 
   async function asegurarParte(): Promise<ParteCampo> {
-    const existentes = await todosCampo<ParteCampo>('partes/', { cuadrilla_id: cuadrilla, fecha })
+    const existentes = await partesDe(cuadrilla, fecha)
     if (existentes.length > 0) return existentes[0]
     return campoApi<ParteCampo>('partes/', {
       metodo: 'POST',
@@ -93,21 +99,39 @@ export default function DialogoPodaMenor({ onCerrar, onGuardado, onIncidencia }:
     let creada: ActividadCampo | null = null
     void mutacion.enviar(
       async () => {
-        const parte = await asegurarParte()
-        creada = await campoApi<ActividadCampo>('actividades/', {
-          metodo: 'POST',
-          claveIdempotencia: nuevaClave(),
-          cuerpo: {
-            parte_id: parte.id,
-            tipo_actividad_id: tipoPoda.id,
-            clase_actividad_id: tipoPoda.clase_id,
-            area_verde_id: Number(area),
-            fecha_hora_actividad: aInstanteLima(fechaHoraLocal),
-            observaciones: observaciones.trim(),
-            ejemplar_id: ejemplar === SIN_CATASTRO ? null : Number(ejemplar),
-            pendiente_vinculacion: ejemplar === SIN_CATASTRO,
-          },
-        })
+        const datosPoda = {
+          tipo_actividad_id: tipoPoda.id,
+          clase_actividad_id: tipoPoda.clase_id,
+          area_verde_id: Number(area),
+          fecha_hora_actividad: aInstanteLima(fechaHoraLocal),
+          observaciones: observaciones.trim(),
+          ejemplar_id: ejemplar === SIN_CATASTRO ? null : Number(ejemplar),
+          pendiente_vinculacion: ejemplar === SIN_CATASTRO,
+        }
+        // Sin conexión (RF-T-012): a la cola; la foto de evidencia se encola después colgando de ella.
+        const aLaCola = async () => {
+          if (usuarioId === null) return
+          const id = await encolarActividad({
+            cuadrillaId: Number(cuadrilla),
+            fecha,
+            cuerpo: datosPoda,
+            descripcion: `Poda menor · ${areaNombre ?? ''}${seleccionado ? ` · ${seleccionado.codigo}` : ''} · ${fecha} ${hora}`,
+            usuarioId,
+          })
+          onEncolado?.(id)
+        }
+        if (!navigator.onLine) return aLaCola()
+        try {
+          const parte = await asegurarParte()
+          creada = await campoApi<ActividadCampo>('actividades/', {
+            metodo: 'POST',
+            claveIdempotencia: nuevaClave(),
+            cuerpo: { parte_id: parte.id, ...datosPoda },
+          })
+        } catch (causa) {
+          if (esSinRed(causa)) return aLaCola()
+          throw causa
+        }
       },
       () => {
         if (creada) onGuardado(creada)

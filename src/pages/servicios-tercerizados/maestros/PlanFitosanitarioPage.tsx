@@ -25,7 +25,7 @@ import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import PasoAlcances from '@/pages/servicios-tercerizados/nueva/PasoAlcances'
 import { listarContratosMaestro, programarPlanFitosanitario } from '@/services/api/maestrosTercerizados'
 import { listarAreasVerdes, listarTodo, listarUnidadesMedida } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { SIN_VALOR } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
@@ -51,7 +51,7 @@ function detalleContrato(c: ContratoMaestro) {
 
 export default function PlanFitosanitarioPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Plan estacional' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
 
   const [borrador, setBorrador] = useState<BorradorPlanFitosanitario>(BORRADOR_PLAN_VACIO)
@@ -63,7 +63,7 @@ export default function PlanFitosanitarioPage() {
   const unidades = useConsulta('unidades-medida', (signal) => listarTodo((page) => listarUnidadesMedida({ page }, signal)))
   const areas = useConsulta('areas-activas', (signal) => listarTodo((page) => listarAreasVerdes({ activo: true, page }, signal)))
 
-  if (!puedeRegistrarAtencion(rol)) {
+  if (!puedeRegistrarAtencion(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección programa el plan fitosanitario"

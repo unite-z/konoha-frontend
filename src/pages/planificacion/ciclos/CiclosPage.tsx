@@ -15,7 +15,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaCiclo } from '@/router/rutasApp'
 import { listarProgramaciones } from '@/services/api/planificacion'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { Programacion } from '@/types/planificacion'
 import { SIN_VALOR } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
@@ -27,7 +27,7 @@ export default function CiclosPage() {
   usePaginaActual('Ciclos', [MIGAS_PLANIFICACION.planificacion, { texto: 'Ciclos' }])
   const navegar = useNavigate()
   const hoy = hoyLima()
-  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
+  const puedeEditar = puedeEditarPlanificacion(usePermisos())
   const [pestana, setPestana] = useState<PestanaCiclos>('todos')
   // «Ciclo programado · alerta atendida» (Figma 373-5779): el aviso llega del panel «Programar ciclo».
   const { state } = useLocation()

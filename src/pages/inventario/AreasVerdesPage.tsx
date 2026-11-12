@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router'
 import { useState } from 'react'
-import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import AccionFila, { AccionFilaEnlace, AccionesFila } from '@/design-system/AccionFila'
+import { BotonEnlace } from '@/components/ui/Boton'
 import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -13,7 +14,12 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO, RUTAS_INVENTARIO, rutaEditarAreaVerde, rutaMapaAreaVerde } from '@/router/rutasApp'
-import { asignarSectorArea, listarAreasVerdes, listarHistorialSectorArea, type HistorialSectorArea } from '@/services/api/areasVerdes'
+import {
+  asignarSectorArea,
+  listarAreasVerdes,
+  listarHistorialSectorArea,
+  type HistorialSectorArea,
+} from '@/services/api/areasVerdes'
 import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/catalogosInventario'
 import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import type { SectorInventario } from '@/types/catalogosInventario'
@@ -33,7 +39,12 @@ const COLUMNAS: ColumnaTabla<AreaVerde>[] = [
   { clave: 'ubicacion', titulo: 'Ubicación', multilinea: true, render: (area) => area.ubicacion },
 ]
 
-function GestionSectorArea({ area, sectores, editable, alGuardar }: {
+function GestionSectorArea({
+  area,
+  sectores,
+  editable,
+  alGuardar,
+}: {
   area: AreaVerde
   sectores: SectorInventario[]
   editable: boolean
@@ -72,24 +83,64 @@ function GestionSectorArea({ area, sectores, editable, alGuardar }: {
 
   return (
     <div className={estilos.gestionSector}>
-      {editable ? <>
-        <Selector id={`sector-actual-${area.id}`} etiqueta={`Sector de ${area.nombre}`} etiquetaOculta compacto valor={sectorId} onCambiar={setSectorId} opcionTodos="Sin sector" opciones={sectores.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))} />
-        <Boton variante="secundario" compacto deshabilitado={guardando || sectorId === (area.sector_id ? String(area.sector_id) : '')} onClick={() => {
-          if (area.sector_id && destino) setConfirmarTraspaso(true)
-          else void guardarSector()
-        }}>Guardar</Boton>
-      </> : <span>{area.sector_nombre ?? 'Sin sector'}</span>}
-      <Boton variante="fantasma" compacto onClick={() => void mostrarHistorial()}>Historial</Boton>
-      <DialogoConfirmacion abierto={confirmarTraspaso} titulo="Confirmar traspaso de área"
+      {editable ? (
+        <>
+          <Selector
+            id={`sector-actual-${area.id}`}
+            etiqueta={`Sector de ${area.nombre}`}
+            etiquetaOculta
+            compacto
+            valor={sectorId}
+            onCambiar={setSectorId}
+            opcionTodos="Sin sector"
+            opciones={sectores.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))}
+          />
+          <AccionFila
+            icono="check"
+            nombre="Guardar"
+            deshabilitado={sectorId === (area.sector_id ? String(area.sector_id) : '')}
+            cargando={guardando}
+            onClick={() => {
+              if (area.sector_id && destino) setConfirmarTraspaso(true)
+              else void guardarSector()
+            }}
+          />
+        </>
+      ) : (
+        <span>{area.sector_nombre ?? 'Sin sector'}</span>
+      )}
+      <AccionFila
+        icono="history"
+        nombre="Historial"
+        etiqueta={`Historial del sector de ${area.nombre}`}
+        onClick={() => void mostrarHistorial()}
+      />
+      <DialogoConfirmacion
+        abierto={confirmarTraspaso}
+        titulo="Confirmar traspaso de área"
         consecuencia={`Se trasladará ${area.nombre} de ${area.sector_nombre} a ${destino?.nombre}. El cambio quedará en el historial.`}
-        textoConfirmar="Confirmar traspaso" cargando={guardando}
-        onConfirmar={() => void guardarSector()} onCancelar={() => setConfirmarTraspaso(false)}>
+        textoConfirmar="Confirmar traspaso"
+        cargando={guardando}
+        onConfirmar={() => void guardarSector()}
+        onCancelar={() => setConfirmarTraspaso(false)}
+      >
         {error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
       </DialogoConfirmacion>
       {!confirmarTraspaso && error && <AvisoEnLinea tono="error">{error}</AvisoEnLinea>}
-      {historial && <ul className={estilos.historialSector}>{historial.length ? historial.map((registro) => (
-        <li key={registro.id}>{registro.sector_nombre} · {registro.fecha_inicio}{registro.fecha_fin ? ` – ${registro.fecha_fin}` : ' · vigente'}</li>
-      )) : <li>Sin asignaciones anteriores.</li>}</ul>}
+      {historial && (
+        <ul className={estilos.historialSector}>
+          {historial.length ? (
+            historial.map((registro) => (
+              <li key={registro.id}>
+                {registro.sector_nombre} · {registro.fecha_inicio}
+                {registro.fecha_fin ? ` – ${registro.fecha_fin}` : ' · vigente'}
+              </li>
+            ))
+          ) : (
+            <li>Sin asignaciones anteriores.</li>
+          )}
+        </ul>
+      )}
     </div>
   )
 }
@@ -109,11 +160,23 @@ export default function AreasVerdesPage() {
   const tiposUso = useConsulta('areas-filtro-tipos-uso', (signal) => listarTiposUso(false, signal))
   const poligonos = useConsulta('mapa-poligonos', listarPoligonosMapa)
   const areasConPoligono = new Set(poligonos.datos?.map((poligono) => poligono.area_verde_id))
-  const filtros = { sector_id: sectorId ? Number(sectorId) : undefined, cuartel_id: cuartelId ? Number(cuartelId) : undefined, tipo_uso_id: tipoUsoId ? Number(tipoUsoId) : undefined }
-  const consulta = useConsulta(`areas:${busqueda}:${sectorId}:${cuartelId}:${tipoUsoId}`, (signal) => listarAreasVerdes(busqueda, signal, filtros))
+  const filtros = {
+    sector_id: sectorId ? Number(sectorId) : undefined,
+    cuartel_id: cuartelId ? Number(cuartelId) : undefined,
+    tipo_uso_id: tipoUsoId ? Number(tipoUsoId) : undefined,
+  }
+  const consulta = useConsulta(`areas:${busqueda}:${sectorId}:${cuartelId}:${tipoUsoId}`, (signal) =>
+    listarAreasVerdes(busqueda, signal, filtros),
+  )
 
   if (consulta.estado === 'error' && !consulta.datos) {
-    return <EstadoError titulo="No pudimos cargar las áreas verdes" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar las áreas verdes"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   }
   if (!consulta.datos) return <EstadoCarga forma="tabla" />
 
@@ -121,63 +184,139 @@ export default function AreasVerdesPage() {
     <>
       <AccionesPagina>
         <BotonEnlace to={RUTAS_INVENTARIO.mapa}>Ver mapa</BotonEnlace>
-        <BotonEnlace to={RUTAS_INVENTARIO.nuevaArea} variante="primario">Registrar área</BotonEnlace>
+        <BotonEnlace to={RUTAS_INVENTARIO.nuevaArea} variante="primario">
+          Registrar área
+        </BotonEnlace>
       </AccionesPagina>
-      <Tarjeta titulo="Inventario de áreas verdes" descripcion="Consulta y registra los espacios verdes del campus." relleno="amplio">
+      <Tarjeta
+        titulo="Inventario de áreas verdes"
+        descripcion="Consulta y registra los espacios verdes del campus."
+        relleno="amplio"
+      >
         <div className={estilos.busqueda}>
-          <CampoFormulario id="busqueda-areas" etiqueta="Buscar por nombre" type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} />
+          <CampoFormulario
+            id="busqueda-areas"
+            etiqueta="Buscar por nombre"
+            type="search"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+          />
         </div>
         <div className={estilos.filtros}>
-          {sectores.datos && <Selector
-            id="filtro-sector-area"
-            etiqueta="Sector"
-            valor={sectorId}
-            onCambiar={setSectorId}
-            opcionTodos="Todos los sectores"
-            opciones={sectores.datos.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))}
-          />}
-          {cuarteles.datos && <Selector id="filtro-cuartel-area" etiqueta="Cuartel histórico" valor={cuartelId} onCambiar={setCuartelId} opcionTodos="Todos los cuarteles" opciones={cuarteles.datos.map((cuartel) => ({ valor: String(cuartel.id), texto: `${cuartel.numero} · ${cuartel.nombre}${cuartel.estado === 'desaparecido' ? ' (desaparecido)' : ''}` }))} />}
-          {tiposUso.datos && <Selector
-            id="filtro-uso-area"
-            etiqueta="Tipo de uso"
-            valor={tipoUsoId}
-            onCambiar={setTipoUsoId}
-            opcionTodos="Todos los tipos de uso"
-            opciones={tiposUso.datos.map((uso) => ({ valor: String(uso.id), texto: uso.nombre }))}
-          />}
-          {sectores.estado === 'error' && <EstadoError titulo="No se pudieron cargar los sectores" descripcion={sectores.error?.detalle ?? ''} onReintentar={sectores.reintentar} nivel={3} />}
-          {cuarteles.estado === 'error' && <EstadoError titulo="No se pudieron cargar los cuarteles" descripcion={cuarteles.error?.detalle ?? ''} onReintentar={cuarteles.reintentar} nivel={3} />}
-          {tiposUso.estado === 'error' && <EstadoError titulo="No se pudieron cargar los tipos de uso" descripcion={tiposUso.error?.detalle ?? ''} onReintentar={tiposUso.reintentar} nivel={3} />}
+          {sectores.datos && (
+            <Selector
+              id="filtro-sector-area"
+              etiqueta="Sector"
+              valor={sectorId}
+              onCambiar={setSectorId}
+              opcionTodos="Todos los sectores"
+              opciones={sectores.datos.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))}
+            />
+          )}
+          {cuarteles.datos && (
+            <Selector
+              id="filtro-cuartel-area"
+              etiqueta="Cuartel histórico"
+              valor={cuartelId}
+              onCambiar={setCuartelId}
+              opcionTodos="Todos los cuarteles"
+              opciones={cuarteles.datos.map((cuartel) => ({
+                valor: String(cuartel.id),
+                texto: `${cuartel.numero} · ${cuartel.nombre}${cuartel.estado === 'desaparecido' ? ' (desaparecido)' : ''}`,
+              }))}
+            />
+          )}
+          {tiposUso.datos && (
+            <Selector
+              id="filtro-uso-area"
+              etiqueta="Tipo de uso"
+              valor={tipoUsoId}
+              onCambiar={setTipoUsoId}
+              opcionTodos="Todos los tipos de uso"
+              opciones={tiposUso.datos.map((uso) => ({ valor: String(uso.id), texto: uso.nombre }))}
+            />
+          )}
+          {sectores.estado === 'error' && (
+            <EstadoError
+              titulo="No se pudieron cargar los sectores"
+              descripcion={sectores.error?.detalle ?? ''}
+              onReintentar={sectores.reintentar}
+              nivel={3}
+            />
+          )}
+          {cuarteles.estado === 'error' && (
+            <EstadoError
+              titulo="No se pudieron cargar los cuarteles"
+              descripcion={cuarteles.error?.detalle ?? ''}
+              onReintentar={cuarteles.reintentar}
+              nivel={3}
+            />
+          )}
+          {tiposUso.estado === 'error' && (
+            <EstadoError
+              titulo="No se pudieron cargar los tipos de uso"
+              descripcion={tiposUso.error?.detalle ?? ''}
+              onReintentar={tiposUso.reintentar}
+              nivel={3}
+            />
+          )}
         </div>
         <div className={estilos.tablaAreas}>
           <TablaDatos
             titulo="Áreas verdes"
             columnas={[
               ...COLUMNAS.filter((columna) => !puedeGestionar || columna.clave !== 'sector'),
-              ...(puedeGestionar ? [{
-                clave: 'sector',
-                titulo: 'Sector y cambios',
-                render: (area: AreaVerde) => <GestionSectorArea
-                  area={area}
-                  sectores={sectores.datos ?? []}
-                  editable={puedeGestionar}
-                  alGuardar={() => void consulta.reintentar()}
-                />,
-              }] : []),
-              ...((puedeEditar || poligonos.datos?.some((poligono) => poligono.area_verde_id !== null)) ? [{
-                clave: 'acciones',
-                titulo: 'Acciones',
-                render: (area: AreaVerde) => (
-                  <div className={estilos.gestionSector}>
-                    {areasConPoligono.has(area.id) && <BotonEnlace to={rutaMapaAreaVerde(area.id)} variante="secundario" compacto aria-label={`Ver en el mapa · ${area.nombre}`}>Ver en el mapa</BotonEnlace>}
-                    {puedeEditar && <BotonEnlace to={rutaEditarAreaVerde(area.id)} variante="secundario" compacto>Editar</BotonEnlace>}
-                  </div>
-                ),
-              }] : []),
+              ...(puedeGestionar
+                ? [
+                    {
+                      clave: 'sector',
+                      titulo: 'Sector y cambios',
+                      render: (area: AreaVerde) => (
+                        <GestionSectorArea
+                          area={area}
+                          sectores={sectores.datos ?? []}
+                          editable={puedeGestionar}
+                          alGuardar={() => void consulta.reintentar()}
+                        />
+                      ),
+                    },
+                  ]
+                : []),
+              ...(puedeEditar || poligonos.datos?.some((poligono) => poligono.area_verde_id !== null)
+                ? [
+                    {
+                      clave: 'acciones',
+                      titulo: 'Acciones',
+                      render: (area: AreaVerde) => (
+                        <AccionesFila>
+                          {areasConPoligono.has(area.id) && (
+                            <AccionFilaEnlace
+                              to={rutaMapaAreaVerde(area.id)}
+                              icono="map"
+                              nombre="Ver en el mapa"
+                              etiqueta={`Ver en el mapa · ${area.nombre}`}
+                            />
+                          )}
+                          {puedeEditar && (
+                            <AccionFilaEnlace
+                              to={rutaEditarAreaVerde(area.id)}
+                              icono="pencil"
+                              nombre="Editar"
+                              etiqueta={`Editar ${area.nombre}`}
+                            />
+                          )}
+                        </AccionesFila>
+                      ),
+                    },
+                  ]
+                : []),
             ]}
             filas={consulta.datos.results}
             claveFila={(area) => String(area.id)}
-            vacio={{ titulo: 'Aún no hay áreas verdes', descripcion: 'Registra un área para iniciar el inventario del campus.' }}
+            vacio={{
+              titulo: 'Aún no hay áreas verdes',
+              descripcion: 'Registra un área para iniciar el inventario del campus.',
+            }}
           />
         </div>
       </Tarjeta>
