@@ -168,14 +168,14 @@
 
 /* Colores de los mapas (maplibre). Fuera del sistema de diseño de Figma. */
 :root {
-  --map-uso-predeterminado: #1B5E20;
-  --map-grid-color: #E7EEE9;
-  --map-outline-color: #C7D5CC;
-  --map-label-color: #84928A;
-  --map-label-strong-color: #37443D;
+  --map-uso-predeterminado: #1b5e20;
+  --map-grid-color: #e7eee9;
+  --map-outline-color: #c7d5cc;
+  --map-label-color: #84928a;
+  --map-label-strong-color: #37443d;
   --map-label-outline-width: 3px;
-  --map-area-fill: #E8F5E9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
-  --map-area-line: #43A047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-fill: #e8f5e9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-line: #43a047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
   --map-selected-stroke: #111827; /* contorno del área seleccionada en el mapa vectorial */
   --map-swatch-outline: color-mix(in srgb, var(--map-selected-stroke) 55%, transparent);
 }
