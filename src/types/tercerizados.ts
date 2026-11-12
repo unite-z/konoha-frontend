@@ -183,6 +183,53 @@ export interface ReporteProveedor {
   fecha_creacion: InstanteIso
   /** Solo al adjuntar: `true` si el envío repetía la última revisión (mismo contenido por SHA-256) y no se creó otra. */
   repetido?: boolean
+  /** Formato estándar con el que se registraron los datos del informe final (RF-SER-009); `null` si no tiene datos. */
+  formato_id?: number | null
+  formato_version?: number | null
+  datos_formato?: DatosFormato | null
+}
+
+// --- Formato estándar del informe final (RF-SER-009) ----------------------------------------------------
+
+/** Tipos de dato de `mod05_campo_formato_reporte`. */
+export type TipoDatoFormato = 'Texto' | 'Texto largo' | 'Entero' | 'Decimal' | 'Booleano' | 'Fecha' | 'JSON'
+
+/** Dato de cada fila de un campo `JSON` (por ejemplo, «producto» de «Productos aplicados»). */
+export interface SubcampoFormato {
+  nombre: string
+  tipo_dato: TipoDatoFormato
+  descripcion: string
+}
+
+export interface CampoFormatoReporte {
+  nombre_campo: string
+  tipo_dato: TipoDatoFormato
+  obligatorio: boolean
+  orden: number
+  /** Solo en los campos `JSON`. */
+  subcampos: SubcampoFormato[] | null
+}
+
+export interface FormatoReporte {
+  id: number
+  version: number
+  tipo_servicio_id: number
+  tipo_servicio_nombre: string
+  campos: CampoFormatoReporte[]
+}
+
+/** Valor de un dato del informe: texto (también los números, como «120.50»), sí/no o las filas de un campo `JSON`. */
+export type ValorDatoFormato = string | number | boolean | Array<Record<string, string | number | boolean>>
+
+/** Datos del informe final: `{nombre_campo: valor}`. */
+export type DatosFormato = Record<string, ValorDatoFormato>
+
+/** `GET atenciones/{id}/formato-reporte/`. */
+export interface FormatoReporteAtencion {
+  /** `null` si el tipo de servicio no tiene formato estándar vigente: el reporte se adjunta sin datos. */
+  formato: FormatoReporte | null
+  /** Datos de la última revisión registrada con ese mismo formato, para proponerlos en la nueva. */
+  datos_anteriores: { revision: number; datos: DatosFormato } | null
 }
 
 // --- Entradas -------------------------------------------------------------------------------------------
@@ -251,6 +298,8 @@ export interface ReporteEntrada {
   fecha_recepcion: FechaIso
   resumen?: string
   documentos: DocumentoEntrada[]
+  /** Datos del informe final según el formato estándar vigente (RF-SER-009). Sin ellos, la revisión se registra sin datos. */
+  datos_formato?: DatosFormato
 }
 
 /** Filtros de `GET atenciones/`. */
