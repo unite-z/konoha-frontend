@@ -1,5 +1,5 @@
 /**
- * Cierre animado de los diálogos de `components/ui` (`DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`).
+ * Cierre animado de los diálogos de `design-system` (`DialogoFormulario`, `DialogoConfirmacion` y `DialogoDetalle`).
  *
  * `cerrar()` marca `saliendo` (la clase de `AnimacionDialogo.module.css` que anima la salida) y llama a `onCerrar` al
  * terminar la animación del propio diálogo, no la del velo. Sin movimiento («reducir movimiento», o en las pruebas,

@@ -24,6 +24,7 @@ import {
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { NuevaIncidencia, PosibleDuplicado } from '@/types/incidencias'
 import { useEnLinea } from '@/hooks/useEnLinea'
+import { comprimirFotografia } from '@/utils/comprimirFotografia'
 import { textoDuplicado } from './misIncidencias'
 import { anadirPendiente } from './reportesPendientes'
 import estilos from './Incidencias.module.css'
@@ -70,6 +71,17 @@ export default function DialogoReportarIncidencia({
   const [error, setError] = useState<{ titulo: string; detalle: string } | null>(null)
   const [duplicado, setDuplicado] = useState<PosibleDuplicado | null>(null)
   const vistaPrevia = useVistaPrevia(foto)
+
+  /**
+   * Foto comprimida a JPEG (lado mayor de 1600 px, `pwa-offline.md`): menos datos móviles y un formato que el servidor
+   * admite. Si el navegador no puede leerla (por ejemplo, HEIC), se envía tal cual y el servidor explica el motivo.
+   */
+  async function elegirFoto(archivo: File | null) {
+    if (!archivo) return setFoto(null)
+    setFoto(archivo)
+    const comprimida = await comprimirFotografia(archivo).catch(() => archivo)
+    setFoto((actual) => (actual === archivo ? comprimida : actual))
+  }
 
   // El espacio entra con el que propone la ubicación hasta que se elige otro.
   const sugerido = catalogos.datos?.espacio_sugerido ?? ''
@@ -192,7 +204,7 @@ export default function DialogoReportarIncidencia({
               textoBoton={foto ? 'Otra' : 'Foto'}
               ayuda=""
               error={mostrarErrores ? errores.foto : undefined}
-              onArchivos={(archivos) => setFoto(archivos[0] ?? null)}
+              onArchivos={(archivos) => void elegirFoto(archivos[0] ?? null)}
             />
           </div>
           {mostrarErrores && errores.foto && <p className={estilos.errorAccion}>{errores.foto}</p>}

@@ -39,9 +39,26 @@
 
 .cuerpo {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
+}
+
+.cerrar {
+  display: flex;
+  align-self: flex-start;
+  padding: var(--space-1);
+  margin: calc(-1 * var(--space-1));
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: currentColor;
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: var(--color-bg-hover);
 }
 
 .titulo {
