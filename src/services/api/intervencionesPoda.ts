@@ -1,5 +1,5 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { CatalogosRegistroPoda, IntervencionPoda, NuevaIntervencionPoda, OpcionCatalogoPoda } from '@/types/intervencionesPoda'
+import type { CambioIntervencionPoda, CatalogosRegistroPoda, ContratoPodaAltura, EjemplarPodaAltura, IntervencionPoda, NuevaIntervencionPoda, NuevaPodaAltura, OpcionCatalogoPoda } from '@/types/intervencionesPoda'
 
 const BASE = '/api/v1/inventario'
 const RUTA = 'intervenciones-poda/'
@@ -18,4 +18,20 @@ export function crearIntervencion(entrada: NuevaIntervencionPoda): Promise<Inter
 }
 export function anularIntervencion(id: number): Promise<void> {
   return solicitarTercerizados(`${RUTA}${id}/`, { metodo: 'DELETE', base: BASE })
+}
+export function cambiarIntervencion(id: number, cambio: CambioIntervencionPoda): Promise<IntervencionPoda> {
+  return solicitarTercerizados(`${RUTA}${id}/`, { metodo: 'PATCH', cuerpo: cambio, base: BASE })
+}
+
+// --- Poda de altura a demanda (AV-312) ---
+const ALTURA = 'podas-altura/'
+
+export function solicitarPodaAltura(entrada: NuevaPodaAltura): Promise<IntervencionPoda> {
+  return solicitarTercerizados(ALTURA, { metodo: 'POST', cuerpo: entrada, base: BASE })
+}
+export function listarContratosPodaAltura(signal?: AbortSignal): Promise<ContratoPodaAltura[]> {
+  return solicitarTercerizados(`${ALTURA}contratos/`, { signal, base: BASE })
+}
+export function consultarEjemplarPodaAltura(id: number, signal?: AbortSignal): Promise<EjemplarPodaAltura> {
+  return solicitarTercerizados(`${ALTURA}ejemplares/${id}/`, { signal, base: BASE })
 }
