@@ -9,7 +9,7 @@
   - CI (`comprobar-formato.sh`) comprueba con `--check` **solo los ficheros de `src/` que añade o modifica el PR** (como el ratchet de Spotless en el backend). Al tocar un fichero antiguo, se formatea entero; no hay que reformatear el resto del repo.
   - En local: `bash .github/scripts/comprobar-formato.sh origin/main`.
   - Se eligió oxfmt y no Prettier porque es de la misma familia que oxlint (un único binario, sin plugins ni `.prettierrc` que mantener) y el repo no tenía configuración de Prettier previa.
-- CSS Modules con los tokens de `src/styles/tokens.css`. Qué componente y qué token usar: `DESIGN.md`.
+- CSS Modules con los tokens de `src/design-system/tokens.css`. Qué componente y qué token usar: `DESIGN.md`.
 
 ## Estructura de `src/`
 
@@ -29,7 +29,7 @@ Qué va en cada carpeta, qué puede importar a qué y cómo se comunican los mó
 - Nada de `!` (non-null assertion) salvo con un comentario que explique por qué es seguro.
 - Los tipos de la API viven en `types/` y reflejan el contrato de OpenAPI, con sus claves en snake_case (ADR 0005). Es la única excepción a camelCase. Si el backend cambia el contrato, se cambian aquí en el mismo ticket.
 - `import type` para lo que solo es tipo (`verbatimModuleSyntax` lo exige).
-- Imports de otra carpeta con el alias `@/`, que apunta a `src/`: `import Boton from '@/components/ui/Boton'`. Los relativos solo para la misma carpeta o la de al lado (`./`, `../`), nunca `../../`.
+- Imports de otra carpeta con el alias `@/`, que apunta a `src/`: `import Boton from '@/design-system/Boton'`. Los relativos solo para la misma carpeta o la de al lado (`./`, `../`), nunca `../../`.
 
 ## React
 

@@ -5,7 +5,8 @@ Componentes de negocio comunes a varios módulos. Nacieron en MOD-01 para las fi
 **Va aquí:** piezas con lógica de negocio que usan tres módulos o más (o que se diseñaron para todos): `Adjuntos.tsx` (ficheros de una ficha) e `HistorialCambios.tsx` (quién cambió qué y cuándo).
 
 **No va aquí:**
-- Componentes visuales sin negocio: van en `components/ui/`.
+
+- Componentes visuales sin negocio: van en `design-system/`.
 - Componentes de un solo módulo: van junto a sus páginas o en `components/<modulo>/`.
 - Componentes que hoy usa un módulo y «quizá» otro mañana: se quedan en su módulo hasta que haya un tercer usuario.
 

@@ -6,7 +6,7 @@
  * error = incumple, neutral = sin evaluación, info = informativo.
  * Los estados que el back-end ya devuelve en texto legible se muestran tal cual; aquí solo se elige el tono.
  */
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
 import type { AccionDecision, EstadoSugerencia, SuficienciaDatos } from '../types/ia'
 import type { EstadoDuracion, EstadoFrecuencia, Modalidad } from '../types/reportes'
 

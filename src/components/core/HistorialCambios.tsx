@@ -1,5 +1,5 @@
 // RF-T-008 · Historial de altas y modificaciones (HU-MOD01-010)
-import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
+import TablaDatos, { type ColumnaTabla } from '@/design-system/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { historialRegistro } from '@/services/api/core'
 import type { EntidadRegistro, EntradaHistorial } from '@/types/core'
