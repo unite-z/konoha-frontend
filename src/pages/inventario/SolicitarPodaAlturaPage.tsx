@@ -183,7 +183,7 @@ export default function SolicitarPodaAlturaPage() {
         )}
         {motivo === 'PlantaMuerta' && (
           <AvisoEnLinea tono="info" titulo="Planta muerta">
-            El motivo queda registrado. El cambio de situación del ejemplar se hace en su ficha.
+            El motivo queda registrado. Desde la intervención creada podrás registrar el ejemplar como muerto.
           </AvisoEnLinea>
         )}
       </Tarjeta>
