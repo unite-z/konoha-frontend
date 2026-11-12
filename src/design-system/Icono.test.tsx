@@ -6,8 +6,8 @@ import Icono, { NOMBRES_ICONOS_FIGMA, type NombreIcono } from './Icono'
 afterEach(cleanup)
 
 describe('Icono', () => {
-  it('tiene los 49 iconos con su nombre de Figma (pencil, trash e history aún faltan en su página)', () => {
-    expect(NOMBRES_ICONOS_FIGMA).toHaveLength(49)
+  it('tiene los 51 iconos con su nombre de Figma (pencil, trash, history, key y log-out aún faltan en su página)', () => {
+    expect(NOMBRES_ICONOS_FIGMA).toHaveLength(51)
     const { container } = render(
       <>
         {NOMBRES_ICONOS_FIGMA.map((nombre) => (
@@ -15,7 +15,7 @@ describe('Icono', () => {
         ))}
       </>,
     )
-    expect(container.querySelectorAll('svg')).toHaveLength(49)
+    expect(container.querySelectorAll('svg')).toHaveLength(51)
   })
 
   it.each([
