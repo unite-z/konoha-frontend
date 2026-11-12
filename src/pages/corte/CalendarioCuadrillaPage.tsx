@@ -34,7 +34,7 @@ export default function CalendarioCuadrillaPage() {
   } else {
     contenido = (
       <>
-        <p className={estilos.ciclo}>{consulta.datos.cuadrilla} · solo lectura</p>
+        <p className={estilos.ciclo}>{consulta.datos.cuadrilla ? `${consulta.datos.cuadrilla} · solo lectura` : 'Sin cuadrilla asignada · solo lectura'}</p>
         <VistaMovil fecha={fecha} hoy={hoy} eventos={eventosDeCapas(consulta.datos.restricciones, consulta.datos.programaciones)} onCambiarFecha={setFecha} />
       </>
     )

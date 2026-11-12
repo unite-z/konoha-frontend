@@ -132,8 +132,10 @@ export default function LayoutOficina() {
                 <div ref={setNodoAcciones} className={estilos.accionesTitulo} />
               </div>
             )}
-            <AvisoNuevaVersion />
-            <IndicadorSincronizacion />
+            <div className={estilos.avisosGlobales}>
+              <AvisoNuevaVersion />
+              <IndicadorSincronizacion />
+            </div>
             <Outlet />
           </main>
           <BarraInferior />
