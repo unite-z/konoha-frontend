@@ -121,6 +121,7 @@ export default function CatalogosPage() {
           <label className={estilos.selectorColorGrupo} htmlFor="color-nuevo-tipo-uso">
             <span>Color del tipo</span>
             {/* Excepción al sistema (AV-351): el selector nativo captura un color del catálogo. */}
+            {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- el label que lo envuelve lo etiqueta */}
             <input id="color-nuevo-tipo-uso" className={estilos.selectorColor} type="color" value={tipoColor} onChange={(e) => setTipoColor(e.target.value)} />
             <span className={estilos.detalle}>{tipoColor.toUpperCase()}</span>
           </label>

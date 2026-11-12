@@ -51,6 +51,11 @@ Qué va en cada carpeta, qué puede importar a qué y cómo se comunican los mó
 - Los encabezados siguen el orden (`h1`, `h2`...) sin saltos.
 - Se puede usar todo con teclado y el foco va donde corresponde tras una acción (por ejemplo, tras registrar).
 - Imágenes con `alt`. Los iconos decorativos, con `aria-hidden`.
+- oxlint lo comprueba con el plugin `jsx-a11y` (`.oxlintrc.json`). En error: `label-has-associated-control`, `alt-text`, `img-redundant-alt`, roles y atributos ARIA (`aria-role`, `aria-props`, `aria-proptypes`, `role-has-required-aria-props`, `role-supports-aria-props`, `no-redundant-roles`), uso con teclado (`click-events-have-key-events`, `no-static-element-interactions`, `no-noninteractive-element-interactions`, `interactive-supports-focus`, `tabindex-no-positive`, `no-noninteractive-tabindex`, `no-autofocus`) y `anchor-is-valid`, entre otras.
+- `no-noninteractive-tabindex` admite `tabIndex={0}` en `role="region"` (zonas con desplazamiento propio, como `TablaDatos`).
+- `prefer-tag-over-role` está apagada: `role="status"`, `group` o `search` son válidos y no equivalen siempre a `output`, `fieldset` o `search`.
+- Excepciones puntuales (por ejemplo `autoFocus` tras una acción de la persona): `// oxlint-disable-next-line jsx-a11y/<regla> -- motivo`.
+- `control-has-associated-label` está en error, también para `<input>` y `<textarea>`: un control sin texto, `aria-label` ni `aria-labelledby` rompe el lint. Los controles envueltos por un `<label>` (casillas, radios) o etiquetados por `MarcoCampo` no los reconoce la regla: se marcan con `// oxlint-disable-next-line jsx-a11y/control-has-associated-label -- motivo`. Lo normal es usar `CampoFormulario`, que ya etiqueta. Queda como aviso (`warn`) `no-noninteractive-element-to-interactive-role` (patrón combobox de `SelectorBuscable`).
 
 ## Configuración y secretos
 
