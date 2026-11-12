@@ -30,7 +30,15 @@ import { avisoDeNavegacion, volverALista } from './filtrosMaestros'
 import type { EstadoNavegacionProveedor } from './ListaProveedores'
 import estilos from './Maestros.module.css'
 
-function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; acciones: ReactNode; fallo: string | null }) {
+function Ficha({
+  proveedor,
+  acciones,
+  fallo,
+}: {
+  proveedor: ProveedorMaestro
+  acciones: ReactNode
+  fallo: string | null
+}) {
   const contacto = datosContacto(proveedor)
   return (
     <>
@@ -40,7 +48,10 @@ function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; ac
             <h2 id="titulo-proveedor" className={estilos.tituloPrincipal}>
               {proveedor.razon_social}
             </h2>
-            <Estado tono={proveedor.activo ? 'exito' : 'neutro'} texto={proveedor.activo ? 'Habilitado' : 'Inhabilitado'} />
+            <Estado
+              tono={proveedor.activo ? 'exito' : 'neutro'}
+              texto={proveedor.activo ? 'Habilitado' : 'Inhabilitado'}
+            />
           </div>
           {acciones}
         </div>
@@ -87,7 +98,9 @@ export default function ProveedorDetallePage() {
   const volverA = RUTAS_TERCERIZADOS.proveedoresContratos + volverAQuery
   const permisos = usePermisos()
 
-  const consulta = useConsulta(id === null ? null : `proveedor|${id}`, (signal) => obtenerProveedor(id as number, signal))
+  const consulta = useConsulta(id === null ? null : `proveedor|${id}`, (signal) =>
+    obtenerProveedor(id as number, signal),
+  )
   // Última versión que devolvió el servidor al cambiar el estado o editar; vale mientras sea el mismo proveedor.
   const [actualizado, setActualizado] = useState<ProveedorMaestro | null>(null)
   const proveedor = actualizado && actualizado.id === consulta.datos?.id ? actualizado : consulta.datos
@@ -146,7 +159,11 @@ export default function ProveedorDetallePage() {
           acciones={
             puedeCambiarEstadoProveedor(permisos) && (
               <div className={estilos.enLinea}>
-                <BotonEnlace to={rutaEditarProveedor(proveedor.id)} variante="secundario" state={{ volverA: volverAQuery } satisfies EstadoNavegacionProveedor}>
+                <BotonEnlace
+                  to={rutaEditarProveedor(proveedor.id)}
+                  variante="secundario"
+                  state={{ volverA: volverAQuery } satisfies EstadoNavegacionProveedor}
+                >
                   Editar
                 </BotonEnlace>
                 <AccionEstadoProveedor proveedor={proveedor} onCambiado={alCambiarEstado} onFallo={setFallo} />

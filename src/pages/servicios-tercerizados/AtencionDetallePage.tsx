@@ -136,8 +136,14 @@ function Ficha({
     <Tarjeta titulo="Ejecución" relleno="amplio">
       <ListaDescripcion
         elementos={[
-          { etiqueta: 'Inicio', valor: atencion.fecha_hora_inicio ? formatearFechaHora(atencion.fecha_hora_inicio) : 'Sin registrar' },
-          { etiqueta: 'Fin', valor: atencion.fecha_hora_fin ? formatearFechaHora(atencion.fecha_hora_fin) : 'Sin registrar' },
+          {
+            etiqueta: 'Inicio',
+            valor: atencion.fecha_hora_inicio ? formatearFechaHora(atencion.fecha_hora_inicio) : 'Sin registrar',
+          },
+          {
+            etiqueta: 'Fin',
+            valor: atencion.fecha_hora_fin ? formatearFechaHora(atencion.fecha_hora_fin) : 'Sin registrar',
+          },
           duracion !== null && { etiqueta: 'Duración', valor: formatearMinutos(duracion) },
         ]}
       />
@@ -149,13 +155,22 @@ function Ficha({
     <>
       <Tarjeta relleno="amplio" etiquetadaPor="titulo-atencion">
         <div className={estilos.cabeceraFicha}>
-          <h2 id="titulo-atencion" ref={titulo} tabIndex={-1} className={`${estilos.tituloPrincipal} ${estilos.textoLargo}`}>
+          <h2
+            id="titulo-atencion"
+            ref={titulo}
+            tabIndex={-1}
+            className={`${estilos.tituloPrincipal} ${estilos.textoLargo}`}
+          >
             {atencion.descripcion}
           </h2>
           <span className={estilos.enLinea}>
             <Estado {...insigniaAEstado(insigniaEstado(atencion.estado))} />
             {atencion.es_riesgo && (
-              <Estado tono="aviso" texto="Atención de riesgo" ayuda="Requiere verificación de seguridad antes del inicio" />
+              <Estado
+                tono="aviso"
+                texto="Atención de riesgo"
+                ayuda="Requiere verificación de seguridad antes del inicio"
+              />
             )}
           </span>
         </div>
@@ -193,7 +208,10 @@ function Ficha({
               columnas="una"
               elementos={[
                 { etiqueta: 'Unidad', valor: textoUnidad(atencion) },
-                atencion.acuerdo_unidad !== null && { etiqueta: 'Fecha', valor: formatearFecha(atencion.fecha_acuerdo_unidad) },
+                atencion.acuerdo_unidad !== null && {
+                  etiqueta: 'Fecha',
+                  valor: formatearFecha(atencion.fecha_acuerdo_unidad),
+                },
                 Boolean(atencion.comentarios_acuerdo_unidad) && {
                   etiqueta: 'Comentarios',
                   valor: <span className={estilos.textoLargo}>{atencion.comentarios_acuerdo_unidad}</span>,
@@ -212,14 +230,28 @@ function Ficha({
       )}
 
       {atencion.es_riesgo && (
-        <Tarjeta titulo={atencion.verificaciones_seguridad?.length ? 'Seguridad verificada' : 'Seguridad pendiente de verificar'} relleno="amplio">
-          {!atencion.verificaciones_seguridad?.length && <p>El jefe de sección o el ingeniero de campo deben registrar la verificación para habilitar el inicio.</p>}
+        <Tarjeta
+          titulo={
+            atencion.verificaciones_seguridad?.length ? 'Seguridad verificada' : 'Seguridad pendiente de verificar'
+          }
+          relleno="amplio"
+        >
+          {!atencion.verificaciones_seguridad?.length && (
+            <p>El jefe de sección o el ingeniero de campo deben registrar la verificación para habilitar el inicio.</p>
+          )}
           {[...(atencion.verificaciones_seguridad ?? [])].reverse().map((v) => (
-            <ListaDescripcion key={v.id} elementos={[
-              { etiqueta: 'EPP y medidas de seguridad', valor: <span className={estilos.textoLargo}>{v.medidas}</span>, ancho: true },
-              { etiqueta: 'Verificada por', valor: v.usuario_nombre },
-              { etiqueta: 'Fecha de verificación', valor: formatearFechaHora(v.fecha_creacion) },
-            ]} />
+            <ListaDescripcion
+              key={v.id}
+              elementos={[
+                {
+                  etiqueta: 'EPP y medidas de seguridad',
+                  valor: <span className={estilos.textoLargo}>{v.medidas}</span>,
+                  ancho: true,
+                },
+                { etiqueta: 'Verificada por', valor: v.usuario_nombre },
+                { etiqueta: 'Fecha de verificación', valor: formatearFechaHora(v.fecha_creacion) },
+              ]}
+            />
           ))}
         </Tarjeta>
       )}
@@ -272,7 +304,12 @@ function Ficha({
             </span>
           }
         >
-          <TablaDatos titulo="Plagas controladas en la atención" columnas={COLUMNAS_PLAGAS} filas={atencion.plagas} claveFila={(p) => String(p.id)} />
+          <TablaDatos
+            titulo="Plagas controladas en la atención"
+            columnas={COLUMNAS_PLAGAS}
+            filas={atencion.plagas}
+            claveFila={(p) => String(p.id)}
+          />
         </Tarjeta>
       )}
 

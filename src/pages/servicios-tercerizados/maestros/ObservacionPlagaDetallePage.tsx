@@ -15,7 +15,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { obtenerObservacionPlaga } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ObservacionPlaga } from '@/types/maestrosTercerizados'
 import { claveAlcance, type AlcanceSeleccionado } from '@/utils/nuevaAtencion'
 import { formatearFecha, formatearFechaHora, SIN_VALOR } from '@/utils/formato'
@@ -25,18 +25,34 @@ import estilos from './Maestros.module.css'
 /** El espacio o el ejemplar observado, listo para preseleccionarlo en «Nueva atención». */
 function alcanceDeObservacion(o: ObservacionPlaga): AlcanceSeleccionado | null {
   if (o.area_verde_id !== null)
-    return { clave: claveAlcance('area', o.area_verde_id), tipo: 'area', id: o.area_verde_id, etiqueta: o.area_verde_nombre ?? '', metrado: '', unidad_medida_id: '' }
+    return {
+      clave: claveAlcance('area', o.area_verde_id),
+      tipo: 'area',
+      id: o.area_verde_id,
+      etiqueta: o.area_verde_nombre ?? '',
+      metrado: '',
+      unidad_medida_id: '',
+    }
   if (o.ejemplar_id !== null)
-    return { clave: claveAlcance('ejemplar', o.ejemplar_id), tipo: 'ejemplar', id: o.ejemplar_id, etiqueta: o.ejemplar_codigo ?? '', metrado: '', unidad_medida_id: '' }
+    return {
+      clave: claveAlcance('ejemplar', o.ejemplar_id),
+      tipo: 'ejemplar',
+      id: o.ejemplar_id,
+      etiqueta: o.ejemplar_codigo ?? '',
+      metrado: '',
+      unidad_medida_id: '',
+    }
   return null
 }
 
 export default function ObservacionPlagaDetallePage() {
   const { id: parametro } = useParams()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
 
-  const consulta = useConsulta(id === null ? null : `observacion-plaga|${id}`, (signal) => obtenerObservacionPlaga(id as number, signal))
+  const consulta = useConsulta(id === null ? null : `observacion-plaga|${id}`, (signal) =>
+    obtenerObservacionPlaga(id as number, signal),
+  )
   const observacion = consulta.datos
   const alcance = observacion ? alcanceDeObservacion(observacion) : null
 
@@ -61,7 +77,11 @@ export default function ObservacionPlagaDetallePage() {
     )
   } else if (consulta.estado === 'error' && !observacion) {
     contenido = (
-      <EstadoError titulo="No pudimos cargar la observación" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+      <EstadoError
+        titulo="No pudimos cargar la observación"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
     )
   } else if (!observacion) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -73,8 +93,12 @@ export default function ObservacionPlagaDetallePage() {
             <h2 id="titulo-observacion" className={estilos.tituloPrincipal}>
               {observacion.plaga_nombre}
             </h2>
-            {alcance && puedeRegistrarAtencion(rol) && (
-              <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="secundario" state={{ alcance } satisfies EstadoAlcanceElegido}>
+            {alcance && puedeRegistrarAtencion(permisos) && (
+              <BotonEnlace
+                to={RUTAS_TERCERIZADOS.nuevaAtencion}
+                variante="secundario"
+                state={{ alcance } satisfies EstadoAlcanceElegido}
+              >
                 Registrar atención
               </BotonEnlace>
             )}
@@ -84,11 +108,20 @@ export default function ObservacionPlagaDetallePage() {
         <Tarjeta titulo="Datos de la observación" relleno="amplio">
           <ListaDescripcion
             elementos={[
-              { etiqueta: 'Espacio o ejemplar', valor: observacion.area_verde_nombre ?? observacion.ejemplar_codigo ?? SIN_VALOR },
-              { etiqueta: 'Fecha observada', valor: <span className="cifra">{formatearFecha(observacion.fecha_observacion)}</span> },
+              {
+                etiqueta: 'Espacio o ejemplar',
+                valor: observacion.area_verde_nombre ?? observacion.ejemplar_codigo ?? SIN_VALOR,
+              },
+              {
+                etiqueta: 'Fecha observada',
+                valor: <span className="cifra">{formatearFecha(observacion.fecha_observacion)}</span>,
+              },
               { etiqueta: 'Descripción', valor: observacion.descripcion, ancho: true },
               { etiqueta: 'Registrado por', valor: observacion.usuario_creacion_nombre },
-              { etiqueta: 'Fecha de registro', valor: <span className="cifra">{formatearFechaHora(observacion.fecha_creacion)}</span> },
+              {
+                etiqueta: 'Fecha de registro',
+                valor: <span className="cifra">{formatearFechaHora(observacion.fecha_creacion)}</span>,
+              },
             ]}
           />
         </Tarjeta>

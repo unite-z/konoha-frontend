@@ -22,7 +22,11 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
-import { listarObservacionesPorAlcance, listarPlagas, listarProductosAgronomicos } from '@/services/api/maestrosTercerizados'
+import {
+  listarObservacionesPorAlcance,
+  listarPlagas,
+  listarProductosAgronomicos,
+} from '@/services/api/maestrosTercerizados'
 import {
   crearAtencion,
   listarAreasVerdes,
@@ -135,24 +139,28 @@ export default function NuevaAtencionPage() {
 
   // Catálogos pequeños para el formulario (servicio del contrato, unidades de medida y áreas del filtro).
   const tipos = useConsulta('tipos-servicio', (signal) => listarTodo((page) => listarTiposServicio({ page }, signal)))
-  const unidades = useConsulta('unidades-medida', (signal) => listarTodo((page) => listarUnidadesMedida({ page }, signal)))
-  const areas = useConsulta('areas-activas', (signal) => listarTodo((page) => listarAreasVerdes({ activo: true, page }, signal)))
+  const unidades = useConsulta('unidades-medida', (signal) =>
+    listarTodo((page) => listarUnidadesMedida({ page }, signal)),
+  )
+  const areas = useConsulta('areas-activas', (signal) =>
+    listarTodo((page) => listarAreasVerdes({ activo: true, page }, signal)),
+  )
   const servicio = tipos.datos?.resultados.find((t) => t.id === borrador.contrato?.tipo_servicio_id) ?? null
   const esFitosanitario = servicio?.nombre === 'Control fitosanitario'
-  const productosCatalogo = useConsulta(
-    esFitosanitario ? 'productos-agronomicos-activos' : null,
-    (signal) => listarTodo((page) => listarProductosAgronomicos({ activo: true }, page, signal)),
+  const productosCatalogo = useConsulta(esFitosanitario ? 'productos-agronomicos-activos' : null, (signal) =>
+    listarTodo((page) => listarProductosAgronomicos({ activo: true }, page, signal)),
   )
-  const plagasCatalogo = useConsulta(
-    esFitosanitario ? 'plagas-activas' : null,
-    (signal) => listarTodo((page) => listarPlagas({ activo: true, page }, signal)),
+  const plagasCatalogo = useConsulta(esFitosanitario ? 'plagas-activas' : null, (signal) =>
+    listarTodo((page) => listarPlagas({ activo: true, page }, signal)),
   )
   // RF-FIT-005: observaciones ya registradas en los mismos espacios o ejemplares elegidos, como contexto.
   const areaIdsElegidas = borrador.alcances.filter((a) => a.tipo === 'area').map((a) => a.id)
   const ejemplarIdsElegidos = borrador.alcances.filter((a) => a.tipo === 'ejemplar').map((a) => a.id)
   const hayAlcancesElegidos = areaIdsElegidas.length > 0 || ejemplarIdsElegidos.length > 0
   const observacionesPrevias = useConsulta(
-    esFitosanitario && hayAlcancesElegidos ? JSON.stringify(['observaciones-alcance', areaIdsElegidas, ejemplarIdsElegidos]) : null,
+    esFitosanitario && hayAlcancesElegidos
+      ? JSON.stringify(['observaciones-alcance', areaIdsElegidas, ejemplarIdsElegidos])
+      : null,
     (signal) => listarObservacionesPorAlcance(areaIdsElegidas, ejemplarIdsElegidos, signal),
   )
 
@@ -216,7 +224,11 @@ export default function NuevaAtencionPage() {
       const nuevos = validarPaso2(borrador.alcances)
       if (hayErroresPaso2(nuevos)) {
         const clave = Object.keys(nuevos.porAlcance)[0]
-        enfocar(nuevos.general ? ID_LISTA_SELECCIONADOS : `alcance-${clave.replace(':', '-')}-${nuevos.porAlcance[clave].metrado ? 'metrado' : 'unidad'}`)
+        enfocar(
+          nuevos.general
+            ? ID_LISTA_SELECCIONADOS
+            : `alcance-${clave.replace(':', '-')}-${nuevos.porAlcance[clave].metrado ? 'metrado' : 'unidad'}`,
+        )
         return false
       }
       return true
@@ -245,13 +257,19 @@ export default function NuevaAtencionPage() {
       registrada.current = true
       navegar(rutaDetalleAtencion(atencion.id), {
         replace: true,
-        state: { aviso: 'Atención registrada. Queda pendiente la orden de compra de Logística.' } satisfies EstadoNavegacionRegistro,
+        state: {
+          aviso: 'Atención registrada. Queda pendiente la orden de compra de Logística.',
+        } satisfies EstadoNavegacionRegistro,
       })
     } catch (causa) {
       const fallo = aErrorApi(causa)
       if (fallo.estado === 0) setErrorRegistro({ tipo: 'desconocido' })
       else if (fallo.estado === 403) {
-        setErrorRegistro({ tipo: 'mensaje', titulo: 'Sin permiso', detalle: 'Tu usuario no puede registrar atenciones. Si cambiaron tus roles, vuelve a ingresar.' })
+        setErrorRegistro({
+          tipo: 'mensaje',
+          titulo: 'Sin permiso',
+          detalle: 'Tu usuario no puede registrar atenciones. Si cambiaron tus roles, vuelve a ingresar.',
+        })
       } else if (Object.keys(fallo.errores_campo).length > 0) {
         setErrorRegistro({ tipo: 'campos', campos: Object.keys(fallo.errores_campo) })
       } else {
@@ -273,16 +291,28 @@ export default function NuevaAtencionPage() {
 
   return (
     <div className={estilos.pagina}>
-      <AsistentePasos pasos={PASOS} actual={paso} alcanzado={alcanzado} onIrA={(i) => (i < paso || validarPasoActual() ? irA(i) : undefined)} />
+      <AsistentePasos
+        pasos={PASOS}
+        actual={paso}
+        alcanzado={alcanzado}
+        onIrA={(i) => (i < paso || validarPasoActual() ? irA(i) : undefined)}
+      />
 
       <div className={estilos.contenedorPaso}>
         <h2 className="sr-only" aria-live="polite">
           Paso {paso + 1} de {PASOS.length}: {PASOS[paso]}
         </h2>
         {paso === 0 && <LeyendaObligatorio />}
-        {paso === 0 && <ResumenErrores titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de continuar`} errores={resumen} />}
+        {paso === 0 && (
+          <ResumenErrores
+            titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de continuar`}
+            errores={resumen}
+          />
+        )}
 
-        {paso === 0 && <PasoContratoOrigen borrador={borrador} cambiar={cambiar} errores={errores1} servicio={servicio} />}
+        {paso === 0 && (
+          <PasoContratoOrigen borrador={borrador} cambiar={cambiar} errores={errores1} servicio={servicio} />
+        )}
         {paso === 1 && (
           <PasoAlcances
             alcances={borrador.alcances}
@@ -324,12 +354,28 @@ export default function NuevaAtencionPage() {
           </AvisoEnLinea>
         )}
         {paso === 2 && (
-          <PasoRevision borrador={borrador} servicio={servicio} unidadesMedida={unidades.datos?.resultados ?? []} onEditar={irA} />
+          <PasoRevision
+            borrador={borrador}
+            servicio={servicio}
+            unidadesMedida={unidades.datos?.resultados ?? []}
+            onEditar={irA}
+          />
         )}
 
         {paso === 1 && (unidades.estado === 'error' || areas.estado === 'error') && (
-          <AvisoEnLinea tono="advertencia" titulo="Faltan datos de apoyo" accion={{ texto: 'Reintentar', onClick: () => { unidades.reintentar(); areas.reintentar() } }}>
-            No se pudieron cargar las unidades de medida o las áreas del filtro. Puedes seleccionar sin metrado o reintentar.
+          <AvisoEnLinea
+            tono="advertencia"
+            titulo="Faltan datos de apoyo"
+            accion={{
+              texto: 'Reintentar',
+              onClick: () => {
+                unidades.reintentar()
+                areas.reintentar()
+              },
+            }}
+          >
+            No se pudieron cargar las unidades de medida o las áreas del filtro. Puedes seleccionar sin metrado o
+            reintentar.
           </AvisoEnLinea>
         )}
 
@@ -338,8 +384,8 @@ export default function NuevaAtencionPage() {
             {errorRegistro.tipo === 'desconocido' ? (
               <AvisoEnLinea tono="advertencia" titulo="No pudimos confirmar el registro">
                 <p>
-                  Se perdió la conexión con el servidor y no sabemos si la atención se registró. Antes de reintentar, revisa
-                  la bandeja para no duplicarla.
+                  Se perdió la conexión con el servidor y no sabemos si la atención se registró. Antes de reintentar,
+                  revisa la bandeja para no duplicarla.
                 </p>
                 <p>
                   <a
@@ -355,7 +401,11 @@ export default function NuevaAtencionPage() {
               <AvisoEnLinea tono="error" titulo="El servidor rechazó algunos datos">
                 <p>Revisa: {[...new Set(errorRegistro.campos.map(nombreCampo))].join(', ')}.</p>
                 <p>
-                  <Boton variante="fantasma" compacto onClick={() => irA(Math.min(...errorRegistro.campos.map(pasoDeCampo)) - 1)}>
+                  <Boton
+                    variante="fantasma"
+                    compacto
+                    onClick={() => irA(Math.min(...errorRegistro.campos.map(pasoDeCampo)) - 1)}
+                  >
                     Ir al paso con datos por revisar
                   </Boton>
                 </p>

@@ -24,7 +24,11 @@ export interface ListaDescripcionProps {
   etiquetaAncha?: boolean
 }
 
-export default function ListaDescripcion({ elementos, columnas = 'auto', etiquetaAncha = false }: ListaDescripcionProps) {
+export default function ListaDescripcion({
+  elementos,
+  columnas = 'auto',
+  etiquetaAncha = false,
+}: ListaDescripcionProps) {
   const visibles = elementos.filter((e): e is ElementoDescripcion => Boolean(e))
   return (
     <dl
@@ -33,7 +37,9 @@ export default function ListaDescripcion({ elementos, columnas = 'auto', etiquet
       {visibles.map((e) => (
         <div key={e.etiqueta} className={e.ancho ? estilos.ancho : undefined}>
           <dt className={estilos.etiqueta}>{e.etiqueta}</dt>
-          <dd className={estilos.valor}>{e.valor === null || e.valor === undefined || e.valor === '' ? SIN_VALOR : e.valor}</dd>
+          <dd className={estilos.valor}>
+            {e.valor === null || e.valor === undefined || e.valor === '' ? SIN_VALOR : e.valor}
+          </dd>
         </div>
       ))}
     </dl>
