@@ -1,101 +1,42 @@
 /**
- * Configuración (AV-389): ajustes de cada usuario. La primera sección es «Apariencia»: el tema (claro, oscuro o el
- * del sistema) y el color de acento, de la paleta PUCP. La elección se aplica al instante, se recuerda en este
- * navegador (`utils/apariencia.ts`) y se guarda en la cuenta (AV-391) para cargarla al entrar desde otro dispositivo.
- * Quien gestiona la IA ve además «Inteligencia artificial» (AV-395) y «Uso y costes de la IA» (AV-396).
+ * Configuración (AV-397): panel de módulos. Una tarjeta por ajuste, en dos columnas, y cada una abre su pantalla.
+ * Apariencia la ve cualquier sesión; los ajustes de IA, solo quien tiene IA.PROPUESTA.VALIDAR.
  */
-import { useState } from 'react'
-import AvisoEnLinea from '@/design-system/AvisoEnLinea'
-import Boton from '@/design-system/Boton'
-import Estado from '@/design-system/Estado'
-import GrupoOpciones, { type OpcionGrupo } from '@/design-system/GrupoOpciones'
-import Tarjeta from '@/design-system/Tarjeta'
 import { PERMISO_VALIDAR_IA } from '@/config/permisos'
+import ListaEnlaces, { type EnlaceIndice } from '@/design-system/ListaEnlaces'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { guardarAparienciaCuenta } from '@/services/api/core'
+import { RUTAS_CORE } from '@/router/rutasApp'
 import { usePermisos } from '@/sesion/ContextoSesion'
-import { cambiarApariencia, leerApariencia, type Acento, type Apariencia, type Tema } from '@/utils/apariencia'
-import estilos from './Configuracion.module.css'
-import SeccionInteligenciaArtificial from './SeccionInteligenciaArtificial'
-import SeccionUsoIa from './SeccionUsoIa'
 
 const TITULO = 'Configuración'
 
-const OPCIONES_TEMA: OpcionGrupo<Tema>[] = [
-  { valor: 'claro', texto: 'Claro' },
-  { valor: 'calido', texto: 'Cálido' },
-  { valor: 'oscuro', texto: 'Oscuro' },
-  { valor: 'sistema', texto: 'Según el sistema' },
-]
+/** Miga de vuelta al panel, para las pantallas de cada ajuste. */
+export const MIGA_CONFIGURACION = { texto: TITULO, ruta: RUTAS_CORE.configuracion }
 
-const OPCIONES_ACENTO: OpcionGrupo<Acento>[] = [
+const APARIENCIA: EnlaceIndice = {
+  titulo: 'Apariencia',
+  descripcion: 'Tema claro, cálido u oscuro y color de acento. Se guarda en tu cuenta.',
+  ruta: RUTAS_CORE.configuracionApariencia,
+  icono: 'sun',
+}
+
+const DE_IA: EnlaceIndice[] = [
   {
-    valor: 'institucional',
-    texto: 'Azul institucional',
-    descripcion: 'El color principal de la PUCP (predeterminado)',
+    titulo: 'Inteligencia artificial',
+    descripcion: 'Proveedor y modelo que usan los siete asistentes de IA, y prueba de conexión.',
+    ruta: RUTAS_CORE.configuracionIa,
+    icono: 'destello',
   },
-  { valor: 'azul', texto: 'Azul PUCP', descripcion: 'Secundario oscuro, más vivo' },
-  { valor: 'verde', texto: 'Verde PUCP', descripcion: 'Secundario oscuro, el de las áreas verdes' },
-  { valor: 'morado', texto: 'Morado PUCP', descripcion: 'Secundario saturado' },
-  { valor: 'magenta', texto: 'Magenta PUCP', descripcion: 'Secundario saturado' },
+  {
+    titulo: 'Uso y costes de la IA',
+    descripcion: 'Cuánto cuesta, cuánto tarda y cuándo falla cada llamada de los asistentes, por periodo.',
+    ruta: RUTAS_CORE.configuracionUsoIa,
+    icono: 'chart',
+  },
 ]
 
 export default function ConfiguracionPage() {
   usePaginaActual(TITULO, [{ texto: TITULO }])
-  const [apariencia, setApariencia] = useState<Apariencia>(() => leerApariencia())
-  const [sinGuardar, setSinGuardar] = useState(false)
   const gestionaIa = usePermisos()?.includes(PERMISO_VALIDAR_IA) ?? false
-
-  function cambiar(parcial: Partial<Apariencia>) {
-    const nueva = { ...apariencia, ...parcial }
-    setApariencia(nueva)
-    cambiarApariencia(nueva)
-    guardarAparienciaCuenta(nueva).then(
-      () => setSinGuardar(false),
-      () => setSinGuardar(true),
-    )
-  }
-
-  return (
-    <div className={estilos.pagina}>
-      <Tarjeta
-        titulo="Apariencia"
-        descripcion="Cómo ves la aplicación. Se guarda en tu cuenta: la verás igual al entrar desde cualquier dispositivo."
-      >
-        <div className={estilos.campos}>
-          <GrupoOpciones
-            etiqueta="Tema"
-            opciones={OPCIONES_TEMA}
-            valor={apariencia.tema}
-            onCambiar={(tema) => cambiar({ tema })}
-            segmentado
-          />
-          <GrupoOpciones
-            etiqueta="Color de acento"
-            opciones={OPCIONES_ACENTO}
-            valor={apariencia.acento}
-            onCambiar={(acento) => cambiar({ acento })}
-          />
-          {sinGuardar && (
-            <AvisoEnLinea tono="advertencia">
-              No pudimos guardarla en tu cuenta: se aplicó solo en este navegador. Se guardará la próxima vez que la
-              cambies con conexión.
-            </AvisoEnLinea>
-          )}
-          <section className={estilos.vistaPrevia} aria-label="Vista previa">
-            <p className={estilos.rotulo}>Vista previa</p>
-            <div className={estilos.muestras}>
-              <Boton>Botón principal</Boton>
-              <Boton variante="secundario">Secundario</Boton>
-              <Boton variante="fantasma">Enlace</Boton>
-              <Estado tono="info" texto="En curso" />
-              <Estado tono="exito" texto="Atendida" />
-            </div>
-          </section>
-        </div>
-      </Tarjeta>
-      {gestionaIa && <SeccionInteligenciaArtificial />}
-      {gestionaIa && <SeccionUsoIa />}
-    </div>
-  )
+  return <ListaEnlaces icono="settings" accion="Abrir" enlaces={gestionaIa ? [APARIENCIA, ...DE_IA] : [APARIENCIA]} />
 }

@@ -210,7 +210,7 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
                 texto="Configuración"
                 icono="settings"
                 ruta={RUTAS_CORE.configuracion}
-                activa={pathname === RUTAS_CORE.configuracion}
+                activa={pathname === RUTAS_CORE.configuracion || pathname.startsWith(RUTAS_CORE.configuracion + '/')}
               />
             </li>
           </ul>

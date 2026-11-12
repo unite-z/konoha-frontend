@@ -1,9 +1,9 @@
 /**
- * Lista de enlaces en tarjetas (páginas índice del módulo): icono, título, una frase de descripción, un dato
+ * Lista de enlaces en tarjetas (páginas índice: reportes, asistencia IA, configuración): icono, título, una frase de descripción, un dato
  * adicional opcional (por ejemplo, los filtros que admite) y la acción al pie.
  */
 import { Link } from 'react-router'
-import Icono, { type NombreIcono } from '@/components/ui/Icono'
+import Icono, { type NombreIcono } from './Icono'
 import estilos from './ListaEnlaces.module.css'
 
 export interface EnlaceIndice {
@@ -12,6 +12,8 @@ export interface EnlaceIndice {
   ruta: string
   /** Par etiqueta-valor bajo la descripción. */
   detalle?: { etiqueta: string; valor: string }
+  /** Icono propio de esta tarjeta; si no, el de la lista. */
+  icono?: NombreIcono
 }
 
 export interface ListaEnlacesProps {
@@ -30,7 +32,7 @@ export default function ListaEnlaces({ enlaces, icono, accion }: ListaEnlacesPro
           <Link to={enlace.ruta} className={estilos.tarjeta}>
             <div className={estilos.cabecera}>
               <span className={estilos.icono}>
-                <Icono nombre={icono} />
+                <Icono nombre={enlace.icono ?? icono} />
               </span>
               <div className={estilos.textos}>
                 <h2 className={estilos.titulo}>{enlace.titulo}</h2>

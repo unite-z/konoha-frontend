@@ -35,3 +35,17 @@
   align-items: center;
   gap: var(--space-3);
 }
+
+/* Uso y costes de la IA: tablas y cifras a todo el ancho (AV-397). */
+.paginaAncha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mesesRapidos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}

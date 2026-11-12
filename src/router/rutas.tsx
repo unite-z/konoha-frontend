@@ -9,7 +9,10 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
+import AparienciaPage from '../pages/configuracion/AparienciaPage'
 import ConfiguracionUsuarioPage from '../pages/configuracion/ConfiguracionPage'
+import InteligenciaArtificialPage from '../pages/configuracion/InteligenciaArtificialPage'
+import UsoIaPage from '../pages/configuracion/UsoIaPage'
 import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
 import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
 import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
@@ -96,6 +99,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import RolesPermisosPage from '../pages/usuarios-roles/RolesPermisosPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
+import { PERMISO_VALIDAR_IA } from '../config/permisos'
 import { PERMISOS } from '../config/permisosCore'
 import {
   PREFIJO_CORTE,
@@ -136,7 +140,15 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <InicioRol /> },
           { path: RUTAS_CORE.pendientes, element: <PendientesPage /> }, // RF-T-012: cualquier sesión
-          { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-389: cualquier sesión
+          { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-397: panel de módulos
+          { path: RUTAS_CORE.configuracionApariencia, element: <AparienciaPage /> }, // AV-389: cualquier sesión
+          {
+            element: <RutaConPermiso permiso={PERMISO_VALIDAR_IA} />,
+            children: [
+              { path: RUTAS_CORE.configuracionIa, element: <InteligenciaArtificialPage /> }, // AV-395
+              { path: RUTAS_CORE.configuracionUsoIa, element: <UsoIaPage /> }, // AV-396
+            ],
+          },
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
             children: [
