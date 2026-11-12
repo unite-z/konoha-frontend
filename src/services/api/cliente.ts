@@ -252,3 +252,22 @@ export function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Pr
 export async function solicitarBlob(ruta: string, signal?: AbortSignal): Promise<Blob> {
   return (await descargarHttp(ruta, { signal })).blob
 }
+
+/** Tiempo antes de liberar el blob: revocarlo de inmediato puede cancelar la descarga. */
+const REVOCAR_DESCARGA_MS = 60_000
+
+/** Entrega un archivo al navegador con un enlace temporal y libera el blob después. */
+export function guardarArchivo(blob: Blob, nombre: string): void {
+  const url = URL.createObjectURL(blob)
+  try {
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = nombre
+    enlace.rel = 'noopener'
+    document.body.append(enlace)
+    enlace.click()
+    enlace.remove()
+  } finally {
+    window.setTimeout(() => URL.revokeObjectURL(url), REVOCAR_DESCARGA_MS)
+  }
+}
