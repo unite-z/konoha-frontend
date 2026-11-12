@@ -33,28 +33,19 @@
 
 /*
  * Escritorio: el contenido va en un panel redondeado separado del menú y del borde de la ventana, sin la línea
- * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
+ * recta entre los dos (Figma, pantallas de MOD-03).
  */
 @media (min-width: 768px) {
   /*
-   * Franja fija con el fondo de la página sobre el margen superior del panel (AV-393): al desplazarse, el
-   * contenido no asoma por encima de la cabecera, que se queda pegada justo debajo y no se mueve.
+   * El panel es lo que se desplaza, no la ventana (AV-393): la cabecera con las migas queda fija arriba y el panel
+   * conserva su borde y sus esquinas redondeadas al bajar, como en las aplicaciones SaaS.
    */
-  .layout::before {
-    content: '';
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 25;
-    height: var(--space-2);
-    background: var(--color-bg-page);
-    pointer-events: none;
-  }
-
   .columna {
-    min-height: calc(100vh - 2 * var(--space-2));
-    min-height: calc(100dvh - 2 * var(--space-2));
+    height: calc(100vh - 2 * var(--space-2));
+    height: calc(100dvh - 2 * var(--space-2));
     margin: var(--space-2) var(--space-2) var(--space-2) 0;
-    overflow: clip;
+    overflow-x: hidden;
+    overflow-y: auto;
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-lg);
     background: var(--color-bg-surface);

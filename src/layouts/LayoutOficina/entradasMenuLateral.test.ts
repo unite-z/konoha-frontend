@@ -75,6 +75,8 @@ describe('Roles y permisos en el menú (AV-381)', () => {
   const usuarios = MODULOS_MENU.find((m) => m.clave === 'usuarios')?.hijos ?? []
   it('solo la ve quien tiene CORE.ROL.GESTIONAR', () => {
     expect(hijosVisibles(usuarios, ['CORE.USUARIO.GESTIONAR']).map((h) => h.texto)).not.toContain('Roles y permisos')
-    expect(hijosVisibles(usuarios, ['CORE.USUARIO.GESTIONAR', 'CORE.ROL.GESTIONAR']).map((h) => h.texto)).toContain('Roles y permisos')
+    expect(hijosVisibles(usuarios, ['CORE.USUARIO.GESTIONAR', 'CORE.ROL.GESTIONAR']).map((h) => h.texto)).toContain(
+      'Roles y permisos',
+    )
   })
 })

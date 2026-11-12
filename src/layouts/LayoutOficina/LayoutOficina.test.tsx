@@ -24,7 +24,10 @@ vi.mock('@/sesion/ContextoSesion', () => ({
 afterEach(cleanup)
 
 function Coberturas() {
-  usePaginaActual('Coberturas vegetales', [{ texto: 'Áreas verdes', ruta: '/areas-verdes' }, { texto: 'Coberturas vegetales' }])
+  usePaginaActual('Coberturas vegetales', [
+    { texto: 'Áreas verdes', ruta: '/areas-verdes' },
+    { texto: 'Coberturas vegetales' },
+  ])
   return (
     <>
       <AccionesPagina>
@@ -36,9 +39,19 @@ function Coberturas() {
 }
 
 function FichaCobertura() {
-  usePaginaActual('Césped · COB-12', [{ texto: 'Coberturas vegetales', ruta: '/areas-verdes/coberturas' }, { texto: 'COB-12' }], 'Jardín de la Biblioteca · 120 m²', {
-    movil: { titulo: 'COB-12', encabezado: 'Césped', subtitulo: 'Jardín de la Biblioteca', volver: { texto: 'Coberturas vegetales', ruta: '/areas-verdes/coberturas' } },
-  })
+  usePaginaActual(
+    'Césped · COB-12',
+    [{ texto: 'Coberturas vegetales', ruta: '/areas-verdes/coberturas' }, { texto: 'COB-12' }],
+    'Jardín de la Biblioteca · 120 m²',
+    {
+      movil: {
+        titulo: 'COB-12',
+        encabezado: 'Césped',
+        subtitulo: 'Jardín de la Biblioteca',
+        volver: { texto: 'Coberturas vegetales', ruta: '/areas-verdes/coberturas' },
+      },
+    },
+  )
   return <p>Ficha</p>
 }
 
