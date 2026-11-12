@@ -18,7 +18,7 @@ export async function cargarAreasVerdesGeoJSON(signal?: AbortSignal): Promise<Ar
   }
 
   try {
-    const geojson = await respuesta.json() as AreasVerdesGeoJSON
+    const geojson = (await respuesta.json()) as AreasVerdesGeoJSON
     if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
       throw new Error('El archivo no contiene una colección GeoJSON válida.')
     }

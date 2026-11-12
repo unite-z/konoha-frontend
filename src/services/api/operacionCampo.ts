@@ -3,7 +3,13 @@ import type { PaginaCampo } from '@/types/operacionCampo'
 
 const BASE = '/api/v1/operacion-campo'
 export type ParametrosCampo = Record<string, string | number | boolean | null | undefined>
-export interface OpcionesCampo { metodo?: 'GET' | 'POST' | 'PUT'; cuerpo?: unknown; parametros?: ParametrosCampo; signal?: AbortSignal; claveIdempotencia?: string }
+export interface OpcionesCampo {
+  metodo?: 'GET' | 'POST' | 'PUT'
+  cuerpo?: unknown
+  parametros?: ParametrosCampo
+  signal?: AbortSignal
+  claveIdempotencia?: string
+}
 export function urlCampo(ruta: string, parametros: ParametrosCampo = {}): string {
   return construirUrlHttp(ruta, parametros, BASE)
 }
@@ -19,12 +25,16 @@ export function campoApi<T>(ruta: string, opciones: OpcionesCampo = {}): Promise
   })
 }
 /** Obtiene todos los registros mediante páginas propias de la API; nunca sigue URLs externas de next. */
-export async function todosCampo<T>(ruta: string, parametros: ParametrosCampo = {}, signal?: AbortSignal): Promise<T[]> {
+export async function todosCampo<T>(
+  ruta: string,
+  parametros: ParametrosCampo = {},
+  signal?: AbortSignal,
+): Promise<T[]> {
   const resultados: T[] = []
-  for(let page=1;page<=1000;page++) {
-    const datos = await campoApi<PaginaCampo<T>>(ruta,{parametros:{...parametros,page},signal})
+  for (let page = 1; page <= 1000; page++) {
+    const datos = await campoApi<PaginaCampo<T>>(ruta, { parametros: { ...parametros, page }, signal })
     resultados.push(...datos.results)
-    if(!datos.next) return resultados
+    if (!datos.next) return resultados
   }
-  throw new ErrorApi(0,null,'Hay demasiados registros para cargar el selector. Contacta al administrador')
+  throw new ErrorApi(0, null, 'Hay demasiados registros para cargar el selector. Contacta al administrador')
 }
