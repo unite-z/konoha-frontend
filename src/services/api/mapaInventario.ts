@@ -1,21 +1,16 @@
 import type { FeatureCollection, MultiPolygon } from 'geojson'
-import { ErrorApi, MENSAJE_SIN_CONEXION } from './cliente'
+import { ErrorApi, enviarHttp } from './cliente'
 
 export type PropiedadesAreaMapa = Record<string, number | string | null>
 export type AreasVerdesGeoJSON = FeatureCollection<MultiPolygon, PropiedadesAreaMapa>
 
 /** Carga la capa de referencia que utiliza la validación cartográfica. */
 export async function cargarAreasVerdesGeoJSON(signal?: AbortSignal): Promise<AreasVerdesGeoJSON> {
-  let respuesta: Response
-  try {
-    const opciones = { headers: { Accept: 'application/geo+json, application/json' }, signal }
-    respuesta = await fetch('/api/v1/inventario/mapa/geometria', opciones)
-    if (respuesta.status === 404) {
-      respuesta = await fetch(`${import.meta.env.BASE_URL}datos/areas-verdes.geojson`, opciones)
-    }
-  } catch (causa) {
-    if (signal?.aborted) throw causa
-    throw new ErrorApi(0, null, MENSAJE_SIN_CONEXION)
+  // Sin conexión o cancelación lo resuelve el cliente único. Un 401 no cierra la sesión (como antes).
+  const opciones = { acepta: 'application/geo+json, application/json', signal, avisarSesion: false }
+  let respuesta = await enviarHttp('mapa/geometria', { ...opciones, base: '/api/v1/inventario' })
+  if (respuesta.status === 404) {
+    respuesta = await enviarHttp('datos/areas-verdes.geojson', { ...opciones, base: import.meta.env.BASE_URL })
   }
 
   if (!respuesta.ok) {
