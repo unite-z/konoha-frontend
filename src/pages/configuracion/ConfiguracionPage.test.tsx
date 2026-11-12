@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ConfiguracionPage from './ConfiguracionPage'
 
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => [] }))
 const api = vi.hoisted(() => ({ guardarAparienciaCuenta: vi.fn() }))
 vi.mock('@/services/api/core', () => api)
 
