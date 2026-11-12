@@ -242,6 +242,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
               return (
                 <li key={r.id} className={`${estilos.informe} ${activa ? estilos.informeActivo : ''}`}>
                   <label className={estilos.etiquetaInforme}>
+                    {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- el label que lo envuelve lo etiqueta */}
                     <input
                       type="radio"
                       name="informe-proveedor"
@@ -325,6 +326,7 @@ export default function SolicitudAnalisis({ onCreada, onAbrirPropuesta, onCancel
               error={errorCampo}
               onChange={(e) => setNumero(e.target.value)}
               onBlur={(e) => setErrorCampo(validarFormato(e.target.value))}
+              // oxlint-disable-next-line jsx-a11y/no-autofocus -- el foco pasa al campo tras elegir «Escríbelo directamente»
               autoFocus
             />
             <div className={estilos.accionManual}>

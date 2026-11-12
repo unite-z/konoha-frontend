@@ -31,6 +31,7 @@ export default function PanelFiltros({ id, filtros, tipos, proveedores, onAplica
     <div
       id={id}
       className={estilos.desplegableFiltros}
+      role="presentation"
       onKeyDown={(evento) => {
         if (evento.key === 'Escape') onCerrar()
       }}
