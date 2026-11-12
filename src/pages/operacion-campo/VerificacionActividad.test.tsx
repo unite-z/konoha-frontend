@@ -52,14 +52,23 @@ it('separa la ejecución y registra la verificación con el contrato esperado', 
     }),
   )
   const guardadas: ActividadCampo[] = []
+  const anular = vi.fn()
   render(
-    <VerificacionActividad actividad={actividad} onCerrar={() => {}} onGuardado={(valor) => guardadas.push(valor)} />,
+    <VerificacionActividad
+      actividad={actividad}
+      puedeAnular
+      onAnular={anular}
+      onCerrar={() => {}}
+      onGuardado={(valor) => guardadas.push(valor)}
+    />,
   )
   expect(screen.getByRole('dialog', { name: 'Verificar actividad en campo' }).className).toMatch(/extraAmplio/)
   expect(screen.queryByText('* Campo obligatorio')).toBeNull()
   expect(await screen.findByRole('region', { name: 'Historial de cambios' })).toBeTruthy()
   expect(screen.getByText(/El capataz retiró ramas secas/)).toBeTruthy()
   const usuario = userEvent.setup()
+  await usuario.click(screen.getByRole('button', { name: 'Anular actividad' }))
+  expect(anular).toHaveBeenCalledOnce()
   await usuario.type(screen.getByLabelText(/Observaciones de la verificación/), '  Conforme en campo  ')
   await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
   await waitFor(() => expect(guardadas).toHaveLength(1))

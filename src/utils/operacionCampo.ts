@@ -9,6 +9,10 @@ export function esJefeCampo(permisos: Permisos): boolean {
 export function puedeRegistrarParte(permisos: Permisos): boolean {
   return tiene(permisos, 'CAM.PARTE.REGISTRAR')
 }
+/** Invalidar una actividad registrada conservando su trazabilidad (AV-384). */
+export function puedeAnularActividad(permisos: Permisos): boolean {
+  return tiene(permisos, 'CAM.PARTE.ANULAR')
+}
 /** Avanzar el estado de los encargos propios (capataz responsable): `PLA.ENCARGO.ACTUALIZAR_ESTADO`, como el backend. */
 export function puedeCambiarEstadoEncargo(permisos: Permisos): boolean {
   return tiene(permisos, 'PLA.ENCARGO.ACTUALIZAR_ESTADO')

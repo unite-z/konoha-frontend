@@ -43,6 +43,8 @@ Los README de `src/` dicen dónde va el código. Este documento dice cómo tiene
 | menu/activo         | `--color-sidebar-active-bg`    | #dbe6f3 | #0b2f5e | fondo del elemento de menú activo                                |
 | menu/texto-activo   | `--color-sidebar-active-text`  | #042354 | #41b9e4 | texto del elemento de menú activo                                |
 
+Color de acento (AV-389): en Configuración → Apariencia cada usuario elige tema (claro, oscuro o según el sistema) y acento entre el azul institucional (predeterminado), Azul PUCP #004EA8, Verde PUCP #007a5e (de #008768), Morado PUCP #7F32C8 y Magenta PUCP #A31598. Se aplican con `data-tema` y `data-acento` en `<html>` (`utils/apariencia.ts`); los bloques `:root[data-acento='…']` de `tokens.css` solo cambian los tokens de acento, menú activo y foco.
+
 Estados (texto, fondo y borde, en claro / oscuro):
 
 | Figma        | Texto                               | Fondo                                  | Borde                                    | Uso                                 |

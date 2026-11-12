@@ -22,6 +22,8 @@ export const PERMISOS = {
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
   consultarPartes: 'CAM.PARTE.CONSULTAR',
+  /** Anular una actividad registrada: solo jefatura de sección (AV-384). */
+  anularParte: 'CAM.PARTE.ANULAR',
   consultarInventario: 'INV.INVENTARIO.CONSULTAR',
   registrarInventario: 'INV.INVENTARIO.REGISTRAR',
   /** Planificar la campaña de poda mayor (AV-308). */
@@ -38,7 +40,17 @@ export function puede(sesion: SesionCore | null, permiso: string): boolean {
 }
 
 /** Entradas de primer nivel del menú con enlace, según los permisos (HU-MOD01-007, «Menú por rol»). */
-export type EntradaMenu = 'planificacion' | 'corte' | 'incidencias' | 'misIncidencias' | 'tercerizados' | 'reportes' | 'repositorio' | 'usuarios' | 'campo' | 'inventario'
+export type EntradaMenu =
+  | 'planificacion'
+  | 'corte'
+  | 'incidencias'
+  | 'misIncidencias'
+  | 'tercerizados'
+  | 'reportes'
+  | 'repositorio'
+  | 'usuarios'
+  | 'campo'
+  | 'inventario'
 
 export function entradasMenu(sesion: SesionCore | null): Set<EntradaMenu> {
   const entradas = new Set<EntradaMenu>()

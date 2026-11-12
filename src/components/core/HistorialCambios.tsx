@@ -36,6 +36,7 @@ const CAMPOS_ACTIVIDAD: CampoActividad[] = [
   { clave: 'unidad_medida_nombre', etiqueta: 'Unidad de medida' },
   { clave: 'observaciones', etiqueta: 'Observaciones' },
   { clave: 'verificacion_observaciones', etiqueta: 'Observaciones de verificación' },
+  { clave: 'estado_actividad', etiqueta: 'Estado de la actividad' },
 ]
 
 function tieneValor(valor: unknown): boolean {
@@ -77,6 +78,9 @@ function DetalleActividad({ entrada }: { entrada: EntradaHistorial }) {
       },
     ]
   })
+  if (entrada.accion === 'Anulacion' && tieneValor(entrada.motivo)) {
+    elementos.push({ etiqueta: 'Motivo de anulación', valor: entrada.motivo ?? '' })
+  }
   if (!elementos.length) return <span>Cambio registrado sin datos funcionales adicionales.</span>
   return (
     <dl className={estilos.detalle}>
