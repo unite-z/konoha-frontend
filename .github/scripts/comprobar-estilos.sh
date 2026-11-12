@@ -9,6 +9,8 @@
 #   5. en todo src/ (AV-351): nada de primitivos de color (--green-*,
 #      --neutral-*...), ni <button>, <input>, <select>, <textarea>, <dialog> o <table> fuera de components/ui y
 #      layouts salvo con el comentario «Excepción al sistema (AV-351): motivo», ni var(--x) sin definir.
+#   6. solo en las líneas añadidas del PR (AV-246): new Date(, toLocaleDateString y toLocaleString fuera de
+#      utils/instanteLima.ts (las fechas van en America/Lima).
 # Uso: comprobar-estilos.sh <sha-base>
 set -euo pipefail
 
@@ -92,6 +94,16 @@ done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.css' 'src/*.tsx'
   | awk '/^\+\+\+ b\// { f = substr($0, 7); next }
          /^@@/ { split($3, a, ","); n = substr(a[1], 2) + 0; next }
          /^\+/ { print f "\t" n "\t" substr($0, 2); n++ }')
+
+# Fechas en la hora de Lima (AV-246): solo en las líneas añadidas, salvo instanteLima.ts y las pruebas.
+# Se admite un caso justificado con el comentario fecha-lima-ok.
+while IFS=$'\t' read -r fichero linea texto; do
+  [[ "$texto" =~ ^[[:space:]]*(//|\*|/\*) || "$texto" == *fecha-lima-ok* ]] && continue
+  falla "$fichero" "$linea" "Fecha sin la hora de Lima: usa utils/instanteLima.ts (hoyLima, ahoraLimaLocal, fechaLimaDeInstante, instanteALocalLima, aInstanteLima, esFuturo) o formatearFecha y formatearFechaHora de utils/formato.ts. Si el uso es correcto, márcalo con el comentario fecha-lima-ok."
+done < <(git diff -U0 --diff-filter=AM "$base"...HEAD -- 'src/*.ts' 'src/*.tsx' ':!src/utils/instanteLima.ts' ':!*.test.ts' ':!*.test.tsx' \
+  | awk '/^\+\+\+ b\// { f = substr($0, 7); next }
+         /^@@/ { split($3, a, ","); n = substr(a[1], 2) + 0; next }
+         /^\+/ { t = substr($0, 2); if (t ~ /new Date\(|toLocaleDateString|toLocaleString/) print f "\t" n "\t" t; n++ }')
 
 if (( errores == 0 )); then echo "Estilos correctos."; fi
 exit "$errores"
