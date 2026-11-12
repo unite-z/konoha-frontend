@@ -34,11 +34,12 @@ import estilos from './CampanasPoda.module.css'
 const ORIGENES: OrigenEjemplar[] = ['Nativo', 'Introducido', 'Desconocido']
 const ESTADOS_SALUD: EstadoSaludEjemplar[] = ['Bueno', 'Regular', 'Malo']
 
+/** Los máximos son los mismos que valida el backend (`FichaTecnicaService`). */
 const MEDIDAS: { clave: MedidaEjemplar; etiqueta: string; max: string; step: string }[] = [
-  { clave: 'altura_total_m', etiqueta: 'Altura total (m)', max: '9999.99', step: '0.01' },
-  { clave: 'altura_fuste_m', etiqueta: 'Altura del fuste (m)', max: '9999.99', step: '0.01' },
-  { clave: 'dap_cm', etiqueta: 'DAP (cm)', max: '99999.9', step: '0.1' },
-  { clave: 'radio_copa_m', etiqueta: 'Radio de copa (m)', max: '999.99', step: '0.01' },
+  { clave: 'altura_total_m', etiqueta: 'Altura total (m)', max: '150', step: '0.01' },
+  { clave: 'altura_fuste_m', etiqueta: 'Altura del fuste (m)', max: '150', step: '0.01' },
+  { clave: 'dap_cm', etiqueta: 'DAP (cm)', max: '1000', step: '0.1' },
+  { clave: 'radio_copa_m', etiqueta: 'Radio de copa (m)', max: '100', step: '0.01' },
 ]
 
 /** Criterios de la evaluación (Figma 33:4734, HU-MOD02-012). */
