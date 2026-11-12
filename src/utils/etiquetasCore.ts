@@ -10,6 +10,8 @@ export const NOMBRE_ROL: Record<CodigoRol, string> = {
   practicante: 'Practicante',
   capataz: 'Capataz',
   operario: 'Operario',
+  // Rol oculto (AV-381): no se lista ni se asigna; solo se ve en la propia sesión.
+  superadmin: 'Superadministrador',
 }
 
 /** Roles asignables en esta fase (el operario está previsto, sin acceso: RS-004). */

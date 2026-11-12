@@ -2,6 +2,8 @@
 
 Gestión de cuentas: `UsuariosPage.tsx`, `UsuarioDetallePage.tsx`, `AccesosPage.tsx` (registro de accesos) y sus diálogos (`DialogoCambioRol`, `DialogoContrasenaTemporal`, `DialogoCuenta`).
 
+`RolesPermisosPage.tsx` (AV-381): solo con `CORE.ROL.GESTIONAR` (el superadministrador, rol oculto), edita los permisos de cada rol por módulo con motivo. `ResumenPermisosRol.tsx` muestra qué implica el rol elegido al dar de alta una cuenta o cambiarle el rol. La lógica pura está en `utils/permisosRol.ts`.
+
 **Piezas del módulo fuera de esta carpeta:**
 
 | Qué | Dónde |
