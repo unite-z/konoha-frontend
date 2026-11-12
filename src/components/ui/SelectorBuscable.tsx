@@ -125,6 +125,7 @@ export default function SelectorBuscable<T>(props: SelectorBuscableProps<T>) {
   return (
     <MarcoCampo {...marco}>
       <div className={estilos.contenedor}>
+        {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- la etiqueta la pone MarcoCampo con htmlFor */}
         <input
           ref={entrada}
           id={marco.id}

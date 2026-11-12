@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto'
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { incidenciasSimuladas } from '@/services/simulados/incidencias'
@@ -51,9 +51,10 @@ describe('MisIncidenciasPage', () => {
     const clave = await anadirPendiente(reporte, null, 4)
     pintar()
     expect(await screen.findByText('Sin conexión · se enviará al reconectar')).toBeTruthy()
-    expect(screen.getByText('Pendiente de enviar')).toBeTruthy()
+    // La cola de IndexedDB se lee después de pintar el aviso: hay que esperarla (fallaba a veces en CI).
+    expect(await screen.findByText('Pendiente de enviar')).toBeTruthy()
     await act(() => descartar(clave))
-    expect(screen.queryByText('Pendiente de enviar')).toBeNull()
+    await waitFor(() => expect(screen.queryByText('Pendiente de enviar')).toBeNull())
     enLinea.mockRestore()
   })
 })

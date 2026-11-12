@@ -7,7 +7,7 @@ Requisitos: RF-T-012 (AV-226), HU-MOD04-012 y HU-MOD03-011. Implementación: `sr
 | Qué | Dónde | Notas |
 |---|---|---|
 | App shell (HTML, JS, CSS, iconos) | Caché del service worker | Versionada en cada build |
-| Catálogos y lecturas de campo (ruta de hoy, encargos, catálogos del parte) | IndexedDB, almacén `datos` | La última lectura correcta de cada una, por usuario; se borran al cerrar sesión |
+| Lo último que se vio en cada pantalla (toda consulta de `useConsulta`, y las lecturas de campo con `conCache`) | IndexedDB, almacén `datos` | La última lectura correcta de cada una, por usuario; se borran al cerrar sesión. Sin red, la pantalla abre con ella, también tras recargar |
 | Sesión sin conexión | IndexedDB, almacén `sesion` | Solo usuario, rol y permisos de la última comprobación. Nunca la credencial |
 | Operaciones pendientes | IndexedDB, cola `pendientes` | Ver abajo |
 | Fotos pendientes | IndexedDB, como `Blob` comprimido | Se borran al confirmar la subida |
