@@ -43,7 +43,12 @@ export interface FiltrosUrlServicio {
 export function consultaServicio(filtros: FiltrosUrlServicio): ConsultaReporteServicio | null {
   const tipo = enteroPositivo(filtros.tipo_servicio_id)
   if (tipo === undefined) return null
-  return { desde: filtros.desde, hasta: filtros.hasta, tipo_servicio_id: tipo, proveedor_id: enteroPositivo(filtros.proveedor_id) }
+  return {
+    desde: filtros.desde,
+    hasta: filtros.hasta,
+    tipo_servicio_id: tipo,
+    proveedor_id: enteroPositivo(filtros.proveedor_id),
+  }
 }
 
 /** Clave de `useConsulta`: `null` sin servicio elegido. */
@@ -136,9 +141,18 @@ export function metradoAvance(avance: AvanceServicio): { ejecutado: number; prev
 }
 
 /** Partes del desglose de conformidad. */
-export type ParteConformidad = 'conformes' | 'observadas' | 'pendientes_de_revision' | 'sin_reporte_proveedor' | 'subsanaciones_abiertas'
+export type ParteConformidad =
+  | 'conformes'
+  | 'observadas'
+  | 'pendientes_de_revision'
+  | 'sin_reporte_proveedor'
+  | 'subsanaciones_abiertas'
 
-export const PARTES_CONFORMIDAD: readonly { clave: ParteConformidad; texto: string; tono: 'exito' | 'advertencia' | 'info' | 'neutral' }[] = [
+export const PARTES_CONFORMIDAD: readonly {
+  clave: ParteConformidad
+  texto: string
+  tono: 'exito' | 'advertencia' | 'info' | 'neutral'
+}[] = [
   { clave: 'conformes', texto: 'Conformes', tono: 'exito' },
   { clave: 'observadas', texto: 'Observadas', tono: 'advertencia' },
   { clave: 'pendientes_de_revision', texto: 'Pendientes de revisión', tono: 'info' },
@@ -150,7 +164,10 @@ export const PARTES_CONFORMIDAD: readonly { clave: ParteConformidad; texto: stri
  * Atenciones de una parte de la conformidad.
  * SUPUESTO (pendiente de confirmar con el backend): una subsanación abierta corresponde a una atención «Observado».
  */
-export function atencionesDeConformidad(filas: FilaAtencionServicio[], parte: ParteConformidad): FilaAtencionServicio[] {
+export function atencionesDeConformidad(
+  filas: FilaAtencionServicio[],
+  parte: ParteConformidad,
+): FilaAtencionServicio[] {
   switch (parte) {
     case 'conformes':
       return filas.filter((f) => f.conformidad === 'Conforme')

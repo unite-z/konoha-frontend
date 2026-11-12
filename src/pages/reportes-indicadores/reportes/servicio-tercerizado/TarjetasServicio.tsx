@@ -34,7 +34,12 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           avance={
             porcentaje === null
               ? undefined
-              : { valor: avance.ejecutadas, maximo: total, etiqueta: 'Atenciones ejecutadas', textoValor: textoAvance(avance) ?? undefined }
+              : {
+                  valor: avance.ejecutadas,
+                  maximo: total,
+                  etiqueta: 'Atenciones ejecutadas',
+                  textoValor: textoAvance(avance) ?? undefined,
+                }
           }
         />
       </div>
@@ -46,7 +51,9 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           valor={valorRendimiento}
           contexto={contextoRendimiento(rendimiento) ?? undefined}
           insignia={
-            rendimiento.atenciones_fuera_de_plazo ? { tono: 'advertencia', texto: 'Con atenciones fuera de plazo' } : undefined
+            rendimiento.atenciones_fuera_de_plazo
+              ? { tono: 'advertencia', texto: 'Con atenciones fuera de plazo' }
+              : undefined
           }
         />
       </div>
@@ -57,7 +64,8 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           motivoSinDatos={motivo(especies)}
           valor={formatearNumero(especies.elementos.length)}
           contexto={[
-            especiesDistintas > 0 && `${formatearNumero(especiesDistintas)} ${especiesDistintas === 1 ? 'especie' : 'especies'}`,
+            especiesDistintas > 0 &&
+              `${formatearNumero(especiesDistintas)} ${especiesDistintas === 1 ? 'especie' : 'especies'}`,
             plagas > 0 && `${formatearNumero(plagas)} ${plagas === 1 ? 'plaga' : 'plagas'}`,
           ]
             .filter(Boolean)
@@ -75,7 +83,11 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
               ? undefined
               : `${formatearNumero(conformidad.pendientes_de_revision)} pendientes de revisión`
           }
-          insignia={conformidad.observadas > 0 && !conformidad.sin_datos ? { tono: 'advertencia', texto: 'Con observaciones' } : undefined}
+          insignia={
+            conformidad.observadas > 0 && !conformidad.sin_datos
+              ? { tono: 'advertencia', texto: 'Con observaciones' }
+              : undefined
+          }
         />
       </div>
     </div>

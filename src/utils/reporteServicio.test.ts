@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { AvanceServicio, ConformidadServicio, FilaAtencionServicio, RendimientoServicio } from '../types/reportesGestion'
+import type {
+  AvanceServicio,
+  ConformidadServicio,
+  FilaAtencionServicio,
+  RendimientoServicio,
+} from '../types/reportesGestion'
 import {
   atencionesDeConformidad,
   atencionesDeElemento,
@@ -123,7 +128,9 @@ describe('textos de las tarjetas', () => {
       atenciones_fuera_de_plazo: 2,
     }
     expect(contextoRendimiento(rendimiento)).toBe('En 20 h de ejecución · 2 fuera de plazo')
-    expect(contextoRendimiento({ ...rendimiento, atenciones_fuera_de_plazo: 0 })).toBe('En 20 h de ejecución · 0 fuera de plazo')
+    expect(contextoRendimiento({ ...rendimiento, atenciones_fuera_de_plazo: 0 })).toBe(
+      'En 20 h de ejecución · 0 fuera de plazo',
+    )
     // Sin plazo (null) no se inventa un cero.
     expect(contextoRendimiento({ ...rendimiento, atenciones_fuera_de_plazo: null })).toBe('En 20 h de ejecución')
     expect(contextoRendimiento({ ...rendimiento, horas_ejecucion: null, atenciones_fuera_de_plazo: null })).toBeNull()
