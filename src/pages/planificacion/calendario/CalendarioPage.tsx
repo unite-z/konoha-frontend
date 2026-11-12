@@ -16,7 +16,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import AccionMovil from '@/layouts/LayoutOficina/AccionMovil'
 import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarProgramaciones, listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { Programacion, Restriccion } from '@/types/planificacion'
 import { desplazarMes, mesDeFecha, rangoDelMes } from '@/utils/calendarioRestricciones'
@@ -59,7 +59,7 @@ const VISTAS = [
 export default function CalendarioPage() {
   usePaginaActual('Calendario', [MIGAS_PLANIFICACION.planificacion, { texto: 'Calendario' }])
   const hoy = hoyLima()
-  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
+  const puedeEditar = puedeEditarPlanificacion(usePermisos())
   const [vista, setVista] = useState<Vista>('mes')
   /** Día de referencia: el seleccionado en el mes y el que fija la semana. */
   const [fecha, setFecha] = useState<FechaIso>(hoy)

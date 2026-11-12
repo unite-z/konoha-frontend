@@ -28,7 +28,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleAtencion, rutaProgramarAplicacionAdicional, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { cancelarAtencionEspecial, obtenerAtencionEspecial } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AplicacionAdicional, AtencionEspecialDetalle } from '@/types/maestrosTercerizados'
 import { formatearFecha, formatearFechaHora, SIN_VALOR } from '@/utils/formato'
 import { textoAplicaciones } from '@/utils/validacionMaestros'
@@ -43,9 +43,9 @@ const COLUMNAS: ColumnaTabla<AplicacionAdicional>[] = [
 export default function AtencionEspecialDetallePage() {
   const { id: parametro } = useParams()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
-  const rol = useRolTercerizados()
-  const puedeProgramar = puedeRegistrarAtencion(rol)
-  const puedeCancelar = puedeMarcarAtencionEspecial(rol)
+  const permisos = usePermisos()
+  const puedeProgramar = puedeRegistrarAtencion(permisos)
+  const puedeCancelar = puedeMarcarAtencionEspecial(permisos)
 
   const consulta = useConsulta(id === null ? null : `atencion-especial|${id}`, (signal) => obtenerAtencionEspecial(id as number, signal))
   // Última versión que devolvió el servidor al cancelar; vale mientras sea el mismo ejemplar marcado.

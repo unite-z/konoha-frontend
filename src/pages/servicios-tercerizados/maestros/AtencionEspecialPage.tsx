@@ -22,7 +22,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencionEspecial } from '@/router/rutasApp'
 import { listarAtencionesEspeciales, listarPlagas } from '@/services/api/maestrosTercerizados'
 import { listarTodo } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AtencionEspecial, EstadoAtencionEspecial } from '@/types/maestrosTercerizados'
 import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 import { textoAplicaciones } from '@/utils/validacionMaestros'
@@ -81,9 +81,9 @@ export default function AtencionEspecialPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Atención especial' }])
   const { state } = useLocation()
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
-  const puedeMarcar = puedeMarcarAtencionEspecial(rol)
-  const puedeProgramarPlan = puedeRegistrarAtencion(rol)
+  const permisos = usePermisos()
+  const puedeMarcar = puedeMarcarAtencionEspecial(permisos)
+  const puedeProgramarPlan = puedeRegistrarAtencion(permisos)
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

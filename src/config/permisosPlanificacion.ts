@@ -1,9 +1,9 @@
 /**
- * Acciones de MOD-03 por rol. La interfaz solo oculta: el back-end vuelve a comprobar y puede responder 403.
+ * Acciones de MOD-03 por permiso (AV-382). La interfaz solo oculta: el back-end vuelve a comprobar y puede responder 403.
  */
-import type { RolTercerizados } from '../types/tercerizados'
+import { tiene, type Permisos } from './permisosSesion'
 
-/** Solo el jefe de sección edita frecuencias, duraciones y restricciones. */
-export function puedeEditarPlanificacion(rol: RolTercerizados | null | undefined): boolean {
-  return rol === 'Jefe de sección'
+/** Editar frecuencias, duraciones y restricciones: `PLA.PLANIFICACION.GESTIONAR`. */
+export function puedeEditarPlanificacion(permisos: Permisos): boolean {
+  return tiene(permisos, 'PLA.PLANIFICACION.GESTIONAR')
 }

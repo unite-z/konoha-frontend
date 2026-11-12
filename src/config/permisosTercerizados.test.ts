@@ -3,9 +3,10 @@ import type { ClaseAtencion, EstadoAtencion, OrigenAtencion, RolTercerizados } f
 import { ESTADOS_ATENCION } from '../utils/estadosTercerizados'
 import { disponibilidad, esRolTercerizados, puedeRegistrarAtencion, type AccionAtencion } from './permisosTercerizados'
 
-const JEFE: RolTercerizados = 'Jefe de sección'
-const INGENIERO: RolTercerizados = 'Ingeniero de campo'
-const PRACTICANTE: RolTercerizados = 'Practicante autorizado'
+// Permisos de MOD-05 que da hoy cada rol (V9 y V76): las reglas deciden por ellos, no por el nombre (AV-382).
+const JEFE = ['SER.ATENCION.REGISTRAR', 'SER.ATENCION.GESTIONAR', 'SER.CONFORMIDAD.REGISTRAR', 'SER.SEGURIDAD.VERIFICAR', 'SER.CONTRATO.CONSULTAR', 'SER.CONTRATO.GESTIONAR']
+const INGENIERO = ['SER.ATENCION.REGISTRAR', 'SER.SEGURIDAD.VERIFICAR', 'SER.CONTRATO.CONSULTAR']
+const PRACTICANTE = ['SER.ATENCION.REGISTRAR', 'SER.CONTRATO.CONSULTAR']
 
 function atencion(
   estado: EstadoAtencion,
@@ -22,13 +23,13 @@ function atencion(
 }
 
 /** Estados en los que la acción está visible y habilitada para el rol. */
-function habilitadaEn(accion: AccionAtencion, rol: RolTercerizados, extra = {}) {
+function habilitadaEn(accion: AccionAtencion, rol: readonly string[], extra = {}) {
   return ESTADOS_ATENCION.filter((estado) => disponibilidad(accion, rol, atencion(estado, extra)).habilitada)
 }
 
 describe('roles', () => {
   it('reconoce solo los grupos del módulo', () => {
-    expect(esRolTercerizados(JEFE)).toBe(true)
+    expect(esRolTercerizados('Jefe de sección' as RolTercerizados)).toBe(true)
     expect(esRolTercerizados('Practicante')).toBe(false)
     expect(esRolTercerizados(null)).toBe(false)
   })
@@ -46,7 +47,7 @@ describe('roles', () => {
   })
 })
 
-describe.each([JEFE, INGENIERO, PRACTICANTE])('acciones operativas de %s', (rol) => {
+describe.each([['jefe', JEFE], ['ingeniero', INGENIERO], ['practicante', PRACTICANTE]] as const)('acciones operativas de %s', (_nombre, rol) => {
   it('OC solo antes del inicio', () => {
     expect(habilitadaEn('ordenCompra', rol)).toEqual(['Requerimiento registrado', 'OC referenciada'])
   })
@@ -87,7 +88,7 @@ describe.each([JEFE, INGENIERO, PRACTICANTE])('acciones operativas de %s', (rol)
 })
 
 describe('acciones exclusivas del jefe', () => {
-  it.each([INGENIERO, PRACTICANTE])('%s no corrige origen ni registra acuerdo', (rol) => {
+  it.each([['ingeniero', INGENIERO], ['practicante', PRACTICANTE]] as const)('%s no corrige origen ni registra acuerdo', (_nombre, rol) => {
     for (const estado of ESTADOS_ATENCION) {
       expect(disponibilidad('corregirOrigen', rol, atencion(estado)).visible).toBe(false)
       expect(disponibilidad('acuerdoUnidad', rol, atencion(estado, { origen: 'SolicitudUnidad' })).visible).toBe(false)
@@ -112,7 +113,7 @@ describe('acciones exclusivas del jefe', () => {
 })
 
 describe('conformidad (RF-SER-007)', () => {
-  it.each([INGENIERO, PRACTICANTE])('%s no la ve en ningún estado', (rol) => {
+  it.each([['ingeniero', INGENIERO], ['practicante', PRACTICANTE]] as const)('%s no la ve en ningún estado', (_nombre, rol) => {
     for (const estado of ESTADOS_ATENCION) {
       expect(disponibilidad('conformidad', rol, atencion(estado)).visible).toBe(false)
     }
@@ -142,7 +143,7 @@ describe('conformidad (RF-SER-007)', () => {
 })
 
 describe('verificación de seguridad', () => {
-  it.each([JEFE, INGENIERO])('%s verifica antes de iniciar', (rol) => {
+  it.each([['jefe', JEFE], ['ingeniero', INGENIERO]] as const)('%s verifica antes de iniciar', (_nombre, rol) => {
     expect(disponibilidad('seguridad', rol, atencion('OC referenciada', { es_riesgo: true })).habilitada).toBe(true)
   })
   it('oculta el registro al practicante y habilita el inicio con constancia', () => {

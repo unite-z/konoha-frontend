@@ -4,7 +4,7 @@
  *
  * - La IA solo propone prioridades para espacios (áreas y jardines) y ejemplares: nada se incorpora a la
  *   programación sin la validación del jefe de sección.
- * - «Solicitar priorización» solo se muestra a los roles que pueden solicitar a la IA (ROLES_SOLICITAR_IA).
+ * - «Solicitar priorización» solo se muestra a los roles que pueden solicitar a la IA (PERMISO_SOLICITAR_IA).
  * - El estado elegido y la página van en la URL, para conservarlos al volver desde la revisión.
  * - En móvil, cada propuesta es una ficha.
  */
@@ -17,14 +17,14 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Pestanas from '@/components/ui/Pestanas'
 import Boton from '@/components/ui/Boton'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionPriorizacion } from '@/router/rutasApp'
 import { listarPriorizaciones } from '@/services/api/priorizacionIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { EstadoSugerencia } from '@/types/ia'
 import type { SugerenciaPriorizacion } from '@/types/priorizacionIa'
 import { insigniaSuficiencia, insigniaSugerencia } from '@/utils/estados'
@@ -102,8 +102,8 @@ export default function PriorizacionIaPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
   const [solicitudAbierta, setSolicitudAbierta] = useState(false)
 

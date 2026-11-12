@@ -9,7 +9,7 @@
  * - «Tu validación técnica»: confirmar una hipótesis, otra categoría o «No es posible concluir» (A2). Solo se registra
  *   lo validado; la salida de la IA se conserva (criterio 4). Nunca se indica un tratamiento.
  *
- * Solo la jefatura de sección valida o descarta (ROLES_VALIDAR_IA); los demás la ven sin acciones.
+ * Solo la jefatura de sección valida o descarta (PERMISO_VALIDAR_IA); los demás la ven sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -26,13 +26,13 @@ import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_SOLICITAR_IA, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS, rutaRevisionEvidencia } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { descartarEvidencia, obtenerAnalisisEvidencia, validarEvidencia } from '@/services/api/evidenciaFitosanitariaIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaEvidencia } from '@/types/evidenciaFitosanitariaIa'
 import {
   cuerpoValidacion,
@@ -65,9 +65,9 @@ export default function RevisionEvidenciaPage() {
   const navigate = useNavigate()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaLista = `${RUTAS.evidenciaFitosanitaria}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeValidar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeValidar = puede(permisos, PERMISO_VALIDAR_IA)
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
 
   const consulta = useConsulta<SugerenciaEvidencia>(idValido ? `evidencia|${idNumero}` : null, (signal) => obtenerAnalisisEvidencia(idNumero, signal))
   const sugerencia = consulta.datos
