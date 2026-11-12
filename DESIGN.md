@@ -25,32 +25,32 @@ Los README de `src/` dicen dónde va el código. Este documento dice cómo tiene
 
 | Figma               | Token CSS                      | Claro   | Oscuro  | Uso                                                              |
 | ------------------- | ------------------------------ | ------- | ------- | ---------------------------------------------------------------- |
-| fondo/app           | `--color-bg-page`              | #f8fafc | #020617 | fondo de la aplicación                                           |
-| fondo/panel         | `--color-bg-surface`           | #ffffff | #0f172a | tarjetas, tablas, diálogos, menú                                 |
-| fondo/sutil         | `--color-bg-subtle`            | #f1f5f9 | #1e293b | cabecera de tabla, pestañas, zonas secundarias                   |
-| fondo/hover         | `--color-bg-hover`             | #f1f5f9 | #1e293b | fila o elemento al pasar el ratón                                |
-| texto/principal     | `--color-text-primary`         | #0f172a | #f8fafc | texto normal y títulos                                           |
-| texto/secundario    | `--color-text-muted`           | #64748b | #94a3b8 | descripciones, leyendas, metadatos                               |
-| texto/deshabilitado | `--color-text-disabled`        | #94a3b8 | #475569 | controles deshabilitados, celdas sin valor                       |
+| fondo/app           | `--color-bg-page`              | #f6f7f9 | #021330 | fondo de la aplicación                                           |
+| fondo/panel         | `--color-bg-surface`           | #ffffff | #031c43 | tarjetas, tablas, diálogos, menú                                 |
+| fondo/sutil         | `--color-bg-subtle`            | #f0f2f5 | #0b2f5e | cabecera de tabla, pestañas, zonas secundarias                   |
+| fondo/hover         | `--color-bg-hover`             | #f0f2f5 | #0b2f5e | fila o elemento al pasar el ratón                                |
+| texto/principal     | `--color-text-primary`         | #042354 | #f6f7f9 | texto normal y títulos                                           |
+| texto/secundario    | `--color-text-muted`           | #5c6c83 | #bdc3c9 | descripciones, leyendas, metadatos                               |
+| texto/deshabilitado | `--color-text-disabled`        | #959ea9 | #667892 | controles deshabilitados, celdas sin valor                       |
 | texto/sobre-acento  | `--color-text-on-action`       | #ffffff | #ffffff | texto sobre botón primario o destructivo                         |
-| borde/default       | `--color-border-default`       | #e2e8f0 | #1e293b | bordes de tarjeta, tabla y campo                                 |
-| borde/fuerte        | `--color-border-strong`        | #cbd5e1 | #334155 | bordes que deben verse más (campo con foco perdido, separadores) |
-| acento/default      | `--color-action-primary`       | #2563eb | #2563eb | botón primario, elemento seleccionado                            |
-| acento/hover        | `--color-action-primary-hover` | #1d4ed8 | #1d4ed8 | hover del botón primario                                         |
-| acento/texto        | `--color-action-text`          | #2563eb | #60a5fa | enlaces, botón fantasma, códigos enlazados                       |
-| acento/sutil        | `--color-action-subtle`        | #eff6ff | #172a4f | fondo de un elemento seleccionado suave                          |
-| foco                | `--web-focus-ring-color`       | #2563eb | #60a5fa | anillo de foco de 2 px                                           |
-| menu/activo         | `--color-sidebar-active-bg`    | #dbeafe | #172a4f | fondo del elemento de menú activo                                |
-| menu/texto-activo   | `--color-sidebar-active-text`  | #1d4ed8 | #60a5fa | texto del elemento de menú activo                                |
+| borde/default       | `--color-border-default`       | #e1e5ea | #0b2f5e | bordes de tarjeta, tabla y campo                                 |
+| borde/fuerte        | `--color-border-strong`        | #bdc3c9 | #36507a | bordes que deben verse más (campo con foco perdido, separadores) |
+| acento/default      | `--color-action-primary`       | #042354 | #004ea8 | botón primario, elemento seleccionado                            |
+| acento/hover        | `--color-action-primary-hover` | #004ea8 | #0a7bc2 | hover del botón primario                                         |
+| acento/texto        | `--color-action-text`          | #004ea8 | #41b9e4 | enlaces, botón fantasma, códigos enlazados                       |
+| acento/sutil        | `--color-action-subtle`        | #ebf1f8 | #0b2f5e | fondo de un elemento seleccionado suave                          |
+| foco                | `--web-focus-ring-color`       | #0a7bc2 | #41b9e4 | anillo de foco de 2 px                                           |
+| menu/activo         | `--color-sidebar-active-bg`    | #dbe6f3 | #0b2f5e | fondo del elemento de menú activo                                |
+| menu/texto-activo   | `--color-sidebar-active-text`  | #042354 | #41b9e4 | texto del elemento de menú activo                                |
 
 Estados (texto, fondo y borde, en claro / oscuro):
 
 | Figma        | Texto                               | Fondo                                  | Borde                                    | Uso                                 |
 | ------------ | ----------------------------------- | -------------------------------------- | ---------------------------------------- | ----------------------------------- |
-| estado/info  | `--color-info` #1d4ed8 / #60a5fa    | `--color-info-bg` #eff6ff / #1c2e4b    | `--web-info-border` #bfdbfe / #1e40af    | información, «en curso»             |
-| estado/exito | `--color-success` #15803d / #4ade80 | `--color-success-bg` #f0fdf4 / #173336 | `--web-success-border` #bbf7d0 / #166534 | conforme, completado                |
-| estado/aviso | `--color-warning` #b45309 / #fbbf24 | `--color-warning-bg` #fffbeb / #302f29 | `--web-warning-border` #fde68a / #92400e | requiere atención, plazo cerca      |
-| estado/error | `--color-error` #b91c1c / #f87171   | `--color-error-bg` #fef2f2 / #342535   | `--web-error-border` #fecaca / #991b1b   | incumple, error, acción destructiva |
+| estado/info  | `--color-info` #004ea8 / #41b9e4    | `--color-info-bg` #ecf8fc / #0b2f5e    | `--web-info-border` #b3e3f4 / #0a7bc2    | información, «en curso»             |
+| estado/exito | `--color-success` #007a5e / #16c78e | `--color-success-bg` #e8f9f4 / #063a3b | `--web-success-border` #a2e9d2 / #008768 | conforme, completado                |
+| estado/aviso | `--color-warning` #73540c / #fad634 | `--color-warning-bg` #fef7e8 / #2e2b1e | `--web-warning-border` #f8db98 / #73540c | requiere atención, plazo cerca      |
+| estado/error | `--color-error` #c3094a / #f56eb4   | `--color-error-bg` #fbeef2 / #3a1636   | `--web-error-border` #edb5c9 / #a31598   | incumple, error, acción destructiva |
 
 Los 8 tokens que faltaban en `tokens.css` (`--color-bg-hover`, `--color-text-disabled`, `--color-text-on-action`, `--color-border-strong`, `--color-action-text`, `--color-action-subtle`, `--color-sidebar-active-bg` y `--color-sidebar-active-text`) y el bloque del modo oscuro llegan con AV-331. `--color-text-secondary` no existe en Figma: queda como alias de `--color-text-muted` (D5) y no se usa en código nuevo.
 

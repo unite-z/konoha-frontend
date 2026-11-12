@@ -4,43 +4,47 @@
  * En componentes y páginas, solo tokens semánticos (--color-*, --space-*, --radius-*, --type-*). Ver DESIGN.md.
  */
 
-/* AV · Color, modo Claro */
+/*
+ * AV · Color, modo Claro. Paleta de la identidad PUCP (manuales «Medios digitales» y «Medios audiovisuales», AV-387):
+ * azul institucional #042354 y secundarios oficiales. Los fondos claros mezclan el color oficial con blanco;
+ * el gris secundario (#667892) y el verde (#008768) se oscurecen un 10 % para cumplir WCAG AA (4,5:1).
+ */
 :root {
-  --color-bg-page: #f8fafc; /* fondo/app */
+  --color-bg-page: #f6f7f9; /* fondo/app */
   --color-bg-surface: #ffffff; /* fondo/panel */
-  --color-bg-subtle: #f1f5f9; /* fondo/sutil */
-  --color-bg-hover: #f1f5f9; /* fondo/hover */
-  --color-text-primary: #0f172a; /* texto/principal */
-  --color-text-muted: #64748b; /* texto/secundario */
-  --color-text-disabled: #94a3b8; /* texto/deshabilitado */
+  --color-bg-subtle: #f0f2f5; /* fondo/sutil */
+  --color-bg-hover: #f0f2f5; /* fondo/hover */
+  --color-text-primary: #042354; /* texto/principal */
+  --color-text-muted: #5c6c83; /* texto/secundario */
+  --color-text-disabled: #959ea9; /* texto/deshabilitado */
   --color-text-on-action: #ffffff; /* texto/sobre-acento */
-  --color-border-default: #e2e8f0; /* borde/default */
-  --color-border-strong: #cbd5e1; /* borde/fuerte */
-  --color-action-primary: #2563eb; /* acento/default */
-  --color-action-primary-hover: #1d4ed8; /* acento/hover */
-  --color-action-text: #2563eb; /* acento/texto */
-  --color-action-subtle: #eff6ff; /* acento/sutil */
-  --color-sidebar-active-bg: #dbeafe; /* menu/activo */
-  --color-sidebar-active-text: #1d4ed8; /* menu/texto-activo */
-  --web-focus-ring-color: #2563eb; /* foco */
-  --color-info: #1d4ed8; /* estado/info/texto */
-  --color-info-bg: #eff6ff; /* estado/info/fondo */
-  --web-info-border: #bfdbfe; /* estado/info/borde */
-  --color-success: #15803d; /* estado/exito/texto */
-  --color-success-bg: #f0fdf4; /* estado/exito/fondo */
-  --web-success-border: #bbf7d0; /* estado/exito/borde */
-  --color-warning: #b45309; /* estado/aviso/texto */
-  --color-warning-bg: #fffbeb; /* estado/aviso/fondo */
-  --web-warning-border: #fde68a; /* estado/aviso/borde */
-  --color-error: #b91c1c; /* estado/error/texto */
-  --color-error-bg: #fef2f2; /* estado/error/fondo */
-  --web-error-border: #fecaca; /* estado/error/borde */
-  --web-error-hover: #991b1b; /* hover del botón destructivo (sin variable en Figma) */
-  --web-scrim: rgba(15, 23, 42, 0.5); /* velo de diálogos y paneles */
+  --color-border-default: #e1e5ea; /* borde/default */
+  --color-border-strong: #bdc3c9; /* borde/fuerte */
+  --color-action-primary: #042354; /* acento/default */
+  --color-action-primary-hover: #004ea8; /* acento/hover */
+  --color-action-text: #004ea8; /* acento/texto */
+  --color-action-subtle: #ebf1f8; /* acento/sutil */
+  --color-sidebar-active-bg: #dbe6f3; /* menu/activo */
+  --color-sidebar-active-text: #042354; /* menu/texto-activo */
+  --web-focus-ring-color: #0a7bc2; /* foco */
+  --color-info: #004ea8; /* estado/info/texto */
+  --color-info-bg: #ecf8fc; /* estado/info/fondo */
+  --web-info-border: #b3e3f4; /* estado/info/borde */
+  --color-success: #007a5e; /* estado/exito/texto */
+  --color-success-bg: #e8f9f4; /* estado/exito/fondo */
+  --web-success-border: #a2e9d2; /* estado/exito/borde */
+  --color-warning: #73540c; /* estado/aviso/texto */
+  --color-warning-bg: #fef7e8; /* estado/aviso/fondo */
+  --web-warning-border: #f8db98; /* estado/aviso/borde */
+  --color-error: #c3094a; /* estado/error/texto */
+  --color-error-bg: #fbeef2; /* estado/error/fondo */
+  --web-error-border: #edb5c9; /* estado/error/borde */
+  --web-error-hover: #9c073b; /* hover del botón destructivo (sin variable en Figma) */
+  --web-scrim: rgba(4, 35, 84, 0.5); /* velo de diálogos y paneles */
   /* Fondo de nodos del inicio de sesión (FondoNodos, referencia williamlin.io; sin variable en Figma) */
-  --web-nodos-punto: #71717a;
-  --web-nodos-onda: #0284c7;
-  --web-nodos-linea: #71717a;
+  --web-nodos-punto: #959ea9;
+  --web-nodos-onda: #0096c8;
+  --web-nodos-linea: #959ea9;
   --web-nodos-alfa-linea: 0.55;
   --web-nodos-alfa-onda: 0.9;
   color-scheme: light;
@@ -164,14 +168,14 @@
 
 /* Colores de los mapas (maplibre). Fuera del sistema de diseño de Figma. */
 :root {
-  --map-uso-predeterminado: #1B5E20;
-  --map-grid-color: #E7EEE9;
-  --map-outline-color: #C7D5CC;
-  --map-label-color: #84928A;
-  --map-label-strong-color: #37443D;
+  --map-uso-predeterminado: #1b5e20;
+  --map-grid-color: #e7eee9;
+  --map-outline-color: #c7d5cc;
+  --map-label-color: #84928a;
+  --map-label-strong-color: #37443d;
   --map-label-outline-width: 3px;
-  --map-area-fill: #E8F5E9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
-  --map-area-line: #43A047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-fill: #e8f5e9; /* relleno de las áreas verdes en el mapa de atenciones (MOD-06) */
+  --map-area-line: #43a047; /* contorno de las áreas verdes en el mapa de atenciones (MOD-06) */
   --map-selected-stroke: #111827; /* contorno del área seleccionada en el mapa vectorial */
   --map-swatch-outline: color-mix(in srgb, var(--map-selected-stroke) 55%, transparent);
 }
@@ -181,39 +185,39 @@
  * se prueba poniendo data-tema="oscuro" en <html>.
  */
 :root[data-tema='oscuro'] {
-  --color-bg-page: #020617;
-  --color-bg-surface: #0f172a;
-  --color-bg-subtle: #1e293b;
-  --color-bg-hover: #1e293b;
-  --color-text-primary: #f8fafc;
-  --color-text-muted: #94a3b8;
-  --color-text-disabled: #475569;
+  --color-bg-page: #021330;
+  --color-bg-surface: #031c43;
+  --color-bg-subtle: #0b2f5e;
+  --color-bg-hover: #0b2f5e;
+  --color-text-primary: #f6f7f9;
+  --color-text-muted: #bdc3c9;
+  --color-text-disabled: #667892;
   --color-text-on-action: #ffffff;
-  --color-border-default: #1e293b;
-  --color-border-strong: #334155;
-  --color-action-primary: #2563eb;
-  --color-action-primary-hover: #1d4ed8;
-  --color-action-text: #60a5fa;
-  --color-action-subtle: #172a4f;
-  --color-sidebar-active-bg: #172a4f;
-  --color-sidebar-active-text: #60a5fa;
-  --web-focus-ring-color: #60a5fa;
-  --color-info: #60a5fa;
-  --color-info-bg: #1c2e4b;
-  --web-info-border: #1e40af;
-  --color-success: #4ade80;
-  --color-success-bg: #173336;
-  --web-success-border: #166534;
-  --color-warning: #fbbf24;
-  --color-warning-bg: #302f29;
-  --web-warning-border: #92400e;
-  --color-error: #f87171;
-  --color-error-bg: #342535;
-  --web-error-border: #991b1b;
-  --web-error-hover: #7f1d1d;
-  --web-nodos-punto: #a1a1aa;
-  --web-nodos-onda: #38bdf8;
-  --web-nodos-linea: #71717a;
+  --color-border-default: #0b2f5e;
+  --color-border-strong: #36507a;
+  --color-action-primary: #004ea8;
+  --color-action-primary-hover: #0a7bc2;
+  --color-action-text: #41b9e4;
+  --color-action-subtle: #0b2f5e;
+  --color-sidebar-active-bg: #0b2f5e;
+  --color-sidebar-active-text: #41b9e4;
+  --web-focus-ring-color: #41b9e4;
+  --color-info: #41b9e4;
+  --color-info-bg: #0b2f5e;
+  --web-info-border: #0a7bc2;
+  --color-success: #16c78e;
+  --color-success-bg: #063a3b;
+  --web-success-border: #008768;
+  --color-warning: #fad634;
+  --color-warning-bg: #2e2b1e;
+  --web-warning-border: #73540c;
+  --color-error: #f56eb4;
+  --color-error-bg: #3a1636;
+  --web-error-border: #a31598;
+  --web-error-hover: #9c073b;
+  --web-nodos-punto: #bdc3c9;
+  --web-nodos-onda: #41b9e4;
+  --web-nodos-linea: #667892;
   --web-nodos-alfa-linea: 0.5;
   --web-nodos-alfa-onda: 0.85;
   color-scheme: dark;

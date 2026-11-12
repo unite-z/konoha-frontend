@@ -22,8 +22,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         // Fondo de la app y color de éxito de tokens.css (--color-bg-page y --color-success).
-        background_color: '#f8fafc',
-        theme_color: '#15803d',
+        background_color: '#f6f7f9',
+        theme_color: '#042354',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
