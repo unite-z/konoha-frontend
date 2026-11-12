@@ -1,6 +1,7 @@
 /* Ingreso y cambio de contraseña de MOD-01: tarjeta centrada a lo ancho y a lo alto, fuera del layout (Guía Web 5.3). */
 .fondo {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
