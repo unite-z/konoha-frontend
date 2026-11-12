@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import Boton from '@/design-system/Boton'
 import Tarjeta from '@/design-system/Tarjeta'
 import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
@@ -147,24 +148,20 @@ export default function EncargosPage() {
             clave: 'acciones',
             titulo: 'Acciones',
             render: (e) => (
-              <>
-                <Boton
-                  variante="fantasma"
-                  compacto
-                  aria-label={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
+              <AccionesFila>
+                <AccionFila
+                  icono={jefe ? 'pencil' : 'eye'}
+                  nombre={jefe ? 'Editar encargo' : 'Ver encargo'}
+                  etiqueta={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
                   onClick={() => setDialogo(e)}
-                >
-                  {jefe ? 'Editar encargo' : 'Ver encargo'}
-                </Boton>
-                <Boton
-                  variante="fantasma"
-                  compacto
-                  aria-label={`Seguimiento del encargo ${e.id}`}
+                />
+                <AccionFila
+                  icono="history"
+                  nombre="Seguimiento"
+                  etiqueta={`Seguimiento del encargo ${e.id}`}
                   onClick={() => setSeguimiento(e)}
-                >
-                  Seguimiento
-                </Boton>
-              </>
+                />
+              </AccionesFila>
             ),
           },
         ]}

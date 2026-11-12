@@ -14,6 +14,7 @@ import { useLocation, useNavigate } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import AccionFila from '@/design-system/AccionFila'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
@@ -28,7 +29,11 @@ import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, rutaRevisionClasificacion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
-import { listarClasificaciones, listarIncidenciasPendientes, solicitarClasificacion } from '@/services/api/clasificacionIncidenciaIa'
+import {
+  listarClasificaciones,
+  listarIncidenciasPendientes,
+  solicitarClasificacion,
+} from '@/services/api/clasificacionIncidenciaIa'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { IncidenciaResumen, SugerenciaClasificacion } from '@/types/clasificacionIncidenciaIa'
 import { estadoClasificacion, insigniaSeveridad, resumenCorto } from '@/utils/clasificacionIncidenciaIa'
@@ -49,17 +54,27 @@ const PESTANAS: { valor: Pestana; texto: string }[] = [
 ]
 
 const valoresDe = (s: SugerenciaClasificacion) => s.contenido.decision?.valores_registrados ?? s.contenido.sugerencia
-const celdaIncidencia = (i: IncidenciaResumen) => <CeldaDobleLinea principal={i.codigo} detalle={i.tipo_evento} codigo />
+const celdaIncidencia = (i: IncidenciaResumen) => (
+  <CeldaDobleLinea principal={i.codigo} detalle={i.tipo_evento} codigo />
+)
 
 const COLUMNAS_ANALISIS: ColumnaTabla<SugerenciaClasificacion>[] = [
   { clave: 'incidencia', titulo: 'Incidencia', render: (s) => celdaIncidencia(s.contenido.incidencia) },
-  { clave: 'fecha_creacion', titulo: 'Analizada', render: (s) => <CeldaTexto texto={formatearFechaHora(s.fecha_creacion)} tono="secundario" /> },
+  {
+    clave: 'fecha_creacion',
+    titulo: 'Analizada',
+    render: (s) => <CeldaTexto texto={formatearFechaHora(s.fecha_creacion)} tono="secundario" />,
+  },
   {
     clave: 'prioridad',
     titulo: 'Prioridad',
     render: (s) => {
       const severidad = valoresDe(s)?.severidad
-      return severidad ? <Estado {...insigniaSeveridad(severidad)} /> : <CeldaTexto texto={SIN_VALOR} tono="deshabilitado" />
+      return severidad ? (
+        <Estado {...insigniaSeveridad(severidad)} />
+      ) : (
+        <CeldaTexto texto={SIN_VALOR} tono="deshabilitado" />
+      )
     },
   },
   { clave: 'resultado', titulo: 'Resultado', render: (s) => <CeldaTexto texto={resumenCorto(valoresDe(s))} /> },
@@ -82,21 +97,30 @@ export default function ClasificacionIncidenciasIaPage() {
   const [errorIa, setErrorIa] = useState<{ incidencia: IncidenciaResumen; texto: string; sinIa: boolean } | null>(null)
   const [manual, setManual] = useState<{ id: number; codigo: string } | null>(null)
 
-  const pendientes = useConsulta(vista === 'pendientes' ? `clasif-pendientes|${pagina}` : null, (signal) => listarIncidenciasPendientes({ page: pagina }, signal))
-  const analisis = useConsulta(vista === 'analisis' ? `clasif-analisis|${pagina}` : null, (signal) => listarClasificaciones({ page: pagina }, signal))
+  const pendientes = useConsulta(vista === 'pendientes' ? `clasif-pendientes|${pagina}` : null, (signal) =>
+    listarIncidenciasPendientes({ page: pagina }, signal),
+  )
+  const analisis = useConsulta(vista === 'analisis' ? `clasif-analisis|${pagina}` : null, (signal) =>
+    listarClasificaciones({ page: pagina }, signal),
+  )
   const recuentos = useConsulta('clasif-recuentos', (signal) =>
-    Promise.all([listarIncidenciasPendientes({}, signal), listarClasificaciones({}, signal)]).then((r) => r.map((p) => p.count)),
+    Promise.all([listarIncidenciasPendientes({}, signal), listarClasificaciones({}, signal)]).then((r) =>
+      r.map((p) => p.count),
+    ),
   )
   // La incidencia del enlace profundo (solo si sigue pendiente).
   const enlazada = useConsulta(incidenciaUrl !== null ? `clasif-enlazada|${incidenciaUrl}` : null, (signal) =>
-    listarIncidenciasPendientes({ q: String(incidenciaUrl) }, signal).then((r) => r.results.find((i) => i.id === incidenciaUrl) ?? null),
+    listarIncidenciasPendientes({ q: String(incidenciaUrl) }, signal).then(
+      (r) => r.results.find((i) => i.id === incidenciaUrl) ?? null,
+    ),
   )
 
   const consulta = vista === 'pendientes' ? pendientes : analisis
   const total = consulta.datos?.count ?? 0
   let estadoTabla: EstadoTabla | null = null
   if (consulta.estado === 'error') estadoTabla = 'error'
-  else if (consulta.estado === 'cargando' && (consulta.cargaVisible || !consulta.datos)) estadoTabla = consulta.cargaVisible ? 'cargando' : null
+  else if (consulta.estado === 'cargando' && (consulta.cargaVisible || !consulta.datos))
+    estadoTabla = consulta.cargaVisible ? 'cargando' : null
   else if (consulta.datos) estadoTabla = consulta.datos.count === 0 ? 'vacio' : 'exito'
 
   function abrir(s: SugerenciaClasificacion, aviso?: string) {
@@ -118,23 +142,66 @@ export default function ClasificacionIncidenciasIaPage() {
     }
   }
 
-  const botonAnalizar = (i: IncidenciaResumen, variante: 'fantasma' | 'secundario' = 'fantasma') => (
-    <Boton variante={variante} icono="destello" cargando={analizando === i.id} deshabilitado={analizando !== null && analizando !== i.id} onClick={() => void analizar(i)}>
+  const botonAnalizar = (i: IncidenciaResumen) => (
+    <Boton
+      variante="secundario"
+      icono="destello"
+      cargando={analizando === i.id}
+      deshabilitado={analizando !== null && analizando !== i.id}
+      onClick={() => void analizar(i)}
+    >
       Analizar con IA
     </Boton>
   )
 
   const columnasPendientes: ColumnaTabla<IncidenciaResumen>[] = [
     { clave: 'incidencia', titulo: 'Incidencia', render: celdaIncidencia },
-    { clave: 'descripcion', titulo: 'Descripción', multilinea: true, render: (i) => <CeldaTexto texto={i.descripcion} /> },
-    { clave: 'espacio', titulo: 'Espacio', render: (i) => <CeldaTexto texto={i.espacio ?? SIN_VALOR} tono={i.espacio ? 'principal' : 'deshabilitado'} /> },
-    { clave: 'fecha_recepcion', titulo: 'Recibida', render: (i) => <CeldaTexto texto={formatearFechaHora(i.fecha_recepcion)} tono="secundario" /> },
-    ...(puedeSolicitar ? [{ clave: 'accion', titulo: 'Acción', render: (i: IncidenciaResumen) => botonAnalizar(i) }] : []),
+    {
+      clave: 'descripcion',
+      titulo: 'Descripción',
+      multilinea: true,
+      render: (i) => <CeldaTexto texto={i.descripcion} />,
+    },
+    {
+      clave: 'espacio',
+      titulo: 'Espacio',
+      render: (i) => <CeldaTexto texto={i.espacio ?? SIN_VALOR} tono={i.espacio ? 'principal' : 'deshabilitado'} />,
+    },
+    {
+      clave: 'fecha_recepcion',
+      titulo: 'Recibida',
+      render: (i) => <CeldaTexto texto={formatearFechaHora(i.fecha_recepcion)} tono="secundario" />,
+    },
+    ...(puedeSolicitar
+      ? [
+          {
+            clave: 'accion',
+            titulo: 'Acción',
+            render: (i: IncidenciaResumen) => (
+              <AccionFila
+                icono="destello"
+                nombre="Analizar con IA"
+                etiqueta={`Analizar con IA ${i.codigo}`}
+                descripcion={
+                  analizando !== null && analizando !== i.id ? 'Espera a que termine el análisis en curso' : undefined
+                }
+                cargando={analizando === i.id}
+                deshabilitado={analizando !== null && analizando !== i.id}
+                onClick={() => void analizar(i)}
+              />
+            ),
+          },
+        ]
+      : []),
   ]
 
   const cambiarPagina = (nueva: number) => establecer({ page: nueva > 1 ? String(nueva) : null })
   const errorTabla = consulta.error
-    ? { titulo: vista === 'pendientes' ? 'No se pudieron cargar las incidencias' : 'No se pudieron cargar los análisis', descripcion: consulta.error.detalle, onReintentar: consulta.reintentar }
+    ? {
+        titulo: vista === 'pendientes' ? 'No se pudieron cargar las incidencias' : 'No se pudieron cargar los análisis',
+        descripcion: consulta.error.detalle,
+        onReintentar: consulta.reintentar,
+      }
     : undefined
   const paginacion = { pagina, total, porPagina: POR_PAGINA, onCambiarPagina: cambiarPagina }
 
@@ -148,20 +215,34 @@ export default function ClasificacionIncidenciasIaPage() {
           ? pendientes.datos?.results.map((i) => (
               <Tarjeta key={i.id} titulo={i.codigo} nivel={3} descripcion={i.tipo_evento}>
                 <p>{i.descripcion}</p>
-                <p className={estilosClasificacion.secundario}>{[i.espacio, formatearFechaHora(i.fecha_recepcion)].filter(Boolean).join(' · ')}</p>
-                {puedeSolicitar && botonAnalizar(i, 'secundario')}
+                <p className={estilosClasificacion.secundario}>
+                  {[i.espacio, formatearFechaHora(i.fecha_recepcion)].filter(Boolean).join(' · ')}
+                </p>
+                {puedeSolicitar && botonAnalizar(i)}
               </Tarjeta>
             ))
           : analisis.datos?.results.map((s) => (
-              <Tarjeta key={s.id} titulo={s.contenido.incidencia.codigo} nivel={3} descripcion={s.contenido.incidencia.tipo_evento} acciones={<Estado {...estadoClasificacion(s.estado)} />}>
+              <Tarjeta
+                key={s.id}
+                titulo={s.contenido.incidencia.codigo}
+                nivel={3}
+                descripcion={s.contenido.incidencia.tipo_evento}
+                acciones={<Estado {...estadoClasificacion(s.estado)} />}
+              >
                 <p>{resumenCorto(valoresDe(s))}</p>
                 <p className={estilosClasificacion.secundario}>{formatearFechaHora(s.fecha_creacion)}</p>
-                <BotonEnlace to={rutaRevisionClasificacion(s.id)} state={{ volverA: location.search }} variante="secundario">
+                <BotonEnlace
+                  to={rutaRevisionClasificacion(s.id)}
+                  state={{ volverA: location.search }}
+                  variante="secundario"
+                >
                   {s.estado === 'Propuesta' ? 'Revisar' : 'Ver'}
                 </BotonEnlace>
               </Tarjeta>
             ))}
-        {total > POR_PAGINA && <Paginacion pagina={pagina} total={total} porPagina={POR_PAGINA} onCambiar={cambiarPagina} />}
+        {total > POR_PAGINA && (
+          <Paginacion pagina={pagina} total={total} porPagina={POR_PAGINA} onCambiar={cambiarPagina} />
+        )}
       </div>
     )
   } else if (estadoTabla && vista === 'pendientes') {
@@ -173,7 +254,11 @@ export default function ClasificacionIncidenciasIaPage() {
         claveFila={(i) => String(i.id)}
         estado={estadoTabla}
         paginacionServidor={paginacion}
-        vacio={{ titulo: 'No hay incidencias pendientes de evaluar', descripcion: 'Todas las incidencias registradas están clasificadas.', nivel: 3 }}
+        vacio={{
+          titulo: 'No hay incidencias pendientes de evaluar',
+          descripcion: 'Todas las incidencias registradas están clasificadas.',
+          nivel: 3,
+        }}
         error={errorTabla}
       />
     )
@@ -187,7 +272,11 @@ export default function ClasificacionIncidenciasIaPage() {
         estado={estadoTabla}
         onFilaClick={(s) => abrir(s)}
         paginacionServidor={paginacion}
-        vacio={{ titulo: 'Aún no hay análisis', descripcion: puedeSolicitar ? 'Analiza una incidencia desde «Pendientes de evaluar».' : undefined, nivel: 3 }}
+        vacio={{
+          titulo: 'Aún no hay análisis',
+          descripcion: puedeSolicitar ? 'Analiza una incidencia desde «Pendientes de evaluar».' : undefined,
+          nivel: 3,
+        }}
         error={errorTabla}
       />
     )
@@ -198,20 +287,31 @@ export default function ClasificacionIncidenciasIaPage() {
     <div className={estilos.pagina}>
       <AvisoDatosSimulados />
       <AvisoEnLinea tono="info" titulo="Sugerencias generadas con IA">
-        La IA sugiere la categoría, la prioridad y el tipo de atención de cada incidencia. Solo se registra lo que valides, y la
-        incidencia no se deriva automáticamente.
+        La IA sugiere la categoría, la prioridad y el tipo de atención de cada incidencia. Solo se registra lo que
+        valides, y la incidencia no se deriva automáticamente.
       </AvisoEnLinea>
 
       {incidenciaUrl !== null && enlazada.estado !== 'cargando' && (
         <Tarjeta
-          titulo={incidenciaEnlazada ? `${incidenciaEnlazada.codigo} · ${incidenciaEnlazada.tipo_evento}` : `Incidencia n.º ${incidenciaUrl}`}
+          titulo={
+            incidenciaEnlazada
+              ? `${incidenciaEnlazada.codigo} · ${incidenciaEnlazada.tipo_evento}`
+              : `Incidencia n.º ${incidenciaUrl}`
+          }
           nivel={2}
-          descripcion={incidenciaEnlazada ? incidenciaEnlazada.descripcion : 'Ya está clasificada o no está disponible. Búscala en «Análisis realizados».'}
+          descripcion={
+            incidenciaEnlazada
+              ? incidenciaEnlazada.descripcion
+              : 'Ya está clasificada o no está disponible. Búscala en «Análisis realizados».'
+          }
           acciones={
             incidenciaEnlazada && puedeSolicitar ? (
               <span className={estilosClasificacion.acciones}>
-                {botonAnalizar(incidenciaEnlazada, 'secundario')}
-                <Boton variante="fantasma" onClick={() => setManual({ id: incidenciaEnlazada.id, codigo: incidenciaEnlazada.codigo })}>
+                {botonAnalizar(incidenciaEnlazada)}
+                <Boton
+                  variante="fantasma"
+                  onClick={() => setManual({ id: incidenciaEnlazada.id, codigo: incidenciaEnlazada.codigo })}
+                >
                   Clasificar manualmente
                 </Boton>
               </span>
@@ -224,7 +324,10 @@ export default function ClasificacionIncidenciasIaPage() {
         <AvisoEnLinea
           tono={errorIa.sinIa ? 'advertencia' : 'error'}
           titulo={errorIa.sinIa ? 'La IA no está disponible' : `No se pudo analizar ${errorIa.incidencia.codigo}`}
-          accion={{ texto: 'Clasificar manualmente', onClick: () => setManual({ id: errorIa.incidencia.id, codigo: errorIa.incidencia.codigo }) }}
+          accion={{
+            texto: 'Clasificar manualmente',
+            onClick: () => setManual({ id: errorIa.incidencia.id, codigo: errorIa.incidencia.codigo }),
+          }}
         >
           {errorIa.sinIa ? `Puedes clasificar ${errorIa.incidencia.codigo} sin sugerencia de la IA.` : errorIa.texto}
         </AvisoEnLinea>

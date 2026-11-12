@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -265,15 +266,12 @@ export default function ParticipantesPage() {
               clave: 'acciones',
               titulo: 'Acciones',
               render: (a) => (
-                <Boton
-                  variante="fantasma"
-                  compacto
-                  aria-label={`Ver detalle de ${a.tipo_actividad_nombre}`}
+                <AccionFila
                   icono="eye"
+                  nombre="Ver detalle"
+                  etiqueta={`Ver detalle de ${a.tipo_actividad_nombre}`}
                   onClick={() => setDetalleActividad(a)}
-                >
-                  Ver detalle
-                </Boton>
+                />
               ),
             },
             {

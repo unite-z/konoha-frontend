@@ -4,9 +4,3 @@
   flex-direction: column;
   gap: var(--space-6);
 }
-
-.acciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
