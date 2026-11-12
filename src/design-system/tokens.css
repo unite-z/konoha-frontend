@@ -181,6 +181,24 @@
 }
 
 /*
+ * Tema «Cálido» (AV-392): fondos crema y grises tostados, con el acento elegido. Todos los pares de texto cumplen AA.
+ * Va antes de los acentos para que el tinte del menú activo sea el del acento cuando se elige uno.
+ */
+:root[data-tema='calido'] {
+  --color-bg-page: #f6f1ea;
+  --color-bg-surface: #fffcf7;
+  --color-bg-subtle: #efe8dd;
+  --color-bg-hover: #efe8dd;
+  --color-text-primary: #2a2118;
+  --color-text-muted: #6a5a48;
+  --color-text-disabled: #a3937f;
+  --color-border-default: #e6dccd;
+  --color-border-strong: #c9baa5;
+  --color-sidebar-active-bg: #ebe1d2;
+  --web-scrim: rgba(42, 33, 24, 0.5);
+}
+
+/*
  * Color de acento elegido en Configuración → Apariencia (AV-389): data-acento en <html>. Sin atributo, el azul
  * institucional. Secundarios oficiales PUCP; todos los pares cumplen WCAG AA.
  */
@@ -234,21 +252,21 @@
  * se prueba poniendo data-tema="oscuro" en <html>.
  */
 :root[data-tema='oscuro'] {
-  --color-bg-page: #021330;
-  --color-bg-surface: #031c43;
-  --color-bg-subtle: #0b2f5e;
-  --color-bg-hover: #0b2f5e;
+  --color-bg-page: #020814;
+  --color-bg-surface: #112240;
+  --color-bg-subtle: #1b3156;
+  --color-bg-hover: #1b3156;
   --color-text-primary: #f6f7f9;
-  --color-text-muted: #bdc3c9;
-  --color-text-disabled: #667892;
+  --color-text-muted: #c2c9d2;
+  --color-text-disabled: #8391a8;
   --color-text-on-action: #ffffff;
-  --color-border-default: #0b2f5e;
-  --color-border-strong: #36507a;
+  --color-border-default: #34507c;
+  --color-border-strong: #6a81a8;
   --color-action-primary: #004ea8;
   --color-action-primary-hover: #0a7bc2;
   --color-action-text: #41b9e4;
-  --color-action-subtle: #0b2f5e;
-  --color-sidebar-active-bg: #0b2f5e;
+  --color-action-subtle: #1b3156;
+  --color-sidebar-active-bg: #173059;
   --color-sidebar-active-text: #41b9e4;
   --web-focus-ring-color: #41b9e4;
   --color-info: #41b9e4;

@@ -1,10 +1,10 @@
 /**
  * Apariencia elegida por el usuario en Configuración (AV-389): tema y color de acento. Es una preferencia de este
  * navegador (no sale del dispositivo) y se aplica como atributos de `<html>`, que `tokens.css` traduce a colores:
- * `data-tema="oscuro"` y `data-acento="<nombre>"`. Sin atributos, el tema claro con el azul institucional.
+ * `data-tema="oscuro" | "calido"` y `data-acento="<nombre>"`. Sin atributos, el tema claro con el azul institucional.
  */
 
-export type Tema = 'claro' | 'oscuro' | 'sistema'
+export type Tema = 'claro' | 'calido' | 'oscuro' | 'sistema'
 export type Acento = 'institucional' | 'azul' | 'verde' | 'morado' | 'magenta'
 
 export interface Apariencia {
@@ -14,7 +14,7 @@ export interface Apariencia {
 
 export const APARIENCIA_INICIAL: Apariencia = { tema: 'claro', acento: 'institucional' }
 
-export const TEMAS: readonly Tema[] = ['claro', 'oscuro', 'sistema']
+export const TEMAS: readonly Tema[] = ['claro', 'calido', 'oscuro', 'sistema']
 export const ACENTOS: readonly Acento[] = ['institucional', 'azul', 'verde', 'morado', 'magenta']
 
 const CLAVE = 'av:apariencia'
@@ -47,6 +47,7 @@ export function guardarApariencia(apariencia: Apariencia, almacen: Pick<Storage,
 export function aplicarApariencia(apariencia: Apariencia, raiz: HTMLElement, sistemaOscuro: boolean) {
   const oscuro = apariencia.tema === 'oscuro' || (apariencia.tema === 'sistema' && sistemaOscuro)
   if (oscuro) raiz.dataset.tema = 'oscuro'
+  else if (apariencia.tema === 'calido') raiz.dataset.tema = 'calido'
   else delete raiz.dataset.tema
   if (apariencia.acento === 'institucional') delete raiz.dataset.acento
   else raiz.dataset.acento = apariencia.acento
