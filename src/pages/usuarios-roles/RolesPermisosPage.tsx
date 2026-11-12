@@ -6,7 +6,7 @@
  * - «Gestionar los permisos de cada rol» es exclusivo del superadministrador: aparece sin poder marcarse.
  * - Los sensibles (datos personales o económicos, RNF-008) llevan aviso.
  * - El rol superadministrador no aparece: tiene siempre todos los permisos.
- * - MOD-05 y partes de MOD-02 y MOD-04 aún deciden por el nombre del rol: lo dice un aviso.
+ * - Todos los módulos deciden por estos permisos (AV-382), en el servidor y en la interfaz.
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
@@ -189,10 +189,6 @@ export default function RolesPermisosPage() {
   const codigo = elegido ?? roles.datos[0]?.codigo
   return (
     <div className={estilos.pagina}>
-      <AvisoEnLinea tono="info">
-        Servicios tercerizados y parte de Inventario y Operación de campo todavía deciden por el nombre del rol: en esas
-        pantallas, cambiar un permiso aquí aún no cambia lo que la persona puede hacer.
-      </AvisoEnLinea>
       {codigo && (
         <Pestanas
           etiqueta="Roles"
