@@ -185,3 +185,39 @@ export interface PruebaConexionIa {
   duracion_ms: number
   detalle?: string
 }
+
+/** Métricas de un grupo de llamadas a la IA (AV-396). `coste_usd` es nulo si ninguna tiene precio. */
+export interface MetricasUsoIa {
+  llamadas: number
+  fallidas: number
+  duracion_media_ms: number | null
+  tokens_entrada: number
+  tokens_salida: number
+  tokens_cache: number
+  coste_usd: number | null
+  /** Llamadas correctas sin coste: el modelo no tiene precio o el proveedor no dio los tokens. */
+  sin_coste: number
+}
+
+/** `GET ia/uso/`: uso y coste de la IA en un periodo. */
+export interface UsoIa {
+  desde: string
+  hasta: string
+  totales: MetricasUsoIa & { duracion_p95_ms: number | null }
+  por_asistente: (MetricasUsoIa & { asistente: string })[]
+  por_modelo: (MetricasUsoIa & { proveedor: string; modelo: string })[]
+  por_dia: (MetricasUsoIa & { fecha: string })[]
+  historial: {
+    id: number
+    solicitado_en: string
+    asistente: string
+    proveedor: string
+    modelo: string
+    duracion_ms: number
+    correcto: boolean
+    error: string | null
+    tokens_entrada: number | null
+    tokens_salida: number | null
+    coste_usd: number | null
+  }[]
+}
