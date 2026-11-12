@@ -17,6 +17,14 @@ export interface SesionCore {
   permisos: string[]
   debe_cambiar_contrasena: boolean
   expira: InstanteIso | null
+  /** Apariencia guardada en la cuenta (AV-391); `null` o ausente si nunca la eligió. */
+  apariencia?: AparienciaCuenta | null
+}
+
+/** Tema y color de acento elegidos en Configuración → Apariencia (`PUT auth/apariencia/`, AV-391). */
+export interface AparienciaCuenta {
+  tema: 'claro' | 'oscuro' | 'sistema'
+  acento: 'institucional' | 'azul' | 'verde' | 'morado' | 'magenta'
 }
 
 export interface Credenciales {

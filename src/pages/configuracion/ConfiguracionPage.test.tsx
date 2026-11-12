@@ -5,11 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ConfiguracionPage from './ConfiguracionPage'
 
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+const api = vi.hoisted(() => ({ guardarAparienciaCuenta: vi.fn() }))
+vi.mock('@/services/api/core', () => api)
 
 const datos = new Map<string, string>()
 
 beforeEach(() => {
   datos.clear()
+  api.guardarAparienciaCuenta.mockReset().mockImplementation(async (a: unknown) => a)
   vi.stubGlobal('localStorage', {
     getItem: (clave: string) => datos.get(clave) ?? null,
     setItem: (clave: string, valor: string) => void datos.set(clave, valor),
@@ -41,6 +44,19 @@ describe('Configuración · Apariencia (AV-389)', () => {
     expect(document.documentElement.dataset.tema).toBe('oscuro')
     expect(document.documentElement.dataset.acento).toBe('verde')
     expect(JSON.parse(datos.get('av:apariencia') ?? '{}')).toEqual({ tema: 'oscuro', acento: 'verde' })
+    // También se guarda en la cuenta (AV-391).
+    expect(api.guardarAparienciaCuenta).toHaveBeenLastCalledWith({ tema: 'oscuro', acento: 'verde' })
+  })
+
+  it('si no se puede guardar en la cuenta, avisa y la deja aplicada en el navegador', async () => {
+    api.guardarAparienciaCuenta.mockRejectedValue(new Error('sin red'))
+    const usuario = userEvent.setup()
+    render(<ConfiguracionPage />)
+
+    await usuario.click(screen.getByRole('radio', { name: 'Oscuro' }))
+
+    expect(await screen.findByText(/No pudimos guardarla en tu cuenta/)).toBeTruthy()
+    expect(document.documentElement.dataset.tema).toBe('oscuro')
   })
 
   it('muestra lo que se eligió antes', () => {
