@@ -13,8 +13,8 @@
  * visible al desplegarse, fija el menú abierto.
  *
  * Los módulos con submódulos llevan un chevron que gira al plegar o desplegar su grupo (`aria-expanded`), con
- * una línea guía a la izquierda de los submódulos. Solo el grupo del módulo activo empieza abierto; al navegar a
- * otro módulo, se abre el suyo.
+ * una línea guía a la izquierda de los submódulos. Solo el grupo del módulo activo está abierto: al navegar a otro
+ * módulo se abre el suyo y se pliegan los demás, también los que se abrieron a mano (AV-388).
  *
  * RF-T-004 («Menú por rol»): cada módulo con enlace aparece solo si el rol tiene su permiso de menú
  * (`entradasMenu`). Es usabilidad: el servidor vuelve a comprobarlo.
@@ -99,13 +99,14 @@ export default function MenuLateral({ comprimido = false, onAlternarComprimido, 
   const permitidas = entradasMenu(sesion)
   const activo = activoEnMenu(pathname)
 
-  // Grupos abiertos: el del módulo activo; al cambiar de módulo se abre el nuevo (ajuste durante el render).
+  // Grupos abiertos: solo el del módulo activo. Se puede abrir otro a mano, pero al cambiar de módulo se pliegan
+  // todos menos el nuevo (AV-388; ajuste durante el render).
   const textoActivo = activo.modulo?.texto ?? null
   const [abiertos, setAbiertos] = useState<ReadonlySet<string>>(() => new Set(textoActivo ? [textoActivo] : []))
   const [activoPrevio, setActivoPrevio] = useState(textoActivo)
   if (textoActivo !== activoPrevio) {
     setActivoPrevio(textoActivo)
-    if (textoActivo && !abiertos.has(textoActivo)) setAbiertos(new Set([...abiertos, textoActivo]))
+    setAbiertos(new Set(textoActivo ? [textoActivo] : []))
   }
   function alternarGrupo(texto: string) {
     const siguiente = new Set(abiertos)
