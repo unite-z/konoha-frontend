@@ -163,3 +163,25 @@ export type SugerenciaIAGenerica<C> = Omit<SugerenciaIA, 'contenido'> & { conten
 export function claveCampo(campoId: number): string {
   return `campo_${campoId}`
 }
+
+/** Proveedor de IA que se puede elegir en Configuración (AV-395). */
+export type ProveedorIa = 'gemini' | 'deepseek'
+
+/** `GET ia/configuracion/`: proveedor y modelo activos y los que se pueden elegir. */
+export interface ConfiguracionIa {
+  proveedor: ProveedorIa
+  modelo: string
+  /** `configuracion`: elegido en esta pantalla; `entorno`: el del servidor. */
+  origen: 'configuracion' | 'entorno'
+  actualizado_en?: string
+  proveedores: { id: ProveedorIa; nombre: string; modelos: string[]; clave_configurada: boolean }[]
+}
+
+/** `POST ia/configuracion/probar/`. */
+export interface PruebaConexionIa {
+  ok: boolean
+  proveedor: ProveedorIa
+  modelo: string
+  duracion_ms: number
+  detalle?: string
+}

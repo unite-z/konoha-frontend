@@ -2,6 +2,7 @@
  * Configuración (AV-389): ajustes de cada usuario. La primera sección es «Apariencia»: el tema (claro, oscuro o el
  * del sistema) y el color de acento, de la paleta PUCP. La elección se aplica al instante, se recuerda en este
  * navegador (`utils/apariencia.ts`) y se guarda en la cuenta (AV-391) para cargarla al entrar desde otro dispositivo.
+ * Quien gestiona la IA ve además «Inteligencia artificial» (AV-395).
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
@@ -9,10 +10,13 @@ import Boton from '@/design-system/Boton'
 import Estado from '@/design-system/Estado'
 import GrupoOpciones, { type OpcionGrupo } from '@/design-system/GrupoOpciones'
 import Tarjeta from '@/design-system/Tarjeta'
+import { PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { guardarAparienciaCuenta } from '@/services/api/core'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { cambiarApariencia, leerApariencia, type Acento, type Apariencia, type Tema } from '@/utils/apariencia'
 import estilos from './Configuracion.module.css'
+import SeccionInteligenciaArtificial from './SeccionInteligenciaArtificial'
 
 const TITULO = 'Configuración'
 
@@ -39,6 +43,7 @@ export default function ConfiguracionPage() {
   usePaginaActual(TITULO, [{ texto: TITULO }])
   const [apariencia, setApariencia] = useState<Apariencia>(() => leerApariencia())
   const [sinGuardar, setSinGuardar] = useState(false)
+  const gestionaIa = usePermisos()?.includes(PERMISO_VALIDAR_IA) ?? false
 
   function cambiar(parcial: Partial<Apariencia>) {
     const nueva = { ...apariencia, ...parcial }
@@ -88,6 +93,7 @@ export default function ConfiguracionPage() {
           </section>
         </div>
       </Tarjeta>
+      {gestionaIa && <SeccionInteligenciaArtificial />}
     </div>
   )
 }
