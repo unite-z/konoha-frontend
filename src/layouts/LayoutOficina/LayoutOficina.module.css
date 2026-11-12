@@ -36,6 +36,20 @@
  * recta entre los dos (Figma, pantallas de MOD-03). `overflow: clip` recorta las esquinas sin romper `sticky`.
  */
 @media (min-width: 768px) {
+  /*
+   * Franja fija con el fondo de la página sobre el margen superior del panel (AV-393): al desplazarse, el
+   * contenido no asoma por encima de la cabecera, que se queda pegada justo debajo y no se mueve.
+   */
+  .layout::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 25;
+    height: var(--space-2);
+    background: var(--color-bg-page);
+    pointer-events: none;
+  }
+
   .columna {
     min-height: calc(100vh - 2 * var(--space-2));
     min-height: calc(100dvh - 2 * var(--space-2));
