@@ -23,7 +23,7 @@ import { listarAtenciones } from '@/services/api/tercerizados'
 import type { SugerenciaIA } from '@/types/ia'
 import type { Atencion } from '@/types/tercerizados'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
-import { cargarReportes, propuestasPorReporte, tieneInformeFinal } from './consultasApoyo'
+import { cargarReportes, propuestasPorReporte, tieneInformeFinal } from './informesAtencion'
 import estilos from './SolicitudAnalisis.module.css'
 import Estado from '@/components/ui/Estado'
 
