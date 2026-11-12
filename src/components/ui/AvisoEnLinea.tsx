@@ -18,15 +18,28 @@ export interface AvisoEnLineaProps {
   /** Explicación (texto o lista). */
   children?: ReactNode
   accion?: { texto: string; onClick: () => void }
+  /** Muestra una X para descartar el aviso sin sustituir su acción principal. */
+  onCerrar?: () => void
   /** Icono propio en lugar del del tono (`wifi-off` en «Sin conexión», Figma 353-2396). */
   icono?: NombreIcono
   /** Banda de una línea: menos relleno y texto pequeño («Sin conexión · 2 marcas pendientes de enviar», 353-2396). */
   compacto?: boolean
 }
 
-export default function AvisoEnLinea({ tono, titulo, children, accion, icono, compacto = false }: AvisoEnLineaProps) {
+export default function AvisoEnLinea({
+  tono,
+  titulo,
+  children,
+  accion,
+  onCerrar,
+  icono,
+  compacto = false,
+}: AvisoEnLineaProps) {
   return (
-    <div className={`${estilos.aviso} ${estilos[tono]} ${compacto ? estilos.compacto : ''}`} role={tono === 'error' ? 'alert' : 'status'}>
+    <div
+      className={`${estilos.aviso} ${estilos[tono]} ${compacto ? estilos.compacto : ''}`}
+      role={tono === 'error' ? 'alert' : 'status'}
+    >
       <span className={estilos.icono}>
         <Icono nombre={icono ?? ICONO_TONO[tono]} tamano="base" />
       </span>
@@ -41,6 +54,11 @@ export default function AvisoEnLinea({ tono, titulo, children, accion, icono, co
           </div>
         )}
       </div>
+      {onCerrar && (
+        <button type="button" className={estilos.cerrar} aria-label="Cerrar aviso" onClick={onCerrar}>
+          <Icono nombre="x" tamano="base" />
+        </button>
+      )}
     </div>
   )
 }
