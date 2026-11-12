@@ -1,5 +1,14 @@
 import { solicitarTercerizados } from './clienteTercerizados'
-import type { CambioIntervencionPoda, CatalogosRegistroPoda, ContratoPodaAltura, EjemplarPodaAltura, IntervencionPoda, NuevaIntervencionPoda, NuevaPodaAltura, OpcionCatalogoPoda } from '@/types/intervencionesPoda'
+import type {
+  CambioIntervencionPoda,
+  CatalogosRegistroPoda,
+  ContratoPodaAltura,
+  EjemplarPodaAltura,
+  IntervencionPoda,
+  NuevaIntervencionPoda,
+  NuevaPodaAltura,
+  OpcionCatalogoPoda,
+} from '@/types/intervencionesPoda'
 
 const BASE = '/api/v1/inventario'
 const RUTA = 'intervenciones-poda/'

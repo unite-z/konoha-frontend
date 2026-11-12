@@ -8,7 +8,14 @@ import SolicitarPodaAlturaPage from './SolicitarPodaAlturaPage'
 
 /** Poda de altura a demanda (AV-312): solicitud y ficha de la intervención solicitada. */
 
-const ALTO = { id: 3, codigo: 'EJ-0003', especie_nombre_comun: 'Molle', ubicacion: 'Jardín Central', altura_total_m: '8.00', requiere_justificacion: false }
+const ALTO = {
+  id: 3,
+  codigo: 'EJ-0003',
+  especie_nombre_comun: 'Molle',
+  ubicacion: 'Jardín Central',
+  altura_total_m: '8.00',
+  requiere_justificacion: false,
+}
 const BAJO = { ...ALTO, id: 4, codigo: 'EJ-0004', altura_total_m: '4.00', requiere_justificacion: true }
 const SOLICITADA = {
   id: 21,
@@ -87,8 +94,19 @@ beforeEach(() => {
   permiso.planificar = true
   permiso.registrar = true
   api.listarEjemplares.mockResolvedValue([ALTO, BAJO])
-  api.listarTiposIntervencion.mockResolvedValue([{ id: 3, nombre: 'Reducción de copa', descripcion: null, es_poda: true, activo: true, usos: 0 }])
-  api.listarContratosPodaAltura.mockResolvedValue([{ id: 11, numero: 'C-2026-01', proveedor: 'Arbolistas del Sur', servicio: 'Poda de altura', es_riesgo: false, vigencia_fin: '2027-06-30' }])
+  api.listarTiposIntervencion.mockResolvedValue([
+    { id: 3, nombre: 'Reducción de copa', descripcion: null, es_poda: true, activo: true, usos: 0 },
+  ])
+  api.listarContratosPodaAltura.mockResolvedValue([
+    {
+      id: 11,
+      numero: 'C-2026-01',
+      proveedor: 'Arbolistas del Sur',
+      servicio: 'Poda de altura',
+      es_riesgo: false,
+      vigencia_fin: '2027-06-30',
+    },
+  ])
   api.listarIncidenciasEjemplar.mockResolvedValue([{ id: 8, nombre: 'INC-0008' }])
   api.consultarEjemplarPodaAltura.mockImplementation((id: number) => Promise.resolve(id === BAJO.id ? BAJO : ALTO))
 })
@@ -113,16 +131,18 @@ describe('SolicitarPodaAlturaPage', () => {
     fireEvent.change(screen.getByLabelText(/Descripción/), { target: { value: 'Rama sobre la vereda' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear atención' }))
 
-    await waitFor(() => expect(api.solicitarPodaAltura).toHaveBeenCalledWith({
-      ejemplar_id: 3,
-      motivo: 'Riesgo',
-      contrato_id: 11,
-      descripcion: 'Rama sobre la vereda',
-      tipo_intervencion_id: null,
-      prioridad: 'Alta',
-      incidencia_id: null,
-      justificacion: null,
-    }))
+    await waitFor(() =>
+      expect(api.solicitarPodaAltura).toHaveBeenCalledWith({
+        ejemplar_id: 3,
+        motivo: 'Riesgo',
+        contrato_id: 11,
+        descripcion: 'Rama sobre la vereda',
+        tipo_intervencion_id: null,
+        prioridad: 'Alta',
+        incidencia_id: null,
+        justificacion: null,
+      }),
+    )
     expect(await screen.findByText('Poda solicitada al proveedor')).toBeTruthy()
   })
 
@@ -137,12 +157,16 @@ describe('SolicitarPodaAlturaPage', () => {
     const crear = screen.getByRole('button', { name: 'Crear atención' })
     expect(crear.getAttribute('aria-disabled')).toBe('true')
 
-    fireEvent.change(screen.getByLabelText(/Por qué va al proveedor/), { target: { value: 'Toca el tendido eléctrico' } })
+    fireEvent.change(screen.getByLabelText(/Por qué va al proveedor/), {
+      target: { value: 'Toca el tendido eléctrico' },
+    })
     expect(crear.getAttribute('aria-disabled')).not.toBe('true')
   })
 
   it('muestra el error del servidor y no sale del formulario', async () => {
-    api.solicitarPodaAltura.mockRejectedValue(new ErrorApi(400, 'ErrorDominio', 'El contrato no está vigente en la fecha de registro'))
+    api.solicitarPodaAltura.mockRejectedValue(
+      new ErrorApi(400, 'ErrorDominio', 'El contrato no está vigente en la fecha de registro'),
+    )
     pagina('/areas-verdes/poda-altura?ejemplar=3')
     await screen.findByText(/poda de altura mediante proveedor/)
     await screen.findByRole('option', { name: /Arbolistas del Sur/ })
@@ -163,7 +187,9 @@ describe('SolicitarPodaAlturaPage', () => {
 
 describe('IntervencionPodaPage con una poda de altura solicitada', () => {
   it('muestra el motivo y la atención, y el ingeniero registra la fecha de ejecución', async () => {
-    api.obtenerIntervencion.mockResolvedValueOnce(SOLICITADA).mockResolvedValueOnce({ ...SOLICITADA, fecha_ejecucion: '2026-11-10', estado: 'Incompleta' })
+    api.obtenerIntervencion
+      .mockResolvedValueOnce(SOLICITADA)
+      .mockResolvedValueOnce({ ...SOLICITADA, fecha_ejecucion: '2026-11-10', estado: 'Incompleta' })
     api.cambiarIntervencion.mockResolvedValue({ ...SOLICITADA, fecha_ejecucion: '2026-11-10', estado: 'Incompleta' })
     pagina('/areas-verdes/intervenciones-poda/21')
 
