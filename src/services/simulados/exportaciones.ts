@@ -1,7 +1,7 @@
 /**
  * Datos simulados de RF-REP-009 (exportaciones), solo con `VITE_DATOS_SIMULADOS=true`.
  *
- * - Tipos exportables: los del Modelo BD; la matriz de incidencias, no disponible.
+ * - Tipos exportables: los del Modelo BD, todos disponibles (como en el back-end).
  * - Historial: un almacén en memoria con 8 reportes ficticios (se pierde al recargar).
  * - Generar: valida el periodo y crea un `ReporteGenerado` con filas calculadas a partir de los parámetros.
  * - Descargar: NO genera un PDF ni un Excel real en el navegador. Entrega un CSV de texto con la cabecera de
@@ -78,9 +78,9 @@ const TIPOS: TipoExportable[] = [
     descripcion: 'Incidencias del periodo por espacio, tipo y estado',
     formatos: ['PDF', 'Excel'],
     filtros: ['periodo'],
-    disponible: false,
-    motivo_no_disponible: 'El registro de incidencias aún no está disponible',
-    limite_filas: null,
+    disponible: true,
+    motivo_no_disponible: null,
+    limite_filas: { PDF: 5000 },
   },
 ]
 
