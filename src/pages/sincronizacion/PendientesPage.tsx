@@ -4,6 +4,7 @@
  * motivo y solo desaparecen si el usuario las descarta (`pwa-offline.md`: nunca se borran solas).
  */
 import { useState } from 'react'
+import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import Estado from '@/components/ui/Estado'
@@ -18,7 +19,8 @@ import estilos from './Pendientes.module.css'
 const TITULO = 'Pendientes de sincronizar'
 
 function estadoDe(p: Pendiente, usuarioId: number | null) {
-  if (p.usuario_id !== usuarioId) return <Estado tono="neutro" texto="De otro usuario" ayuda="Se enviará cuando esa persona inicie sesión" />
+  if (p.usuario_id !== usuarioId)
+    return <Estado tono="neutro" texto="De otro usuario" ayuda="Se enviará cuando esa persona inicie sesión" />
   if (p.estado === 'rechazada') return <Estado tono="error" texto="Rechazada" />
   if (p.estado === 'enviando') return <Estado tono="info" texto="Enviando" />
   return <Estado tono="aviso" texto="Pendiente" />
@@ -44,14 +46,21 @@ export default function PendientesPage() {
       tituloOculto: true,
       render: (p) =>
         p.estado === 'rechazada' && p.usuario_id === usuarioId ? (
-          <div className={estilos.acciones}>
-            <Boton variante="secundario" compacto onClick={() => void reintentar(p.id).then(() => (usuarioId === null ? undefined : vaciarCola(usuarioId)))}>
-              Reintentar
-            </Boton>
-            <Boton variante="fantasma" compacto onClick={() => setPorDescartar(p)}>
-              Descartar
-            </Boton>
-          </div>
+          <AccionesFila>
+            <AccionFila
+              icono="refresh"
+              nombre="Reintentar"
+              etiqueta={`Reintentar ${p.descripcion}`}
+              onClick={() => void reintentar(p.id).then(() => (usuarioId === null ? undefined : vaciarCola(usuarioId)))}
+            />
+            <AccionFila
+              icono="trash"
+              nombre="Descartar"
+              etiqueta={`Descartar ${p.descripcion}`}
+              tono="peligro"
+              onClick={() => setPorDescartar(p)}
+            />
+          </AccionesFila>
         ) : null,
     },
   ]
@@ -63,7 +72,11 @@ export default function PendientesPage() {
         columnas={columnas}
         filas={filas}
         claveFila={(p) => p.id}
-        vacio={{ icono: 'circle-check', titulo: 'Todo está sincronizado', descripcion: 'No queda nada por enviar desde este dispositivo.' }}
+        vacio={{
+          icono: 'circle-check',
+          titulo: 'Todo está sincronizado',
+          descripcion: 'No queda nada por enviar desde este dispositivo.',
+        }}
         estado={filas.length === 0 ? 'vacio' : 'exito'}
       />
       {enLinea && usuarioId !== null && filas.some((p) => p.estado === 'pendiente') && (

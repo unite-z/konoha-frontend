@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -21,7 +22,7 @@ import type {
   PaginaCampo,
   ParticipantesCampo,
 } from '@/types/operacionCampo'
-import { esJefeCampo, puedeRegistrarCampo, puedeRegistrarParte } from '@/utils/operacionCampo'
+import { esJefeCampo, puedeAnularActividad, puedeRegistrarCampo, puedeRegistrarParte } from '@/utils/operacionCampo'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
@@ -35,9 +36,7 @@ import Estado from '@/components/ui/Estado'
 import { TONO_ESTADO } from '@/components/ui/tonos'
 import VerificacionActividad from './VerificacionActividad'
 import DialogoPodaMenor from './DialogoPodaMenor'
-import { conCache } from '@/sincronizacion/datosDescargados'
-
-const ACTIVIDADES_POR_PAGINA = 25
+import AnulacionActividad from './AnulacionActividad'
 
 type PaginaActividades = PaginaCampo<ActividadCampo> & { pendientes_verificacion: number }
 
@@ -49,41 +48,11 @@ function useListadoActividades() {
     q: url.get('q') ?? '',
     fecha: url.get('fecha') ?? '',
     cuadrilla_id: url.get('cuadrilla_id') ?? '',
-    verificacion: url.get('verificacion') ?? '',
+    estado_actividad: url.get('estado_actividad') ?? '',
   }
-  const parametrosRemotos: ParametrosCampo = {
-    q: params.q,
-    fecha: params.fecha,
-    cuadrilla_id: params.cuadrilla_id,
-  }
-  const claveRemota = JSON.stringify(['actividades', parametrosRemotos])
   const consulta = useConsulta(
-    JSON.stringify(['actividades-verificacion', params]),
-    async (signal) => {
-      // El contrato actual no admite filtrar ni contar por verificación. Para que el total y la paginación
-      // local sean exactos se recorren las páginas del resto de filtros. `conCache` solo interviene sin red;
-      // el reintento posterior a una mutación vuelve a consultar el servidor y renueva esa copia.
-      const actividades = await conCache(`listado-completo-${claveRemota}`, () =>
-        todosCampo<ActividadCampo>('actividades/', parametrosRemotos, signal),
-      )
-      const pendientes = actividades.filter((actividad) => !actividad.fecha_verificacion).length
-      const verificacion = String(params.verificacion ?? '')
-      const filtradas = actividades.filter((actividad) =>
-        verificacion === 'pendiente'
-          ? !actividad.fecha_verificacion
-          : verificacion === 'verificada'
-            ? Boolean(actividad.fecha_verificacion)
-            : true,
-      )
-      const inicio = (pagina - 1) * ACTIVIDADES_POR_PAGINA
-      return {
-        count: filtradas.length,
-        next: null,
-        previous: null,
-        results: filtradas.slice(inicio, inicio + ACTIVIDADES_POR_PAGINA),
-        pendientes_verificacion: pendientes,
-      } satisfies PaginaActividades
-    },
+    JSON.stringify(['actividades', params]),
+    (signal) => campoApi<PaginaActividades>('actividades/', { parametros: params, signal }),
     (datos) => datos.count === 0,
   )
   function filtrar(cambios: ParametrosCampo) {
@@ -112,6 +81,7 @@ export default function ParticipantesPage() {
   const permisos = usePermisos(),
     puedeRegistrar = puedeRegistrarCampo(permisos),
     puedeVerificar = esJefeCampo(permisos),
+    puedeAnular = puedeAnularActividad(permisos),
     // Poda menor y fotos de evidencia: quien registra en su propio parte (hoy, el capataz).
     registraParte = puedeRegistrarParte(permisos)
   const listado = useListadoActividades()
@@ -122,11 +92,13 @@ export default function ParticipantesPage() {
     // Poda registrada sin conexión (RF-T-012): su foto de evidencia se encola colgando de ella.
     [evidenciaEnCola, setEvidenciaEnCola] = useState<string | null>(null),
     [verificacionActividad, setVerificacionActividad] = useState<ActividadCampo | null>(null),
+    [anulacionActividad, setAnulacionActividad] = useState<ActividadCampo | null>(null),
     [detalleActividad, setDetalleActividad] = useState<ActividadCampo | null>(null),
     [nueva, setNueva] = useState(false),
     [poda, setPoda] = useState(false),
     [aviso, setAviso] = useState(''),
-    [avisoPendientesVisible, setAvisoPendientesVisible] = useState(true)
+    [pendientesDescartados, setPendientesDescartados] = useState<number | null>(null)
+  const pendientes = listado.consulta.datos?.pendientes_verificacion ?? 0
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
@@ -147,18 +119,18 @@ export default function ParticipantesPage() {
           {aviso}
         </AvisoEnLinea>
       )}
-      {puedeVerificar && avisoPendientesVisible && Boolean(listado.consulta.datos?.pendientes_verificacion) && (
+      {puedeVerificar && pendientes > 0 && pendientes !== pendientesDescartados && (
         <AvisoEnLinea
           tono="advertencia"
-          titulo={`${listado.consulta.datos?.pendientes_verificacion ?? 0} ${
-            listado.consulta.datos?.pendientes_verificacion === 1 ? 'actividad pendiente' : 'actividades pendientes'
+          titulo={`${pendientes} ${
+            pendientes === 1 ? 'actividad pendiente' : 'actividades pendientes'
           } de verificación`}
           accion={
-            listado.params.verificacion === 'pendiente'
+            listado.params.estado_actividad === 'Registrada'
               ? undefined
-              : { texto: 'Ver pendientes', onClick: () => listado.filtrar({ verificacion: 'pendiente' }) }
+              : { texto: 'Ver pendientes', onClick: () => listado.filtrar({ estado_actividad: 'Registrada' }) }
           }
-          onCerrar={() => setAvisoPendientesVisible(false)}
+          onCerrar={() => setPendientesDescartados(pendientes)}
         >
           Revisa las actividades de campo y registra el resultado de la verificación.
         </AvisoEnLinea>
@@ -183,15 +155,16 @@ export default function ParticipantesPage() {
             onChange={(e) => listado.filtrar({ fecha: e.target.value })}
           />
           <Selector
-            id="actividad-verificacion"
-            etiqueta="Estado de verificación"
-            valor={String(listado.params.verificacion ?? '')}
-            opcionTodos="Todos"
+            id="actividad-estado"
+            etiqueta="Estado de la actividad"
+            valor={String(listado.params.estado_actividad ?? '')}
+            opcionTodos="Todas"
             opciones={[
-              { valor: 'pendiente', texto: 'Pendientes' },
-              { valor: 'verificada', texto: 'Verificadas' },
+              { valor: 'Registrada', texto: 'Pendientes de verificar' },
+              { valor: 'Verificada', texto: 'Verificadas' },
+              { valor: 'Anulada', texto: 'Anuladas' },
             ]}
-            onCambiar={(verificacion) => listado.filtrar({ verificacion })}
+            onCambiar={(estado_actividad) => listado.filtrar({ estado_actividad })}
           />
         </div>
       </Tarjeta>
@@ -244,11 +217,32 @@ export default function ParticipantesPage() {
               ),
             },
             {
+              clave: 'estado_actividad',
+              titulo: 'Estado',
+              render: (a) => (
+                <Estado
+                  tono={
+                    a.estado_actividad === 'Anulada' ? 'error' : a.estado_actividad === 'Verificada' ? 'exito' : 'aviso'
+                  }
+                  texto={a.estado_actividad}
+                />
+              ),
+            },
+            {
               clave: 'verificacion',
               titulo: 'Verificación',
               multilinea: true,
               render: (a) =>
-                a.fecha_verificacion ? (
+                a.estado_actividad === 'Anulada' ? (
+                  <>
+                    <span className={estilos.celdaPrincipal}>
+                      Anulada por {a.anulada_por_nombre ?? 'Jefe de sección'}
+                    </span>
+                    <span className={estilos.secundario}>
+                      {a.anulada_en ? formatearFechaHora(a.anulada_en) : ''} · {a.anulacion_motivo}
+                    </span>
+                  </>
+                ) : a.fecha_verificacion ? (
                   <>
                     <span className={estilos.celdaPrincipal}>
                       Verificada por {a.verificado_por_nombre ?? 'Jefe de sección'}
@@ -265,15 +259,12 @@ export default function ParticipantesPage() {
               clave: 'acciones',
               titulo: 'Acciones',
               render: (a) => (
-                <Boton
-                  variante="fantasma"
-                  compacto
-                  aria-label={`Ver detalle de ${a.tipo_actividad_nombre}`}
+                <AccionFila
                   icono="eye"
+                  nombre="Ver detalle"
+                  etiqueta={`Ver detalle de ${a.tipo_actividad_nombre}`}
                   onClick={() => setDetalleActividad(a)}
-                >
-                  Ver detalle
-                </Boton>
+                />
               ),
             },
             {
@@ -309,22 +300,25 @@ export default function ParticipantesPage() {
                   {
                     clave: 'verificar',
                     titulo: 'Revisión',
-                    render: (a: ActividadCampo) => (
-                      <Boton
-                        variante="fantasma"
-                        compacto
-                        aria-label={`Verificar actividad ${a.id}`}
-                        onClick={() => setVerificacionActividad(a)}
-                      >
-                        {a.fecha_verificacion ? 'Actualizar verificación' : 'Verificar'}
-                      </Boton>
-                    ),
+                    render: (a: ActividadCampo) =>
+                      a.estado_actividad === 'Anulada' ? null : (
+                        <Boton
+                          variante="fantasma"
+                          compacto
+                          aria-label={`Verificar actividad ${a.id}`}
+                          onClick={() => setVerificacionActividad(a)}
+                        >
+                          {a.fecha_verificacion ? 'Actualizar verificación' : 'Verificar'}
+                        </Boton>
+                      ),
                   },
                 ]
               : []),
           ] satisfies ColumnaTabla<ActividadCampo>[]
         ).filter((columna) =>
-          ['tipo_actividad_nombre', 'cuadrilla_nombre', 'fecha', 'cantidad', 'acciones'].includes(columna.clave),
+          ['tipo_actividad_nombre', 'cuadrilla_nombre', 'fecha', 'estado_actividad', 'cantidad', 'acciones'].includes(
+            columna.clave,
+          ),
         )}
       />
       {detalleActividad && (
@@ -344,6 +338,7 @@ export default function ParticipantesPage() {
                   { etiqueta: 'Ubicación', valor: detalleActividad.area_verde_nombre },
                   { etiqueta: 'Cuadrilla', valor: detalleActividad.cuadrilla_nombre },
                   { etiqueta: 'Estado del parte', valor: detalleActividad.estado },
+                  { etiqueta: 'Estado de la actividad', valor: detalleActividad.estado_actividad },
                   {
                     etiqueta: 'Tiempo empleado',
                     valor: detalleActividad.tiempo_minutos ? `${detalleActividad.tiempo_minutos} min` : null,
@@ -370,7 +365,9 @@ export default function ParticipantesPage() {
                   setDetalleActividad(null)
                 }}
               >
-                {puedeRegistrar && detalleActividad.estado === 'Abierto'
+                {puedeRegistrar &&
+                detalleActividad.estado === 'Abierto' &&
+                detalleActividad.estado_actividad !== 'Anulada'
                   ? 'Gestionar participantes'
                   : 'Ver participantes'}
               </Boton>
@@ -407,12 +404,21 @@ export default function ParticipantesPage() {
                     etiqueta: 'Verificación',
                     valor: detalleActividad.fecha_verificacion
                       ? `${detalleActividad.verificado_por_nombre ?? 'Jefe de sección'} · ${formatearFechaHora(detalleActividad.fecha_verificacion)}`
-                      : 'Pendiente de verificar',
+                      : detalleActividad.estado_actividad === 'Anulada'
+                        ? 'No procede: actividad anulada'
+                        : 'Pendiente de verificar',
                   },
                   { etiqueta: 'Observaciones de verificación', valor: detalleActividad.verificacion_observaciones },
+                  {
+                    etiqueta: 'Anulación',
+                    valor: detalleActividad.anulada_en
+                      ? `${detalleActividad.anulada_por_nombre ?? 'Jefe de sección'} · ${formatearFechaHora(detalleActividad.anulada_en)}`
+                      : null,
+                  },
+                  { etiqueta: 'Motivo de anulación', valor: detalleActividad.anulacion_motivo, ancho: true },
                 ]}
               />
-              {puedeVerificar && (
+              {puedeVerificar && detalleActividad.estado_actividad !== 'Anulada' && (
                 <Boton
                   variante="secundario"
                   onClick={() => {
@@ -434,7 +440,6 @@ export default function ParticipantesPage() {
             setNueva(false)
             setActual(actividad)
             setAviso('Actividad registrada. Selecciona los operarios que participaron')
-            setAvisoPendientesVisible(true)
             listado.consulta.reintentar()
           }}
           onEncolado={() => {
@@ -452,7 +457,6 @@ export default function ParticipantesPage() {
             setPoda(false)
             setEvidenciaActividad(actividad)
             setAviso('Poda menor registrada. Añade la fotografía de evidencia')
-            setAvisoPendientesVisible(true)
             listado.consulta.reintentar()
           }}
           onIncidencia={(mensaje) => {
@@ -471,7 +475,7 @@ export default function ParticipantesPage() {
       {actual && (
         <DialogoParticipantes
           actividad={actual}
-          soloLectura={!puedeRegistrar || actual.estado === 'Cerrado'}
+          soloLectura={!puedeRegistrar || actual.estado === 'Cerrado' || actual.estado_actividad === 'Anulada'}
           onCerrar={() => setActual(null)}
           onGuardado={() => {
             setActual(null)
@@ -483,7 +487,11 @@ export default function ParticipantesPage() {
       {materialActividad && (
         <MaterialesActividad
           actividad={materialActividad}
-          soloLectura={!puedeRegistrar || materialActividad.estado === 'Cerrado'}
+          soloLectura={
+            !puedeRegistrar ||
+            materialActividad.estado === 'Cerrado' ||
+            materialActividad.estado_actividad === 'Anulada'
+          }
           onCerrar={() => setMaterialActividad(null)}
         />
       )}
@@ -502,7 +510,11 @@ export default function ParticipantesPage() {
           <Adjuntos
             entidad="actividad"
             registroId={evidenciaActividad.id}
-            puedeAdjuntar={registraParte && evidenciaActividad.estado === 'Abierto'}
+            puedeAdjuntar={
+              registraParte &&
+              evidenciaActividad.estado === 'Abierto' &&
+              evidenciaActividad.estado_actividad !== 'Anulada'
+            }
             tiposAceptados=".jpg,.jpeg,.png"
             ayudaCarga="JPEG o PNG, de hasta 20 MB."
             prepararArchivo={comprimirFotografia}
@@ -534,11 +546,26 @@ export default function ParticipantesPage() {
       {verificacionActividad && (
         <VerificacionActividad
           actividad={verificacionActividad}
+          puedeAnular={puedeAnular && verificacionActividad.estado_actividad === 'Registrada'}
+          onAnular={() => {
+            setAnulacionActividad(verificacionActividad)
+            setVerificacionActividad(null)
+          }}
           onCerrar={() => setVerificacionActividad(null)}
           onGuardado={() => {
             setVerificacionActividad(null)
             setAviso('Verificación registrada con su autor y fecha')
-            setAvisoPendientesVisible(true)
+            listado.consulta.reintentar()
+          }}
+        />
+      )}
+      {anulacionActividad && (
+        <AnulacionActividad
+          actividad={anulacionActividad}
+          onCerrar={() => setAnulacionActividad(null)}
+          onGuardado={() => {
+            setAnulacionActividad(null)
+            setAviso('Actividad anulada. Se conserva en el historial y deja de contar como ejecutada válida')
             listado.consulta.reintentar()
           }}
         />

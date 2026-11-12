@@ -114,6 +114,7 @@ export interface ParticipantesCampo {
   cantidad_operarios: number
   operarios: OperarioCampo[]
 }
+export type EstadoActividadCampo = 'Registrada' | 'Verificada' | 'Anulada'
 export interface ActividadCampo {
   id: number
   parte_id: number
@@ -138,6 +139,11 @@ export interface ActividadCampo {
   verificado_por_usuario_id: number | null
   verificado_por_nombre: string | null
   fecha_verificacion: string | null
+  estado_actividad: EstadoActividadCampo
+  anulada_en: string | null
+  anulada_por_usuario_id: number | null
+  anulada_por_nombre: string | null
+  anulacion_motivo: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
   ejemplar_altura_m: number | null

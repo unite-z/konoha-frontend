@@ -6,7 +6,7 @@
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
-import Boton from '@/components/ui/Boton'
+import AccionFila from '@/design-system/AccionFila'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
 import Estado from '@/components/ui/Estado'
@@ -46,7 +46,12 @@ export default function SeriesRestricciones({ series, cargando, puedeEditar, onB
       clave: 'restriccion',
       titulo: 'Restricción',
       multilinea: true,
-      render: (s) => (s.descripcion ? <CeldaDobleLinea principal={s.descripcion} detalle={s.tipo} /> : <CeldaTexto texto={s.tipo} destacado />),
+      render: (s) =>
+        s.descripcion ? (
+          <CeldaDobleLinea principal={s.descripcion} detalle={s.tipo} />
+        ) : (
+          <CeldaTexto texto={s.tipo} destacado />
+        ),
     },
     {
       clave: 'nivel',
@@ -65,10 +70,13 @@ export default function SeriesRestricciones({ series, cargando, puedeEditar, onB
       titulo: 'Acciones',
       tituloOculto: true,
       render: (s) => (
-        <Boton variante="fantasma" compacto onClick={() => setDandoDeBaja(s)}>
-          <span aria-hidden="true">Dar de baja</span>
-          <span className="sr-only">{`Dar de baja ${s.descripcion ?? s.tipo}`}</span>
-        </Boton>
+        <AccionFila
+          icono="circle-x"
+          nombre="Dar de baja"
+          etiqueta={`Dar de baja ${s.descripcion ?? s.tipo}`}
+          tono="peligro"
+          onClick={() => setDandoDeBaja(s)}
+        />
       ),
     })
   }
@@ -81,7 +89,10 @@ export default function SeriesRestricciones({ series, cargando, puedeEditar, onB
         filas={series}
         claveFila={(s) => s.clave}
         estado={cargando ? 'cargando' : 'exito'}
-        vacio={{ titulo: 'No hay restricciones próximas', descripcion: 'Las restricciones de hoy en adelante aparecerán aquí.' }}
+        vacio={{
+          titulo: 'No hay restricciones próximas',
+          descripcion: 'Las restricciones de hoy en adelante aparecerán aquí.',
+        }}
       />
       {dandoDeBaja && (
         <DialogoConfirmacion
