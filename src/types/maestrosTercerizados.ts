@@ -99,6 +99,8 @@ export interface AtencionEspecial {
   aplicaciones_realizadas: number
   estado: EstadoAtencionEspecial
   fecha_creacion: InstanteIso
+  /** Quién marcó el ejemplar (AV-154). */
+  usuario_creacion_nombre: string | null
   cancelado: boolean
   motivo_cancelacion: string | null
   fecha_cancelacion: InstanteIso | null
