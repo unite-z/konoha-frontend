@@ -45,11 +45,17 @@ export default function ContratoDetallePage() {
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = () => setAviso(null)
 
-  usePaginaActual(contrato ? contrato.numero : 'Contrato', [
-    MIGAS_TERCERIZADOS.serviciosTercerizados,
-    MIGAS_TERCERIZADOS.proveedoresContratos,
-    { texto: contrato ? contrato.numero : 'Ficha' },
-  ])
+  usePaginaActual(
+    contrato ? contrato.numero : 'Contrato',
+    [
+      MIGAS_TERCERIZADOS.serviciosTercerizados,
+      MIGAS_TERCERIZADOS.proveedoresContratos,
+      { texto: contrato ? contrato.numero : 'Ficha' },
+    ],
+    undefined,
+    // El número ya se ve en la tarjeta de la ficha, junto con el estado y la acción de editar.
+    { tituloOculto: true },
+  )
 
   let contenido
   if (id === null || (consulta.estado === 'error' && consulta.error?.estado === 404)) {

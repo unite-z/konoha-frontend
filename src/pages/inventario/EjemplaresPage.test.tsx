@@ -276,9 +276,9 @@ describe('EjemplaresPage', () => {
 
   it('ordena en una sola cronología eventos del mismo día de distintas fuentes', async () => {
     vi.mocked(listarHistorialEjemplar)
-      .mockResolvedValueOnce([{ id: 1, fecha: '2026-10-21', momento: '2026-10-21T08:00:00-05:00', tipo: 'Poda menor', origen: 'Operación de campo', ejecutor: 'Cuadrilla Norte', evidencia_id: 9 }])
+      .mockResolvedValueOnce([{ id: 1, fecha: '2026-10-21', momento: '2026-10-21T08:00:00-05:00', tipo: 'Poda menor', origen: 'Operación de campo', entidad: 'actividad', ejecutor: 'Cuadrilla Norte', evidencia_id: 9 }])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ id: 1, fecha: '2026-10-21', momento: '2026-10-21T12:00:00-05:00', tipo: 'Rama caída', origen: 'Incidencias' }])
+      .mockResolvedValueOnce([{ id: 1, fecha: '2026-10-21', momento: '2026-10-21T12:00:00-05:00', tipo: 'Rama caída', origen: 'Incidencias', entidad: 'incidencia' }])
     render(<MemoryRouter><EjemplaresPage /></MemoryRouter>)
     fireEvent.change(await screen.findByRole('searchbox', { name: 'Código nuevo o placa antigua' }), { target: { value: 'PLACA-55' } })
     fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))

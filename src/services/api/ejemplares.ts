@@ -89,6 +89,7 @@ interface EventoHistorialEjemplar {
   momento?: InstanteIso
   tipo: string
   origen: string
+  entidad: string
   ejecutor?: string | null
   detalle?: string | null
   evidencia_id?: number | null

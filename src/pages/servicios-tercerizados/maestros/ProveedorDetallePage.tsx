@@ -56,27 +56,25 @@ function Ficha({ proveedor, acciones, fallo }: { proveedor: ProveedorMaestro; ac
         )}
       </Tarjeta>
 
-      <div className={estilos.columnas}>
-        <Tarjeta titulo="Datos del proveedor" relleno="amplio">
-          <ListaDescripcion
-            elementos={[
-              { etiqueta: 'RUC', valor: proveedor.ruc ? <span className="cifra">{proveedor.ruc}</span> : null },
-              { etiqueta: 'Contratos', valor: <span className="cifra">{formatearNumero(proveedor.contratos)}</span> },
-              { etiqueta: 'Vínculo con otras empresas', valor: textoVinculo(proveedor), ancho: true },
-            ]}
-          />
-        </Tarjeta>
+      <Tarjeta titulo="Datos del proveedor" relleno="amplio">
+        <ListaDescripcion
+          elementos={[
+            { etiqueta: 'RUC', valor: proveedor.ruc ? <span className="cifra">{proveedor.ruc}</span> : null },
+            { etiqueta: 'Contratos', valor: <span className="cifra">{formatearNumero(proveedor.contratos)}</span> },
+            { etiqueta: 'Vínculo con otras empresas', valor: textoVinculo(proveedor) },
+          ]}
+        />
+      </Tarjeta>
 
-        <Tarjeta titulo="Persona de contacto" relleno="amplio">
-          <ListaDescripcion
-            elementos={[
-              { etiqueta: 'Nombre', valor: contacto.nombre },
-              { etiqueta: 'Teléfono', valor: contacto.telefono },
-              { etiqueta: 'Correo', valor: contacto.correo, ancho: true },
-            ]}
-          />
-        </Tarjeta>
-      </div>
+      <Tarjeta titulo="Persona de contacto" relleno="amplio">
+        <ListaDescripcion
+          elementos={[
+            { etiqueta: 'Nombre', valor: contacto.nombre },
+            { etiqueta: 'Teléfono', valor: contacto.telefono },
+            { etiqueta: 'Correo', valor: contacto.correo },
+          ]}
+        />
+      </Tarjeta>
     </>
   )
 }
@@ -97,11 +95,18 @@ export default function ProveedorDetallePage() {
   const [fallo, setFallo] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
-  usePaginaActual(proveedor ? proveedor.razon_social : 'Proveedor', [
-    MIGAS_TERCERIZADOS.serviciosTercerizados,
-    MIGAS_TERCERIZADOS.proveedoresContratos,
-    { texto: proveedor ? proveedor.razon_social : 'Ficha' },
-  ])
+  usePaginaActual(
+    proveedor ? proveedor.razon_social : 'Proveedor',
+    [
+      MIGAS_TERCERIZADOS.serviciosTercerizados,
+      MIGAS_TERCERIZADOS.proveedoresContratos,
+      { texto: proveedor ? proveedor.razon_social : 'Ficha' },
+    ],
+    undefined,
+    // El nombre ya se ve en la tarjeta de la ficha, junto con el estado y las acciones: el título
+    // de la cabecera quedaría repetido. Se mantiene para lectores de pantalla y la pestaña del navegador.
+    { tituloOculto: true },
+  )
 
   function alCambiarEstado(nuevo: ProveedorMaestro) {
     setActualizado(nuevo)

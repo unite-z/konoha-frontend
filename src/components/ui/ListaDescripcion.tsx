@@ -20,12 +20,16 @@ export interface ListaDescripcionProps {
    * izquierda y una línea entre filas, dentro de un marco (ficha de incidencia, Figma 388-7305).
    */
   columnas?: 'auto' | 'una' | 'filas'
+  /** Solo con `columnas="filas"`: etiqueta más ancha, para fichas con etiquetas largas (más de dos palabras). */
+  etiquetaAncha?: boolean
 }
 
-export default function ListaDescripcion({ elementos, columnas = 'auto' }: ListaDescripcionProps) {
+export default function ListaDescripcion({ elementos, columnas = 'auto', etiquetaAncha = false }: ListaDescripcionProps) {
   const visibles = elementos.filter((e): e is ElementoDescripcion => Boolean(e))
   return (
-    <dl className={`${estilos.lista} ${columnas === 'auto' ? '' : estilos[columnas]}`}>
+    <dl
+      className={`${estilos.lista} ${columnas === 'auto' ? '' : estilos[columnas]} ${columnas === 'filas' && etiquetaAncha ? estilos.etiquetaAncha : ''}`}
+    >
       {visibles.map((e) => (
         <div key={e.etiqueta} className={e.ancho ? estilos.ancho : undefined}>
           <dt className={estilos.etiqueta}>{e.etiqueta}</dt>

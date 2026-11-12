@@ -19,9 +19,10 @@ export interface LineaEstadosProps {
 export default function LineaEstados({ estado, historial }: LineaEstadosProps) {
   const actual = indiceEstado(estado)
   const fechas = fechasPorEstado(historial)
+  const pasos = pasosCiclo(estado)
   return (
-    <ol className={estilos.linea} aria-label="Ciclo de la atención">
-      {pasosCiclo(estado).map((paso, indice) => {
+    <ol className={estilos.linea} aria-label="Ciclo de la atención" data-pasos={pasos.length}>
+      {pasos.map((paso, indice) => {
         const situacion = indice < actual ? 'completado' : indice === actual ? 'actual' : 'pendiente'
         const fecha = indice <= actual ? fechas[paso] : undefined
         return (

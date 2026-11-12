@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
@@ -6,6 +7,7 @@ import { API_CORE_URL } from '@/services/api/clienteCore'
 import { API_TERCERIZADOS_URL } from '@/services/api/clienteTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { listarHistorialEjemplar, type FuenteHistorialEjemplar } from '@/services/api/ejemplares'
+import { rutaDetalleAtencion } from '@/router/rutasApp'
 import { formatearFecha } from '@/utils/formato'
 import estilos from './Catalogos.module.css'
 
@@ -51,6 +53,9 @@ export default function HistorialEjemplar({ ejemplarId }: { ejemplarId: number }
                 )}
                 {evento.reporte_id && evento.documento_id && (
                   <p><a href={`${API_TERCERIZADOS_URL}/atenciones/${evento.id}/reportes/${evento.reporte_id}/documentos/${evento.documento_id}/descarga/`}>Descargar documento del proveedor</a></p>
+                )}
+                {evento.entidad === 'atencion' && (
+                  <p><Link to={rutaDetalleAtencion(evento.id)}>Ver productos, dosis y plagas de la atención</Link></p>
                 )}
               </div>
             </li>
