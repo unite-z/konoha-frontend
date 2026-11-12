@@ -11,6 +11,7 @@
  *   la foto espera a que exista y toma su `id`.
  */
 import { useEffect, useRef, useState } from 'react'
+import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import Boton from '@/design-system/Boton'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import DialogoDetalle from '@/design-system/DialogoDetalle'
@@ -247,16 +248,17 @@ export default function Adjuntos({
       clave: 'accion',
       titulo: 'Acción',
       render: (a) => (
-        <div className={estilos.accionesArchivo}>
+        <AccionesFila>
           {a.tipo_mime.startsWith('image/') && (
-            <Boton variante="fantasma" compacto onClick={() => void visualizar(a)} aria-label={`Ver ${a.nombre}`}>
-              Ver
-            </Boton>
+            <AccionFila icono="eye" nombre="Ver" etiqueta={`Ver ${a.nombre}`} onClick={() => void visualizar(a)} />
           )}
-          <Boton variante="fantasma" compacto onClick={() => void descargar(a)} aria-label={`Descargar ${a.nombre}`}>
-            Descargar
-          </Boton>
-        </div>
+          <AccionFila
+            icono="download"
+            nombre="Descargar"
+            etiqueta={`Descargar ${a.nombre}`}
+            onClick={() => void descargar(a)}
+          />
+        </AccionesFila>
       ),
     },
   ]

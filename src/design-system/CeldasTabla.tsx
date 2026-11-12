@@ -2,7 +2,7 @@
  * Celdas de tabla: tipos de texto de «Tabla · celda» del sistema de diseño de Figma (DESIGN.md, 4.2).
  *
  * Se usan en el `render` de una columna de `TablaDatos`. Los otros tipos de Figma ya son componentes:
- * Estado → `Estado`; Acción → `Boton variante="fantasma" compacto`; Avance → `BarraAvance`.
+ * Estado → `Estado`; Acción → `AccionFila` (AV-390); Avance → `BarraAvance`.
  */
 import type { ReactNode } from 'react'
 import { SIN_VALOR } from '@/utils/formato'
