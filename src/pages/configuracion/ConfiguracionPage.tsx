@@ -2,7 +2,7 @@
  * Configuración (AV-389): ajustes de cada usuario. La primera sección es «Apariencia»: el tema (claro, oscuro o el
  * del sistema) y el color de acento, de la paleta PUCP. La elección se aplica al instante, se recuerda en este
  * navegador (`utils/apariencia.ts`) y se guarda en la cuenta (AV-391) para cargarla al entrar desde otro dispositivo.
- * Quien gestiona la IA ve además «Inteligencia artificial» (AV-395).
+ * Quien gestiona la IA ve además «Inteligencia artificial» (AV-395) y «Uso y costes de la IA» (AV-396).
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
@@ -17,6 +17,7 @@ import { usePermisos } from '@/sesion/ContextoSesion'
 import { cambiarApariencia, leerApariencia, type Acento, type Apariencia, type Tema } from '@/utils/apariencia'
 import estilos from './Configuracion.module.css'
 import SeccionInteligenciaArtificial from './SeccionInteligenciaArtificial'
+import SeccionUsoIa from './SeccionUsoIa'
 
 const TITULO = 'Configuración'
 
@@ -94,6 +95,7 @@ export default function ConfiguracionPage() {
         </div>
       </Tarjeta>
       {gestionaIa && <SeccionInteligenciaArtificial />}
+      {gestionaIa && <SeccionUsoIa />}
     </div>
   )
 }
