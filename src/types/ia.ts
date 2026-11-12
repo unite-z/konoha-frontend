@@ -82,6 +82,33 @@ export interface ContenidoSugerencia {
   decision: Decision | null
 }
 
+/** AV-355: atención de MOD-05 de la propuesta (`ContextoExtracciones` del back-end). */
+export interface AtencionExtraccion {
+  id: number
+  codigo: string
+  estado: string
+  tipo_servicio_id: number | null
+  tipo_servicio: string | null
+  proveedor: string | null
+}
+
+/** AV-355: documento analizado; `id` es el del documento asociado que pide la descarga de MOD-05. */
+export interface DocumentoExtraccion {
+  id: number
+  archivo_id: number
+  nombre: string
+  categoria: string
+}
+
+/** AV-355: informe de MOD-05 de la propuesta. */
+export interface InformeExtraccion {
+  id: number
+  revision: number
+  fecha_recepcion: FechaIso | null
+  resumen: string | null
+  documento: DocumentoExtraccion | null
+}
+
 /** SugerenciaIASerializer. */
 export interface SugerenciaIA {
   id: number
@@ -98,6 +125,9 @@ export interface SugerenciaIA {
   usuario_creacion_id: number | null
   fecha_modificacion: InstanteIso | null
   usuario_modificacion_id: number | null
+  /** Atención e informe de MOD-05 (null si el back-end no los encontró). */
+  atencion?: AtencionExtraccion | null
+  informe?: InformeExtraccion | null
 }
 
 /** Cuerpo de `POST /ia/extracciones/{id}/validar/` (ValidacionSerializer). */

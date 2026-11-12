@@ -3,6 +3,7 @@
   --dialogo-ancho: 64rem;
   width: min(var(--dialogo-ancho), calc(100vw - 2 * var(--space-6)));
   max-height: calc(100vh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
   padding: 0;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
@@ -19,6 +20,7 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 2 * var(--space-6) - 2px);
+  max-height: calc(100dvh - 2 * var(--space-6) - 2px);
 }
 
 .cabecera {
@@ -70,7 +72,9 @@
     max-width: 100vw;
     height: 100vh;
     height: 100dvh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
     max-height: 100dvh;
     border: 0;
     border-radius: 0;
@@ -101,6 +105,7 @@
 .dialogo.lateral {
   --dialogo-ancho: 32.5rem;
   height: calc(100vh - 2 * var(--space-2));
+  height: calc(100dvh - 2 * var(--space-2));
   max-height: none;
   margin: var(--space-2) var(--space-2) var(--space-2) auto;
 }

@@ -4,6 +4,7 @@
  * barra, y cuenta lo que no cabe para el «+N más» de cada día. Se prueba en `calendarioCapas.test.ts`.
  */
 import type { TipoEventoCalendario } from '@/components/ui/EventoCalendario'
+import type { FiltrosProgramaciones } from '@/services/api/planificacion'
 import type { FechaIso } from '@/types/comun'
 import type { EfectoRestriccion, EstadoProgramacion, Programacion, Restriccion } from '@/types/planificacion'
 import { rangoDelMes, type Mes } from '@/utils/calendarioRestricciones'
@@ -28,8 +29,24 @@ const TIPO_ACTIVIDAD: Record<Exclude<EstadoProgramacion, 'Cancelada'>, TipoEvent
 }
 
 export type EventoCapa =
-  | { clave: string; capa: 'restriccion'; tipo: TipoEventoCalendario; texto: string; inicio: FechaIso; fin: FechaIso; restriccion: Restriccion }
-  | { clave: string; capa: 'actividad'; tipo: TipoEventoCalendario; texto: string; inicio: FechaIso; fin: FechaIso; programacion: Programacion }
+  | {
+      clave: string
+      capa: 'restriccion'
+      tipo: TipoEventoCalendario
+      texto: string
+      inicio: FechaIso
+      fin: FechaIso
+      restriccion: Restriccion
+    }
+  | {
+      clave: string
+      capa: 'actividad'
+      tipo: TipoEventoCalendario
+      texto: string
+      inicio: FechaIso
+      fin: FechaIso
+      programacion: Programacion
+    }
 
 /** Restricciones y actividades como eventos del calendario. Las programaciones canceladas no se pintan. */
 export function eventosDeCapas(restricciones: Restriccion[], programaciones: Programacion[]): EventoCapa[] {
@@ -45,7 +62,9 @@ export function eventosDeCapas(restricciones: Restriccion[], programaciones: Pro
   for (const programacion of programaciones) {
     if (programacion.estado === 'Cancelada') continue
     const inicio = programacion.fecha_inicio_real ?? programacion.fecha_inicio_prevista
-    const fin = programacion.fecha_fin_real ?? (programacion.fecha_fin_prevista < inicio ? inicio : programacion.fecha_fin_prevista)
+    const fin =
+      programacion.fecha_fin_real ??
+      (programacion.fecha_fin_prevista < inicio ? inicio : programacion.fecha_fin_prevista)
     eventos.push({
       clave: `p-${programacion.id}`,
       capa: 'actividad',
@@ -117,7 +136,14 @@ export function distribuirSemana(dias: FechaIso[], eventos: EventoCapa[]): Seman
     ocupados[carril] ??= Array.from({ length: 7 }, () => false)
     for (let columna = desde; columna <= hasta; columna += 1) ocupados[carril][columna] = true
     if (carril < CARRILES_VISIBLES) {
-      segmentos.push({ evento, columna: desde + 1, dias: hasta - desde + 1, carril, sigueAntes: evento.inicio < lunes, sigueDespues: evento.fin > domingo })
+      segmentos.push({
+        evento,
+        columna: desde + 1,
+        dias: hasta - desde + 1,
+        carril,
+        sigueAntes: evento.inicio < lunes,
+        sigueDespues: evento.fin > domingo,
+      })
     } else {
       for (let columna = desde; columna <= hasta; columna += 1) ocultos[columna] += 1
     }
@@ -126,8 +152,13 @@ export function distribuirSemana(dias: FechaIso[], eventos: EventoCapa[]): Seman
 }
 
 /** Restricciones y actividades de un día, en el orden de la agenda. */
-export function eventosDelDia(dia: FechaIso, eventos: EventoCapa[]): { restricciones: EventoCapa[]; actividades: EventoCapa[] } {
-  const delDia = eventos.filter((evento) => evento.inicio <= dia && evento.fin >= dia).sort((a, b) => a.inicio.localeCompare(b.inicio))
+export function eventosDelDia(
+  dia: FechaIso,
+  eventos: EventoCapa[],
+): { restricciones: EventoCapa[]; actividades: EventoCapa[] } {
+  const delDia = eventos
+    .filter((evento) => evento.inicio <= dia && evento.fin >= dia)
+    .sort((a, b) => a.inicio.localeCompare(b.inicio))
   return {
     restricciones: delDia.filter((evento) => evento.capa === 'restriccion'),
     actividades: delDia.filter((evento) => evento.capa === 'actividad'),
@@ -144,8 +175,10 @@ export function tituloDia(dia: FechaIso): string {
 export function etiquetaDia(dia: FechaIso, eventos: EventoCapa[]): string {
   const { restricciones, actividades } = eventosDelDia(dia, eventos)
   const partes = [tituloDia(dia).toLowerCase()]
-  if (restricciones.length > 0) partes.push(`${restricciones.length} ${restricciones.length === 1 ? 'restricción' : 'restricciones'}`)
-  if (actividades.length > 0) partes.push(`${actividades.length} ${actividades.length === 1 ? 'actividad' : 'actividades'}`)
+  if (restricciones.length > 0)
+    partes.push(`${restricciones.length} ${restricciones.length === 1 ? 'restricción' : 'restricciones'}`)
+  if (actividades.length > 0)
+    partes.push(`${actividades.length} ${actividades.length === 1 ? 'actividad' : 'actividades'}`)
   return partes.join(', ')
 }
 
@@ -163,13 +196,17 @@ export function diasDeSemana(fecha: FechaIso): FechaIso[] {
 export function tituloSemana(dias: FechaIso[]): string {
   const [inicio, fin] = [dias[0], dias[6]]
   const mesFin = `${MESES_CORTOS[Number(fin.slice(5, 7)) - 1]} ${fin.slice(0, 4)}`
-  if (inicio.slice(0, 7) === fin.slice(0, 7)) return `${Number(inicio.slice(8, 10))} al ${Number(fin.slice(8, 10))} ${mesFin}`
+  if (inicio.slice(0, 7) === fin.slice(0, 7))
+    return `${Number(inicio.slice(8, 10))} al ${Number(fin.slice(8, 10))} ${mesFin}`
   return `${Number(inicio.slice(8, 10))} ${MESES_CORTOS[Number(inicio.slice(5, 7)) - 1]} al ${Number(fin.slice(8, 10))} ${mesFin}`
 }
 
 /** Fila «todo el día» de la semana: restricciones y actividades de varios días, en carriles. */
 export function filaTodoElDia(dias: FechaIso[], eventos: EventoCapa[]): SemanaCapas {
-  return distribuirSemana(dias, eventos.filter((evento) => evento.capa === 'restriccion' || evento.inicio !== evento.fin))
+  return distribuirSemana(
+    dias,
+    eventos.filter((evento) => evento.capa === 'restriccion' || evento.inicio !== evento.fin),
+  )
 }
 
 /** Actividades de un solo día, para la columna de ese día. */
@@ -180,7 +217,9 @@ export function actividadesDeUnDia(dia: FechaIso, eventos: EventoCapa[]): Evento
 /** Restricciones que coinciden con los días de una actividad («Coincide con»). */
 export function coincidencias(actividad: EventoCapa, eventos: EventoCapa[]): EventoCapa[] {
   return eventos
-    .filter((evento) => evento.capa === 'restriccion' && evento.inicio <= actividad.fin && evento.fin >= actividad.inicio)
+    .filter(
+      (evento) => evento.capa === 'restriccion' && evento.inicio <= actividad.fin && evento.fin >= actividad.inicio,
+    )
     .sort((a, b) => a.inicio.localeCompare(b.inicio))
 }
 
@@ -193,14 +232,29 @@ export function actividadesDelPeriodo(desde: FechaIso, hasta: FechaIso, eventos:
 
 // --- Filtros (se conservan al cambiar de vista) ----------------------------------------------------------
 
-/** Filtros del calendario; cadena vacía es «todos». Cuadrilla, sector y lugar llegan con AV-254. */
+/**
+ * Filtros del calendario; cadena vacía es «todos». Tipo y proveedor se aplican en el cliente (`filtrarEventos`);
+ * cuadrilla, sector y lugar los aplica el servidor (`cuadrilla_id`, `sector_id`, `lugar_id` de `GET programaciones`).
+ */
 export interface FiltrosCalendario {
   /** Tipos de servicio elegidos (varios, como en Figma); vacío, todos. */
   tipos: string[]
   proveedor: string
+  cuadrilla: string
+  sector: string
+  lugar: string
 }
 
-export const SIN_FILTROS: FiltrosCalendario = { tipos: [], proveedor: '' }
+export const SIN_FILTROS: FiltrosCalendario = { tipos: [], proveedor: '', cuadrilla: '', sector: '', lugar: '' }
+
+/** Parámetros de `GET programaciones` que salen de los filtros; los que están en «todos» no se envían. */
+export function filtrosServidor({ cuadrilla, sector, lugar }: FiltrosCalendario): FiltrosProgramaciones {
+  return {
+    ...(cuadrilla ? { cuadrilla_id: Number(cuadrilla) } : {}),
+    ...(sector ? { sector_id: Number(sector) } : {}),
+    ...(lugar ? { lugar_id: Number(lugar) } : {}),
+  }
+}
 
 /** Valor del filtro de proveedor para las actividades del personal propio. */
 export const PERSONAL_PROPIO = 'propio'
@@ -231,15 +285,24 @@ export function opcionesProveedor(eventos: EventoCapa[]): OpcionFiltro[] {
     if (proveedor_id === null) hayPropio = true
     else proveedores.set(String(proveedor_id), proveedor ?? `Proveedor ${proveedor_id}`)
   }
-  const opciones = [...proveedores].map(([valor, texto]) => ({ valor, texto })).sort((a, b) => a.texto.localeCompare(b.texto, 'es'))
+  const opciones = [...proveedores]
+    .map(([valor, texto]) => ({ valor, texto }))
+    .sort((a, b) => a.texto.localeCompare(b.texto, 'es'))
   return hayPropio ? [{ valor: PERSONAL_PROPIO, texto: 'Personal propio' }, ...opciones] : opciones
 }
 
-/** Un chip por filtro aplicado («Tipo: Corte de césped», «Proveedor: Podas Altura Demo»), con los filtros sin él. */
+export interface CatalogosChips {
+  cuadrillas?: OpcionFiltro[]
+  sectores?: OpcionFiltro[]
+  lugares?: OpcionFiltro[]
+}
+
+/** Un chip por filtro aplicado («Tipo: Corte de césped», «Cuadrilla: Norte»), con los filtros sin él. */
 export function chipsFiltros(
   filtros: FiltrosCalendario,
   tipos: OpcionFiltro[],
   proveedores: OpcionFiltro[],
+  catalogos: CatalogosChips = {},
 ): { clave: string; texto: string; sin: FiltrosCalendario }[] {
   const chips = filtros.tipos.map((tipo) => ({
     clave: `tipo-${tipo}`,
@@ -251,6 +314,19 @@ export function chipsFiltros(
       clave: 'proveedor',
       texto: `Proveedor: ${proveedores.find((p) => p.valor === filtros.proveedor)?.texto ?? filtros.proveedor}`,
       sin: { ...filtros, proveedor: '' },
+    })
+  }
+  const unicos = [
+    { campo: 'cuadrilla', rotulo: 'Cuadrilla', opciones: catalogos.cuadrillas },
+    { campo: 'sector', rotulo: 'Sector', opciones: catalogos.sectores },
+    { campo: 'lugar', rotulo: 'Lugar', opciones: catalogos.lugares },
+  ] as const
+  for (const { campo, rotulo, opciones } of unicos) {
+    if (!filtros[campo]) continue
+    chips.push({
+      clave: campo,
+      texto: `${rotulo}: ${opciones?.find((o) => o.valor === filtros[campo])?.texto ?? filtros[campo]}`,
+      sin: { ...filtros, [campo]: '' },
     })
   }
   return chips
@@ -269,11 +345,18 @@ export function puntoDelDia(dia: FechaIso, eventos: EventoCapa[]): PuntoDia | nu
 }
 
 /** Días de la semana con algún evento, en orden, con «Lun 9» y sus eventos (restricciones y actividades). */
-export function agendaSemana(dias: FechaIso[], eventos: EventoCapa[]): { dia: FechaIso; texto: string; eventos: EventoCapa[] }[] {
+export function agendaSemana(
+  dias: FechaIso[],
+  eventos: EventoCapa[],
+): { dia: FechaIso; texto: string; eventos: EventoCapa[] }[] {
   return dias
     .map((dia, indice) => {
       const { restricciones, actividades } = eventosDelDia(dia, eventos)
-      return { dia, texto: `${DIAS_SEMANA_CORTOS[indice]} ${Number(dia.slice(8, 10))}`, eventos: [...actividades, ...restricciones] }
+      return {
+        dia,
+        texto: `${DIAS_SEMANA_CORTOS[indice]} ${Number(dia.slice(8, 10))}`,
+        eventos: [...actividades, ...restricciones],
+      }
     })
     .filter((d) => d.eventos.length > 0)
 }

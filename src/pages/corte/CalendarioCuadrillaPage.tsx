@@ -24,18 +24,35 @@ export default function CalendarioCuadrillaPage() {
   const dias = diasDeSemana(fecha)
   const desde = dias[0]
   const hasta = dias[6]
-  const consulta = useConsulta(`calendario-cuadrilla:${desde}`, (signal) => obtenerCalendarioCuadrilla(desde, hasta, signal))
+  const consulta = useConsulta(`calendario-cuadrilla:${desde}`, (signal) =>
+    obtenerCalendarioCuadrilla(desde, hasta, signal),
+  )
 
   let contenido
   if (consulta.estado === 'error' && !consulta.datos) {
-    contenido = <EstadoError titulo="No pudimos cargar el calendario" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    contenido = (
+      <EstadoError
+        titulo="No pudimos cargar el calendario"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   } else if (!consulta.datos) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="tarjetas" texto="Cargando el calendario…" /> : null
   } else {
     contenido = (
       <>
-        <p className={estilos.ciclo}>{consulta.datos.cuadrilla} · solo lectura</p>
-        <VistaMovil fecha={fecha} hoy={hoy} eventos={eventosDeCapas(consulta.datos.restricciones, consulta.datos.programaciones)} onCambiarFecha={setFecha} />
+        <p className={estilos.ciclo}>
+          {consulta.datos.cuadrilla
+            ? `${consulta.datos.cuadrilla} · solo lectura`
+            : 'Sin cuadrilla asignada · solo lectura'}
+        </p>
+        <VistaMovil
+          fecha={fecha}
+          hoy={hoy}
+          eventos={eventosDeCapas(consulta.datos.restricciones, consulta.datos.programaciones)}
+          onCambiarFecha={setFecha}
+        />
       </>
     )
   }

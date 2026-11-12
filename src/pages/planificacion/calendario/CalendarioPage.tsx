@@ -32,6 +32,7 @@ import {
   diasDeSemana,
   eventosDeCapas,
   filtrarEventos,
+  filtrosServidor,
   opcionesProveedor,
   semanasDelMes,
   tituloSemana,
@@ -44,6 +45,7 @@ import PanelProgramarCiclo from './PanelProgramarCiclo'
 import PanelFiltros from './PanelFiltros'
 import VistaLista from './VistaLista'
 import VistaMovil from './VistaMovil'
+import { useCatalogosCalendario } from './useCatalogosCalendario'
 import VistaMes from './VistaMes'
 import VistaSemana from './VistaSemana'
 import estilos from './Calendario.module.css'
@@ -91,16 +93,27 @@ export default function CalendarioPage() {
   const dias = diasDeSemana(fecha)
   const rangoMes = rangoDelMes(mes)
   const { desde, hasta } =
-    vista === 'mes' ? { desde: semanas[0][0], hasta: semanas[semanas.length - 1][6] }
-    : vista === 'semana' ? { desde: dias[0], hasta: dias[6] }
-    : rangoMes
-  const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
-  const programaciones = useConsulta(`calendario-programaciones:${desde}:${hasta}`, (signal) => listarProgramaciones(desde, hasta, signal))
+    vista === 'mes'
+      ? { desde: semanas[0][0], hasta: semanas[semanas.length - 1][6] }
+      : vista === 'semana'
+        ? { desde: dias[0], hasta: dias[6] }
+        : rangoMes
+  const restricciones = useConsulta(`calendario-restricciones:${desde}:${hasta}`, (signal) =>
+    listarRestricciones(desde, hasta, signal),
+  )
+  // Cuadrilla, sector y lugar los filtra el servidor; tipo y proveedor, el cliente (`filtrarEventos`).
+  const delServidor = filtrosServidor(filtros)
+  const programaciones = useConsulta(
+    `calendario-programaciones:${desde}:${hasta}:${JSON.stringify(delServidor)}`,
+    (signal) => listarProgramaciones(desde, hasta, signal, delServidor),
+  )
+  const catalogos = useCatalogosCalendario()
   const servicios = useConsulta('calendario-servicios', listarServiciosPeriodicos)
   const tipos = (servicios.datos ?? []).map((servicio) => ({ valor: String(servicio.id), texto: servicio.nombre }))
-  const todos = restricciones.datos && programaciones.datos ? eventosDeCapas(restricciones.datos, programaciones.datos) : []
+  const todos =
+    restricciones.datos && programaciones.datos ? eventosDeCapas(restricciones.datos, programaciones.datos) : []
   const proveedores = opcionesProveedor(todos)
-  const chips = chipsFiltros(filtros, tipos, proveedores)
+  const chips = chipsFiltros(filtros, tipos, proveedores, catalogos)
   const conError = [restricciones, programaciones].find((consulta) => consulta.estado === 'error' && !consulta.datos)
 
   /** Mes o semana anterior o siguiente; en el mes, el día pasa al primero del mes nuevo (o a hoy). */
@@ -117,9 +130,18 @@ export default function CalendarioPage() {
 
   let contenido
   if (conError) {
-    contenido = <EstadoError titulo="No pudimos cargar el calendario" descripcion={conError.error?.detalle ?? ''} onReintentar={conError.reintentar} />
+    contenido = (
+      <EstadoError
+        titulo="No pudimos cargar el calendario"
+        descripcion={conError.error?.detalle ?? ''}
+        onReintentar={conError.reintentar}
+      />
+    )
   } else if (!restricciones.datos || !programaciones.datos) {
-    contenido = restricciones.cargaVisible || programaciones.cargaVisible ? <EstadoCarga forma="tabla" texto="Cargando el calendario…" /> : null
+    contenido =
+      restricciones.cargaVisible || programaciones.cargaVisible ? (
+        <EstadoCarga forma="tabla" texto="Cargando el calendario…" />
+      ) : null
   } else {
     const eventos = filtrarEventos(todos, filtros)
     const visibles = vista === 'semana' ? { desde: dias[0], hasta: dias[6] } : rangoMes
@@ -136,43 +158,60 @@ export default function CalendarioPage() {
             />
           )
         : elegida && (
-            <DetalleActividad actividad={elegida} eventos={eventos} onCerrar={() => setActividad(null)} onReprogramar={puedeEditar ? setReprogramando : undefined} />
+            <DetalleActividad
+              actividad={elegida}
+              eventos={eventos}
+              onCerrar={() => setActividad(null)}
+              onReprogramar={puedeEditar ? setReprogramando : undefined}
+            />
           )
-    contenido = chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
-      <div className={estilos.sinResultados}>
-        <EstadoVacio
-          icono="filter"
-          centrado
-          titulo="No hay actividades con estos filtros"
-          accion={
-            <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>
-              Limpiar filtros
-            </Boton>
-          }
-        />
-      </div>
-    ) : (
-      <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
-        {vista === 'lista' ? (
-          <VistaLista eventos={eventos} desde={rangoMes.desde} hasta={rangoMes.hasta} onReprogramar={puedeEditar ? setReprogramando : undefined} />
-        ) : vista === 'mes' ? (
-          <VistaMes
-            semanas={semanas}
-            eventos={eventos}
-            mes={fecha.slice(0, 7)}
-            hoy={hoy}
-            seleccionado={agendaAbierta ? fecha : null}
-            onSeleccionar={(dia) => {
-              setFecha(dia)
-              setAgendaAbierta(true)
-            }}
+    contenido =
+      chips.length > 0 && actividadesDelPeriodo(visibles.desde, visibles.hasta, eventos).length === 0 ? (
+        <div className={estilos.sinResultados}>
+          <EstadoVacio
+            icono="filter"
+            centrado
+            titulo="No hay actividades con estos filtros"
+            accion={
+              <Boton variante="secundario" onClick={() => setFiltros(SIN_FILTROS)}>
+                Limpiar filtros
+              </Boton>
+            }
           />
-        ) : (
-          <VistaSemana dias={dias} eventos={eventos} hoy={hoy} seleccionada={actividad} onSeleccionar={setActividad} />
-        )}
-        {lateral}
-      </div>
-    )
+        </div>
+      ) : (
+        <div className={`${estilos.calendarioYAgenda} ${lateral ? '' : estilos.sinAgenda}`}>
+          {vista === 'lista' ? (
+            <VistaLista
+              eventos={eventos}
+              desde={rangoMes.desde}
+              hasta={rangoMes.hasta}
+              onReprogramar={puedeEditar ? setReprogramando : undefined}
+            />
+          ) : vista === 'mes' ? (
+            <VistaMes
+              semanas={semanas}
+              eventos={eventos}
+              mes={fecha.slice(0, 7)}
+              hoy={hoy}
+              seleccionado={agendaAbierta ? fecha : null}
+              onSeleccionar={(dia) => {
+                setFecha(dia)
+                setAgendaAbierta(true)
+              }}
+            />
+          ) : (
+            <VistaSemana
+              dias={dias}
+              eventos={eventos}
+              hoy={hoy}
+              seleccionada={actividad}
+              onSeleccionar={setActividad}
+            />
+          )}
+          {lateral}
+        </div>
+      )
   }
 
   return (
@@ -214,84 +253,84 @@ export default function CalendarioPage() {
       </div>
 
       <div className={`${estilos.soloEscritorio} ${estilos.pagina}`}>
-
-      <Pestanas
-        etiqueta="Vista del calendario"
-        pestanas={VISTAS}
-        valor={vista}
-        onCambiar={(valor) => setVista(valor as Vista)}
-        barra={
-          <>
-            <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
-              <span className="sr-only">{vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}</span>
-            </Boton>
-            <Boton variante="secundario" compacto icono="chevron-right" onClick={() => desplazar(1)}>
-              <span className="sr-only">{vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}</span>
-            </Boton>
-            <h2 className={estilos.tituloMes} aria-live="polite">
-              {vista === 'semana' ? tituloSemana(dias) : nombreMes(fecha)}
-            </h2>
-            <Boton
-              variante="fantasma"
-              compacto
-              onClick={() => {
-                setFecha(hoy)
-                setActividad(null)
-              }}
-            >
-              Hoy
-            </Boton>
-            <span className={estilos.espacio} />
-            <span className={estilos.anclaFiltros}>
-              <Boton
-                variante="secundario"
-                compacto
-                icono="filter"
-                aria-expanded={filtrosAbiertos}
-                aria-controls="panel-filtros-calendario"
-                onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
-              >
-                {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
+        <Pestanas
+          etiqueta="Vista del calendario"
+          pestanas={VISTAS}
+          valor={vista}
+          onCambiar={(valor) => setVista(valor as Vista)}
+          barra={
+            <>
+              <Boton variante="secundario" compacto icono="chevron-left" onClick={() => desplazar(-1)}>
+                <span className="sr-only">{vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}</span>
               </Boton>
-              {filtrosAbiertos && (
-                <PanelFiltros
-                  id="panel-filtros-calendario"
-                  filtros={filtros}
-                  tipos={tipos}
-                  proveedores={proveedores}
-                  onAplicar={(nuevos) => {
-                    setFiltros(nuevos)
-                    setFiltrosAbiertos(false)
-                  }}
-                  onCerrar={() => setFiltrosAbiertos(false)}
-                />
-              )}
-            </span>
-          </>
-        }
-      >
-        <div className={estilos.pagina}>
-          <ChipsFiltrosActivos
-            filtros={chips}
-            onQuitar={(clave) => setFiltros(chips.find((chip) => chip.clave === clave)?.sin ?? filtros)}
-            onLimpiar={() => setFiltros(SIN_FILTROS)}
-          />
+              <Boton variante="secundario" compacto icono="chevron-right" onClick={() => desplazar(1)}>
+                <span className="sr-only">{vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}</span>
+              </Boton>
+              <h2 className={estilos.tituloMes} aria-live="polite">
+                {vista === 'semana' ? tituloSemana(dias) : nombreMes(fecha)}
+              </h2>
+              <Boton
+                variante="fantasma"
+                compacto
+                onClick={() => {
+                  setFecha(hoy)
+                  setActividad(null)
+                }}
+              >
+                Hoy
+              </Boton>
+              <span className={estilos.espacio} />
+              <span className={estilos.anclaFiltros}>
+                <Boton
+                  variante="secundario"
+                  compacto
+                  icono="filter"
+                  aria-expanded={filtrosAbiertos}
+                  aria-controls="panel-filtros-calendario"
+                  onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
+                >
+                  {chips.length > 0 ? `Filtros · ${chips.length}` : 'Filtros'}
+                </Boton>
+                {filtrosAbiertos && (
+                  <PanelFiltros
+                    id="panel-filtros-calendario"
+                    filtros={filtros}
+                    tipos={tipos}
+                    proveedores={proveedores}
+                    catalogos={catalogos}
+                    onAplicar={(nuevos) => {
+                      setFiltros(nuevos)
+                      setFiltrosAbiertos(false)
+                    }}
+                    onCerrar={() => setFiltrosAbiertos(false)}
+                  />
+                )}
+              </span>
+            </>
+          }
+        >
+          <div className={estilos.pagina}>
+            <ChipsFiltrosActivos
+              filtros={chips}
+              onQuitar={(clave) => setFiltros(chips.find((chip) => chip.clave === clave)?.sin ?? filtros)}
+              onLimpiar={() => setFiltros(SIN_FILTROS)}
+            />
 
-          {contenido}
+            {contenido}
+          </div>
+        </Pestanas>
+
+        <div className={estilos.leyenda} aria-label="Leyenda del calendario" role="group">
+          <span className={estilos.rotuloLeyenda}>Actividades</span>
+          <EventoCalendario tipo="programada" texto="Programada" />
+          <EventoCalendario tipo="enCurso" texto="En curso" />
+          <EventoCalendario tipo="completada" texto="Completada" />
+          <span className={estilos.separador} aria-hidden="true" />
+          <span className={estilos.rotuloLeyenda}>Restricciones</span>
+          <EventoCalendario tipo="prohibicion" texto="Prohibición" />
+          <EventoCalendario tipo="aviso" texto="Aviso" />
+          <EventoCalendario tipo="favorable" texto="Favorable" />
         </div>
-      </Pestanas>
-
-      <div className={estilos.leyenda} aria-label="Leyenda del calendario" role="group">
-        <span className={estilos.rotuloLeyenda}>Actividades</span>
-        <EventoCalendario tipo="programada" texto="Programada" />
-        <EventoCalendario tipo="enCurso" texto="En curso" />
-        <EventoCalendario tipo="completada" texto="Completada" />
-        <span className={estilos.separador} aria-hidden="true" />
-        <span className={estilos.rotuloLeyenda}>Restricciones</span>
-        <EventoCalendario tipo="prohibicion" texto="Prohibición" />
-        <EventoCalendario tipo="aviso" texto="Aviso" />
-        <EventoCalendario tipo="favorable" texto="Favorable" />
-      </div>
       </div>
 
       {registrando && (
@@ -318,7 +357,9 @@ export default function CalendarioPage() {
               const requerimiento = textoRequerimiento(programada)
               const avisoCiclos: AvisoCiclos = {
                 mensaje: 'Ciclo programado',
-                detalle: requerimiento ? `Alerta atendida · ${requerimiento}.` : `${programada.servicio}: alerta atendida.`,
+                detalle: requerimiento
+                  ? `Alerta atendida · ${requerimiento}.`
+                  : `${programada.servicio}: alerta atendida.`,
               }
               void navegar(RUTAS_PLANIFICACION.ciclos, { state: { aviso: avisoCiclos } })
               return
@@ -341,7 +382,9 @@ export default function CalendarioPage() {
           onProgramada={(nueva) => {
             setReprogramando(null)
             setActividad(null)
-            setAviso(`${nueva.servicio} reprogramado del ${nueva.fecha_inicio_prevista.slice(8, 10)} al ${nueva.fecha_fin_prevista.slice(8, 10)}.`)
+            setAviso(
+              `${nueva.servicio} reprogramado del ${nueva.fecha_inicio_prevista.slice(8, 10)} al ${nueva.fecha_fin_prevista.slice(8, 10)}.`,
+            )
             programaciones.reintentar()
           }}
         />

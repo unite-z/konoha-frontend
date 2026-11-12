@@ -7,9 +7,9 @@ function responder(estado: number, cuerpo: unknown = {}) {
   return peticiones
 }
 
-function cabeceras(peticiones: ReturnType<typeof responder>): Record<string, string> {
+function cabeceras(peticiones: ReturnType<typeof responder>): Headers {
   const [, opciones] = peticiones.mock.calls[0] as unknown as [string, RequestInit]
-  return opciones.headers as Record<string, string>
+  return new Headers(opciones.headers)
 }
 
 afterEach(() => {
@@ -23,11 +23,11 @@ describe('solicitar con la sesión de MOD-01', () => {
 
     const escritura = responder(201)
     await solicitar('ia/extracciones/', { metodo: 'POST', cuerpo: { reporte_id: 1 } })
-    expect(cabeceras(escritura)['X-XSRF-TOKEN']).toBe('ab=c')
+    expect(cabeceras(escritura).get('X-XSRF-TOKEN')).toBe('ab=c')
 
     const lectura = responder(200)
     await solicitar('ia/extracciones/')
-    expect(cabeceras(lectura)['X-XSRF-TOKEN']).toBeUndefined()
+    expect(cabeceras(lectura).get('X-XSRF-TOKEN')).toBeNull()
   })
 
   it('un 401 avisa de que la sesión se perdió y lanza el error', async () => {
@@ -57,7 +57,7 @@ describe('multipart y blob (RF-IA-006)', () => {
     await solicitar('ia/evidencias-fitosanitarias/', { metodo: 'POST', formulario })
     const [, opciones] = peticiones.mock.calls[0] as unknown as [string, RequestInit]
     expect(opciones.body).toBe(formulario)
-    expect(cabeceras(peticiones)['Content-Type']).toBeUndefined()
+    expect(cabeceras(peticiones).get('Content-Type')).toBeNull()
   })
 
   it('solicitarBlob devuelve el archivo y, si falla, el ErrorApi del cuerpo', async () => {

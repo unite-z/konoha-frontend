@@ -25,6 +25,7 @@ export default function EditorInsumos({ idBase, insumos, onCambiar, unidades, er
     <div className={estilos.pila}>
       <datalist id={idUnidades}>
         {unidades.map((u) => (
+          // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- sugerencia de datalist: el valor es su texto
           <option key={u} value={u} />
         ))}
       </datalist>
