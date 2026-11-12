@@ -125,6 +125,16 @@ verificación. La respuesta conserva `verificacion_observaciones`,
 separados de `observaciones` y `fecha_hora_actividad`, que pertenecen a la
 ejecución del capataz. Cada cambio se incorpora al historial común de la actividad.
 
+## AV-384: anulación auditable
+
+`PUT /api/v1/operacion-campo/actividades/{id}/anulacion/` recibe un `motivo`
+obligatorio. `CAM.PARTE.ANULAR` se reserva a la jefatura y solo permite la
+transición de `Registrada` a `Anulada`; una actividad verificada o anulada no
+admite esa transición. Las anuladas siguen visibles con su responsable, fecha y
+motivo, pero quedan en solo lectura. El listado filtra y pagina en el servidor
+por `estado_actividad` y devuelve `pendientes_verificacion`, que cuenta únicamente
+las registradas dentro del alcance y los filtros activos.
+
 ## AV-82: fotografías de actividades
 
 El diálogo de fotografías reutiliza `Adjuntos` de MOD-01 con entidad `actividad`.

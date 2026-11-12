@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import HistorialCambios from '@/components/core/HistorialCambios'
+import Boton from '@/components/ui/Boton'
 import { AreaTexto } from '@/components/ui/CampoFormulario'
 import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import { campoApi } from '@/services/api/operacionCampo'
@@ -12,9 +13,11 @@ interface Props {
   actividad: ActividadCampo
   onCerrar: () => void
   onGuardado: (actividad: ActividadCampo) => void
+  puedeAnular?: boolean
+  onAnular?: () => void
 }
 
-export default function VerificacionActividad({ actividad, onCerrar, onGuardado }: Props) {
+export default function VerificacionActividad({ actividad, onCerrar, onGuardado, puedeAnular = false, onAnular }: Props) {
   const [observaciones, setObservaciones] = useState(actividad.verificacion_observaciones ?? '')
   const [error, setError] = useState('')
   const mutacion = useMutacionCampo()
@@ -78,6 +81,11 @@ export default function VerificacionActividad({ actividad, onCerrar, onGuardado 
         error={error}
         ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
       />
+      {puedeAnular && onAnular && (
+        <Boton variante="destructivo" onClick={onAnular} deshabilitado={mutacion.enviando}>
+          Anular actividad
+        </Boton>
+      )}
       <HistorialCambios entidad="actividad" registroId={actividad.id} presentacion="actividad" />
     </DialogoFormulario>
   )

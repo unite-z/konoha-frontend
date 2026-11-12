@@ -50,6 +50,7 @@ const ACCION: Record<string, string> = {
   CambioEstado: 'Cambio de estado',
   CambioRol: 'Cambio de rol',
   BajaLogica: 'Baja',
+  Anulacion: 'Anulación',
 }
 
 export function textoAccion(accion: string): string {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { esJefeCampo, hoyLima, puedeRegistrarCampo, sumarDiasCampo, validarEncargoCampo } from './operacionCampo'
+import { esJefeCampo, hoyLima, puedeAnularActividad, puedeRegistrarCampo, sumarDiasCampo, validarEncargoCampo } from './operacionCampo'
 import { destinoCampo, RUTAS_CAMPO } from '../router/rutasCampo'
 import type { EntradaEncargo } from '../types/operacionCampo'
 
@@ -24,12 +24,14 @@ describe('Operación de campo',()=>{
   it('separa la gestión de cuadrillas del registro de actividades',()=>{
     // Permisos de MOD-04 de cada rol (V9): las reglas deciden por ellos (AV-382).
     const capataz = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.REGISTRAR']
-    const jefe = ['CAM.CUADRILLA.GESTIONAR', 'CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR', 'CAM.PARTE.VERIFICAR']
+    const jefe = ['CAM.CUADRILLA.GESTIONAR', 'CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR', 'CAM.PARTE.VERIFICAR', 'CAM.PARTE.ANULAR']
     const ingeniero = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR']
     expect(esJefeCampo(capataz)).toBe(false)
     expect(esJefeCampo(jefe)).toBe(true)
     expect(puedeRegistrarCampo(capataz)).toBe(true)
     expect(puedeRegistrarCampo(ingeniero)).toBe(false)
     expect(puedeRegistrarCampo(null)).toBe(false)
+    expect(puedeAnularActividad(jefe)).toBe(true)
+    expect(puedeAnularActividad(capataz)).toBe(false)
   })
 })

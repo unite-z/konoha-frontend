@@ -5,6 +5,8 @@ import { tiene, type Permisos } from '../config/permisosSesion'
 export function esJefeCampo(permisos: Permisos): boolean { return tiene(permisos, 'CAM.CUADRILLA.GESTIONAR') }
 /** Registrar en el parte de la propia cuadrilla: `CAM.PARTE.REGISTRAR`. */
 export function puedeRegistrarParte(permisos: Permisos): boolean { return tiene(permisos, 'CAM.PARTE.REGISTRAR') }
+/** Invalidar una actividad registrada conservando su trazabilidad (AV-384). */
+export function puedeAnularActividad(permisos: Permisos): boolean { return tiene(permisos, 'CAM.PARTE.ANULAR') }
 export function puedeRegistrarCampo(permisos: Permisos): boolean { return esJefeCampo(permisos) || puedeRegistrarParte(permisos) }
 export { hoyLima } from './instanteLima'
 export function sumarDiasCampo(fecha: string, dias: number): string {

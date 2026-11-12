@@ -22,6 +22,8 @@ export const PERMISOS = {
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
   consultarPartes: 'CAM.PARTE.CONSULTAR',
+  /** Anular una actividad registrada: solo jefatura de sección (AV-384). */
+  anularParte: 'CAM.PARTE.ANULAR',
   consultarInventario: 'INV.INVENTARIO.CONSULTAR',
   registrarInventario: 'INV.INVENTARIO.REGISTRAR',
   /** Planificar la campaña de poda mayor (AV-308). */
