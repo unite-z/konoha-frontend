@@ -1,6 +1,7 @@
 /**
- * Bloque de usuario al pie del «Menú lateral» de Figma (DESIGN.md, 4.3): avatar, nombre, rol y `⋮` con
- * «Cambiar contraseña» y «Cerrar sesión». Comprimido, solo se ve el avatar: lo demás se desvanece con los textos
+ * Bloque de usuario al pie del «Menú lateral» de Figma (DESIGN.md, 4.3): avatar, nombre, rol y `⋮`. El desplegable
+ * (AV-394) dice con qué cuenta está iniciada la sesión y, como elementos de menú con icono, Configuración, Cambiar contraseña y,
+ * separado, Cerrar sesión. Comprimido, solo se ve el avatar: lo demás se desvanece con los textos
  * del menú (`claseSeDesvanece`).
  *
  * Es un botón que muestra y oculta sus opciones (`aria-expanded`), en el orden natural del teclado. Se cierra con
@@ -8,8 +9,8 @@
  */
 import { useEffect, useId, useRef, useState } from 'react'
 import { RUTAS_CORE } from '@/router/rutasApp'
-import Boton, { BotonEnlace } from '@/components/ui/Boton'
-import Icono from '@/components/ui/Icono'
+import { Link } from 'react-router'
+import Icono from '@/design-system/Icono'
 import { useSesion } from '@/sesion/ContextoSesion'
 import estilos from './UsuarioMenu.module.css'
 
@@ -69,12 +70,23 @@ export default function UsuarioMenu({ claseSeDesvanece }: { claseSeDesvanece: st
         <Icono nombre="ellipsis" tamano="base" className={estilos.iconoVertical} />
       </button>
       <div id={idOpciones} className={`${estilos.lista} ${claseSeDesvanece}`} hidden={!abierto}>
-        <BotonEnlace to={RUTAS_CORE.cambiarContrasena} variante="fantasma" compacto onClick={() => setAbierto(false)}>
+        <div className={estilos.cuenta}>
+          <span className={estilos.cuentaNombre}>Sesión iniciada como</span>
+          <span className={estilos.cuentaCorreo}>{usuario.nombre_usuario}</span>
+        </div>
+        <Link to={RUTAS_CORE.configuracion} className={estilos.opcion} onClick={() => setAbierto(false)}>
+          <Icono nombre="settings" tamano="base" />
+          Configuración
+        </Link>
+        <Link to={RUTAS_CORE.cambiarContrasena} className={estilos.opcion} onClick={() => setAbierto(false)}>
+          <Icono nombre="key" tamano="base" />
           Cambiar contraseña
-        </BotonEnlace>
-        <Boton variante="fantasma" compacto onClick={() => void cerrarSesion()}>
+        </Link>
+        <hr className={estilos.separador} />
+        <button type="button" className={estilos.opcion} onClick={() => void cerrarSesion()}>
+          <Icono nombre="log-out" tamano="base" />
           Cerrar sesión
-        </Boton>
+        </button>
       </div>
     </div>
   )
