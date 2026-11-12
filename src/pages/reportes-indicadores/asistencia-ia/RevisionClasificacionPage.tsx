@@ -8,7 +8,7 @@
  * - Con evidencia insuficiente (A1) o sin IA (E1), «Clasificar manualmente».
  * - Registrar solo guarda la clasificación: la incidencia no se deriva automáticamente.
  *
- * Solo la jefatura de sección valida o descarta (ROLES_VALIDAR_IA); los demás la ven sin acciones.
+ * Solo la jefatura de sección valida o descarta (PERMISO_VALIDAR_IA); los demás la ven sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -26,13 +26,13 @@ import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS, rutaRevisionClasificacion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { descartarClasificacion, obtenerClasificacion, validarClasificacion } from '@/services/api/clasificacionIncidenciaIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { CampoClasificacion, SugerenciaClasificacion } from '@/types/clasificacionIncidenciaIa'
 import type { AccionDecision } from '@/types/ia'
 import {
@@ -75,8 +75,8 @@ export default function RevisionClasificacionPage() {
   const navigate = useNavigate()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaLista = `${RUTAS.clasificacionIncidencias}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeValidar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
+  const permisos = usePermisos()
+  const puedeValidar = puede(permisos, PERMISO_VALIDAR_IA)
 
   const consulta = useConsulta<SugerenciaClasificacion>(idValido ? `clasificacion|${idNumero}` : null, (signal) => obtenerClasificacion(idNumero, signal))
   const sugerencia = consulta.datos

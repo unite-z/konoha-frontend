@@ -8,7 +8,7 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
-import { useSesionCampo } from '@/sesion/ContextoSesionCampo'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo } from '@/types/operacionCampo'
 import { esJefeCampo, hoyLima, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
@@ -20,7 +20,7 @@ import Estado from '@/components/ui/Estado'
 
 export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])
-  const jefe = esJefeCampo(useSesionCampo().usuario)
+  const jefe = esJefeCampo(usePermisos())
   const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
     [aviso, setAviso] = useState('')

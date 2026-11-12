@@ -100,8 +100,10 @@ export function InicioRol() {
   const sesion = useSesionActiva()
   const { cerrarSesion } = useSesion()
   const entradas = entradasMenu(sesion)
-  if (sesion?.rol.codigo === 'capataz' && entradas.has('corte')) return <Navigate to={RUTAS_CORTE.rutaDeHoy} replace />
-  if (sesion?.rol.codigo === 'capataz' && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
+  // Quien trabaja en campo (registra su parte y no ve los de otras cuadrillas) empieza por su ruta o su cuadrilla.
+  const deCampo = puede(sesion, 'CAM.PARTE.REGISTRAR') && !puede(sesion, 'CAM.PARTE.CONSULTAR')
+  if (deCampo && entradas.has('corte')) return <Navigate to={RUTAS_CORTE.rutaDeHoy} replace />
+  if (deCampo && entradas.has('campo')) return <Navigate to={RUTAS_CAMPO.cuadrillas} replace />
   if (entradas.has('reportes')) return <Navigate to={RUTAS.reportes} replace />
   if (entradas.has('planificacion')) return <Navigate to={RUTAS_PLANIFICACION.resumen} replace />
   if (entradas.has('tercerizados')) return <Navigate to={RUTAS_TERCERIZADOS.atenciones} replace />

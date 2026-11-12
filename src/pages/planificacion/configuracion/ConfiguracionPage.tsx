@@ -18,7 +18,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_PLANIFICACION } from '@/router/rutasApp'
 import { listarRestricciones, listarServiciosPeriodicos } from '@/services/api/planificacion'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ServicioPeriodico } from '@/types/planificacion'
 import { hoyLima } from '@/utils/instanteLima'
 import PanelEditarServicio from './PanelEditarServicio'
@@ -31,7 +31,7 @@ type PestanaConfiguracion = 'servicios' | 'series'
 
 export default function ConfiguracionPage() {
   usePaginaActual('Configuración', [MIGAS_PLANIFICACION.planificacion, { texto: 'Configuración' }])
-  const puedeEditar = puedeEditarPlanificacion(useRolTercerizados())
+  const puedeEditar = puedeEditarPlanificacion(usePermisos())
   const hoy = hoyLima()
   const estacion = estacionDe(hoy)
   const consulta = useConsulta('servicios', listarServiciosPeriodicos)

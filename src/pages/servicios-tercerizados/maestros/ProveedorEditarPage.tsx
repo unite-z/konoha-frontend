@@ -16,7 +16,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleProveedor } from '@/router/rutasApp'
 import { editarProveedor, obtenerProveedor } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { borradorDeProveedor, construirProveedor, hayErrores, validarProveedor, type BorradorProveedor } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
 import CamposProveedor, { IDS_PROVEEDOR, ORDEN_PROVEEDOR } from './CamposProveedor'
@@ -29,7 +29,7 @@ export default function ProveedorEditarPage() {
   const { id: parametro } = useParams()
   const { state } = useLocation()
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const volverA = volverALista(state)
 
@@ -49,7 +49,7 @@ export default function ProveedorEditarPage() {
     { texto: 'Editar' },
   ])
 
-  if (!puedeCambiarEstadoProveedor(rol)) {
+  if (!puedeCambiarEstadoProveedor(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección edita proveedores"

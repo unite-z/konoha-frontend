@@ -15,7 +15,7 @@ El módulo más grande (un 37 % del código). Una subcarpeta por sección del me
 | Componentes compartidos del módulo | `components/reportes-indicadores/` |
 | Servicios | `services/api/reportes.ts`, `reportesGestion.ts`, `exportaciones.ts`, `ia.ts`, `inconsistenciasIa.ts`, `priorizacionIa.ts`, `clienteReportesGestion.ts` |
 | Datos simulados | `services/simulados/` (interruptor en `config/datosSimulados.ts`) |
-| Permisos y roles | `config/permisos.ts`, `config/sesion.ts` |
+| Permisos | `config/permisos.ts` (códigos de MOD-01 de la sesión, AV-382) |
 | Rutas | `RUTAS`, `MIGAS` y `rutaRevision*()` en `router/rutasApp.ts` |
 
 **Entre módulos:** `asistencia-ia/extraccion/consultasApoyo.ts` encadena llamadas a MOD-05 (atención a atención e informe a informe). No hay que copiarlo: el objetivo es que el endpoint de IA devuelva ese contexto (vía backend). Para enlazar a una atención se usa `rutaDetalleAtencion(id)`.

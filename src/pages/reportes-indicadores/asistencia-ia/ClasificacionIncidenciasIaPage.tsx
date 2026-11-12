@@ -22,14 +22,14 @@ import Paginacion from '@/components/ui/Paginacion'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, rutaRevisionClasificacion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { listarClasificaciones, listarIncidenciasPendientes, solicitarClasificacion } from '@/services/api/clasificacionIncidenciaIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { IncidenciaResumen, SugerenciaClasificacion } from '@/types/clasificacionIncidenciaIa'
 import { estadoClasificacion, insigniaSeveridad, resumenCorto } from '@/utils/clasificacionIncidenciaIa'
 import { formatearFechaHora, SIN_VALOR } from '@/utils/formato'
@@ -70,8 +70,8 @@ export default function ClasificacionIncidenciasIaPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
 
   const { filtros, establecer } = useFiltrosUrl({ vista: 'pendientes', page: '1', incidencia_id: '' })

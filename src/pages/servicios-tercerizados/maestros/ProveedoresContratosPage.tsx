@@ -16,7 +16,7 @@ import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { avisoDeNavegacion, FILTROS_MAESTROS_VACIOS, type ClaveFiltroMaestros } from './filtrosMaestros'
 import ListaContratos from './ListaContratos'
 import ListaProveedores from './ListaProveedores'
@@ -32,7 +32,7 @@ const PESTANAS = [
 export default function ProveedoresContratosPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, { texto: TITULO }])
   const { state } = useLocation()
-  const puedeRegistrar = puedeRegistrarProveedoresYContratos(useRolTercerizados())
+  const puedeRegistrar = puedeRegistrarProveedoresYContratos(usePermisos())
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

@@ -20,7 +20,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleProductoAgronomico } from '@/router/rutasApp'
 import { listarProductosAgronomicos } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ProductoAgronomico } from '@/types/maestrosTercerizados'
 import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 import BarraFiltros from './BarraFiltros'
@@ -53,8 +53,8 @@ export default function ProductosAgronomicosPage() {
   const { state } = useLocation()
   const navegar = useNavigate()
   const { search } = useLocation()
-  const rol = useRolTercerizados()
-  const puedeRegistrar = puedeAdministrarProductosAgronomicos(rol)
+  const permisos = usePermisos()
+  const puedeRegistrar = puedeAdministrarProductosAgronomicos(permisos)
   const [aviso, setAviso] = useState<string | null>(() => avisoDeNavegacion(state))
   const cerrarAviso = useCallback(() => setAviso(null), [])
 

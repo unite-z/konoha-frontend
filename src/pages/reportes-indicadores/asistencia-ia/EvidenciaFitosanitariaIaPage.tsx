@@ -21,14 +21,14 @@ import Paginacion from '@/components/ui/Paginacion'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS, rutaRevisionEvidencia } from '@/router/rutasApp'
 import { buscarAtencionesEvidencia, buscarEjemplaresEvidencia, listarAnalisisEvidencia } from '@/services/api/evidenciaFitosanitariaIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { SugerenciaEvidencia } from '@/types/evidenciaFitosanitariaIa'
 import type { EstadoSugerencia } from '@/types/ia'
 import { estadoEvidencia, hipotesisPrincipal, textoResultado, tituloEvidencia } from '@/utils/evidenciaFitosanitariaIa'
@@ -73,8 +73,8 @@ export default function EvidenciaFitosanitariaIaPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
 
   const { filtros, establecer } = useFiltrosUrl({ estado: 'todos', page: '1', ejemplar_id: '', atencion_id: '' })

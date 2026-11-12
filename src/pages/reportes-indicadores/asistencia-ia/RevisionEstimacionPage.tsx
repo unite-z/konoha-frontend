@@ -8,7 +8,7 @@
  * - Con datos insuficientes (A1), el aviso ofrece «Continuar sin recomendación» (registro manual).
  * - Solo se registra lo confirmado; la estimación se conserva para compararla con lo real.
  *
- * Solo el jefe de sección confirma o descarta (ROLES_VALIDAR_IA); los demás la ven sin acciones.
+ * Solo el jefe de sección confirma o descarta (PERMISO_VALIDAR_IA); los demás la ven sin acciones.
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -26,13 +26,13 @@ import EstadoSinAcceso from '@/components/ui/EstadoSinAcceso'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import Tarjeta from '@/components/ui/Tarjeta'
-import { puede, ROLES_VALIDAR_IA } from '@/config/permisos'
+import { puede, PERMISO_VALIDAR_IA } from '@/config/permisos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS, rutaRevisionEstimacion } from '@/router/rutasApp'
 import { aErrorApi } from '@/services/api/cliente'
 import { confirmarEstimacion, descartarEstimacion, obtenerEstimacion } from '@/services/api/estimacionIa'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { RecursosConfirmados, SolicitudEstimacion, SugerenciaEstimacion } from '@/types/estimacionIa'
 import type { AccionDecision } from '@/types/ia'
 import {
@@ -89,8 +89,8 @@ export default function RevisionEstimacionPage() {
   const navigate = useNavigate()
   const navegacion = (location.state ?? null) as EstadoNavegacionRevision | null
   const rutaLista = `${RUTAS.estimacionRecursos}${navegacion?.volverA ?? ''}`
-  const rol = useRolActual()
-  const puedeConfirmar = rol !== null && puede(rol, ROLES_VALIDAR_IA)
+  const permisos = usePermisos()
+  const puedeConfirmar = puede(permisos, PERMISO_VALIDAR_IA)
 
   usePaginaActual(`Estimación n.º ${id}`, [
     MIGAS.reportesIndicadores,

@@ -31,7 +31,7 @@ vi.mock('@/services/api/planificacion', () => ({
   actualizarDuracion: vi.fn(),
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-vi.mock('@/sesion/ContextoSesion', () => ({ useRolTercerizados: () => 'Jefe de sección' }))
+vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'] }))
 vi.mock('@/utils/instanteLima', () => ({ hoyLima: () => '2026-11-04' }))
 
 beforeAll(() => {

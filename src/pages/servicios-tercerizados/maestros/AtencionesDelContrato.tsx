@@ -9,7 +9,7 @@ import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
 import { listarAtenciones } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import type { Atencion } from '@/types/tercerizados'
 import { codigoCorto, insigniaEstado, resumenAlcances, textoOrigen } from '@/utils/estadosTercerizados'
@@ -58,7 +58,7 @@ export interface AtencionesDelContratoProps {
 
 export default function AtencionesDelContrato({ contrato }: AtencionesDelContratoProps) {
   const navegar = useNavigate()
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const [pagina, setPagina] = useState(1)
   const consulta = useConsulta(
     `atenciones-contrato|${contrato.id}|${pagina}`,
@@ -82,7 +82,7 @@ export default function AtencionesDelContrato({ contrato }: AtencionesDelContrat
               {formatearNumero(total)} {total === 1 ? 'atención' : 'atenciones'}
             </span>
           )}
-          {contrato.vigente && puedeRegistrarAtencion(rol) && (
+          {contrato.vigente && puedeRegistrarAtencion(permisos) && (
             <BotonEnlace
               to={RUTAS_TERCERIZADOS.nuevaAtencion}
               variante="primario"

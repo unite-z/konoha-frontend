@@ -5,8 +5,12 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import ParticipantesPage from './ParticipantesPage'
 
-const sesionPrueba = vi.hoisted(() => ({ rol: 'Capataz' }))
+// Permisos de MOD-04 de cada rol (V9): la pantalla decide por ellos (AV-382).
+const CAPATAZ = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.REGISTRAR']
+const JEFE = ['CAM.CUADRILLA.GESTIONAR', 'CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR', 'CAM.PARTE.VERIFICAR']
+const sesionPrueba = vi.hoisted(() => ({ rol: 'Capataz', permisos: [] as string[] }))
 
+vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => sesionPrueba.permisos, useSesionActiva: () => ({ usuario: { id: 4, nombre: 'Prueba' } }) }))
 vi.mock('@/sesion/ContextoSesionCampo', () => ({
   useSesionCampo: () => ({ usuario: { id: 4, rol: sesionPrueba.rol, personal_id: 12 } }),
 }))
@@ -20,6 +24,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   sesionPrueba.rol = 'Capataz'
+  sesionPrueba.permisos = CAPATAZ
 })
 
 afterEach(() => {
@@ -110,6 +115,7 @@ it('muestra una tabla compacta y permite al capataz actualizar participantes des
 
 it('ubica la acción autorizada junto a los datos de verificación', async () => {
   sesionPrueba.rol = 'Jefe de sección'
+  sesionPrueba.permisos = JEFE
   vi.stubGlobal('fetch', vi.fn(async (ruta: string) => {
     const url = new URL(ruta, 'http://localhost')
     if (url.pathname.endsWith('/cuadrillas/')) return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))

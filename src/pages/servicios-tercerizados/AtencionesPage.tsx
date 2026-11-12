@@ -30,7 +30,7 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleAtencion } from '@/router/rutasApp'
 import { obtenerContrato } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { listarAtenciones, listarContratos } from '@/services/api/tercerizados'
 import type { Atencion, Contrato } from '@/types/tercerizados'
 import {
@@ -106,7 +106,7 @@ export default function AtencionesPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, { texto: 'Atenciones' }])
   const navegar = useNavigate()
   const { search } = useLocation()
-  const esJefe = puedeRegistrarAtencion(useRolTercerizados())
+  const esJefe = puedeRegistrarAtencion(usePermisos())
 
   const { filtros: url, establecer } = useFiltrosUrl<ClaveFiltroBandeja>(FILTROS_BANDEJA_VACIOS)
   const { filtros, pagina } = leerFiltrosBandeja(url)

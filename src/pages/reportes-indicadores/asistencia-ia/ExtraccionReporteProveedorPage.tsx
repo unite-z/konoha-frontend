@@ -18,8 +18,8 @@ import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Pestanas from '@/components/ui/Pestanas'
 import Boton from '@/components/ui/Boton'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
-import { puede, ROLES_SOLICITAR_IA } from '@/config/permisos'
-import { useRolActual } from '@/sesion/ContextoSesion'
+import { puede, PERMISO_SOLICITAR_IA } from '@/config/permisos'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
@@ -156,8 +156,8 @@ export default function ExtraccionReporteProveedorPage() {
   usePaginaActual(TITULO, [MIGAS.reportesIndicadores, MIGAS.asistenciaIa, { texto: TITULO }])
   const navigate = useNavigate()
   const location = useLocation()
-  const rol = useRolActual()
-  const puedeSolicitar = rol !== null && puede(rol, ROLES_SOLICITAR_IA)
+  const permisos = usePermisos()
+  const puedeSolicitar = puede(permisos, PERMISO_SOLICITAR_IA)
   const esMovil = useEsMovil()
   const [solicitudAbierta, setSolicitudAbierta] = useState(false)
 

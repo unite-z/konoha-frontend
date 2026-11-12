@@ -18,7 +18,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleProveedor, rutaEditarContrato, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { obtenerContrato } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { formatearFecha } from '@/utils/formato'
 import { textoMonto } from '@/utils/validacionMaestros'
 import AtencionesDelContrato from './AtencionesDelContrato'
@@ -38,7 +38,7 @@ export default function ContratoDetallePage() {
     : volverAOrigen
       ? RUTAS_TERCERIZADOS.proveedoresContratos + volverAOrigen
       : `${RUTAS_TERCERIZADOS.proveedoresContratos}?pestana=contratos`
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
 
   const consulta = useConsulta(id === null ? null : `contrato|${id}`, (signal) => obtenerContrato(id as number, signal))
   const contrato = consulta.datos
@@ -85,7 +85,7 @@ export default function ContratoDetallePage() {
                 ayuda={contrato.vigente ? undefined : 'Se conserva como histórico: no se puede usar en nuevas atenciones'}
               />
             </div>
-            {puedeRegistrarProveedoresYContratos(rol) && (
+            {puedeRegistrarProveedoresYContratos(permisos) && (
               <BotonEnlace
                 to={rutaEditarContrato(contrato.id)}
                 variante="secundario"

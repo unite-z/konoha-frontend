@@ -30,7 +30,7 @@ import {
   listarTodo,
   listarUnidadesMedida,
 } from '@/services/api/tercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { Contrato } from '@/types/tercerizados'
 import { formatearFecha } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
@@ -102,7 +102,7 @@ function enfocar(id: string) {
 
 export default function NuevaAtencionPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.atenciones, { texto: 'Nueva' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
   const { state } = useLocation()
   const contratoInicial = contratoDeOrigen(state)
@@ -166,7 +166,7 @@ export default function NuevaAtencionPage() {
     setErrorRegistro(null)
   }, [])
 
-  if (!puedeRegistrarAtencion(rol)) {
+  if (!puedeRegistrarAtencion(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección registra atenciones"

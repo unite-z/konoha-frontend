@@ -12,10 +12,10 @@ import ExportarExcel from '@/components/core/ExportarExcel'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
-import { useSesionCampo } from '@/sesion/ContextoSesionCampo'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { ActividadCampo, CuadrillaCampo, OperarioCampo, ParticipantesCampo } from '@/types/operacionCampo'
-import { esJefeCampo, puedeRegistrarCampo } from '@/utils/operacionCampo'
+import { esJefeCampo, puedeRegistrarCampo, puedeRegistrarParte } from '@/utils/operacionCampo'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
@@ -31,9 +31,11 @@ import DialogoPodaMenor from './DialogoPodaMenor'
 
 export default function ParticipantesPage() {
   usePaginaActual('Participantes por actividad', [{ texto: 'Operación de campo' }, { texto: 'Participantes por actividad' }])
-  const { usuario } = useSesionCampo(),
-    puedeRegistrar = puedeRegistrarCampo(usuario),
-    puedeVerificar = esJefeCampo(usuario)
+  const permisos = usePermisos(),
+    puedeRegistrar = puedeRegistrarCampo(permisos),
+    puedeVerificar = esJefeCampo(permisos),
+    // Poda menor y fotos de evidencia: quien registra en su propio parte (hoy, el capataz).
+    registraParte = puedeRegistrarParte(permisos)
   const listado = useListadoCampo<ActividadCampo>('actividades', ['fecha', 'cuadrilla_id'])
   const cuadrillas = useConsulta('filtro-cuadrillas', (signal) => todosCampo<CuadrillaCampo>('cuadrillas/', {}, signal))
   const [actual, setActual] = useState<ActividadCampo | null>(null),
@@ -50,7 +52,7 @@ export default function ParticipantesPage() {
     <div className={estilos.pagina}>
       <AccionesPagina>
         <ExportarExcel listado="actividades" />
-        {usuario?.rol === 'Capataz' && (
+        {registraParte && (
           <Boton variante="secundario" onClick={() => setPoda(true)}>
             Registrar poda menor
           </Boton>
@@ -372,7 +374,7 @@ export default function ParticipantesPage() {
           <Adjuntos
             entidad="actividad"
             registroId={evidenciaActividad.id}
-            puedeAdjuntar={usuario?.rol === 'Capataz' && evidenciaActividad.estado === 'Abierto'}
+            puedeAdjuntar={registraParte && evidenciaActividad.estado === 'Abierto'}
             tiposAceptados=".jpg,.jpeg,.png"
             ayudaCarga="JPEG o PNG, de hasta 20 MB."
             prepararArchivo={comprimirFotografia}

@@ -21,7 +21,7 @@ import { puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleProveedor, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { registrarContrato } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import { hoyLima } from '@/utils/instanteLima'
 import { BORRADOR_CONTRATO_VACIO, construirContrato, hayErrores, validarContrato, type BorradorContrato } from '@/utils/validacionMaestros'
 import AvisoFallo from './AvisoFallo'
@@ -35,7 +35,7 @@ const TITULO = 'Registrar contrato'
 
 export default function ContratoNuevoPage() {
   usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.proveedoresContratos, { texto: 'Registrar contrato' }])
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
   const { state } = useLocation()
   // Desde la ficha de un proveedor se llega con ese proveedor ya elegido y se vuelve a su ficha.
@@ -50,7 +50,7 @@ export default function ContratoNuevoPage() {
   const [fallo, setFallo] = useState<FalloRegistro | null>(null)
   const enCurso = useRef(false)
 
-  if (!puedeRegistrarProveedoresYContratos(rol)) {
+  if (!puedeRegistrarProveedoresYContratos(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección registra contratos"

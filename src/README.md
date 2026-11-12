@@ -54,7 +54,7 @@ Por orden de preferencia:
 | 1. **Backend** | la acción cambia datos de otro módulo | `MarcarEjemplarPage` (MOD-05) marca un ejemplar de inventario llamando solo a `marcarAtencionEspecial` de su propio servicio. El servidor resuelve el resto. Igual con derivar una incidencia de MOD-03 a MOD-04 o MOD-05 (AV-277, AV-278): el front llama al endpoint de MOD-03 y no orquesta. |
 | 2. **URL** | enlazar a una pantalla de otro módulo | MOD-06 enlaza a una atención de MOD-05 con `rutaDetalleAtencion(id)` de `router/rutasApp.ts` (`MapaAtencionesPage.tsx`, `TablaRegistros.tsx`). Nunca una URL escrita a mano. |
 | 3. **Entrada pública** | leer datos de otro módulo | Hoy, solo funciones de `services/api/<modulo-dueño>.ts` y tipos de `types/<modulo-dueño>.ts`. Ejemplo: `SolicitudAnalisis.tsx` (MOD-06) usa `listarAtenciones` de `services/api/tercerizados.ts`. Al reorganizar, pasará a ser `@/modulos/servicios-tercerizados` (su `index.ts`). |
-| 4. **`app/`** | sesión, permisos, menú, avisos | `useRolTercerizados()` de `sesion/ContextoSesion.ts` y `PERMISOS` de `config/permisosCore.ts`. Nada de bus de eventos global. |
+| 4. **`app/`** | sesión, permisos, menú, avisos | `usePermisos()` de `sesion/ContextoSesion.ts` y `PERMISOS` de `config/permisosCore.ts`. Las reglas de interfaz deciden por permiso, nunca por el nombre del rol (AV-382). Nada de bus de eventos global. |
 
 - Si una pieza la usan tres módulos o más, sube a compartido (`components/core`, `hooks`, `utils`).
 - Cada catálogo es de su módulo dueño: áreas verdes, sectores y ejemplares son de MOD-02, y los tipos de servicio tercerizado, de MOD-05.

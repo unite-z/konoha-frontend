@@ -22,7 +22,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleAtencionEspecial, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
 import { listarContratosMaestro, obtenerAtencionEspecial, programarAplicacionAdicional } from '@/services/api/maestrosTercerizados'
-import { useRolTercerizados } from '@/sesion/ContextoSesion'
+import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { SIN_VALOR } from '@/utils/formato'
 import {
@@ -51,7 +51,7 @@ function detalleContrato(c: ContratoMaestro) {
 export default function ProgramarAplicacionPage() {
   const { id: parametro } = useParams()
   const especialId = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
-  const rol = useRolTercerizados()
+  const permisos = usePermisos()
   const navegar = useNavigate()
 
   const especial = useConsulta(especialId === null ? null : `atencion-especial|${especialId}`, (signal) =>
@@ -84,7 +84,7 @@ export default function ProgramarAplicacionPage() {
       />
     )
   }
-  if (!puedeRegistrarAtencion(rol)) {
+  if (!puedeRegistrarAtencion(permisos)) {
     return (
       <EstadoVacio
         titulo="Solo el jefe de sección programa aplicaciones adicionales"
