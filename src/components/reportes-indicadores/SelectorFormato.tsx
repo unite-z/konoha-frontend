@@ -2,7 +2,7 @@
  * Elección del formato de una exportación (RF-REP-009) con `GrupoOpciones` (Radio compacto del sistema).
  * Solo muestra los formatos que admite el tipo de reporte.
  */
-import GrupoOpciones from '../ui/GrupoOpciones'
+import GrupoOpciones from '@/design-system/GrupoOpciones'
 import type { FormatoSalida } from '@/types/exportaciones'
 import { TEXTO_FORMATO } from '@/utils/exportaciones'
 

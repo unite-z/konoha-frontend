@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource/geist/400.css'
 import '@fontsource/geist/500.css'
 import '@fontsource/geist/600.css'
-import './styles/global.css'
+import '@/design-system/global.css'
 import App from './App.tsx'
 import { instalarRecargaTrasDespliegue } from './utils/recargaTrasDespliegue'
 

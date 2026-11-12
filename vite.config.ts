@@ -41,7 +41,14 @@ export default defineConfig({
     }),
   ],
   // `@/` apunta a `src/` (AV-333). Lo mismo en `paths` de tsconfig.app.json.
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: {
+    alias: [
+      // Las rutas antiguas @/components/ui/ y @/styles/ siguen funcionando; el código nuevo usa @/design-system/... y los imports antiguos se migran al tocar cada fichero.
+      { find: /^@\/components\/ui\//, replacement: fileURLToPath(new URL('./src/design-system/', import.meta.url)) },
+      { find: /^@\/styles\//, replacement: fileURLToPath(new URL('./src/design-system/', import.meta.url)) },
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+    ],
+  },
   server: {
     // MOD-05 en Spring Boot; MOD-06 conserva Django. Orden: ruta específica primero.
     proxy: {

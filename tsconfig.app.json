@@ -7,7 +7,12 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
-    "paths": { "@/*": ["./src/*"] },
+    "paths": {
+      /* Las rutas antiguas @/components/ui/ y @/styles/ siguen funcionando; el código nuevo usa @/design-system/... y los imports antiguos se migran al tocar cada fichero. */
+      "@/components/ui/*": ["./src/design-system/*"],
+      "@/styles/*": ["./src/design-system/*"],
+      "@/*": ["./src/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
