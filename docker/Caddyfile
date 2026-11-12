@@ -16,7 +16,14 @@
 	@conHash path /assets/*
 	header @conHash Cache-Control "public, max-age=31536000, immutable"
 
-	# Rutas de React: cualquier ruta desconocida devuelve index.html.
-	try_files {path} /index.html
-	file_server
+	# Un fichero de /assets/ que no existe (chunk de una versión anterior) da 404, no index.html (AV-367).
+	handle /assets/* {
+		file_server
+	}
+
+	# Rutas de React: cualquier otra ruta desconocida devuelve index.html.
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
 }

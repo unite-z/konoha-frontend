@@ -97,6 +97,7 @@ function FilaSemana({
                 // La insignia dice solo el tipo; el texto completo sale al pasar el ratón o al enfocarla.
                 const idBurbuja = `restriccion-${dia}-${j}`
                 return (
+                  // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- enfocable para que la burbuja salga con teclado
                   <span key={r.descripcion} className={estilos.restriccion} tabIndex={0} aria-describedby={idBurbuja}>
                     <Estado {...insigniaAEstado(PRESENTACION_RESTRICCION[r.tipo])} />
                     <span id={idBurbuja} role="tooltip" className={`${estilos.burbuja} ${i >= 4 ? estilos.burbujaIzquierda : ''}`}>
@@ -227,6 +228,7 @@ export default function CalendarioCronograma({
 
       <div className={estilos.leyenda}>
         <label className={estilos.casillaLeyenda}>
+          {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- el label que lo envuelve lo etiqueta */}
           <input type="checkbox" checked={mostrarProgramado} disabled={!existentesDisponibles} onChange={(e) => setMostrarProgramado(e.target.checked)} />
           <span className={`${estilos.muestra} ${estilos.existente}`}>Programado</span>
         </label>

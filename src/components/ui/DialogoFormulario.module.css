@@ -3,6 +3,7 @@
   --dialogo-ancho: 36rem;
   width: min(var(--dialogo-ancho), calc(100vw - 2 * var(--space-6)));
   max-height: calc(100vh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
   padding: 0;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
@@ -49,6 +50,7 @@
 .lateral {
   --dialogo-ancho: 32.5rem;
   height: calc(100vh - 2 * var(--space-2));
+  height: calc(100dvh - 2 * var(--space-2));
   max-height: none;
   margin: var(--space-2) var(--space-2) var(--space-2) auto;
 }
@@ -77,6 +79,7 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 2 * var(--space-6) - 2px);
+  max-height: calc(100dvh - 2 * var(--space-6) - 2px);
 }
 
 .lineaTitulo {
@@ -109,8 +112,12 @@
   color: var(--color-text-secondary);
 }
 
-/* El cuerpo se desplaza; título y acciones quedan visibles. */
+/*
+ * El cuerpo se desplaza; título y acciones quedan visibles. `min-height: 0` deja que el cuerpo encoja dentro del
+ * formulario (columna flex) y se desplace, en lugar de empujar las acciones fuera de la pantalla.
+ */
 .cuerpo {
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -142,6 +149,7 @@
   .dialogo {
     width: calc(100vw - 2 * var(--space-4));
     max-height: calc(100vh - 2 * var(--space-4));
+    max-height: calc(100dvh - 2 * var(--space-4));
   }
 
   .cabecera,
@@ -158,6 +166,9 @@
 }
 
 /*
+ * `100dvh` es la altura visible: en Chrome para Android `100vh` incluye la barra del navegador y las acciones (el botón
+ * «Enviar») quedaban tapadas debajo. `100vh` queda antes como respaldo para navegadores sin `dvh`.
+ *
  * En móvil, el panel lateral ocupa la pantalla como en Figma («Programar ciclo» 352-2324, «Reportar incidencia»
  * 391-8394): la X a la izquierda del título, el cuerpo sobre el fondo de la aplicación y un solo botón primario a todo
  * el ancho (la X hace de «Cancelar»). Va al final para ganar a la regla móvil de `.dialogo`.
@@ -168,6 +179,7 @@
     width: 100vw;
     max-width: none; /* el navegador limita el ancho de <dialog> por defecto */
     height: 100vh;
+    height: 100dvh;
     max-height: none;
     margin: 0;
     border: 0;
