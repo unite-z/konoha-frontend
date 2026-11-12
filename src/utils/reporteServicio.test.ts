@@ -6,6 +6,7 @@ import {
   atencionesDeParte,
   claveConsultaServicio,
   consultaServicio,
+  contextoRendimiento,
   filtrarSinEvidencia,
   mesEnCursoHastaHoy,
   metradoAvance,
@@ -110,6 +111,22 @@ describe('textos de las tarjetas', () => {
     expect(tituloTarjetaRendimiento(rendimiento)).toBe('512,5 m²/h')
     expect(tituloTarjetaRendimiento({ ...rendimiento, ...sinDatos })).toBe('Sin datos')
     expect(tituloTarjetaRendimiento({ ...rendimiento, rendimiento_por_hora: null })).toBe('Sin datos')
+  })
+
+  it('contextoRendimiento añade las fuera de plazo solo si alguna atención tiene plazo', () => {
+    const rendimiento: RendimientoServicio = {
+      ...conDatos,
+      horas_ejecucion: '20',
+      rendimiento_por_hora: '512.5',
+      unidad_rendimiento: 'm²/h',
+      duracion_media_horas: '5',
+      atenciones_fuera_de_plazo: 2,
+    }
+    expect(contextoRendimiento(rendimiento)).toBe('En 20 h de ejecución · 2 fuera de plazo')
+    expect(contextoRendimiento({ ...rendimiento, atenciones_fuera_de_plazo: 0 })).toBe('En 20 h de ejecución · 0 fuera de plazo')
+    // Sin plazo (null) no se inventa un cero.
+    expect(contextoRendimiento({ ...rendimiento, atenciones_fuera_de_plazo: null })).toBe('En 20 h de ejecución')
+    expect(contextoRendimiento({ ...rendimiento, horas_ejecucion: null, atenciones_fuera_de_plazo: null })).toBeNull()
   })
 })
 

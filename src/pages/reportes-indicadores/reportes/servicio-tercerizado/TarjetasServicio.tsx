@@ -6,7 +6,7 @@ import TarjetaIndicador from '@/components/ui/TarjetaIndicador'
 import type { ResultadoReporteServicio } from '@/types/reportesGestion'
 import { formatearNumero } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
-import { resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '@/utils/reporteServicio'
+import { contextoRendimiento, resumenConformidad, textoAvance, tituloTarjetaRendimiento } from '@/utils/reporteServicio'
 import estilos from './ServicioTercerizado.module.css'
 
 function motivo(seccion: { mensaje_sin_datos: string | null }): string {
@@ -18,7 +18,6 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
   const porcentaje = numeroDeDecimal(avance.porcentaje_avance)
   const total = avance.programadas + avance.extraordinarias
   const valorRendimiento = tituloTarjetaRendimiento(rendimiento)
-  const horas = numeroDeDecimal(rendimiento.horas_ejecucion)
   const plagas = especies.elementos.filter((e) => e.tipo === 'Plaga').length
   const especiesDistintas = especies.elementos.length - plagas
 
@@ -45,7 +44,10 @@ export default function TarjetasServicio({ datos }: { datos: ResultadoReporteSer
           estado={valorRendimiento === 'Sin datos' ? 'sinDatos' : 'normal'}
           motivoSinDatos={motivo(rendimiento)}
           valor={valorRendimiento}
-          contexto={horas === null ? undefined : `En ${formatearNumero(horas)} h de ejecución`}
+          contexto={contextoRendimiento(rendimiento) ?? undefined}
+          insignia={
+            rendimiento.atenciones_fuera_de_plazo ? { tono: 'advertencia', texto: 'Con atenciones fuera de plazo' } : undefined
+          }
         />
       </div>
       <div>

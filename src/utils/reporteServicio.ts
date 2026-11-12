@@ -76,6 +76,20 @@ export function tituloTarjetaRendimiento(rendimiento: RendimientoServicio): stri
   return `${formatearNumero(valor)} ${rendimiento.unidad_rendimiento ?? ''}`.trim()
 }
 
+/**
+ * Contexto de la tarjeta de rendimiento: las horas de ejecución y, si alguna atención tiene plazo (las que vienen de
+ * una programación), cuántas van fuera de él. `null` si no hay nada que decir.
+ */
+export function contextoRendimiento(rendimiento: RendimientoServicio): string | null {
+  const horas = numeroDeDecimal(rendimiento.horas_ejecucion)
+  const partes = [
+    horas !== null && `En ${formatearNumero(horas)} h de ejecución`,
+    rendimiento.atenciones_fuera_de_plazo !== null &&
+      `${formatearNumero(rendimiento.atenciones_fuera_de_plazo)} fuera de plazo`,
+  ].filter(Boolean)
+  return partes.length > 0 ? partes.join(' · ') : null
+}
+
 /** Las atenciones, o solo las que no tienen evidencia adjunta (CU-MOD06-002 A2). */
 export function filtrarSinEvidencia(filas: FilaAtencionServicio[], soloSinEvidencia: boolean): FilaAtencionServicio[] {
   return soloSinEvidencia ? filas.filter((f) => !f.con_evidencia) : filas
