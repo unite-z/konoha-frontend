@@ -1,37 +1,57 @@
 import { useState } from 'react'
-import Boton from '@/components/ui/Boton'
-import Tarjeta from '@/components/ui/Tarjeta'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import Selector from '@/components/ui/Selector'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import Boton from '@/design-system/Boton'
+import Tarjeta from '@/design-system/Tarjeta'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import Selector from '@/design-system/Selector'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
-import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo } from '@/types/operacionCampo'
-import { esJefeCampo, hoyLima, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
-import { formatearFecha } from '@/utils/formato'
+import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
+import {
+  esJefeCampo,
+  hoyLima,
+  puedeCambiarEstadoEncargo,
+  sumarDiasCampo,
+  validarEncargoCampo,
+} from '@/utils/operacionCampo'
+import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
-import Estado from '@/components/ui/Estado'
+import Estado, { type TonoEstado } from '@/design-system/Estado'
+
+const tonosEncargo: Record<EstadoEncargo, TonoEstado> = {
+  'Por completar': 'neutro',
+  'En curso': 'info',
+  Completado: 'exito',
+  Observado: 'aviso',
+  Cancelado: 'error',
+}
+
+const transiciones: Record<EstadoEncargo, EstadoEncargo[]> = {
+  'Por completar': ['En curso'],
+  'En curso': ['Completado', 'Observado'],
+  Completado: [],
+  Observado: ['En curso'],
+  Cancelado: [],
+}
 
 export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])
-  const jefe = esJefeCampo(usePermisos())
+  const permisos = usePermisos()
+  const jefe = esJefeCampo(permisos)
+  const [seguimiento, setSeguimiento] = useState<EncargoCampo | null>(null)
   const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
     [aviso, setAviso] = useState('')
   return (
     <div className={estilos.pagina}>
-      <AccionesPagina>
-        {jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}
-      </AccionesPagina>
-      <p className={estilos.descripcion}>
-        Organiza los encargos de la reunión de planificación por capataz y periodo.
-      </p>
+      <AccionesPagina>{jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}</AccionesPagina>
+      <p className={estilos.descripcion}>Consulta y organiza los encargos directos y periódicos por capataz.</p>
       {aviso && (
         <AvisoEnLinea tono="exito" accion={{ texto: 'Cerrar aviso', onClick: () => setAviso('') }}>
           {aviso}
@@ -42,11 +62,12 @@ export default function EncargosPage() {
           <BuscarCampo valor={String(listado.params.q ?? '')} onBuscar={(q) => listado.filtrar({ q })} />
           <Selector
             id="encargo-periodicidad"
-            etiqueta="Periodo"
+            etiqueta="Modalidad"
             valor={String(listado.params.periodicidad ?? '')}
             opciones={[
               { valor: 'Semanal', texto: 'Semanal' },
               { valor: 'Quincenal', texto: 'Quincenal' },
+              { valor: 'Directo', texto: 'Directo' },
             ]}
             opcionTodos="Todos"
             onCambiar={(periodicidad) => listado.filtrar({ periodicidad })}
@@ -65,10 +86,7 @@ export default function EncargosPage() {
             value={String(listado.params.hasta ?? '')}
             onChange={(e) => listado.filtrar({ hasta: e.target.value })}
           />
-          <Boton
-            variante="fantasma"
-            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}
-          >
+          <Boton variante="fantasma" onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}>
             Limpiar filtros
           </Boton>
         </div>
@@ -107,9 +125,11 @@ export default function EncargosPage() {
             render: (e) => (
               <>
                 <Estado tono="info" texto={e.periodicidad} />
-                <span className={estilos.secundario}>
-                  {formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}
-                </span>
+                {e.periodicidad !== 'Directo' && (
+                  <span className={estilos.secundario}>
+                    {formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}
+                  </span>
+                )}
               </>
             ),
           },
@@ -121,24 +141,47 @@ export default function EncargosPage() {
           {
             clave: 'estado',
             titulo: 'Estado',
-            render: (e) => <Estado tono="neutro" texto={e.estado ?? 'Pendiente de integrar'} />,
+            render: (e) => <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />,
           },
           {
             clave: 'acciones',
             titulo: 'Acciones',
             render: (e) => (
-              <Boton
-                variante="fantasma"
-                compacto
-                aria-label={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
-                onClick={() => setDialogo(e)}
-              >
-                {jefe ? 'Editar encargo' : 'Ver encargo'}
-              </Boton>
+              <>
+                <Boton
+                  variante="fantasma"
+                  compacto
+                  aria-label={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
+                  onClick={() => setDialogo(e)}
+                >
+                  {jefe ? 'Editar encargo' : 'Ver encargo'}
+                </Boton>
+                <Boton
+                  variante="fantasma"
+                  compacto
+                  aria-label={`Seguimiento del encargo ${e.id}`}
+                  onClick={() => setSeguimiento(e)}
+                >
+                  Seguimiento
+                </Boton>
+              </>
             ),
           },
         ]}
       />
+      {seguimiento && (
+        <DialogoSeguimiento
+          id={seguimiento.id}
+          puedeCambiar={puedeCambiarEstadoEncargo(permisos)}
+          puedeCancelar={jefe}
+          onCerrar={() => setSeguimiento(null)}
+          onGuardado={() => {
+            setSeguimiento(null)
+            setAviso('El estado del encargo se guardó correctamente')
+            listado.consulta.reintentar()
+          }}
+        />
+      )}
       {dialogo && (
         <DialogoEncargo
           actual={dialogo === 'nuevo' ? null : dialogo}
@@ -180,6 +223,7 @@ function DialogoEncargo({
       plazo_previsto: sumarDiasCampo(hoy, 6),
     },
   )
+  const directo = body.periodicidad === 'Directo'
   const [errores, setErrores] = useState<Record<string, string>>({}),
     [cambios, setCambios] = useState(false)
   const mutacion = useMutacionCampo()
@@ -212,15 +256,19 @@ function DialogoEncargo({
       return
     }
     // Solo se envían los campos de entrada, nunca las etiquetas o auditoría de una respuesta GET.
-    const entrada: EntradaEncargo = {
+    const entrada = {
       cuadrilla_id: body.cuadrilla_id,
       tipo_actividad_id: body.tipo_actividad_id,
       area_verde_id: body.area_verde_id,
       descripcion: body.descripcion.trim(),
       periodicidad: body.periodicidad,
-      fecha_reunion: body.fecha_reunion,
-      fecha_inicio: body.fecha_inicio,
-      fecha_fin: body.fecha_fin,
+      ...(directo
+        ? {}
+        : {
+            fecha_reunion: body.fecha_reunion,
+            fecha_inicio: body.fecha_inicio,
+            fecha_fin: body.fecha_fin,
+          }),
       plazo_previsto: body.plazo_previsto,
     }
     void mutacion.enviar(
@@ -263,16 +311,20 @@ function DialogoEncargo({
               />
               <Selector
                 id="form-encargo-periodicidad"
-                etiqueta="Periodicidad"
+                etiqueta="Modalidad"
                 valor={body.periodicidad}
                 opciones={[
                   { valor: 'Semanal', texto: 'Semanal · hasta 7 días' },
                   { valor: 'Quincenal', texto: 'Quincenal · hasta 14 días' },
+                  { valor: 'Directo', texto: 'Directo · con plazo' },
                 ]}
                 onCambiar={(v) => {
-                  const fin = sumarDiasCampo(body.fecha_inicio, v === 'Semanal' ? 6 : 13)
+                  const inicio = v === 'Directo' && actual?.periodicidad !== 'Directo' ? hoy : body.fecha_inicio
+                  const fin = v === 'Directo' ? inicio : sumarDiasCampo(inicio, v === 'Semanal' ? 6 : 13)
                   cambiar({
                     periodicidad: v as EntradaEncargo['periodicidad'],
+                    fecha_reunion: v === 'Directo' ? null : (body.fecha_reunion ?? hoy),
+                    fecha_inicio: inicio,
                     fecha_fin: fin,
                     plazo_previsto: fin,
                   })
@@ -302,7 +354,10 @@ function DialogoEncargo({
                 onCambiar={(v) => cambiar({ area_verde_id: Number(v) })}
                 error={errores.area_verde_id}
               />
-              {(['fecha_reunion', 'fecha_inicio', 'fecha_fin', 'plazo_previsto'] as const).map((key) => (
+              {(directo
+                ? (['plazo_previsto'] as const)
+                : (['fecha_reunion', 'fecha_inicio', 'fecha_fin', 'plazo_previsto'] as const)
+              ).map((key) => (
                 <CampoFormulario
                   key={key}
                   id={`form-encargo-${key}`}
@@ -316,7 +371,7 @@ function DialogoEncargo({
                   }
                   type="date"
                   obligatorio
-                  value={body[key]}
+                  value={body[key] ?? ''}
                   onChange={(e) => cambiar({ [key]: e.target.value })}
                   error={errores[key]}
                 />
@@ -335,6 +390,121 @@ function DialogoEncargo({
               Los encargos con ejecución registrada conservan su planificación y no pueden redefinirse.
             </p>
           </fieldset>
+        )}
+      </EstadoCatalogos>
+    </DialogoFormulario>
+  )
+}
+
+function DialogoSeguimiento({
+  id,
+  puedeCambiar,
+  puedeCancelar,
+  onCerrar,
+  onGuardado,
+}: {
+  id: number
+  puedeCambiar: boolean
+  puedeCancelar: boolean
+  onCerrar: () => void
+  onGuardado: () => void
+}) {
+  const consulta = useConsulta(`encargo-seguimiento-${id}`, (signal) =>
+    campoApi<EncargoCampo>(`encargos/${id}/`, { signal }),
+  )
+  const [estado, setEstado] = useState<EstadoEncargo | ''>('')
+  const [observaciones, setObservaciones] = useState('')
+  const mutacion = useMutacionCampo()
+  const actual = consulta.datos
+  const opciones: EstadoEncargo[] = []
+  if (actual && puedeCambiar) opciones.push(...transiciones[actual.estado])
+  if (actual && puedeCancelar && actual.estado !== 'Completado' && actual.estado !== 'Cancelado') {
+    opciones.push('Cancelado')
+  }
+  const requiereMotivo = estado === 'Observado' || estado === 'Cancelado'
+
+  function guardar() {
+    if (!opciones.length) {
+      onCerrar()
+      return
+    }
+    if (!actual || !estado || !opciones.includes(estado)) {
+      mutacion.setDetalle('Selecciona el nuevo estado')
+      return
+    }
+    if (requiereMotivo && !observaciones.trim()) {
+      mutacion.setDetalle(
+        estado === 'Cancelado' ? 'Indica el motivo de la cancelación' : 'Indica el motivo de la observación',
+      )
+      return
+    }
+    void mutacion.enviar(
+      () =>
+        campoApi(`encargos/${id}/estado/`, {
+          metodo: 'POST',
+          cuerpo: { estado_anterior: actual.estado, estado, observaciones: observaciones.trim() },
+        }),
+      onGuardado,
+    )
+  }
+
+  return (
+    <DialogoFormulario
+      abierto
+      titulo="Seguimiento del encargo"
+      textoConfirmar={opciones.length ? 'Guardar estado' : 'Cerrar'}
+      onCerrar={onCerrar}
+      onEnviar={guardar}
+      error={mutacion.error}
+      enviando={mutacion.enviando}
+      hayCambios={Boolean(estado || observaciones)}
+      conObligatorios={opciones.length > 0}
+    >
+      <EstadoCatalogos consulta={consulta}>
+        {(encargo) => (
+          <>
+            <p>{encargo.descripcion}</p>
+            <Estado tono={tonosEncargo[encargo.estado]} texto={encargo.estado} />
+            {opciones.length > 0 && (
+              <fieldset className={estilos.formulario} disabled={mutacion.enviando}>
+                <Selector
+                  id="nuevo-estado-encargo"
+                  etiqueta="Nuevo estado"
+                  obligatorio
+                  valor={estado}
+                  opcionTodos="Selecciona un estado"
+                  opciones={opciones.map((valor) => ({ valor, texto: valor }))}
+                  onCambiar={(valor) => setEstado(valor as EstadoEncargo | '')}
+                />
+                <AreaTexto
+                  id="observaciones-estado-encargo"
+                  etiqueta="Observaciones"
+                  obligatorio={requiereMotivo}
+                  maxLength={1000}
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                />
+              </fieldset>
+            )}
+            <h3>Historial de estados</h3>
+            {encargo.historial_estados?.length ? (
+              <ul>
+                {encargo.historial_estados.map((cambio) => (
+                  <li key={cambio.id}>
+                    <strong>
+                      {cambio.estado_anterior} → {cambio.estado_nuevo}
+                    </strong>
+                    <span className={estilos.secundario}>
+                      {cambio.autor} · {formatearFechaHora(cambio.fecha)}
+                    </span>
+                    {cambio.observaciones && <p>{cambio.observaciones}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Sin cambios de estado registrados.</p>
+            )}
+          </>
         )}
       </EstadoCatalogos>
     </DialogoFormulario>
