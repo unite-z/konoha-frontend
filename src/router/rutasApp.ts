@@ -128,6 +128,11 @@ export function rutaIntervencionPoda(id: number): string {
   return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
 }
 
+/** Ficha técnica y evaluación del ejemplar (AV-133). */
+export function rutaFichaTecnicaEjemplar(ejemplarId: number): string {
+  return `${RUTAS_INVENTARIO.ejemplares}/${ejemplarId}/ficha-tecnica`
+}
+
 export function rutaEditarCampanaPoda(id: number): string {
   return `${rutaCampanaPoda(id)}/editar`
 }
@@ -144,6 +149,7 @@ export const MIGAS_INVENTARIO = {
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
   campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
   podaAltura: { texto: 'Poda a demanda', ruta: RUTAS_INVENTARIO.podaAltura },
+  ejemplares: { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
