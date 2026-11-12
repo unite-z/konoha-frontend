@@ -30,10 +30,13 @@ export function obtenerValoresIniciales(servicio: ServicioPeriodico, signal?: Ab
 
 /** `PUT servicios/{id}/frecuencias/{estacion}/` (solo jefe). Devuelve el servicio actualizado. */
 export function actualizarFrecuencia(servicioId: number, estacion: Estacion, cuerpo: FrecuenciaEntrada) {
-  return solicitarPlanificacion<ServicioPeriodico>(`servicios/${servicioId}/frecuencias/${encodeURIComponent(estacion)}/`, {
-    metodo: 'PUT',
-    cuerpo,
-  })
+  return solicitarPlanificacion<ServicioPeriodico>(
+    `servicios/${servicioId}/frecuencias/${encodeURIComponent(estacion)}/`,
+    {
+      metodo: 'PUT',
+      cuerpo,
+    },
+  )
 }
 
 /** `PUT servicios/{id}/duracion/` (solo jefe). Devuelve el servicio actualizado. */
@@ -55,9 +58,21 @@ export function crearRestriccion(cuerpo: RestriccionEntrada) {
   return solicitarPlanificacion<Restriccion[]>('restricciones/', { metodo: 'POST', cuerpo })
 }
 
-/** `GET programaciones/?desde&hasta`: ciclos que se solapan con el periodo (máximo 400 días). */
-export function listarProgramaciones(desde: FechaIso, hasta: FechaIso, signal?: AbortSignal) {
-  return solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta }, signal })
+/** Filtros que `GET programaciones/` aplica en el servidor (AV-254): cuadrilla de MOD-04, sector y lugar de MOD-02. */
+export interface FiltrosProgramaciones {
+  cuadrilla_id?: number
+  sector_id?: number
+  lugar_id?: number
+}
+
+/** `GET programaciones/?desde&hasta`: ciclos que se solapan con el periodo (máximo 400 días), con los filtros dados. */
+export function listarProgramaciones(
+  desde: FechaIso,
+  hasta: FechaIso,
+  signal?: AbortSignal,
+  filtros: FiltrosProgramaciones = {},
+) {
+  return solicitarPlanificacion<Programacion[]>('programaciones/', { parametros: { desde, hasta, ...filtros }, signal })
 }
 
 /** `GET programaciones/{id}/` (AV-364): el ciclo con su código, su historial y las restricciones que le afectan. */

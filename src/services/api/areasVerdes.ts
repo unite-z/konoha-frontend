@@ -7,9 +7,14 @@ export interface FiltrosAreasVerdes {
   sector_id?: number
   cuartel_id?: number
   tipo_uso_id?: number
+  page?: number
 }
 
-export function listarAreasVerdes(q = '', signal?: AbortSignal, filtros: FiltrosAreasVerdes = {}): Promise<PaginaAreasVerdes> {
+export function listarAreasVerdes(
+  q = '',
+  signal?: AbortSignal,
+  filtros: FiltrosAreasVerdes = {},
+): Promise<PaginaAreasVerdes> {
   return solicitarTercerizados<PaginaAreasVerdes>('areas-verdes/', {
     parametros: { q, ...filtros },
     signal,
