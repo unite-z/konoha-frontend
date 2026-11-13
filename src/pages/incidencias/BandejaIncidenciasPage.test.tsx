@@ -9,7 +9,10 @@ import BandejaIncidenciasPage from './BandejaIncidenciasPage'
 const datos = incidenciasSimuladas()
 const listar = vi.fn(async (_signal?: AbortSignal, _q = '') => datos)
 const anotarCausaRetraso = vi.fn(async () => undefined)
-const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({ ...(datos.find((i) => i.id === id) ?? datos[0]), responsable: 'J. Ramos' }))
+const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({
+  ...(datos.find((i) => i.id === id) ?? datos[0]),
+  responsable: 'J. Ramos',
+}))
 vi.mock('@/services/api/incidencias', () => ({
   listarIncidencias: (signal?: AbortSignal, q?: string) => listar(signal, q),
   anotarCausaRetraso: (...argumentos: unknown[]) => anotarCausaRetraso(...(argumentos as [])),
@@ -29,7 +32,11 @@ beforeAll(() => {
   }
 })
 const pagina = vi.hoisted(() => ({ titulo: '' }))
-vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: (titulo: string) => { pagina.titulo = titulo } }))
+vi.mock('@/hooks/usePaginaActual', () => ({
+  usePaginaActual: (titulo: string) => {
+    pagina.titulo = titulo
+  },
+}))
 const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CONSULTAR_TODAS'] as string[] }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
@@ -76,7 +83,11 @@ describe('BandejaIncidenciasPage', () => {
 
     await usuario.click(within(alertas).getAllByRole('button', { name: 'Reasignar' })[0])
     await usuario.selectOptions(await screen.findByLabelText(/^Capataz/), '3')
-    await usuario.click(within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', { name: 'Reasignar' }))
+    await usuario.click(
+      within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', {
+        name: 'Reasignar',
+      }),
+    )
     expect(reasignarIncidencia).toHaveBeenCalledWith(38, 3)
     expect(await screen.findByText('INC-2026-038 reasignada a J. Ramos')).toBeTruthy()
   })

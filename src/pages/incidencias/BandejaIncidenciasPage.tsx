@@ -45,7 +45,10 @@ import {
 export default function BandejaIncidenciasPage() {
   // Sin el permiso de consultar todas (capataz), el servidor solo devuelve las suyas y las de su cuadrilla (AV-407).
   const veTodas = puede(useSesionActiva(), PERMISOS.consultarTodasIncidencias)
-  usePaginaActual(veTodas ? 'Incidencias' : 'Incidencias de mi cuadrilla', [MIGAS_INCIDENCIAS.incidencias, { texto: 'Bandeja' }])
+  usePaginaActual(veTodas ? 'Incidencias' : 'Incidencias de mi cuadrilla', [
+    MIGAS_INCIDENCIAS.incidencias,
+    { texto: 'Bandeja' },
+  ])
   const [busqueda, setBusqueda] = useState('')
   const [termino, setTermino] = useState('')
   const [pestana, setPestana] = useState<PestanaBandeja>('todas')
@@ -59,8 +62,18 @@ export default function BandejaIncidenciasPage() {
   const [registrando, setRegistrando] = useState(false)
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
-    { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
-    { clave: 'ubicacion', titulo: 'Ubicación', multilinea: true, render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" /> },
+    {
+      clave: 'incidencia',
+      titulo: 'Incidencia',
+      multilinea: true,
+      render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo />,
+    },
+    {
+      clave: 'ubicacion',
+      titulo: 'Ubicación',
+      multilinea: true,
+      render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" />,
+    },
     {
       clave: 'severidad',
       titulo: 'Severidad',
@@ -96,7 +109,13 @@ export default function BandejaIncidenciasPage() {
   }
 
   if (consulta.estado === 'error' && !consulta.datos) {
-    return <EstadoError titulo="No pudimos cargar las incidencias" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar las incidencias"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   }
 
   const incidencias = (consulta.datos ?? []).map((i) => locales[i.id] ?? i)
@@ -145,7 +164,11 @@ export default function BandejaIncidenciasPage() {
           estado={consulta.datos ? 'exito' : 'cargando'}
           vacio={{
             titulo: termino ? 'Sin coincidencias' : 'Sin incidencias en esta pestaña',
-            descripcion: termino ? 'Prueba con otro código, tipo, espacio o descripción.' : veTodas ? 'Las incidencias reportadas aparecerán aquí.' : 'Aquí aparecerán las incidencias tuyas y de tu cuadrilla.',
+            descripcion: termino
+              ? 'Prueba con otro código, tipo, espacio o descripción.'
+              : veTodas
+                ? 'Las incidencias reportadas aparecerán aquí.'
+                : 'Aquí aparecerán las incidencias tuyas y de tu cuadrilla.',
           }}
         />
       </Pestanas>
