@@ -71,6 +71,8 @@ export interface TablaDatosProps<F> {
   onFilaClick?: (fila: F) => void
   /** Filas que se resaltan con borde (Figma, Calendario · Lista: la actividad en conflicto). */
   filaResaltada?: (fila: F) => boolean
+  /** Filas en peligro (fondo de error): lo vencido o fuera de plazo. Acompáñalas de un texto, no solo de color. */
+  filaPeligro?: (fila: F) => boolean
   /** Filas de 40px. */
   compacta?: boolean
   /** Sin borde ni radio, dentro de otro marco (Figma 346-1334: la ruta en la caja de pestañas del corte). */
@@ -111,6 +113,7 @@ export default function TablaDatos<F>({
   error,
   onFilaClick,
   filaResaltada,
+  filaPeligro,
   compacta = false,
   sinMarco = false,
   ordenInicial,
@@ -240,7 +243,7 @@ export default function TablaDatos<F>({
                 <tr
                   key={claveFila(fila, indice)}
                   className={
-                    [clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada]
+                    [clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada, filaPeligro?.(fila) && estilos.peligro]
                       .filter(Boolean)
                       .join(' ') || undefined
                   }
