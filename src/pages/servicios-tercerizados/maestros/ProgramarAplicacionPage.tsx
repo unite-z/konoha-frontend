@@ -10,6 +10,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import CampoFormulario, { AreaTexto, LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
@@ -61,7 +62,7 @@ export default function ProgramarAplicacionPage() {
   usePaginaActual(TITULO, [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
     MIGAS_TERCERIZADOS.controlFitosanitario,
-    { texto: especial.datos ? especial.datos.ejemplar_codigo : 'Ficha' },
+    { texto: especial.datos ? nombreEjemplar(especial.datos.ejemplar_codigo, especial.datos.ejemplar_alias) : 'Ficha' },
     { texto: 'Programar aplicación' },
   ])
 
@@ -158,7 +159,7 @@ export default function ProgramarAplicacionPage() {
   return (
     <form className={estilos.formulario} onSubmit={guardar} noValidate aria-label={TITULO}>
       <p className={estilos.descripcion}>
-        {especial.datos.ejemplar_codigo} · {especial.datos.plaga_nombre} ·{' '}
+        {nombreEjemplar(especial.datos.ejemplar_codigo, especial.datos.ejemplar_alias)} · {especial.datos.plaga_nombre} ·{' '}
         {textoAplicaciones(especial.datos.aplicaciones_realizadas, especial.datos.aplicaciones_adicionales)} aplicaciones adicionales
       </p>
       <LeyendaObligatorio />

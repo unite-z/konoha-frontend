@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import Boton from '@/components/ui/Boton'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { rutaDetalleAtencion } from '@/router/rutasApp'
 import { formatearFecha, formatearNumero } from '@/utils/formato'
 import type { FilaMapa } from '@/utils/mapaAtenciones'
@@ -47,7 +48,7 @@ export default function ListaAtencionesMovil({ filas, seleccion, onSeleccionar }
               </p>
               <p className={estilos.metaFicha}>
                 {f.espacio}
-                {f.ejemplar_codigo ? ` · Ejemplar ${f.ejemplar_codigo}` : ''} · {formatearFecha(f.fecha)}
+                {f.ejemplar_codigo ? ` · Ejemplar ${nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias)}` : ''} · {formatearFecha(f.fecha)}
               </p>
               <div className={estilos.pieFicha}>
                 {f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />}

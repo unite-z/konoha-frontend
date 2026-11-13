@@ -3,6 +3,7 @@
  * Se prueba en `detalleIncidencia.test.ts`.
  */
 import type { AtencionIncidencia, CapatazDisponible, EventoIncidencia, IncidenciaDetalle, ViaIncidencia } from '@/types/incidencias'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { instanteALocalLima } from '@/utils/instanteLima'
 
 /** Altura desde la que se sugiere el proveedor tercerizado (poda de altura, AV-276). */
@@ -73,7 +74,7 @@ export function textoCarga(capataz: CapatazDisponible): string {
 
 /** Lo que va con el encargo (Figma 389-7502): la foto, la descripción y el ejemplar, si lo hay. */
 export function incluyeEncargo(incidencia: IncidenciaDetalle): string[] {
-  return ['Foto', 'Descripción', incidencia.ejemplar?.codigo].filter((x): x is string => Boolean(x))
+  return ['Foto', 'Descripción', incidencia.ejemplar && nombreEjemplar(incidencia.ejemplar.codigo, incidencia.ejemplar.alias)].filter((x): x is string => Boolean(x))
 }
 
 /** «hoy 11:40» o «03/11 11:40». */

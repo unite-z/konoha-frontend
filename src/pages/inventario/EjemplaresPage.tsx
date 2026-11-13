@@ -20,7 +20,8 @@ import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INVENTARIO } from '@/router/rutasApp'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import { PERMISOS, puede } from '@/config/permisosCore'
-import { EJEMPLARES_POR_PAGINA, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplarPorCodigo, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
+import { EJEMPLARES_POR_PAGINA, cambiarAliasEjemplar, cambiarEspecie, crearEjemplar, crearEspecie, guardarAlturaEjemplar, listarEjemplarPorCodigo, listarEjemplares, listarEspecies, quitarPlacaAntigua, vincularEjemplarConArea } from '@/services/api/ejemplares'
 import { listarTodasLasAreasVerdes } from '@/services/api/mapaAsignaciones'
 import type { EjemplarInventario, EspecieVegetal } from '@/types/ejemplares'
 import SelectorPuntoMapa from './SelectorPuntoMapa'
@@ -101,6 +102,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   const ficha = useRef<HTMLDivElement>(null)
   const botonFicha = useRef<HTMLButtonElement>(null)
   const [borradorAltura, setAlturaFicha] = useState<string | null>(null)
+  const [borradorAlias, setAliasFicha] = useState<string | null>(null)
   const claveListado = `ejemplares-inventario|${pagina}|${especieFiltrada?.id ?? ""}|${terminoBusqueda}|${busquedaExacta}`
   const consulta = useConsulta(pestana === 'ejemplares' ? claveListado : null, async (signal) => {
     if (busquedaExacta) {
@@ -121,6 +123,9 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   const alturaGuardada = ejemplarSeleccionado?.altura_total_m ?? null
   const alturaFicha = borradorAltura ?? String(alturaGuardada ?? '')
   const alturaSinGuardar = alturaFicha !== '' && Number(alturaFicha) !== alturaGuardada
+  const aliasGuardado = ejemplarSeleccionado?.alias ?? ''
+  const aliasFicha = borradorAlias ?? aliasGuardado
+  const aliasSinGuardar = aliasFicha.trim() !== aliasGuardado
 
   const idFichaAbierta = ejemplarSeleccionado?.id
   useEffect(() => {
@@ -136,6 +141,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
     setCodigoSeleccionado(ejemplar.codigo)
     setAreaFicha(String(ejemplar.area_verde_id ?? ''))
     setAlturaFicha(String(ejemplar.altura_total_m ?? ''))
+    setAliasFicha(ejemplar.alias ?? '')
   }
 
   function cerrarFicha() {
@@ -160,6 +166,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   const areaFicha = borradorArea ?? String(ejemplarSeleccionado?.area_verde_id ?? '')
   const [mapaAbierto, setMapaAbierto] = useState(false)
   const [codigoPlaca, setCodigoPlaca] = useState('')
+  const [alias, setAlias] = useState('')
   const [especieId, setEspecieId] = useState('')
   const [vegetacion, setVegetacion] = useState('')
   const [ubicacion, setUbicacion] = useState('')
@@ -222,6 +229,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
   function cerrarAlta() {
     if (alta === 'ejemplar') {
       setCodigoPlaca('')
+      setAlias('')
       setEspecieId('')
       setVegetacion('')
       setUbicacion('')
@@ -246,6 +254,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
     }
     void ejecutar(async () => {
       const creado = await crearEjemplar({
+        alias: alias.trim() || null,
         codigo_placa_antigua: codigoPlaca.trim() || null,
         especie_id: especieId ? Number(especieId) : null,
         tipo_vegetacion: vegetacion.trim() || null,
@@ -287,7 +296,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
         <DialogoFormulario abierto={alta === 'ejemplar'} titulo="Registrar ejemplar" ancho="amplio"
           descripcion="El código interno se genera al guardar. Después puedes adjuntar una foto en la ficha."
           textoConfirmar="Registrar ejemplar" enviando={guardando} error={errorAlta}
-          hayCambios={Boolean(codigoPlaca || especieId || vegetacion || ubicacion || areaId || latitud || longitud || cantidad !== '1')}
+          hayCambios={Boolean(alias || codigoPlaca || especieId || vegetacion || ubicacion || areaId || latitud || longitud || cantidad !== '1')}
           envioDeshabilitado={!Number.isInteger(Number(cantidad)) || Number(cantidad) < 1
             || ubicacionAlta.cargando || ubicacionAlta.fuera || ubicacionAlta.ambiguo}
           onCerrar={cerrarAlta} onEnviar={guardarEjemplar}>
@@ -295,6 +304,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
           {areas.estado === 'error' && <EstadoError titulo="No se pudieron cargar las áreas verdes" descripcion={areas.error?.detalle ?? ''} onReintentar={areas.reintentar} nivel={3} />}
           <div className={estilosMapa.distribucionFormulario}>
             <div className={estilos.formulario}>
+              <CampoFormulario id="alias-ejemplar" etiqueta="Alias (opcional)" value={alias} onChange={(evento) => setAlias(evento.target.value)} maxLength={40} />
               <CampoFormulario id="placa-antigua" etiqueta="Placa de aluminio antigua (opcional)" value={codigoPlaca} onChange={(evento) => setCodigoPlaca(evento.target.value)} maxLength={80} />
               {especiesActivas && <Selector id="especie-ejemplar" etiqueta="Especie" valor={especieId} onCambiar={setEspecieId} opcionTodos="Sin especie asignada" opciones={especiesActivas.map((especie) => ({ valor: String(especie.id), texto: `${especie.nombre_comun ?? especie.nombre_cientifico ?? 'Sin nombre'}${especie.nombre_cientifico ? ` · ${especie.nombre_cientifico}` : ''}` }))} />}
               <CampoFormulario id="vegetacion-ejemplar" etiqueta="Tipo de vegetación" value={vegetacion} onChange={(evento) => setVegetacion(evento.target.value)} maxLength={80} />
@@ -448,7 +458,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
                       <li className={vista === 'galeria' ? estilos.tarjetaGaleria : estilos.fila} key={ejemplar.id}>
                         {vista === 'galeria' && <FotoEjemplar ejemplar={ejemplar} revision={revisionFotos[ejemplar.id] ?? 0} miniatura />}
                         <div>
-                          <strong>{ejemplar.codigo}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
+                          <strong>{nombreEjemplar(ejemplar.codigo, ejemplar.alias)}</strong> · {ejemplar.especie_nombre_comun ?? 'Especie sin asignar'}
                           {datosEspecie && <div className={estilos.detalle}>{datosEspecie}</div>}
                           {datosIdentificacion && <div className={estilos.detalle}>{datosIdentificacion}</div>}
                           <div className={estilos.detalle}>{ubicacionEjemplar}</div>
@@ -481,7 +491,7 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
             {ejemplarSeleccionado && (
               <div ref={ficha} tabIndex={-1} role="group" aria-label={`Ficha de ${ejemplarSeleccionado.codigo}`}>
                 <Tarjeta
-                  titulo={`${ejemplarSeleccionado.especie_nombre_comun ?? 'Ejemplar'} · ${ejemplarSeleccionado.codigo}`}
+                  titulo={`${ejemplarSeleccionado.especie_nombre_comun ?? 'Ejemplar'} · ${nombreEjemplar(ejemplarSeleccionado.codigo, ejemplarSeleccionado.alias)}`}
                   descripcion={ubicacionVisible(ejemplarSeleccionado)}
                   junto={<EtiquetaSituacionEjemplar situacion={ejemplarSeleccionado.situacion} />}
                   acciones={<Boton variante="fantasma" compacto onClick={cerrarFicha}>Cerrar ficha</Boton>}
@@ -500,6 +510,14 @@ function CatastroEjemplares({ codigoEnlace }: { codigoEnlace: string }) {
                         {ejemplarSeleccionado.ubicacion?.trim() && <><dt>Referencia de ubicación</dt><dd>{ejemplarSeleccionado.ubicacion}</dd></>}
                         <dt>Coordenadas</dt><dd>{ejemplarSeleccionado.latitud !== null && ejemplarSeleccionado.longitud !== null ? `${ejemplarSeleccionado.latitud}, ${ejemplarSeleccionado.longitud}` : 'Sin coordenadas'}</dd>
                       </dl>
+                      {puedeRegistrar && (
+                        <form className={estilos.alta} onSubmit={(evento) => enviar(evento,
+                          () => cambiarAliasEjemplar(ejemplarSeleccionado.id, aliasFicha.trim()), aliasFicha.trim() ? 'Alias actualizado.' : 'Alias quitado.')}>
+                          <CampoFormulario id="alias-ficha-ejemplar" etiqueta="Alias del ejemplar" value={aliasFicha} maxLength={40}
+                            onChange={(evento) => setAliasFicha(evento.target.value)} />
+                          <Boton type="submit" variante="secundario" deshabilitado={guardando || !aliasSinGuardar}>Guardar alias</Boton>
+                        </form>
+                      )}
                       {puedeRegistrar && <EditarUbicacionEjemplar key={ejemplarSeleccionado.id}
                         ejemplar={ejemplarSeleccionado} areas={opcionesAreas} alGuardar={(actualizado) => {
                           setAreaFicha(String(actualizado.area_verde_id ?? ''))

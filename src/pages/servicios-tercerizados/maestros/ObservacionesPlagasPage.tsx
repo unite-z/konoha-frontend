@@ -9,6 +9,7 @@
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
@@ -35,7 +36,7 @@ const COLUMNAS: ColumnaTabla<ObservacionPlaga>[] = [
   {
     clave: 'destino',
     titulo: 'Espacio o ejemplar',
-    render: (o) => o.area_verde_nombre ?? o.ejemplar_codigo ?? SIN_VALOR,
+    render: (o) => o.area_verde_nombre ?? (o.ejemplar_codigo ? nombreEjemplar(o.ejemplar_codigo, o.ejemplar_alias) : SIN_VALOR),
   },
   { clave: 'plaga', titulo: 'Plaga', render: (o) => o.plaga_nombre },
   { clave: 'autor', titulo: 'Registrado por', render: (o) => o.usuario_creacion_nombre },

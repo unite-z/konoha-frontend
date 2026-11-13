@@ -242,6 +242,7 @@ export interface AtencionMapa {
   espacio: string
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   archivos_asociados: number
 }
 

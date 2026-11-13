@@ -5,6 +5,7 @@
  */
 import { useParams } from 'react-router'
 import { BotonEnlace } from '@/components/ui/Boton'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
@@ -38,7 +39,7 @@ function alcanceDeObservacion(o: ObservacionPlaga): AlcanceSeleccionado | null {
       clave: claveAlcance('ejemplar', o.ejemplar_id),
       tipo: 'ejemplar',
       id: o.ejemplar_id,
-      etiqueta: o.ejemplar_codigo ?? '',
+      etiqueta: o.ejemplar_codigo ? nombreEjemplar(o.ejemplar_codigo, o.ejemplar_alias) : '',
       metrado: '',
       unidad_medida_id: '',
     }
@@ -110,7 +111,7 @@ export default function ObservacionPlagaDetallePage() {
             elementos={[
               {
                 etiqueta: 'Espacio o ejemplar',
-                valor: observacion.area_verde_nombre ?? observacion.ejemplar_codigo ?? SIN_VALOR,
+                valor: observacion.area_verde_nombre ?? (observacion.ejemplar_codigo ? nombreEjemplar(observacion.ejemplar_codigo, observacion.ejemplar_alias) : SIN_VALOR),
               },
               {
                 etiqueta: 'Fecha observada',

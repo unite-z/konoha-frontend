@@ -8,6 +8,7 @@
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Estado from '@/components/ui/Estado'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoVacio from '@/components/ui/EstadoVacio'
@@ -47,7 +48,7 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
     multilinea: true,
     render: (e) => (
       <>
-        {e.ejemplar_codigo}
+        {nombreEjemplar(e.ejemplar_codigo, e.ejemplar_alias)}
         {e.area_verde_nombre && (
           <>
             <br />

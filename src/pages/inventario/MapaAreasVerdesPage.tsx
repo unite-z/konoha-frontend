@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
@@ -160,14 +161,14 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
   const poligonoId = seleccionado ? idPoligono(seleccionado) : ''
   const consulta = useConsulta(mostrarEjemplares && poligonoId ? 'ejemplares-mapa:' + poligonoId : null,
     (signal) => listarEjemplaresDePoligono(poligonoId, signal))
-  const puntos = useMemo<(PuntoEjemplar & { nombreArea: string; avisoVinculo: string; nombreCientifico: string })[]>(() => {
+  const puntos = useMemo<(PuntoEjemplar & { nombre: string; nombreArea: string; avisoVinculo: string; nombreCientifico: string })[]>(() => {
     if (consulta.estado !== 'exito') return []
     return (consulta.datos ?? []).flatMap((ejemplar) => {
       const { latitud, longitud } = ejemplar
       if (latitud === null || longitud === null || !Number.isFinite(latitud) || !Number.isFinite(longitud)
         || Math.abs(latitud) > 90 || Math.abs(longitud) > 180) return []
       return [{
-        id: ejemplar.id, codigo: ejemplar.codigo, latitud, longitud,
+        id: ejemplar.id, codigo: ejemplar.codigo, nombre: nombreEjemplar(ejemplar.codigo, ejemplar.alias), latitud, longitud,
         nombreArea: ejemplar.area_verde_nombre ?? areas.find((area) => area.id === ejemplar.area_verde_id)?.nombre ?? '',
         avisoVinculo: ejemplar.area_verde_id == null ? 'Sin área vinculada'
           : ejemplar.area_verde_id !== areaId ? 'Vinculado a otra área' : '',
@@ -235,12 +236,12 @@ function VistaJardin({ mapa, usos, uso, seleccionado, vinculo, onSeleccionar, ar
             {puntosVisibles.length > 1 && (
               <Selector id="ejemplar-mapa" etiqueta="Ejemplares con coordenadas" valor={ejemplar ? String(ejemplar.id) : ''}
                 opcionTodos="Selecciona un ejemplar" onCambiar={(valor) => setEjemplarId(valor ? Number(valor) : null)}
-                opciones={puntosVisibles.map((punto) => ({ valor: String(punto.id), texto: punto.codigo + ' · ' + punto.especie }))} />
+                opciones={puntosVisibles.map((punto) => ({ valor: String(punto.id), texto: punto.nombre + ' · ' + punto.especie }))} />
             )}
             {consulta.estado === 'exito' && !puntos.length && <p role="status">No hay ejemplares con coordenadas dentro de esta área del mapa.</p>}
             {ejemplar && (
               <div className={estilos.detalleEjemplar}>
-                <strong>{ejemplar.codigo} · {ejemplar.especie}</strong>
+                <strong>{ejemplar.nombre} · {ejemplar.especie}</strong>
                 <p>{ejemplar.nombreArea || ejemplar.avisoVinculo || 'Área vinculada'}</p>
                 {ejemplar.nombreArea && ejemplar.avisoVinculo && <p>{ejemplar.avisoVinculo}</p>}
                 <BotonEnlace variante="secundario" compacto
