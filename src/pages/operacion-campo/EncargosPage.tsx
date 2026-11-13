@@ -95,7 +95,10 @@ export default function EncargosPage() {
             value={String(listado.params.hasta ?? '')}
             onChange={(e) => listado.filtrar({ hasta: e.target.value })}
           />
-          <Boton variante="fantasma" onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '', vencidos: '' })}>
+          <Boton
+            variante="fantasma"
+            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '', vencidos: '' })}
+          >
             Limpiar filtros
           </Boton>
         </div>

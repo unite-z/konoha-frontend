@@ -143,9 +143,7 @@ export function SeleccionOperarios({
               ayuda={bloqueados.includes(p.id) ? 'Asignado a otra cuadrilla' : undefined}
               marcada={seleccion.includes(p.id)}
               disabled={bloqueados.includes(p.id)}
-              onCambiar={(marcada) =>
-                onCambiar(marcada ? [...seleccion, p.id] : seleccion.filter((id) => id !== p.id))
-              }
+              onCambiar={(marcada) => onCambiar(marcada ? [...seleccion, p.id] : seleccion.filter((id) => id !== p.id))}
             />
           </div>
         ))}

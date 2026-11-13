@@ -243,7 +243,11 @@ export default function TablaDatos<F>({
                 <tr
                   key={claveFila(fila, indice)}
                   className={
-                    [clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada, filaPeligro?.(fila) && estilos.peligro]
+                    [
+                      clicable && estilos.clicable,
+                      filaResaltada?.(fila) && estilos.resaltada,
+                      filaPeligro?.(fila) && estilos.peligro,
+                    ]
                       .filter(Boolean)
                       .join(' ') || undefined
                   }

@@ -161,6 +161,8 @@ it('marca los encargos vencidos con un texto y permite filtrar solo los vencidos
 
   await userEvent.setup().selectOptions(screen.getByLabelText('Vencimiento'), 'true')
   await waitFor(() =>
-    expect(peticiones.some((url) => url.pathname.endsWith('/encargos/') && url.searchParams.get('vencidos') === 'true')).toBe(true),
+    expect(
+      peticiones.some((url) => url.pathname.endsWith('/encargos/') && url.searchParams.get('vencidos') === 'true'),
+    ).toBe(true),
   )
 })
