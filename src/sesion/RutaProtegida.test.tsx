@@ -4,7 +4,8 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import LayoutOficina from '@/layouts/LayoutOficina/LayoutOficina'
 import type { SesionCore } from '@/types/core'
-import { RutaConPermiso } from './RutaProtegida'
+import { RUTAS_CORTE, RUTAS_PLANIFICACION } from '@/router/rutasApp'
+import { InicioRol, RutaConPermiso } from './RutaProtegida'
 
 const sesion: SesionCore = {
   usuario: { id: 3, nombre: 'Luis P.', nombre_usuario: 'lp' },
@@ -19,7 +20,10 @@ vi.mock('@/sesion/ContextoSesion', () => ({
   useSesionActiva: () => sesion,
 }))
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sesion.permisos = []
+})
 
 function pintar(seccion?: string) {
   render(
@@ -51,5 +55,37 @@ describe('RutaConPermiso', () => {
     pintar()
 
     expect(screen.getByRole('heading', { name: 'No tiene permiso para esta acción' })).toBeTruthy()
+  })
+})
+
+describe('InicioRol', () => {
+  function pintarInicio() {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<InicioRol />} />
+          <Route path={RUTAS_CORTE.rutaDeHoy} element={<p>Pantalla de la ruta de hoy</p>} />
+          <Route path={RUTAS_PLANIFICACION.resumen} element={<p>Pantalla del resumen de planificación</p>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+  }
+
+  it('lleva al capataz a su ruta de hoy aunque pueda consultar partes (AV-406)', () => {
+    sesion.permisos = [
+      'CAM.CUADRILLA.CONSULTAR',
+      'CAM.PARTE.REGISTRAR',
+      'CAM.PARTE.CONSULTAR',
+      'PLA.CORTE.REGISTRAR',
+      'PLA.PLANIFICACION.CONSULTAR',
+    ]
+    pintarInicio()
+    expect(screen.getByText('Pantalla de la ruta de hoy')).toBeTruthy()
+  })
+
+  it('quien no registra partes empieza por la primera sección que puede usar', () => {
+    sesion.permisos = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.CONSULTAR', 'PLA.PLANIFICACION.CONSULTAR']
+    pintarInicio()
+    expect(screen.getByText('Pantalla del resumen de planificación')).toBeTruthy()
   })
 })
