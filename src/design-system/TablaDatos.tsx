@@ -13,7 +13,7 @@
  * - Estados integrados: vacío, carga y error. Sin filas y con `vacio` definido, pinta el vacío aunque no se pase `estado`.
  * - Desplazamiento horizontal propio si no cabe, con la primera columna fija.
  */
-import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useMemo, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react'
 import { SIN_VALOR } from '@/utils/formato'
 import EstadoCarga from './EstadoCarga'
 import EstadoError, { type EstadoErrorProps } from './EstadoError'
@@ -21,6 +21,12 @@ import EstadoVacio, { type EstadoVacioProps } from './EstadoVacio'
 import Icono from './Icono'
 import Paginacion from './Paginacion'
 import estilos from './TablaDatos.module.css'
+
+/** `true` si el evento sale de un control dentro de la fila (botón, enlace, campo), no de la fila misma. */
+function desdeControl(evento: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
+  const control = (evento.target as HTMLElement).closest('button, a, input, select, textarea, label')
+  return control !== null && evento.currentTarget.contains(control)
+}
 
 export interface ColumnaTabla<F> {
   clave: string
@@ -93,7 +99,6 @@ function comparar(a: unknown, b: unknown): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b
   return String(a).localeCompare(String(b), 'es', { numeric: true, sensitivity: 'base' })
 }
-
 
 export default function TablaDatos<F>({
   titulo,
@@ -209,7 +214,11 @@ export default function TablaDatos<F>({
                           nombre={activa ? 'chevronDerecha' : 'flechaOrden'}
                           tamano="sm"
                           className={
-                            activa ? (orden.direccion === 'asc' ? estilos.flechaArriba : estilos.flechaAbajo) : undefined
+                            activa
+                              ? orden.direccion === 'asc'
+                                ? estilos.flechaArriba
+                                : estilos.flechaAbajo
+                              : undefined
                           }
                         />
                       </button>
@@ -230,13 +239,24 @@ export default function TablaDatos<F>({
               return (
                 <tr
                   key={claveFila(fila, indice)}
-                  className={[clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada].filter(Boolean).join(' ') || undefined}
+                  className={
+                    [clicable && estilos.clicable, filaResaltada?.(fila) && estilos.resaltada]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
                   tabIndex={clicable ? 0 : undefined}
-                  onClick={clicable ? () => onFilaClick?.(fila) : undefined}
+                  // Un botón o enlace de la fila (acciones, AV-400) hace lo suyo y no abre la fila.
+                  onClick={
+                    clicable
+                      ? (evento: MouseEvent<HTMLTableRowElement>) => {
+                          if (!desdeControl(evento)) onFilaClick?.(fila)
+                        }
+                      : undefined
+                  }
                   onKeyDown={
                     clicable
                       ? (evento: KeyboardEvent<HTMLTableRowElement>) => {
-                          if (evento.key === 'Enter') onFilaClick?.(fila)
+                          if (evento.key === 'Enter' && !desdeControl(evento)) onFilaClick?.(fila)
                         }
                       : undefined
                   }
