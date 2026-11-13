@@ -44,7 +44,7 @@ describe('Operación de campo', () => {
       '/operacion-campo/ingreso',
       '/operacion-campo/cuadrillas\\x',
     ])
-      expect(destinoCampo(path)).toBe(RUTAS_CAMPO.cuadrillas)
+      expect(destinoCampo(path)).toBe(RUTAS_CAMPO.encargos)
     expect(destinoCampo('/operacion-campo/encargos?page=2')).toBe('/operacion-campo/encargos?page=2')
   })
   it('separa la gestión de cuadrillas del registro de actividades', () => {

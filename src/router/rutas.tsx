@@ -152,16 +152,22 @@ export const router = createBrowserRouter([
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
             children: [
-              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.encargos} replace /> },
               {
                 path: BASE_CAMPO,
                 children: [
-                  { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
-                  { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                  { index: true, element: <Navigate to={RUTAS_CAMPO.encargos} replace /> },
                   { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
                   { path: RUTAS_CAMPO.actividades, element: <ActividadesPage /> },
                   { path: RUTAS_CAMPO.participantes, element: <ParticipantesPage /> },
-                  { path: RUTAS_CAMPO.catalogoActividades, element: <CatalogoActividadesPage /> },
+                  // Solo la jefatura: el menú no las muestra a quien no puede gestionarlas (AV-406).
+                  {
+                    element: <RutaConPermiso permiso={PERMISOS.gestionarCuadrillas} seccion="Cuadrillas y catálogo" />,
+                    children: [
+                      { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                      { path: RUTAS_CAMPO.catalogoActividades, element: <CatalogoActividadesPage /> },
+                    ],
+                  },
                 ],
               },
             ],
@@ -308,7 +314,12 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioPage /> }, // HU-MOD03-003 y 005, RF-PLA-003 y 007
               { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
               { path: `${RUTAS_PLANIFICACION.ciclos}/:id`, element: <CicloDetallePage /> }, // CU-004 y CU-007
-              { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
+              {
+                element: <RutaConPermiso permiso={PERMISOS.gestionarPlanificacion} seccion="Configuración" />,
+                children: [
+                  { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
+                ],
+              },
               {
                 path: RUTAS_PLANIFICACION_ANTIGUAS.servicios,
                 element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace />,

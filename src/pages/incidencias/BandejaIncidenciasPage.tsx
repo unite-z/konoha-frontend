@@ -16,11 +16,13 @@ import Estado from '@/components/ui/Estado'
 import EstadoError from '@/components/ui/EstadoError'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { PERMISOS, puede } from '@/config/permisosCore'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { MIGAS_INCIDENCIAS, rutaIncidencia } from '@/router/rutasApp'
 import { listarIncidencias } from '@/services/api/incidencias'
+import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { IncidenciaResumen } from '@/types/incidencias'
 import AlertasPlazo from './AlertasPlazo'
 import DialogoRegistrarIncidencia from './DialogoRegistrarIncidencia'
@@ -42,6 +44,8 @@ import {
 export default function BandejaIncidenciasPage() {
   usePaginaActual('Incidencias', [MIGAS_INCIDENCIAS.incidencias, { texto: 'Bandeja' }])
   const [pestana, setPestana] = useState<PestanaBandeja>('todas')
+  // «Reasignar» y «Anotar causa» son de quien gestiona incidencias: al resto no se le pintan (AV-406).
+  const gestiona = puede(useSesionActiva(), PERMISOS.clasificarIncidencia)
   const consulta = useConsulta('incidencias', (signal) => listarIncidencias(signal))
   const [ahora] = useState(() => Date.now())
   // Reasignaciones hechas aquí, encima de la consulta hasta la siguiente.
@@ -52,8 +56,18 @@ export default function BandejaIncidenciasPage() {
   const [registrando, setRegistrando] = useState(false)
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
-    { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
-    { clave: 'ubicacion', titulo: 'Ubicación', multilinea: true, render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" /> },
+    {
+      clave: 'incidencia',
+      titulo: 'Incidencia',
+      multilinea: true,
+      render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo />,
+    },
+    {
+      clave: 'ubicacion',
+      titulo: 'Ubicación',
+      multilinea: true,
+      render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" />,
+    },
     {
       clave: 'severidad',
       titulo: 'Severidad',
@@ -84,7 +98,13 @@ export default function BandejaIncidenciasPage() {
   ]
 
   if (consulta.estado === 'error' && !consulta.datos) {
-    return <EstadoError titulo="No pudimos cargar las incidencias" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar las incidencias"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   }
 
   const incidencias = (consulta.datos ?? []).map((i) => locales[i.id] ?? i)
@@ -97,11 +117,13 @@ export default function BandejaIncidenciasPage() {
         </Boton>
       </AccionesPagina>
       <AvisoDatosSimulados />
-      <AlertasPlazo
-        alertas={alertasPlazo(incidencias, ahora)}
-        onAviso={setAviso}
-        onReasignada={(actualizada) => setLocales((previas) => ({ ...previas, [actualizada.id]: actualizada }))}
-      />
+      {gestiona && (
+        <AlertasPlazo
+          alertas={alertasPlazo(incidencias, ahora)}
+          onAviso={setAviso}
+          onReasignada={(actualizada) => setLocales((previas) => ({ ...previas, [actualizada.id]: actualizada }))}
+        />
+      )}
       <Pestanas
         etiqueta="Estado de las incidencias"
         pestanas={PESTANAS_BANDEJA.map((p) => ({ ...p, contador: consulta.datos ? contadores[p.valor] : undefined }))}
@@ -115,7 +137,10 @@ export default function BandejaIncidenciasPage() {
           claveFila={(i) => String(i.id)}
           onFilaClick={(i) => navegar(rutaIncidencia(i.id))}
           estado={consulta.datos ? 'exito' : 'cargando'}
-          vacio={{ titulo: 'Sin incidencias en esta pestaña', descripcion: 'Las incidencias reportadas aparecerán aquí.' }}
+          vacio={{
+            titulo: 'Sin incidencias en esta pestaña',
+            descripcion: 'Las incidencias reportadas aparecerán aquí.',
+          }}
         />
       </Pestanas>
       {registrando && (

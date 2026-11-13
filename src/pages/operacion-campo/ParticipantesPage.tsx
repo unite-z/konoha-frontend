@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import AccionFila from '@/design-system/AccionFila'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import CampoFormulario from '@/components/ui/CampoFormulario'
@@ -200,7 +201,7 @@ export default function ParticipantesPage() {
                   <span className={estilos.secundario}>
                     {a.area_verde_nombre}
                     {a.ejemplar_codigo
-                      ? ` · ${a.ejemplar_codigo}`
+                      ? ` · ${nombreEjemplar(a.ejemplar_codigo, a.ejemplar_alias)}`
                       : a.pendiente_vinculacion
                         ? ' · Pendiente de vinculación'
                         : ''}

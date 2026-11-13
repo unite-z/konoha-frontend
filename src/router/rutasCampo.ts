@@ -16,7 +16,7 @@ export function esRutaCampo(path: string): boolean {
 }
 export function destinoCampo(path: string | null): string {
   if (!path || path.startsWith('//') || path.includes('\\') || Array.from(path).some((c) => c.charCodeAt(0) < 32))
-    return RUTAS_CAMPO.cuadrillas
+    return RUTAS_CAMPO.encargos
   const base = path.split(/[?#]/)[0]
   return [
     RUTAS_CAMPO.cuadrillas,
@@ -26,5 +26,5 @@ export function destinoCampo(path: string | null): string {
     RUTAS_CAMPO.catalogoActividades,
   ].some((ruta) => ruta === base)
     ? path
-    : RUTAS_CAMPO.cuadrillas
+    : RUTAS_CAMPO.encargos
 }
