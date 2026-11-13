@@ -37,13 +37,17 @@ vi.mock('@/hooks/usePaginaActual', () => ({
     pagina.titulo = titulo
   },
 }))
-const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CONSULTAR_TODAS'] as string[] }))
+// Jefatura por defecto: ve todo y gestiona; sin esos permisos no hay alertas de plazo (AV-406) ni la bandeja completa (AV-407).
+const { PERMISOS_JEFATURA, sesion } = vi.hoisted(() => {
+  const jefatura = ['PLA.INCIDENCIA.CONSULTAR_TODAS', 'PLA.INCIDENCIA.CLASIFICAR']
+  return { PERMISOS_JEFATURA: jefatura, sesion: { permisos: jefatura } }
+})
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
 afterEach(() => {
   cleanup()
   listar.mockClear()
-  sesion.permisos = ['PLA.INCIDENCIA.CONSULTAR_TODAS']
+  sesion.permisos = PERMISOS_JEFATURA
 })
 
 describe('BandejaIncidenciasPage', () => {
@@ -127,5 +131,17 @@ describe('BandejaIncidenciasPage', () => {
     )
     await screen.findByRole('table')
     expect(pagina.titulo).toBe('Incidencias')
+  })
+
+  it('sin permiso para clasificar no pinta las alertas de plazo con «Reasignar» (AV-406)', async () => {
+    sesion.permisos = ['PLA.INCIDENCIA.CONSULTAR_TODAS']
+    render(
+      <MemoryRouter>
+        <BandejaIncidenciasPage />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByRole('table')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Reasignar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Anotar causa' })).toBeNull()
   })
 })

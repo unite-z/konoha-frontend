@@ -52,6 +52,8 @@ export default function BandejaIncidenciasPage() {
   const [busqueda, setBusqueda] = useState('')
   const [termino, setTermino] = useState('')
   const [pestana, setPestana] = useState<PestanaBandeja>('todas')
+  // «Reasignar» y «Anotar causa» son de quien gestiona incidencias: al resto no se le pintan (AV-406).
+  const gestiona = puede(useSesionActiva(), PERMISOS.clasificarIncidencia)
   const consulta = useConsulta(`incidencias|${termino}`, (signal) => listarIncidencias(signal, termino))
   const [ahora] = useState(() => Date.now())
   // Reasignaciones hechas aquí, encima de la consulta hasta la siguiente.
@@ -144,11 +146,13 @@ export default function BandejaIncidenciasPage() {
           Buscar
         </Boton>
       </form>
-      <AlertasPlazo
-        alertas={alertasPlazo(incidencias, ahora)}
-        onAviso={setAviso}
-        onReasignada={(actualizada) => setLocales((previas) => ({ ...previas, [actualizada.id]: actualizada }))}
-      />
+      {gestiona && (
+        <AlertasPlazo
+          alertas={alertasPlazo(incidencias, ahora)}
+          onAviso={setAviso}
+          onReasignada={(actualizada) => setLocales((previas) => ({ ...previas, [actualizada.id]: actualizada }))}
+        />
+      )}
       <Pestanas
         etiqueta="Estado de las incidencias"
         pestanas={PESTANAS_BANDEJA.map((p) => ({ ...p, contador: consulta.datos ? contadores[p.valor] : undefined }))}

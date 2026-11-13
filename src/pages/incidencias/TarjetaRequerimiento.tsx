@@ -12,6 +12,7 @@
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton from '@/components/ui/Boton'
 import Casilla from '@/components/ui/Casilla'
 import GrupoOpciones from '@/components/ui/GrupoOpciones'
@@ -132,7 +133,7 @@ export default function TarjetaRequerimiento({ incidencia, onVolver, onCreado }:
                 {incidencia.ejemplar && (
                   <Casilla
                     etiqueta="Crear también la poda del ejemplar"
-                    ayuda={`Registra la poda de altura de ${incidencia.ejemplar.codigo} en su historial.`}
+                    ayuda={`Registra la poda de altura de ${nombreEjemplar(incidencia.ejemplar.codigo, incidencia.ejemplar.alias)} en su historial.`}
                     marcada={crearPoda}
                     onCambiar={setCrearPoda}
                   />

@@ -17,8 +17,14 @@ vi.mock('@/services/api/incidencias', () => ({
   listarActividadesEncargo: async () => [],
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+// Quien gestiona incidencias (jefatura): sin este permiso las tarjetas de acción no se pintan (AV-406).
+const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CLASIFICAR'] as string[] }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sesion.permisos = ['PLA.INCIDENCIA.CLASIFICAR']
+})
 
 function pintar(id: string) {
   render(
@@ -69,5 +75,18 @@ describe('IncidenciaDetallePage', () => {
     expect(screen.getByText('Se avisó a Ana Q.')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Historial' })).toBeTruthy()
     expect(screen.getByText('Atendida · Sistema (encargo terminado)')).toBeTruthy()
+  })
+
+  it('sin permiso para clasificar muestra la ficha pero ninguna tarjeta de acción (AV-406)', async () => {
+    sesion.permisos = ['PLA.INCIDENCIA.REGISTRAR']
+    pintar('41')
+    expect(await screen.findByText('Rama grande caída sobre el paso peatonal.')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Clasificar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Clasificar y derivar' })).toBeNull()
+  })
+
+  it('con permiso para clasificar ofrece la tarjeta «Clasificar»', async () => {
+    pintar('41')
+    expect(await screen.findByRole('heading', { name: 'Clasificar' })).toBeTruthy()
   })
 })

@@ -10,7 +10,13 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
-import CampoFormulario, { AreaTexto, LeyendaObligatorio, ResumenErrores, type ErrorResumen } from '@/components/ui/CampoFormulario'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
+import CampoFormulario, {
+  AreaTexto,
+  LeyendaObligatorio,
+  ResumenErrores,
+  type ErrorResumen,
+} from '@/components/ui/CampoFormulario'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
 import EstadoVacio from '@/components/ui/EstadoVacio'
@@ -21,7 +27,11 @@ import { puedeRegistrarAtencion } from '@/config/permisosTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS_TERCERIZADOS, rutaDetalleAtencionEspecial, RUTAS_TERCERIZADOS } from '@/router/rutasApp'
-import { listarContratosMaestro, obtenerAtencionEspecial, programarAplicacionAdicional } from '@/services/api/maestrosTercerizados'
+import {
+  listarContratosMaestro,
+  obtenerAtencionEspecial,
+  programarAplicacionAdicional,
+} from '@/services/api/maestrosTercerizados'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { SIN_VALOR } from '@/utils/formato'
@@ -41,7 +51,11 @@ import estilos from './Maestros.module.css'
 
 const TITULO = 'Programar aplicación adicional'
 
-const IDS = { contrato: 'aplicacion-contrato', fechaInicio: 'aplicacion-fecha-inicio', fechaFin: 'aplicacion-fecha-fin' } as const
+const IDS = {
+  contrato: 'aplicacion-contrato',
+  fechaInicio: 'aplicacion-fecha-inicio',
+  fechaFin: 'aplicacion-fecha-fin',
+} as const
 const ORDEN: (keyof ErroresAplicacionAdicional)[] = ['contrato', 'fechaInicio', 'fechaFin']
 
 function detalleContrato(c: ContratoMaestro) {
@@ -61,7 +75,7 @@ export default function ProgramarAplicacionPage() {
   usePaginaActual(TITULO, [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
     MIGAS_TERCERIZADOS.controlFitosanitario,
-    { texto: especial.datos ? especial.datos.ejemplar_codigo : 'Ficha' },
+    { texto: especial.datos ? nombreEjemplar(especial.datos.ejemplar_codigo, especial.datos.ejemplar_alias) : 'Ficha' },
     { texto: 'Programar aplicación' },
   ])
 
@@ -98,7 +112,13 @@ export default function ProgramarAplicacionPage() {
     )
   }
   if (especial.estado === 'error' && !especial.datos) {
-    return <EstadoError titulo="No pudimos cargar la ficha" descripcion={especial.error?.detalle ?? ''} onReintentar={especial.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar la ficha"
+        descripcion={especial.error?.detalle ?? ''}
+        onReintentar={especial.reintentar}
+      />
+    )
   }
   if (!especial.datos) {
     return especial.cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -158,11 +178,15 @@ export default function ProgramarAplicacionPage() {
   return (
     <form className={estilos.formulario} onSubmit={guardar} noValidate aria-label={TITULO}>
       <p className={estilos.descripcion}>
-        {especial.datos.ejemplar_codigo} · {especial.datos.plaga_nombre} ·{' '}
-        {textoAplicaciones(especial.datos.aplicaciones_realizadas, especial.datos.aplicaciones_adicionales)} aplicaciones adicionales
+        {nombreEjemplar(especial.datos.ejemplar_codigo, especial.datos.ejemplar_alias)} · {especial.datos.plaga_nombre}{' '}
+        · {textoAplicaciones(especial.datos.aplicaciones_realizadas, especial.datos.aplicaciones_adicionales)}{' '}
+        aplicaciones adicionales
       </p>
       <LeyendaObligatorio />
-      <ResumenErrores titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de guardar`} errores={resumen} />
+      <ResumenErrores
+        titulo={`Revisa ${resumen.length === 1 ? 'un campo' : `${resumen.length} campos`} antes de guardar`}
+        errores={resumen}
+      />
 
       <Tarjeta titulo="Contrato" relleno="amplio">
         <div className={estilos.cuadricula}>
@@ -170,7 +194,9 @@ export default function ProgramarAplicacionPage() {
             id={IDS.contrato}
             etiqueta="Contrato vigente de control fitosanitario"
             obligatorio
-            ayuda={borrador.contrato ? undefined : 'Busca por número o proveedor. Solo se listan contratos vigentes hoy.'}
+            ayuda={
+              borrador.contrato ? undefined : 'Busca por número o proveedor. Solo se listan contratos vigentes hoy.'
+            }
             error={errores.contrato}
             ocultarDetalleElegido
             valor={borrador.contrato}
@@ -186,7 +212,10 @@ export default function ProgramarAplicacionPage() {
             elementos={[
               { etiqueta: 'Proveedor', valor: borrador.contrato.proveedor_nombre },
               { etiqueta: 'Servicio', valor: borrador.contrato.tipo_servicio_nombre },
-              { etiqueta: 'Vigencia', valor: `${borrador.contrato.vigencia_inicio} al ${borrador.contrato.vigencia_fin}` },
+              {
+                etiqueta: 'Vigencia',
+                valor: `${borrador.contrato.vigencia_inicio} al ${borrador.contrato.vigencia_fin}`,
+              },
             ]}
           />
         )}
