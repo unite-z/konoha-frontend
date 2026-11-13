@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useNavigate } from 'react-router'
 import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import Boton from '@/design-system/Boton'
 import Tarjeta from '@/design-system/Tarjeta'
@@ -9,6 +10,7 @@ import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
+import { rutaTareasDeEncargo } from '@/router/rutasCampo'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
@@ -45,6 +47,7 @@ export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])
   const permisos = usePermisos()
   const jefe = esJefeCampo(permisos)
+  const navegar = useNavigate()
   const [seguimiento, setSeguimiento] = useState<EncargoCampo | null>(null)
   const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
@@ -103,7 +106,9 @@ export default function EncargosPage() {
             multilinea: true,
             render: (e) => (
               <>
-                <span className={estilos.celdaPrincipal}>{e.descripcion}</span>
+                <Link className={estilos.celdaPrincipal} to={rutaTareasDeEncargo(e.id)}>
+                  {e.descripcion}
+                </Link>
                 <span className={estilos.secundario}>
                   {e.tipo_actividad_nombre} · {e.area_verde_nombre}
                 </span>
@@ -149,6 +154,12 @@ export default function EncargosPage() {
             titulo: 'Acciones',
             render: (e) => (
               <AccionesFila>
+                <AccionFila
+                  icono="list"
+                  nombre="Ver tareas"
+                  etiqueta={`Ver tareas del encargo ${e.id}`}
+                  onClick={() => navegar(rutaTareasDeEncargo(e.id))}
+                />
                 <AccionFila
                   icono={jefe ? 'pencil' : 'eye'}
                   nombre={jefe ? 'Editar encargo' : 'Ver encargo'}

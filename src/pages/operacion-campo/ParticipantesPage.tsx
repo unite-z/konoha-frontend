@@ -19,6 +19,7 @@ import { campoApi, todosCampo, type ParametrosCampo } from '@/services/api/opera
 import type {
   ActividadCampo,
   CuadrillaCampo,
+  EncargoCampo,
   OperarioCampo,
   PaginaCampo,
   ParticipantesCampo,
@@ -50,6 +51,7 @@ function useListadoActividades() {
     fecha: url.get('fecha') ?? '',
     cuadrilla_id: url.get('cuadrilla_id') ?? '',
     estado_actividad: url.get('estado_actividad') ?? '',
+    encargo_id: url.get('encargo_id') ?? '',
   }
   const consulta = useConsulta(
     JSON.stringify(['actividades', params]),
@@ -100,6 +102,11 @@ export default function ParticipantesPage() {
     [aviso, setAviso] = useState(''),
     [pendientesDescartados, setPendientesDescartados] = useState<number | null>(null)
   const pendientes = listado.consulta.datos?.pendientes_verificacion ?? 0
+  // Llegar desde un encargo (AV-404): las tareas de ese encargo, sin buscar sus códigos a mano.
+  const encargoId = Number(listado.params.encargo_id) || null
+  const encargo = useConsulta(encargoId ? `encargo-tareas-${encargoId}` : null, (signal) =>
+    campoApi<EncargoCampo>(`encargos/${encargoId}/`, { signal }),
+  )
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
@@ -134,6 +141,15 @@ export default function ParticipantesPage() {
           onCerrar={() => setPendientesDescartados(pendientes)}
         >
           Revisa las actividades de campo y registra el resultado de la verificación.
+        </AvisoEnLinea>
+      )}
+      {encargoId && (
+        <AvisoEnLinea
+          tono="info"
+          titulo={`Tareas del encargo${encargo.datos ? `: ${encargo.datos.descripcion}` : ''}`}
+          accion={{ texto: 'Ver todas', onClick: () => listado.filtrar({ encargo_id: '' }) }}
+        >
+          Solo se muestran las actividades registradas para este encargo.
         </AvisoEnLinea>
       )}
       <Tarjeta>

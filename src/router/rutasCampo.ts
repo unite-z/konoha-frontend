@@ -7,6 +7,10 @@ export const RUTAS_CAMPO = {
   participantes: `${BASE_CAMPO}/participantes`,
   catalogoActividades: `${BASE_CAMPO}/catalogo-actividades`,
 } as const
+/** Las tareas (actividades) de un encargo: «Participantes por actividad» filtrado por él (AV-404). */
+export function rutaTareasDeEncargo(encargoId: number): string {
+  return `${RUTAS_CAMPO.participantes}?encargo_id=${encargoId}`
+}
 export function esRutaCampo(path: string): boolean {
   return path === BASE_CAMPO || path.startsWith(`${BASE_CAMPO}/`)
 }
