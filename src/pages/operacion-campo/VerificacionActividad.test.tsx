@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
 import type { ActividadCampo } from '@/types/operacionCampo'
@@ -73,4 +73,64 @@ it('separa la ejecución y registra la verificación con el contrato esperado', 
   await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
   await waitFor(() => expect(guardadas).toHaveLength(1))
   expect(cuerpos).toEqual([{ observaciones: 'Conforme en campo' }])
+})
+
+function actividadSinVerificar() {
+  return {
+    id: 7,
+    tipo_actividad_nombre: 'Poda menor',
+    area_verde_nombre: 'Jardín central',
+    observaciones: null,
+    verificacion_observaciones: null,
+    verificado_por_usuario_id: null,
+    verificado_por_nombre: null,
+    fecha_verificacion: null,
+  } as ActividadCampo
+}
+
+it('aceptar con observaciones exige el encargo de seguimiento y lo envía con la verificación (AV-402)', async () => {
+  const cuerpos: Record<string, unknown>[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (_ruta: string, opciones: RequestInit = {}) => {
+      if (opciones.method === 'PUT') {
+        cuerpos.push(JSON.parse(String(opciones.body)) as Record<string, unknown>)
+        return Response.json({ ...actividadSinVerificar(), estado_actividad: 'Observada' })
+      }
+      return Response.json([])
+    }),
+  )
+  const guardadas: ActividadCampo[] = []
+  render(
+    <VerificacionActividad
+      actividad={actividadSinVerificar()}
+      onCerrar={() => {}}
+      onGuardado={(v) => guardadas.push(v)}
+    />,
+  )
+  const usuario = userEvent.setup()
+  await usuario.type(screen.getByLabelText(/Observaciones de la verificación/), 'Falta terminar el borde')
+  await usuario.click(screen.getByRole('checkbox', { name: /Aceptar con observaciones/ }))
+
+  // Sin el seguimiento no se envía nada.
+  await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
+  expect(await screen.findByText('Describe qué hay que hacer en el seguimiento')).toBeTruthy()
+  expect(cuerpos).toEqual([])
+
+  await usuario.type(screen.getByLabelText(/Qué hay que hacer en el seguimiento/), '  Terminar el borde norte ')
+  fireEvent.change(screen.getByLabelText(/Plazo del seguimiento/), { target: { value: '2099-06-20' } })
+  await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
+  await waitFor(() => expect(guardadas).toHaveLength(1))
+  expect(cuerpos).toEqual([
+    {
+      observaciones: 'Falta terminar el borde',
+      encargo_seguimiento: { descripcion: 'Terminar el borde norte', plazo_previsto: '2099-06-20' },
+    },
+  ])
+})
+
+it('sin aceptar con observaciones no se pide ni se envía seguimiento (AV-402)', async () => {
+  render(<VerificacionActividad actividad={actividadSinVerificar()} onCerrar={() => {}} onGuardado={() => {}} />)
+  expect(screen.queryByLabelText(/Qué hay que hacer en el seguimiento/)).toBeNull()
+  expect(screen.queryByLabelText(/Plazo del seguimiento/)).toBeNull()
 })
