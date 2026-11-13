@@ -111,7 +111,11 @@ export default function ObservacionPlagaDetallePage() {
             elementos={[
               {
                 etiqueta: 'Espacio o ejemplar',
-                valor: observacion.area_verde_nombre ?? (observacion.ejemplar_codigo ? nombreEjemplar(observacion.ejemplar_codigo, observacion.ejemplar_alias) : SIN_VALOR),
+                valor:
+                  observacion.area_verde_nombre ??
+                  (observacion.ejemplar_codigo
+                    ? nombreEjemplar(observacion.ejemplar_codigo, observacion.ejemplar_alias)
+                    : SIN_VALOR),
               },
               {
                 etiqueta: 'Fecha observada',

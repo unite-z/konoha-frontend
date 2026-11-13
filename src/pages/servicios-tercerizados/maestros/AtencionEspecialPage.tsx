@@ -62,7 +62,9 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
   {
     clave: 'aplicaciones',
     titulo: 'Aplicaciones adicionales',
-    render: (e) => <span className={estilos.cifra}>{textoAplicaciones(e.aplicaciones_realizadas, e.aplicaciones_adicionales)}</span>,
+    render: (e) => (
+      <span className={estilos.cifra}>{textoAplicaciones(e.aplicaciones_realizadas, e.aplicaciones_adicionales)}</span>
+    ),
   },
   {
     clave: 'estado',
@@ -79,7 +81,11 @@ const COLUMNAS: ColumnaTabla<AtencionEspecial>[] = [
 ]
 
 export default function AtencionEspecialPage() {
-  usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: 'Atención especial' }])
+  usePaginaActual(TITULO, [
+    MIGAS_TERCERIZADOS.serviciosTercerizados,
+    MIGAS_TERCERIZADOS.controlFitosanitario,
+    { texto: 'Atención especial' },
+  ])
   const { state } = useLocation()
   const navegar = useNavigate()
   const permisos = usePermisos()
@@ -91,7 +97,8 @@ export default function AtencionEspecialPage() {
   const { filtros, establecer } = useFiltrosUrl<ClaveFiltroMaestros>(FILTROS_MAESTROS_VACIOS)
   const pagina = paginaDe(filtros.pagina)
   const q = filtros.q
-  const plagaId = Number.isInteger(Number(filtros.plaga)) && Number(filtros.plaga) > 0 ? Number(filtros.plaga) : undefined
+  const plagaId =
+    Number.isInteger(Number(filtros.plaga)) && Number(filtros.plaga) > 0 ? Number(filtros.plaga) : undefined
   const estado = ESTADOS.find((e) => e === filtros.estado)
   const conFiltros = Boolean(q) || plagaId !== undefined || estado !== undefined
 
@@ -146,7 +153,9 @@ export default function AtencionEspecialPage() {
           valor={plagaId ? String(plagaId) : ''}
           opciones={(plagas.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.nombre }))}
           opcionTodos={OPCION_TODOS}
-          bloqueadoMotivo={plagas.estado === 'error' ? 'No se pudo cargar el catálogo de plagas. Recarga la página' : undefined}
+          bloqueadoMotivo={
+            plagas.estado === 'error' ? 'No se pudo cargar el catálogo de plagas. Recarga la página' : undefined
+          }
           onCambiar={(valor) => aplicar({ plaga: valor || null })}
         />
         <Selector
@@ -210,7 +219,8 @@ export default function AtencionEspecialPage() {
                 }
               : {
                   titulo: 'Aún no hay ejemplares con atención especial',
-                  descripcion: 'Marca los árboles con plaga recurrente para que no se pierdan entre los miles del catastro.',
+                  descripcion:
+                    'Marca los árboles con plaga recurrente para que no se pierdan entre los miles del catastro.',
                   accion: puedeMarcar ? (
                     <BotonEnlace to={RUTAS_TERCERIZADOS.marcarEjemplar} variante="secundario">
                       Marcar ejemplar

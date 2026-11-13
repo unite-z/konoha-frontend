@@ -2,7 +2,13 @@
  * Lógica pura del detalle de incidencia (AV-284, Figma 388-7305 y 389-7300): textos de la ficha y vía sugerida.
  * Se prueba en `detalleIncidencia.test.ts`.
  */
-import type { AtencionIncidencia, CapatazDisponible, EventoIncidencia, IncidenciaDetalle, ViaIncidencia } from '@/types/incidencias'
+import type {
+  AtencionIncidencia,
+  CapatazDisponible,
+  EventoIncidencia,
+  IncidenciaDetalle,
+  ViaIncidencia,
+} from '@/types/incidencias'
 import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { instanteALocalLima } from '@/utils/instanteLima'
 
@@ -18,7 +24,9 @@ export function viaSugerida(incidencia: IncidenciaDetalle): ViaIncidencia {
 /** Descripción de la opción tercerizada: «Sugerido: árbol de 5 m o más (7 m)», solo si es la sugerida. */
 export function descripcionTercerizada(incidencia: IncidenciaDetalle): string {
   const altura = incidencia.ejemplar?.altura_m
-  return viaSugerida(incidencia) === 'Tercerizada' && altura ? `Sugerido: árbol de ${ALTURA_TERCERIZADA_M} m o más (${altura} m)` : 'Requerimiento a un proveedor'
+  return viaSugerida(incidencia) === 'Tercerizada' && altura
+    ? `Sugerido: árbol de ${ALTURA_TERCERIZADA_M} m o más (${altura} m)`
+    : 'Requerimiento a un proveedor'
 }
 
 /** «Jardín de la Biblioteca · Ciencias». */
@@ -46,7 +54,8 @@ const CANAL: Record<IncidenciaDetalle['canal'], string> = {
 export function textoReporto(incidencia: IncidenciaDetalle, hoy: string): string {
   const local = instanteALocalLima(incidencia.fecha_registro) ?? incidencia.fecha_registro
   const fecha = local.slice(0, 10)
-  const cuando = fecha === hoy ? `hoy ${local.slice(11, 16)}` : `${fecha.slice(8, 10)}/${fecha.slice(5, 7)} ${local.slice(11, 16)}`
+  const cuando =
+    fecha === hoy ? `hoy ${local.slice(11, 16)}` : `${fecha.slice(8, 10)}/${fecha.slice(5, 7)} ${local.slice(11, 16)}`
   return [incidencia.reportado_por, CANAL[incidencia.canal], cuando].join(' · ')
 }
 
@@ -74,18 +83,30 @@ export function textoCarga(capataz: CapatazDisponible): string {
 
 /** Lo que va con el encargo (Figma 389-7502): la foto, la descripción y el ejemplar, si lo hay. */
 export function incluyeEncargo(incidencia: IncidenciaDetalle): string[] {
-  return ['Foto', 'Descripción', incidencia.ejemplar && nombreEjemplar(incidencia.ejemplar.codigo, incidencia.ejemplar.alias)].filter((x): x is string => Boolean(x))
+  return [
+    'Foto',
+    'Descripción',
+    incidencia.ejemplar && nombreEjemplar(incidencia.ejemplar.codigo, incidencia.ejemplar.alias),
+  ].filter((x): x is string => Boolean(x))
 }
 
 /** «hoy 11:40» o «03/11 11:40». */
 function cuando(instante: string, hoy: string): string {
   const local = instanteALocalLima(instante) ?? instante
-  return local.slice(0, 10) === hoy ? `hoy ${local.slice(11, 16)}` : `${diaMes(local.slice(0, 10))} ${local.slice(11, 16)}`
+  return local.slice(0, 10) === hoy
+    ? `hoy ${local.slice(11, 16)}`
+    : `${diaMes(local.slice(0, 10))} ${local.slice(11, 16)}`
 }
 
 /** «Atendida por Luis P. · hoy 11:40 · encargo ENC-2026-118» (Figma 390-8008). */
 export function textoAtendida(atencion: AtencionIncidencia, hoy: string): string {
-  return [`Atendida por ${atencion.atendida_por}`, cuando(atencion.atendida_en, hoy), atencion.encargo_codigo && `encargo ${atencion.encargo_codigo}`].filter(Boolean).join(' · ')
+  return [
+    `Atendida por ${atencion.atendida_por}`,
+    cuando(atencion.atendida_en, hoy),
+    atencion.encargo_codigo && `encargo ${atencion.encargo_codigo}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 /** «2 h 25 min», «40 min» o «3 días 2 h». */

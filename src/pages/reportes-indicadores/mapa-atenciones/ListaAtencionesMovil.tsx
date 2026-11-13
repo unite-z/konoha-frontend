@@ -48,10 +48,15 @@ export default function ListaAtencionesMovil({ filas, seleccion, onSeleccionar }
               </p>
               <p className={estilos.metaFicha}>
                 {f.espacio}
-                {f.ejemplar_codigo ? ` · Ejemplar ${nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias)}` : ''} · {formatearFecha(f.fecha)}
+                {f.ejemplar_codigo ? ` · Ejemplar ${nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias)}` : ''} ·{' '}
+                {formatearFecha(f.fecha)}
               </p>
               <div className={estilos.pieFicha}>
-                {f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />}
+                {f.con_ubicacion ? (
+                  <Estado tono="info" texto="En el mapa" />
+                ) : (
+                  <Estado tono="neutro" texto="Sin ubicación" />
+                )}
                 <Boton variante="fantasma" onClick={() => verResumen(f.clave)}>
                   Ver resumen
                 </Boton>
