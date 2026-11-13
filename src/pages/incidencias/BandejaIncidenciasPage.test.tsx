@@ -7,13 +7,14 @@ import { incidenciasSimuladas } from '@/services/simulados/incidencias'
 import BandejaIncidenciasPage from './BandejaIncidenciasPage'
 
 const datos = incidenciasSimuladas()
+const listar = vi.fn(async (_signal?: AbortSignal, _q = '') => datos)
 const anotarCausaRetraso = vi.fn(async () => undefined)
 const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({
   ...(datos.find((i) => i.id === id) ?? datos[0]),
   responsable: 'J. Ramos',
 }))
 vi.mock('@/services/api/incidencias', () => ({
-  listarIncidencias: async () => datos,
+  listarIncidencias: (signal?: AbortSignal, q?: string) => listar(signal, q),
   anotarCausaRetraso: (...argumentos: unknown[]) => anotarCausaRetraso(...(argumentos as [])),
   listarCapatacesDisponibles: async () => [
     { id: 1, nombre: 'Luis P.', cuadrilla: 'Cuadrilla A' },
@@ -30,14 +31,23 @@ beforeAll(() => {
     this.open = false
   }
 })
-vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-// Quien gestiona incidencias (jefatura): sin este permiso las tarjetas de acción no se pintan (AV-406).
-const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CLASIFICAR'] as string[] }))
+const pagina = vi.hoisted(() => ({ titulo: '' }))
+vi.mock('@/hooks/usePaginaActual', () => ({
+  usePaginaActual: (titulo: string) => {
+    pagina.titulo = titulo
+  },
+}))
+// Jefatura por defecto: ve todo y gestiona; sin esos permisos no hay alertas de plazo (AV-406) ni la bandeja completa (AV-407).
+const { PERMISOS_JEFATURA, sesion } = vi.hoisted(() => {
+  const jefatura = ['PLA.INCIDENCIA.CONSULTAR_TODAS', 'PLA.INCIDENCIA.CLASIFICAR']
+  return { PERMISOS_JEFATURA: jefatura, sesion: { permisos: jefatura } }
+})
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
 afterEach(() => {
   cleanup()
-  sesion.permisos = ['PLA.INCIDENCIA.CLASIFICAR']
+  listar.mockClear()
+  sesion.permisos = PERMISOS_JEFATURA
 })
 
 describe('BandejaIncidenciasPage', () => {
@@ -86,8 +96,45 @@ describe('BandejaIncidenciasPage', () => {
     expect(await screen.findByText('INC-2026-038 reasignada a J. Ramos')).toBeTruthy()
   })
 
-  it('sin permiso para clasificar no pinta las alertas de plazo con «Reasignar» (AV-406)', async () => {
+  it('busca en el servidor al enviar y vuelve a pedir la bandeja con el término (AV-407)', async () => {
+    render(
+      <MemoryRouter>
+        <BandejaIncidenciasPage />
+      </MemoryRouter>,
+    )
+    await screen.findByRole('table')
+    expect(listar).toHaveBeenLastCalledWith(expect.any(AbortSignal), '')
+
+    const usuario = userEvent.setup()
+    await usuario.type(screen.getByRole('searchbox', { name: 'Buscar incidencias' }), '  rama  ')
+    await usuario.click(screen.getByRole('button', { name: 'Buscar' }))
+    await screen.findByRole('table')
+    expect(listar).toHaveBeenLastCalledWith(expect.any(AbortSignal), 'rama')
+  })
+
+  it('sin el permiso de consultar todas, la bandeja se presenta como la de su cuadrilla (AV-407)', async () => {
     sesion.permisos = ['PLA.INCIDENCIA.REGISTRAR']
+    render(
+      <MemoryRouter>
+        <BandejaIncidenciasPage />
+      </MemoryRouter>,
+    )
+    await screen.findByRole('table')
+    expect(pagina.titulo).toBe('Incidencias de mi cuadrilla')
+  })
+
+  it('con el permiso, el título sigue siendo «Incidencias»', async () => {
+    render(
+      <MemoryRouter>
+        <BandejaIncidenciasPage />
+      </MemoryRouter>,
+    )
+    await screen.findByRole('table')
+    expect(pagina.titulo).toBe('Incidencias')
+  })
+
+  it('sin permiso para clasificar no pinta las alertas de plazo con «Reasignar» (AV-406)', async () => {
+    sesion.permisos = ['PLA.INCIDENCIA.CONSULTAR_TODAS']
     render(
       <MemoryRouter>
         <BandejaIncidenciasPage />

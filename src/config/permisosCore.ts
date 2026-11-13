@@ -23,6 +23,8 @@ export const PERMISOS = {
   clasificarIncidencia: 'PLA.INCIDENCIA.CLASIFICAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
+  /** Consultar todas las incidencias; sin él (capataz), solo las propias y las de su cuadrilla (AV-407). */
+  consultarTodasIncidencias: 'PLA.INCIDENCIA.CONSULTAR_TODAS',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
   /** Crear cuadrillas y encargos y mantener el catálogo de actividades: jefatura de sección. */
