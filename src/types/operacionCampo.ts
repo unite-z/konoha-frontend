@@ -92,9 +92,24 @@ export interface CambioEstadoEncargo {
   fecha: string
 }
 
+/** Cambio de fechas de un encargo con su justificación (AV-405); queda en el historial. */
+export interface ReprogramacionEncargo {
+  id: number
+  fecha_inicio_anterior: string
+  fecha_fin_anterior: string
+  plazo_anterior: string
+  fecha_inicio_nueva: string
+  fecha_fin_nueva: string
+  plazo_nuevo: string
+  justificacion: string
+  autor: string
+  fecha: string
+}
+
 export interface EncargoCampo extends EntradaEncargo {
   estado: EstadoEncargo
   historial_estados?: CambioEstadoEncargo[]
+  reprogramaciones?: ReprogramacionEncargo[]
   id: number
   capataz_id: number
   cuadrilla_nombre: string

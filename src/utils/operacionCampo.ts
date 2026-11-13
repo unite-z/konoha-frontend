@@ -1,4 +1,4 @@
-import type { EntradaEncargo } from '../types/operacionCampo'
+import type { EntradaEncargo, EstadoEncargo } from '../types/operacionCampo'
 import { tiene, type Permisos } from '../config/permisosSesion'
 
 /** Gestionar cuadrillas, encargos y verificar actividades: `CAM.CUADRILLA.GESTIONAR` (AV-382, por permiso). */
@@ -59,4 +59,38 @@ export function validarEncargoCampo(body: EntradaEncargo): Record<string, string
   if (body.fecha_reunion && body.fecha_reunion > body.fecha_fin)
     errors.fecha_reunion = 'La reunión no puede ser posterior al periodo'
   return errors
+}
+
+/** Reprogramar un encargo mientras siga vivo: ni completado ni cancelado (AV-405). */
+export function puedeReprogramarEncargo(estado: EstadoEncargo): boolean {
+  return estado === 'Por completar' || estado === 'En curso' || estado === 'Observado'
+}
+
+export interface EntradaReprogramacion {
+  fecha_inicio: string
+  fecha_fin: string
+  plazo_previsto: string
+  justificacion: string
+}
+
+/** Valida las fechas nuevas con las reglas del encargo y exige la justificación. */
+export function validarReprogramacion(actual: EntradaEncargo, nueva: EntradaReprogramacion): Record<string, string> {
+  const errores = validarEncargoCampo({
+    ...actual,
+    fecha_inicio: nueva.fecha_inicio,
+    fecha_fin: nueva.fecha_fin,
+    plazo_previsto: nueva.plazo_previsto,
+  })
+  // Solo se cambian las fechas: lo demás del encargo ya era válido.
+  const resultado: Record<string, string> = {}
+  for (const clave of ['fecha_inicio', 'fecha_fin', 'plazo_previsto']) if (errores[clave]) resultado[clave] = errores[clave]
+  if (
+    nueva.fecha_inicio === actual.fecha_inicio &&
+    nueva.fecha_fin === actual.fecha_fin &&
+    nueva.plazo_previsto === actual.plazo_previsto
+  ) {
+    resultado.plazo_previsto ??= 'Cambia alguna fecha para reprogramar'
+  }
+  if (!nueva.justificacion.trim()) resultado.justificacion = 'Explica por qué se reprograma'
+  return resultado
 }

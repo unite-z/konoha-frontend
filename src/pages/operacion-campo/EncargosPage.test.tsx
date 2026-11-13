@@ -135,3 +135,51 @@ it('sin PLA.ENCARGO.ACTUALIZAR_ESTADO el seguimiento es solo de consulta', async
   expect(await dialogo.findByText('Sin cambios de estado registrados.')).toBeTruthy()
   expect(dialogo.queryByLabelText(/Nuevo estado/)).toBeNull()
 })
+
+it('la jefatura reprograma un encargo vivo con justificación y el capataz no ve la acción (AV-405)', async () => {
+  sesion.permisos = JEFE
+  const enviados: unknown[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string, opciones: RequestInit = {}) => {
+      const path = new URL(ruta, 'http://localhost').pathname
+      if (opciones.method === 'POST') {
+        enviados.push({ path, cuerpo: JSON.parse(String(opciones.body)) })
+        return Response.json(encargo)
+      }
+      const resultados = path.endsWith('/encargos/') ? [encargo, { ...encargo, id: 6, estado: 'Completado' }] : []
+      return Response.json({ count: resultados.length, results: resultados, next: null, previous: null })
+    }),
+  )
+  render(<EncargosPage />, { wrapper: MemoryRouter })
+  const usuario = userEvent.setup()
+  expect(await screen.findByRole('button', { name: 'Reprogramar el encargo 5' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Reprogramar el encargo 6' })).toBeNull()
+
+  await usuario.click(screen.getByRole('button', { name: 'Reprogramar el encargo 5' }))
+  const dialogo = within(screen.getByRole('dialog'))
+  // Sin cambios ni justificación no se envía.
+  await usuario.click(dialogo.getByRole('button', { name: 'Reprogramar' }))
+  expect(await dialogo.findByText('Explica por qué se reprograma')).toBeTruthy()
+  expect(enviados).toEqual([])
+
+  fireEvent.change(dialogo.getByLabelText(/Plazo previsto/), { target: { value: '2099-06-30' } })
+  await usuario.type(dialogo.getByLabelText(/Justificación/), '  Lluvias en la zona ')
+  await usuario.click(dialogo.getByRole('button', { name: 'Reprogramar' }))
+  await waitFor(() =>
+    expect(enviados).toEqual([
+      {
+        path: '/api/v1/operacion-campo/encargos/5/reprogramacion/',
+        cuerpo: { plazo_previsto: '2099-06-30', justificacion: 'Lluvias en la zona' },
+      },
+    ]),
+  )
+})
+
+it('quien no es jefatura no ve «Reprogramar» (AV-405)', async () => {
+  sesion.permisos = CAPATAZ
+  simularSeguimiento(vi.fn())
+  render(<EncargosPage />, { wrapper: MemoryRouter })
+  await screen.findByRole('button', { name: 'Seguimiento del encargo 5' })
+  expect(screen.queryByRole('button', { name: /Reprogramar el encargo/ })).toBeNull()
+})
