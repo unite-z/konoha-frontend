@@ -230,11 +230,7 @@ export default function ParticipantesPage() {
               render: (a) => (
                 <Estado
                   tono={
-                    a.estado_actividad === 'Anulada'
-                      ? 'error'
-                      : a.estado_actividad === 'Verificada'
-                        ? 'exito'
-                        : 'aviso'
+                    a.estado_actividad === 'Anulada' ? 'error' : a.estado_actividad === 'Verificada' ? 'exito' : 'aviso'
                   }
                   texto={textoEstadoActividad(a.estado_actividad)}
                 />
@@ -353,7 +349,10 @@ export default function ParticipantesPage() {
                   { etiqueta: 'Ubicación', valor: detalleActividad.area_verde_nombre },
                   { etiqueta: 'Cuadrilla', valor: detalleActividad.cuadrilla_nombre },
                   { etiqueta: 'Estado del parte', valor: detalleActividad.estado },
-                  { etiqueta: 'Estado de la actividad', valor: textoEstadoActividad(detalleActividad.estado_actividad) },
+                  {
+                    etiqueta: 'Estado de la actividad',
+                    valor: textoEstadoActividad(detalleActividad.estado_actividad),
+                  },
                   {
                     etiqueta: 'Tiempo empleado',
                     valor: detalleActividad.tiempo_minutos ? `${detalleActividad.tiempo_minutos} min` : null,

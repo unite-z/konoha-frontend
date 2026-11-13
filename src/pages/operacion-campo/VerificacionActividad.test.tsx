@@ -102,7 +102,11 @@ it('aceptar con observaciones exige el encargo de seguimiento y lo envía con la
   )
   const guardadas: ActividadCampo[] = []
   render(
-    <VerificacionActividad actividad={actividadSinVerificar()} onCerrar={() => {}} onGuardado={(v) => guardadas.push(v)} />,
+    <VerificacionActividad
+      actividad={actividadSinVerificar()}
+      onCerrar={() => {}}
+      onGuardado={(v) => guardadas.push(v)}
+    />,
   )
   const usuario = userEvent.setup()
   await usuario.type(screen.getByLabelText(/Observaciones de la verificación/), 'Falta terminar el borde')
