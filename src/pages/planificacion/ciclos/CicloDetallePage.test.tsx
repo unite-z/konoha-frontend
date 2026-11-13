@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { Programacion } from '@/types/planificacion'
+import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import CicloDetallePage from './CicloDetallePage'
 
 const programada: Programacion = {
@@ -20,43 +20,93 @@ const programada: Programacion = {
   fecha_fin_real: null,
 }
 const cambiarEstadoCiclo = vi.fn(async (_id: number, cambio: string, fecha?: string, _motivo?: string) =>
-  cambio === 'cancelacion' ? { ...programada, estado: 'Cancelada' } : { ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null },
+  cambio === 'cancelacion'
+    ? { ...programada, estado: 'Cancelada' }
+    : { ...programada, estado: 'EnCurso', fecha_inicio_real: fecha ?? null },
 )
+// Vacío salvo en la prueba de «Reprogramar» (AV-398), que necesita el servicio para pintar las fechas del panel.
+const servicios: ServicioPeriodico[] = []
 const historial: { estado: 'Programada' | 'EnCurso'; fecha_hora: string; autor: string }[] = []
 vi.mock('@/services/api/planificacion', async () => {
   const { ErrorApi } = await import('@/services/api/cliente')
   const ciclos = () => [
     programada,
     { ...programada, id: 8, estado: 'EnCurso', fecha_inicio_real: '2026-11-02', historial },
-    { ...programada, id: 9, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-11-01', fecha_fin_prevista: '2026-11-04', fecha_inicio_real: '2026-11-01' },
-    { ...programada, id: 10, servicio: 'Corte de césped', estado: 'EnCurso', fecha_inicio_prevista: '2026-10-30', fecha_fin_prevista: '2026-11-02', fecha_inicio_real: '2026-10-30' },
+    {
+      ...programada,
+      id: 9,
+      servicio: 'Corte de césped',
+      estado: 'EnCurso',
+      fecha_inicio_prevista: '2026-11-01',
+      fecha_fin_prevista: '2026-11-04',
+      fecha_inicio_real: '2026-11-01',
+    },
+    {
+      ...programada,
+      id: 10,
+      servicio: 'Corte de césped',
+      estado: 'EnCurso',
+      fecha_inicio_prevista: '2026-10-30',
+      fecha_fin_prevista: '2026-11-02',
+      fecha_inicio_real: '2026-10-30',
+    },
     { ...programada, id: 11, requerimiento: { id: 55, codigo: 'AT-1a2b3c4d5e6f', estado: 'Requerimiento registrado' } },
     { ...programada, id: 12, motivo_sin_requerimiento: 'El proveedor no tiene contrato vigente para este servicio' },
   ]
   return {
-  obtenerProgramacion: async (id: number) => {
-    const ciclo = ciclos().find((c) => c.id === id)
-    if (!ciclo) throw new ErrorApi(404, 'programacion-no-encontrada', 'No existe esa programación')
-    return { ...ciclo, restricciones: [] }
-  },
-  listarServiciosPeriodicos: async () => [],
-  listarRestricciones: async () => [
-    { id: 3, tipo_restriccion_id: 1, tipo: 'Ceremonia', efecto: 'Advertencia', aplica_servicios_ruidosos: false, fecha_inicio: '2026-11-03', fecha_fin: '2026-11-03', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: 'Graduación', serie: null },
-  ],
-  cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string, motivo?: string) => cambiarEstadoCiclo(id, cambio, fecha, motivo),
+    obtenerProgramacion: async (id: number) => {
+      const ciclo = ciclos().find((c) => c.id === id)
+      if (!ciclo) throw new ErrorApi(404, 'programacion-no-encontrada', 'No existe esa programación')
+      return { ...ciclo, restricciones: [] }
+    },
+    listarServiciosPeriodicos: async () => servicios,
+    listarRestricciones: async () => [
+      {
+        id: 3,
+        tipo_restriccion_id: 1,
+        tipo: 'Ceremonia',
+        efecto: 'Advertencia',
+        aplica_servicios_ruidosos: false,
+        fecha_inicio: '2026-11-03',
+        fecha_fin: '2026-11-03',
+        hora_inicio: null,
+        hora_fin: null,
+        area_verde_id: null,
+        descripcion: 'Graduación',
+        serie: null,
+      },
+    ],
+    cambiarEstadoCiclo: (id: number, cambio: string, fecha?: string, motivo?: string) =>
+      cambiarEstadoCiclo(id, cambio, fecha, motivo),
+    // «Reprogramar» (AV-398) abre el panel de programar, que pide la propuesta del servicio.
+    obtenerPropuesta: async () => ({ fecha_inicio: '2026-11-09', fecha_fin: '2026-11-10', ventana_libre_inicio: null }),
+    crearProgramacion: async () => programada,
+    reprogramarProgramacion: async () => programada,
   }
 })
+vi.mock('@/services/api/tercerizados', () => ({
+  listarProveedores: async () => ({ results: [], next: null }),
+  listarTodo: async () => [],
+}))
 vi.mock('@/services/api/corte', async () => {
   const { cicloCorteSimulado } = await import('@/services/simulados/corte')
   return {
-    obtenerCicloCorte: async (ciclo: Programacion) => cicloCorteSimulado(ciclo, ciclo.id === 10 ? '2026-11-04' : '2026-11-02'),
+    obtenerCicloCorte: async (ciclo: Programacion) =>
+      cicloCorteSimulado(ciclo, ciclo.id === 10 ? '2026-11-04' : '2026-11-02'),
     registrarLimpieza: async (_id: number, fecha: string) => ({ id: 99, fecha, autor: 'Robert G.' }),
   }
 })
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'] }))
-vi.mock('@/utils/instanteLima', async (original) => ({ ...(await original<typeof import('@/utils/instanteLima')>()), hoyLima: () => '2026-11-02' }))
-vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
+vi.mock('@/sesion/ContextoSesion', () => ({
+  usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'],
+}))
+vi.mock('@/utils/instanteLima', async (original) => ({
+  ...(await original<typeof import('@/utils/instanteLima')>()),
+  hoyLima: () => '2026-11-02',
+}))
+vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function () {
@@ -66,7 +116,10 @@ beforeAll(() => {
     this.open = false
   }
 })
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  servicios.length = 0
+})
 
 function pintar(id: string) {
   render(
@@ -97,6 +150,23 @@ describe('CicloDetallePage', () => {
     expect(await screen.findByRole('button', { name: 'Finalizar ciclo' })).toBeTruthy()
   })
 
+  it('un ciclo programado se reprograma desde su ficha con el panel del Calendario (AV-398)', async () => {
+    servicios.push({ id: 2, nombre: 'Control fitosanitario', es_ruidoso: false, frecuencias: [], duracion: null })
+    pintar('7')
+    const usuario = userEvent.setup()
+    await usuario.click(await screen.findByRole('button', { name: 'Reprogramar' }))
+    expect(screen.getByRole('dialog', { name: 'Reprogramar ciclo' })).toBeTruthy()
+    // Entra con las fechas del ciclo, no con la propuesta del sistema.
+    expect(((await screen.findByLabelText(/^Inicio/)) as HTMLInputElement).value).toBe('2026-11-02')
+    expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-11-03')
+  })
+
+  it('un ciclo en curso no se reprograma', async () => {
+    pintar('8')
+    expect(await screen.findByRole('button', { name: 'Finalizar ciclo' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Reprogramar' })).toBeNull()
+  })
+
   it('cancela solo con motivo (AV-253, Figma 370-4167)', async () => {
     pintar('7')
     const usuario = userEvent.setup()
@@ -111,7 +181,12 @@ describe('CicloDetallePage', () => {
 
     await usuario.type(screen.getByLabelText(/^Motivo/), 'El proveedor no tiene cuadrilla esa semana.')
     await usuario.click(confirmar())
-    expect(cambiarEstadoCiclo).toHaveBeenCalledWith(7, 'cancelacion', undefined, 'El proveedor no tiene cuadrilla esa semana.')
+    expect(cambiarEstadoCiclo).toHaveBeenCalledWith(
+      7,
+      'cancelacion',
+      undefined,
+      'El proveedor no tiene cuadrilla esa semana.',
+    )
   })
 
   it('con historial lo lista del más reciente al más antiguo (AV-253)', async () => {
@@ -121,7 +196,10 @@ describe('CicloDetallePage', () => {
     )
     pintar('8')
     const eventos = await screen.findAllByRole('listitem')
-    expect(eventos.map((e) => e.textContent)).toEqual(['Iniciado02/11 06:10 · Robert G.', 'Programado19/10 09:30 · Robert G.'])
+    expect(eventos.map((e) => e.textContent)).toEqual([
+      'Iniciado02/11 06:10 · Robert G.',
+      'Programado19/10 09:30 · Robert G.',
+    ])
     expect(screen.getByText('Inicio real')).toBeTruthy()
   })
 
@@ -161,7 +239,12 @@ describe('CicloDetallePage', () => {
 
   it('en móvil, el corte en curso se resume como en Figma 353-2242, con las acciones debajo y sin la ruta', async () => {
     const original = window.matchMedia
-    window.matchMedia = ((consulta: string) => ({ matches: true, media: consulta, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia
+    window.matchMedia = ((consulta: string) => ({
+      matches: true,
+      media: consulta,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia
     try {
       pintar('9')
       expect(await screen.findByText('62 %')).toBeTruthy()
@@ -182,7 +265,11 @@ describe('CicloDetallePage', () => {
     expect(enlace.getAttribute('href')).toMatch(/\/atenciones\/55$/)
     cleanup()
     pintar('12')
-    expect(await screen.findByText('Sin requerimiento en Servicios tercerizados: El proveedor no tiene contrato vigente para este servicio')).toBeTruthy()
+    expect(
+      await screen.findByText(
+        'Sin requerimiento en Servicios tercerizados: El proveedor no tiene contrato vigente para este servicio',
+      ),
+    ).toBeTruthy()
   })
 
   it('avisa si el ciclo no existe', async () => {
