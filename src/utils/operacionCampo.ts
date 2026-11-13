@@ -83,7 +83,8 @@ export function validarReprogramacion(actual: EntradaEncargo, nueva: EntradaRepr
   })
   // Solo se cambian las fechas: lo demás del encargo ya era válido.
   const resultado: Record<string, string> = {}
-  for (const clave of ['fecha_inicio', 'fecha_fin', 'plazo_previsto']) if (errores[clave]) resultado[clave] = errores[clave]
+  for (const clave of ['fecha_inicio', 'fecha_fin', 'plazo_previsto'])
+    if (errores[clave]) resultado[clave] = errores[clave]
   if (
     nueva.fecha_inicio === actual.fecha_inicio &&
     nueva.fecha_fin === actual.fecha_fin &&

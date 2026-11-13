@@ -519,7 +519,8 @@ function DialogoReprogramar({
           error={errores.justificacion}
         />
         <p className={estilos.ayuda}>
-          Las actividades ya registradas deben quedar dentro del nuevo periodo. El cambio queda en el historial del encargo.
+          Las actividades ya registradas deben quedar dentro del nuevo periodo. El cambio queda en el historial del
+          encargo.
         </p>
       </fieldset>
     </DialogoFormulario>

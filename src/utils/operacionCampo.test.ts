@@ -92,18 +92,34 @@ describe('reprogramar encargos (AV-405)', () => {
   })
 
   it('exige la justificación y que cambie alguna fecha', () => {
-    const igual = { fecha_inicio: '2099-06-01', fecha_fin: '2099-06-07', plazo_previsto: '2099-06-07', justificacion: '' }
+    const igual = {
+      fecha_inicio: '2099-06-01',
+      fecha_fin: '2099-06-07',
+      plazo_previsto: '2099-06-07',
+      justificacion: '',
+    }
     expect(validarReprogramacion(periodico, igual)).toEqual({
       plazo_previsto: 'Cambia alguna fecha para reprogramar',
       justificacion: 'Explica por qué se reprograma',
     })
     expect(
-      validarReprogramacion(periodico, { ...igual, fecha_inicio: '2099-06-03', fecha_fin: '2099-06-09', plazo_previsto: '2099-06-09', justificacion: 'Lluvia' }),
+      validarReprogramacion(periodico, {
+        ...igual,
+        fecha_inicio: '2099-06-03',
+        fecha_fin: '2099-06-09',
+        plazo_previsto: '2099-06-09',
+        justificacion: 'Lluvia',
+      }),
     ).toEqual({})
   })
 
   it('aplica las reglas del periodo: duración máxima y plazo dentro del periodo', () => {
-    const nueva = { fecha_inicio: '2099-06-01', fecha_fin: '2099-06-20', plazo_previsto: '2099-06-25', justificacion: 'Lluvia' }
+    const nueva = {
+      fecha_inicio: '2099-06-01',
+      fecha_fin: '2099-06-20',
+      plazo_previsto: '2099-06-25',
+      justificacion: 'Lluvia',
+    }
     expect(validarReprogramacion(periodico, nueva)).toEqual({
       fecha_fin: 'El periodo debe tener entre 1 y 7 días',
       plazo_previsto: 'El plazo debe estar dentro del periodo',
@@ -113,10 +129,20 @@ describe('reprogramar encargos (AV-405)', () => {
   it('en un encargo directo basta con un plazo no anterior al inicio', () => {
     const directo: EntradaEncargo = { ...periodico, periodicidad: 'Directo', fecha_reunion: null }
     expect(
-      validarReprogramacion(directo, { fecha_inicio: '2099-06-01', fecha_fin: '2099-05-30', plazo_previsto: '2099-05-30', justificacion: 'x' }),
+      validarReprogramacion(directo, {
+        fecha_inicio: '2099-06-01',
+        fecha_fin: '2099-05-30',
+        plazo_previsto: '2099-05-30',
+        justificacion: 'x',
+      }),
     ).toEqual({ plazo_previsto: 'El plazo no puede ser anterior al inicio del encargo' })
     expect(
-      validarReprogramacion(directo, { fecha_inicio: '2099-06-01', fecha_fin: '2099-06-15', plazo_previsto: '2099-06-15', justificacion: 'x' }),
+      validarReprogramacion(directo, {
+        fecha_inicio: '2099-06-01',
+        fecha_fin: '2099-06-15',
+        plazo_previsto: '2099-06-15',
+        justificacion: 'x',
+      }),
     ).toEqual({})
   })
 })
