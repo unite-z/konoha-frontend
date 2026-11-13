@@ -30,7 +30,16 @@ function pintar(seccion?: string) {
     <MemoryRouter initialEntries={['/planificacion']}>
       <Routes>
         <Route element={<LayoutOficina />}>
-          <Route path="/planificacion" element={<RutaConPermiso permiso="PLA.PLANIFICACION.CONSULTAR" seccion={seccion} descripcion="Tu ruta del día y el calendario están en la app móvil." />}>
+          <Route
+            path="/planificacion"
+            element={
+              <RutaConPermiso
+                permiso="PLA.PLANIFICACION.CONSULTAR"
+                seccion={seccion}
+                descripcion="Tu ruta del día y el calendario están en la app móvil."
+              />
+            }
+          >
             <Route index element={<p>Contenido del resumen</p>} />
           </Route>
         </Route>

@@ -7,9 +7,20 @@ export const RUTAS_CAMPO = {
   participantes: `${BASE_CAMPO}/participantes`,
   catalogoActividades: `${BASE_CAMPO}/catalogo-actividades`,
 } as const
-export function esRutaCampo(path: string): boolean { return path===BASE_CAMPO || path.startsWith(`${BASE_CAMPO}/`) }
+export function esRutaCampo(path: string): boolean {
+  return path === BASE_CAMPO || path.startsWith(`${BASE_CAMPO}/`)
+}
 export function destinoCampo(path: string | null): string {
-  if(!path||path.startsWith('//')||path.includes('\\')||Array.from(path).some(c=>c.charCodeAt(0)<32)) return RUTAS_CAMPO.encargos
-  const base=path.split(/[?#]/)[0]
-  return [RUTAS_CAMPO.cuadrillas,RUTAS_CAMPO.encargos,RUTAS_CAMPO.actividades,RUTAS_CAMPO.participantes,RUTAS_CAMPO.catalogoActividades].some(ruta => ruta === base) ? path : RUTAS_CAMPO.encargos
+  if (!path || path.startsWith('//') || path.includes('\\') || Array.from(path).some((c) => c.charCodeAt(0) < 32))
+    return RUTAS_CAMPO.encargos
+  const base = path.split(/[?#]/)[0]
+  return [
+    RUTAS_CAMPO.cuadrillas,
+    RUTAS_CAMPO.encargos,
+    RUTAS_CAMPO.actividades,
+    RUTAS_CAMPO.participantes,
+    RUTAS_CAMPO.catalogoActividades,
+  ].some((ruta) => ruta === base)
+    ? path
+    : RUTAS_CAMPO.encargos
 }

@@ -56,8 +56,18 @@ export default function BandejaIncidenciasPage() {
   const [registrando, setRegistrando] = useState(false)
 
   const columnas: ColumnaTabla<IncidenciaResumen>[] = [
-    { clave: 'incidencia', titulo: 'Incidencia', multilinea: true, render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo /> },
-    { clave: 'ubicacion', titulo: 'Ubicación', multilinea: true, render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" /> },
+    {
+      clave: 'incidencia',
+      titulo: 'Incidencia',
+      multilinea: true,
+      render: (i) => <CeldaDobleLinea principal={i.tipo} detalle={i.codigo} codigo />,
+    },
+    {
+      clave: 'ubicacion',
+      titulo: 'Ubicación',
+      multilinea: true,
+      render: (i) => <CeldaTexto texto={i.espacio} tono="secundario" />,
+    },
     {
       clave: 'severidad',
       titulo: 'Severidad',
@@ -88,7 +98,13 @@ export default function BandejaIncidenciasPage() {
   ]
 
   if (consulta.estado === 'error' && !consulta.datos) {
-    return <EstadoError titulo="No pudimos cargar las incidencias" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar las incidencias"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   }
 
   const incidencias = (consulta.datos ?? []).map((i) => locales[i.id] ?? i)
@@ -121,7 +137,10 @@ export default function BandejaIncidenciasPage() {
           claveFila={(i) => String(i.id)}
           onFilaClick={(i) => navegar(rutaIncidencia(i.id))}
           estado={consulta.datos ? 'exito' : 'cargando'}
-          vacio={{ titulo: 'Sin incidencias en esta pestaña', descripcion: 'Las incidencias reportadas aparecerán aquí.' }}
+          vacio={{
+            titulo: 'Sin incidencias en esta pestaña',
+            descripcion: 'Las incidencias reportadas aparecerán aquí.',
+          }}
         />
       </Pestanas>
       {registrando && (

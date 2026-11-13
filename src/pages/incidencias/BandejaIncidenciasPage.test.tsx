@@ -8,7 +8,10 @@ import BandejaIncidenciasPage from './BandejaIncidenciasPage'
 
 const datos = incidenciasSimuladas()
 const anotarCausaRetraso = vi.fn(async () => undefined)
-const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({ ...(datos.find((i) => i.id === id) ?? datos[0]), responsable: 'J. Ramos' }))
+const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({
+  ...(datos.find((i) => i.id === id) ?? datos[0]),
+  responsable: 'J. Ramos',
+}))
 vi.mock('@/services/api/incidencias', () => ({
   listarIncidencias: async () => datos,
   anotarCausaRetraso: (...argumentos: unknown[]) => anotarCausaRetraso(...(argumentos as [])),
@@ -74,7 +77,11 @@ describe('BandejaIncidenciasPage', () => {
 
     await usuario.click(within(alertas).getAllByRole('button', { name: 'Reasignar' })[0])
     await usuario.selectOptions(await screen.findByLabelText(/^Capataz/), '3')
-    await usuario.click(within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', { name: 'Reasignar' }))
+    await usuario.click(
+      within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', {
+        name: 'Reasignar',
+      }),
+    )
     expect(reasignarIncidencia).toHaveBeenCalledWith(38, 3)
     expect(await screen.findByText('INC-2026-038 reasignada a J. Ramos')).toBeTruthy()
   })
