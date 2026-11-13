@@ -19,7 +19,11 @@ const COLUMNAS: ColumnaTabla<Fila>[] = [
 ]
 
 const filas = (n: number): Fila[] =>
-  Array.from({ length: n }, (_, i) => ({ id: i + 1, nombre: `Zona ${String(i + 1).padStart(2, '0')}`, jardines: i % 3 === 0 ? null : i }))
+  Array.from({ length: n }, (_, i) => ({
+    id: i + 1,
+    nombre: `Zona ${String(i + 1).padStart(2, '0')}`,
+    jardines: i % 3 === 0 ? null : i,
+  }))
 
 function celdasDeColumna(indice: number) {
   return screen
@@ -83,7 +87,15 @@ describe('TablaDatos', () => {
   it('fila clicable con ratón y con Enter', async () => {
     const usuario = userEvent.setup()
     const abrir = vi.fn()
-    render(<TablaDatos titulo="Ruta" columnas={COLUMNAS} filas={filas(2)} claveFila={(f) => String(f.id)} onFilaClick={abrir} />)
+    render(
+      <TablaDatos
+        titulo="Ruta"
+        columnas={COLUMNAS}
+        filas={filas(2)}
+        claveFila={(f) => String(f.id)}
+        onFilaClick={abrir}
+      />,
+    )
 
     const fila = screen.getAllByRole('row')[1]
     await usuario.click(fila)
@@ -92,9 +104,47 @@ describe('TablaDatos', () => {
     expect(abrir).toHaveBeenCalledTimes(2)
   })
 
+  it('un botón de la fila hace lo suyo sin abrir la fila (AV-400)', async () => {
+    const usuario = userEvent.setup()
+    const abrir = vi.fn()
+    const accion = vi.fn()
+    const conAccion: ColumnaTabla<Fila>[] = [
+      ...COLUMNAS,
+      // Excepción al sistema (AV-351): botón crudo solo para la prueba de la tabla.
+      {
+        clave: 'accion',
+        titulo: 'Acciones',
+        tituloOculto: true,
+        render: (f) => <button type="button" onClick={accion}>{`Editar ${f.nombre}`}</button>,
+      },
+    ]
+    render(
+      <TablaDatos
+        titulo="Ruta"
+        columnas={conAccion}
+        filas={filas(1)}
+        claveFila={(f) => String(f.id)}
+        onFilaClick={abrir}
+      />,
+    )
+
+    await usuario.click(screen.getByRole('button', { name: 'Editar Zona 01' }))
+    screen.getByRole('button', { name: 'Editar Zona 01' }).focus()
+    await usuario.keyboard('{Enter}')
+    expect(accion).toHaveBeenCalledTimes(2)
+    expect(abrir).not.toHaveBeenCalled()
+  })
+
   it('estados vacío y error sustituyen a la tabla', () => {
     const { rerender } = render(
-      <TablaDatos titulo="Ruta" columnas={COLUMNAS} filas={[]} claveFila={(f) => String(f.id)} estado="vacio" vacio={{ titulo: 'No hay jardines' }} />,
+      <TablaDatos
+        titulo="Ruta"
+        columnas={COLUMNAS}
+        filas={[]}
+        claveFila={(f) => String(f.id)}
+        estado="vacio"
+        vacio={{ titulo: 'No hay jardines' }}
+      />,
     )
     expect(screen.getByRole('heading', { name: 'No hay jardines' })).toBeTruthy()
     expect(screen.queryByRole('table')).toBeNull()
@@ -113,7 +163,15 @@ describe('TablaDatos', () => {
   })
 
   it('sin filas y con vacío definido pinta el vacío aunque no se pase estado', () => {
-    render(<TablaDatos titulo="Ruta" columnas={COLUMNAS} filas={[]} claveFila={(f) => String(f.id)} vacio={{ titulo: 'No hay jardines' }} />)
+    render(
+      <TablaDatos
+        titulo="Ruta"
+        columnas={COLUMNAS}
+        filas={[]}
+        claveFila={(f) => String(f.id)}
+        vacio={{ titulo: 'No hay jardines' }}
+      />,
+    )
 
     expect(screen.getByRole('heading', { name: 'No hay jardines' })).toBeTruthy()
     expect(screen.queryByRole('table')).toBeNull()
