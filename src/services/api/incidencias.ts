@@ -20,9 +20,9 @@ import type {
 } from '@/types/incidencias'
 import { solicitarPlanificacion } from './clientePlanificacion'
 
-/** `GET incidencias/`: bandeja del jefe, de la más reciente a la más antigua. */
-export async function listarIncidencias(signal?: AbortSignal) {
-  return solicitarPlanificacion<IncidenciaResumen[]>('incidencias/', { signal })
+/** `GET incidencias/?q=`: la bandeja, de la más reciente a la más antigua; `q` busca en código, tipo, espacio y descripción. */
+export async function listarIncidencias(signal?: AbortSignal, q = '') {
+  return solicitarPlanificacion<IncidenciaResumen[]>('incidencias/', { signal, parametros: q ? { q } : undefined })
 }
 
 /** `POST incidencias/{id}/causa-retraso/` (AV-280): causa del retraso de una alerta de plazo, con autor. */

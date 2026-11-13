@@ -19,6 +19,8 @@ export const PERMISOS = {
   registrarIncidencia: 'PLA.INCIDENCIA.REGISTRAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
+  /** Consultar todas las incidencias; sin él (capataz), solo las propias y las de su cuadrilla (AV-407). */
+  consultarTodasIncidencias: 'PLA.INCIDENCIA.CONSULTAR_TODAS',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
   consultarPartes: 'CAM.PARTE.CONSULTAR',
