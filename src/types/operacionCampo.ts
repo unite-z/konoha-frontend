@@ -114,7 +114,13 @@ export interface ParticipantesCampo {
   cantidad_operarios: number
   operarios: OperarioCampo[]
 }
-export type EstadoActividadCampo = 'Registrada' | 'Verificada' | 'Anulada'
+export type EstadoActividadCampo = 'Registrada' | 'Verificada' | 'Observada' | 'Anulada'
+
+/** Encargo de seguimiento que se crea al verificar con observaciones (AV-402): directo, con plazo. */
+export interface EncargoSeguimiento {
+  descripcion: string
+  plazo_previsto: string
+}
 export interface ActividadCampo {
   id: number
   parte_id: number
@@ -140,6 +146,8 @@ export interface ActividadCampo {
   verificado_por_nombre: string | null
   fecha_verificacion: string | null
   estado_actividad: EstadoActividadCampo
+  /** Encargo de seguimiento creado al verificar con observaciones (solo en `Observada`). */
+  encargo_seguimiento_id?: number | null
   anulada_en: string | null
   anulada_por_usuario_id: number | null
   anulada_por_nombre: string | null

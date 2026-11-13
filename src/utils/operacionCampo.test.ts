@@ -3,7 +3,9 @@ import {
   esJefeCampo,
   hoyLima,
   puedeAnularActividad,
+  admiteVerificacion,
   puedeRegistrarCampo,
+  textoEstadoActividad,
   sumarDiasCampo,
   validarEncargoCampo,
 } from './operacionCampo'
@@ -65,5 +67,20 @@ describe('Operación de campo', () => {
     expect(puedeRegistrarCampo(null)).toBe(false)
     expect(puedeAnularActividad(jefe)).toBe(true)
     expect(puedeAnularActividad(capataz)).toBe(false)
+  })
+})
+
+describe('estado de la actividad (AV-402)', () => {
+  it('muestra «Observada» como «Verificada con observaciones» y deja el resto igual', () => {
+    expect(textoEstadoActividad('Observada')).toBe('Verificada con observaciones')
+    expect(textoEstadoActividad('Verificada')).toBe('Verificada')
+    expect(textoEstadoActividad('Registrada')).toBe('Registrada')
+  })
+
+  it('solo se verifica lo registrado o verificado: lo observado ya tiene su seguimiento y lo anulado no', () => {
+    expect(admiteVerificacion('Registrada')).toBe(true)
+    expect(admiteVerificacion('Verificada')).toBe(true)
+    expect(admiteVerificacion('Observada')).toBe(false)
+    expect(admiteVerificacion('Anulada')).toBe(false)
   })
 })
