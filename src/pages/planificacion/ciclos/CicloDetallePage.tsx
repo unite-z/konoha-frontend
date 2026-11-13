@@ -1,14 +1,15 @@
 // CU-004 y CU-007 · Detalle de ciclo sin ruta (AV-269, Figma «Detalle de ciclo sin ruta» 380-7171 y 370-3811)
 /**
  * Título con el código y el estado al lado, proveedor, fechas y franja debajo, tres indicadores (fechas previstas
- * o inicio real, duración con el máximo y restricciones) y el historial. El jefe inicia, finaliza o cancela.
+ * o inicio real, duración con el máximo y restricciones) y el historial. El jefe inicia, finaliza o cancela, y un
+ * ciclo programado lo reprograma con el mismo panel que el Calendario (AV-398).
  *
  * No hay `GET programaciones/{id}/`: el ciclo se busca en `GET programaciones/` del mismo rango que la lista.
  * El código (AV-364) y el historial (AV-253) se simulan hasta que lleguen (D9). Faltan el requerimiento asociado
  * (AV-263) y «confirmado por» de los avisos (AV-253). La ruta del corte la añade AV-270.
  */
 import { useCallback, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSimulados'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import BarraAvance from '@/components/ui/BarraAvance'
@@ -25,23 +26,36 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import JuntoTitulo from '@/layouts/LayoutOficina/JuntoTitulo'
-import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaDetalleAtencion } from '@/router/rutasApp'
+import { MIGAS_PLANIFICACION, RUTAS_PLANIFICACION, rutaCiclo, rutaDetalleAtencion } from '@/router/rutasApp'
 import { obtenerCicloCorte } from '@/services/api/corte'
-import { listarRestricciones, listarServiciosPeriodicos, obtenerProgramacion, type CambioEstadoCiclo } from '@/services/api/planificacion'
+import {
+  listarRestricciones,
+  listarServiciosPeriodicos,
+  obtenerProgramacion,
+  type CambioEstadoCiclo,
+} from '@/services/api/planificacion'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { FechaIso } from '@/types/comun'
 import type { CicloCorte, InterrupcionCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { codigoCorto } from '@/utils/estadosTercerizados'
 import { ahoraLimaLocal, hoyLima } from '@/utils/instanteLima'
+import PanelProgramarCiclo from '../calendario/PanelProgramarCiclo'
 import { conflictosDelPeriodo } from '../calendario/programarCiclo'
-import { ESTADO_PROGRAMACION, dias } from '../resumen/resumenPlanificacion'
+import { ESTADO_PROGRAMACION, dias, fechaCorta } from '../resumen/resumenPlanificacion'
 import estilos from './Ciclos.module.css'
 import DialogoCambioCiclo from './DialogoCambioCiclo'
 import { avanceRuta, esCorte, indicadorAvanceProgramado, indicadoresCorte, jardines, rutaCompleta } from './corte'
 import DialogoInterrupcion from './DialogoInterrupcion'
 import PestanasCorte from './PestanasCorte'
-import { accionesCiclo, historialCiclo, indicadoresCiclo, periodoCiclo, subtituloCiclo, type IndicadorCiclo } from './detalleCiclo'
+import {
+  accionesCiclo,
+  historialCiclo,
+  indicadoresCiclo,
+  periodoCiclo,
+  subtituloCiclo,
+  type IndicadorCiclo,
+} from './detalleCiclo'
 
 function FichaCiclo({
   ciclo,
@@ -49,6 +63,7 @@ function FichaCiclo({
   servicio,
   corte: corteServidor,
   onAccion,
+  onReprogramar,
 }: {
   ciclo: Programacion
   hoy: FechaIso
@@ -56,6 +71,8 @@ function FichaCiclo({
   /** Ruta, interrupciones y limpiezas si el ciclo es de corte (AV-270). */
   corte: CicloCorte | null
   onAccion: ((cambio: CambioEstadoCiclo) => void) | null
+  /** «Reprogramar» de un ciclo programado (AV-398); `null` sin permiso para editar. */
+  onReprogramar: (() => void) | null
 }) {
   const [interrumpiendo, setInterrumpiendo] = useState(false)
   const [nuevas, setNuevas] = useState<InterrupcionCorte[]>([])
@@ -66,7 +83,9 @@ function FichaCiclo({
   // Las interrupciones registradas aquí se suman a las del servidor hasta la siguiente consulta.
   const corte = corteServidor && { ...corteServidor, interrupciones: [...corteServidor.interrupciones, ...nuevas] }
   const { desde, hasta } = periodoCiclo(ciclo, hoy)
-  const restricciones = useConsulta(`ciclo-restricciones:${desde}:${hasta}`, (signal) => listarRestricciones(desde, hasta, signal))
+  const restricciones = useConsulta(`ciclo-restricciones:${desde}:${hasta}`, (signal) =>
+    listarRestricciones(desde, hasta, signal),
+  )
   const conflictos = conflictosDelPeriodo(restricciones.datos ?? [], desde, hasta, servicio?.es_ruidoso ?? true)
   const base = indicadoresCiclo(ciclo, servicio, conflictos, hoy)
   const ahora = ahoraLimaLocal()
@@ -91,6 +110,11 @@ function FichaCiclo({
       {corte && ciclo.estado === 'EnCurso' && (
         <Boton variante="secundario" icono="arrow-right-left" onClick={() => setInterrumpiendo(true)}>
           Registrar interrupción
+        </Boton>
+      )}
+      {onReprogramar && ciclo.estado === 'Programada' && (
+        <Boton variante="secundario" icono="calendar" onClick={onReprogramar}>
+          Reprogramar
         </Boton>
       )}
       {acciones.map((accion) => (
@@ -124,7 +148,11 @@ function FichaCiclo({
           · Servicios tercerizados
         </JuntoTitulo>
       ) : (
-        ciclo.motivo_sin_requerimiento && <JuntoTitulo debajo>Sin requerimiento en Servicios tercerizados: {ciclo.motivo_sin_requerimiento}</JuntoTitulo>
+        ciclo.motivo_sin_requerimiento && (
+          <JuntoTitulo debajo>
+            Sin requerimiento en Servicios tercerizados: {ciclo.motivo_sin_requerimiento}
+          </JuntoTitulo>
+        )
       )}
       {botones && !esMovil && <AccionesPagina>{botones}</AccionesPagina>}
       {corte && interrumpiendo && (
@@ -136,7 +164,9 @@ function FichaCiclo({
           onRegistrada={(interrupcion) => {
             setNuevas((previas) => [...previas, interrupcion])
             setInterrumpiendo(false)
-            setAvisoCorte(`Corte detenido en ${interrupcion.zona_afectada} y trasladado a ${interrupcion.zona_alternativa ?? 'otra zona'}.`)
+            setAvisoCorte(
+              `Corte detenido en ${interrupcion.zona_afectada} y trasladado a ${interrupcion.zona_alternativa ?? 'otra zona'}.`,
+            )
           }}
         />
       )}
@@ -151,7 +181,12 @@ function FichaCiclo({
                 <span className={estilos.porcentajeAvance}>{indicadores[0].valor}</span>
                 <span>{indicadores[0].contexto}</span>
               </p>
-              <BarraAvance valor={avance.cortados} maximo={avance.total} etiqueta="Avance de la ruta" textoValor={indicadores[0].contexto} />
+              <BarraAvance
+                valor={avance.cortados}
+                maximo={avance.total}
+                etiqueta="Avance de la ruta"
+                textoValor={indicadores[0].contexto}
+              />
               <p className={indicadores[0].notaAviso ? estilos.notaAviso : estilos.notaAvance}>{indicadores[0].nota}</p>
             </div>
           </Tarjeta>
@@ -174,9 +209,23 @@ function FichaCiclo({
               etiqueta={indicador.etiqueta}
               valor={indicador.valor}
               contexto={indicador.contexto}
-              nota={indicador.notaAviso || indicador.notaError ? <span className={indicador.notaError ? estilos.notaError : estilos.notaAviso}>{indicador.nota}</span> : indicador.nota}
-              estado={indicador.etiqueta === 'Restricciones' && !restricciones.datos ? 'cargando' : indicador.exceso > 0 ? 'alerta' : 'normal'}
-              insignia={indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined}
+              nota={
+                indicador.notaAviso || indicador.notaError ? (
+                  <span className={indicador.notaError ? estilos.notaError : estilos.notaAviso}>{indicador.nota}</span>
+                ) : (
+                  indicador.nota
+                )
+              }
+              estado={
+                indicador.etiqueta === 'Restricciones' && !restricciones.datos
+                  ? 'cargando'
+                  : indicador.exceso > 0
+                    ? 'alerta'
+                    : 'normal'
+              }
+              insignia={
+                indicador.exceso > 0 ? { tono: 'error', texto: `Excede en ${dias(indicador.exceso)}` } : undefined
+              }
             />
           ))}
         </FilaTarjetas>
@@ -211,6 +260,8 @@ export default function CicloDetallePage() {
   const servicios = useConsulta('ciclo-servicios', (signal) => listarServiciosPeriodicos(signal))
   const [local, setLocal] = useState<Programacion | null>(null)
   const [cambio, setCambio] = useState<CambioEstadoCiclo | null>(null)
+  const [reprogramando, setReprogramando] = useState(false)
+  const navegar = useNavigate()
   const [aviso, setAviso] = useState<string | null>(null)
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
@@ -225,7 +276,11 @@ export default function CicloDetallePage() {
   usePaginaActual(
     ciclo ? [ciclo.servicio, ciclo.codigo].filter(Boolean).join(' · ') : 'Ciclo',
     [MIGAS_PLANIFICACION.ciclos, { texto: ciclo ? (ciclo.codigo ?? ciclo.servicio) : 'Ciclo' }],
-    ciclo ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${jardines(corte.datos.jardines.length)}`].filter(Boolean).join(' · ') : undefined,
+    ciclo
+      ? [subtituloCiclo(ciclo, servicio), corte.datos && `ruta de ${jardines(corte.datos.jardines.length)}`]
+          .filter(Boolean)
+          .join(' · ')
+      : undefined,
     // En móvil (Figma 353-2242): el código en la barra con la flecha a Ciclos, y el servicio como encabezado.
     {
       movil: ciclo
@@ -242,7 +297,13 @@ export default function CicloDetallePage() {
   let contenido
   const noExiste = !Number.isFinite(id) || (consulta.estado === 'error' && consulta.error?.estado === 404)
   if (consulta.estado === 'error' && !consulta.datos && !noExiste) {
-    contenido = <EstadoError titulo="No pudimos cargar el ciclo" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+    contenido = (
+      <EstadoError
+        titulo="No pudimos cargar el ciclo"
+        descripcion={consulta.error?.detalle ?? ''}
+        onReintentar={consulta.reintentar}
+      />
+    )
   } else if (!consulta.datos && !noExiste) {
     contenido = consulta.cargaVisible ? <EstadoCarga forma="pagina" /> : null
   } else if (!ciclo) {
@@ -258,7 +319,16 @@ export default function CicloDetallePage() {
       />
     )
   } else {
-    contenido = <FichaCiclo ciclo={ciclo} hoy={hoy} servicio={servicio} corte={corte.datos ?? null} onAccion={puedeEditar ? setCambio : null} />
+    contenido = (
+      <FichaCiclo
+        ciclo={ciclo}
+        hoy={hoy}
+        servicio={servicio}
+        corte={corte.datos ?? null}
+        onAccion={puedeEditar ? setCambio : null}
+        onReprogramar={puedeEditar ? () => setReprogramando(true) : null}
+      />
+    )
   }
 
   return (
@@ -274,6 +344,25 @@ export default function CicloDetallePage() {
             setLocal(actualizado)
             setCambio(null)
             setAviso(mensaje)
+          }}
+        />
+      )}
+      {ciclo && reprogramando && servicios.datos && (
+        <PanelProgramarCiclo
+          servicios={servicios.datos}
+          servicioInicial={null}
+          reprogramar={ciclo}
+          onCerrar={() => setReprogramando(false)}
+          onProgramada={(nueva) => {
+            setReprogramando(false)
+            setAviso(
+              `Ciclo reprogramado del ${fechaCorta(nueva.fecha_inicio_prevista)} al ${fechaCorta(nueva.fecha_fin_prevista)}.`,
+            )
+            // Solo fechas: es el mismo ciclo y se vuelve a cargar con su historial. Otro servicio o quien lo hace: el
+            // panel crea un ciclo nuevo, cancela este y la ficha pasa al nuevo (AV-362).
+            setLocal(null)
+            if (nueva.id === ciclo.id) consulta.reintentar()
+            else void navegar(rutaCiclo(nueva.id))
           }}
         />
       )}
