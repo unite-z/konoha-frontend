@@ -94,6 +94,8 @@ export interface CambioEstadoEncargo {
 
 export interface EncargoCampo extends EntradaEncargo {
   estado: EstadoEncargo
+  /** Plazo previsto pasado sin completar ni cancelar (lo calcula el servidor con la fecha de Lima, AV-403). */
+  vencido?: boolean
   historial_estados?: CambioEstadoEncargo[]
   id: number
   capataz_id: number

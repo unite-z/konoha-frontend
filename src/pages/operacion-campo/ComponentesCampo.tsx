@@ -37,12 +37,15 @@ export function TablaCampo<T extends { id: number }>({
   listado,
   vacio,
   accionVacio,
+  filaPeligro,
 }: {
   titulo: string
   columnas: ColumnaTabla<T>[]
   listado: ReturnType<typeof useListadoCampo<T>>
   vacio: string
   accionVacio?: ReactNode
+  /** Filas con fondo de peligro, p. ej. los encargos vencidos (AV-403). */
+  filaPeligro?: (fila: T) => boolean
 }) {
   const { consulta, pagina, cambiarPagina } = listado
   return (
@@ -51,6 +54,7 @@ export function TablaCampo<T extends { id: number }>({
       columnas={columnas}
       filas={consulta.datos?.results ?? []}
       claveFila={(r) => String(r.id)}
+      filaPeligro={filaPeligro}
       estado={consulta.estado === 'inactivo' ? 'cargando' : consulta.estado}
       paginacionServidor={{
         pagina,
@@ -139,9 +143,7 @@ export function SeleccionOperarios({
               ayuda={bloqueados.includes(p.id) ? 'Asignado a otra cuadrilla' : undefined}
               marcada={seleccion.includes(p.id)}
               disabled={bloqueados.includes(p.id)}
-              onCambiar={(marcada) =>
-                onCambiar(marcada ? [...seleccion, p.id] : seleccion.filter((id) => id !== p.id))
-              }
+              onCambiar={(marcada) => onCambiar(marcada ? [...seleccion, p.id] : seleccion.filter((id) => id !== p.id))}
             />
           </div>
         ))}

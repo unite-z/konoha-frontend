@@ -144,3 +144,34 @@ it('desde el encargo se llega a sus tareas, por el texto y por «Ver tareas» (A
   expect(enlace.getAttribute('href')).toBe('/operacion-campo/participantes?encargo_id=5')
   expect(screen.getByRole('button', { name: 'Ver tareas del encargo 5' })).toBeTruthy()
 })
+
+it('marca los encargos vencidos con un texto y permite filtrar solo los vencidos (AV-403)', async () => {
+  sesion.permisos = CAPATAZ
+  const peticiones: URL[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string) => {
+      const url = new URL(ruta, 'http://localhost')
+      peticiones.push(url)
+      const resultados = url.pathname.endsWith('/encargos/')
+        ? [
+            { ...encargo, vencido: true },
+            { ...encargo, id: 6, descripcion: 'Regar el vivero', vencido: false },
+          ]
+        : []
+      return Response.json({ count: resultados.length, results: resultados, next: null, previous: null })
+    }),
+  )
+  render(<EncargosPage />, { wrapper: MemoryRouter })
+  const tabla = await screen.findByRole('table')
+  const filas = within(tabla).getAllByRole('row')
+  expect(within(filas[1]).getByText('Vencido')).toBeTruthy()
+  expect(within(filas[2]).queryByText('Vencido')).toBeNull()
+
+  await userEvent.setup().selectOptions(screen.getByLabelText('Vencimiento'), 'true')
+  await waitFor(() =>
+    expect(
+      peticiones.some((url) => url.pathname.endsWith('/encargos/') && url.searchParams.get('vencidos') === 'true'),
+    ).toBe(true),
+  )
+})

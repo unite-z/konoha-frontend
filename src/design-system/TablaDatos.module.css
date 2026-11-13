@@ -194,3 +194,8 @@
 .resaltada td:last-child {
   border-right: 1px solid var(--color-border-strong);
 }
+
+/* Fila en peligro (`filaPeligro`): fondo de error, p. ej. un encargo vencido. */
+.peligro td {
+  background: var(--color-error-bg);
+}
