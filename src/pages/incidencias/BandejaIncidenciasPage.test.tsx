@@ -8,7 +8,10 @@ import BandejaIncidenciasPage from './BandejaIncidenciasPage'
 
 const datos = incidenciasSimuladas()
 const anotarCausaRetraso = vi.fn(async () => undefined)
-const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({ ...(datos.find((i) => i.id === id) ?? datos[0]), responsable: 'J. Ramos' }))
+const reasignarIncidencia = vi.fn(async (id: number, _capataz: number) => ({
+  ...(datos.find((i) => i.id === id) ?? datos[0]),
+  responsable: 'J. Ramos',
+}))
 vi.mock('@/services/api/incidencias', () => ({
   listarIncidencias: async () => datos,
   anotarCausaRetraso: (...argumentos: unknown[]) => anotarCausaRetraso(...(argumentos as [])),
@@ -28,8 +31,14 @@ beforeAll(() => {
   }
 })
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+// Quien gestiona incidencias (jefatura): sin este permiso las tarjetas de acción no se pintan (AV-406).
+const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CLASIFICAR'] as string[] }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sesion.permisos = ['PLA.INCIDENCIA.CLASIFICAR']
+})
 
 describe('BandejaIncidenciasPage', () => {
   it('muestra las incidencias con su severidad y vía, y filtra por pestaña', async () => {
@@ -68,8 +77,24 @@ describe('BandejaIncidenciasPage', () => {
 
     await usuario.click(within(alertas).getAllByRole('button', { name: 'Reasignar' })[0])
     await usuario.selectOptions(await screen.findByLabelText(/^Capataz/), '3')
-    await usuario.click(within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', { name: 'Reasignar' }))
+    await usuario.click(
+      within(screen.getByRole('dialog', { name: 'Reasignar · INC-2026-038' })).getByRole('button', {
+        name: 'Reasignar',
+      }),
+    )
     expect(reasignarIncidencia).toHaveBeenCalledWith(38, 3)
     expect(await screen.findByText('INC-2026-038 reasignada a J. Ramos')).toBeTruthy()
+  })
+
+  it('sin permiso para clasificar no pinta las alertas de plazo con «Reasignar» (AV-406)', async () => {
+    sesion.permisos = ['PLA.INCIDENCIA.REGISTRAR']
+    render(
+      <MemoryRouter>
+        <BandejaIncidenciasPage />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByRole('table')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Reasignar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Anotar causa' })).toBeNull()
   })
 })
