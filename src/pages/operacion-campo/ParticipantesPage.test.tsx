@@ -263,3 +263,32 @@ it('mantiene la actividad anulada consultable y bloquea sus acciones de modifica
   expect(screen.getByRole('button', { name: 'Ver participantes' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Gestionar participantes' })).toBeNull()
 })
+
+it('con ?encargo_id pide solo las tareas de ese encargo y avisa de cuál es (AV-404)', async () => {
+  const peticiones: URL[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string) => {
+      const url = new URL(ruta, 'http://localhost')
+      peticiones.push(url)
+      if (url.pathname.endsWith('/encargos/5/')) {
+        return Response.json({ id: 5, descripcion: 'Podar junto al sendero', historial_estados: [] })
+      }
+      if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([{ ...actividad, encargo_id: 5 }]))
+      return Response.json(pagina([]))
+    }),
+  )
+
+  render(
+    <MemoryRouter initialEntries={['/operacion-campo/participantes?encargo_id=5']}>
+      <ParticipantesPage />
+    </MemoryRouter>,
+  )
+  expect(await screen.findByText('Tareas del encargo: Podar junto al sendero')).toBeTruthy()
+  await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
+  const lista = peticiones.find((url) => url.pathname.endsWith('/actividades/'))
+  expect(lista?.searchParams.get('encargo_id')).toBe('5')
+
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Ver todas' }))
+  await waitFor(() => expect(screen.queryByText(/Tareas del encargo/)).toBeNull())
+})

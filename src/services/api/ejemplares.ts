@@ -33,6 +33,7 @@ export async function listarEjemplaresDeArea(areaVerdeId: number, signal?: Abort
 }
 
 export function crearEjemplar(entrada: {
+  alias?: string | null
   codigo_placa_antigua?: string | null
   especie_id?: number | null
   tipo_vegetacion?: string | null
@@ -44,6 +45,11 @@ export function crearEjemplar(entrada: {
   area_verde_id?: number | null
 }): Promise<EjemplarInventario> {
   return solicitarTercerizados('ejemplares', { metodo: 'POST', cuerpo: entrada, base: BASE })
+}
+
+export function cambiarAliasEjemplar(id: number, alias: string): Promise<EjemplarInventario> {
+  // Una cadena vacía quita el alias; el backend rechaza repetirlo en otro ejemplar.
+  return solicitarTercerizados(`ejemplares/${id}`, { metodo: 'PATCH', cuerpo: { alias }, base: BASE })
 }
 
 export function vincularEjemplarConArea(id: number, areaVerdeId: number): Promise<EjemplarInventario> {

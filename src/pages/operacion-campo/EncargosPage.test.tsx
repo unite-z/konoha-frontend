@@ -136,6 +136,15 @@ it('sin PLA.ENCARGO.ACTUALIZAR_ESTADO el seguimiento es solo de consulta', async
   expect(dialogo.queryByLabelText(/Nuevo estado/)).toBeNull()
 })
 
+it('desde el encargo se llega a sus tareas, por el texto y por «Ver tareas» (AV-404)', async () => {
+  sesion.permisos = CAPATAZ
+  simularSeguimiento(vi.fn())
+  render(<EncargosPage />, { wrapper: MemoryRouter })
+  const enlace = await screen.findByRole('link', { name: 'Podar junto al sendero' })
+  expect(enlace.getAttribute('href')).toBe('/operacion-campo/participantes?encargo_id=5')
+  expect(screen.getByRole('button', { name: 'Ver tareas del encargo 5' })).toBeTruthy()
+})
+
 it('marca los encargos vencidos con un texto y permite filtrar solo los vencidos (AV-403)', async () => {
   sesion.permisos = CAPATAZ
   const peticiones: URL[] = []

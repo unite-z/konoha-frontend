@@ -57,6 +57,7 @@ export interface Alcance {
   area_verde_nombre: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   ejemplar_area_verde_nombre: string | null
   metrado: DecimalTexto | null
   unidad_medida_id: number | null

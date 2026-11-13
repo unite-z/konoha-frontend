@@ -59,15 +59,41 @@ describe('activoEnMenu', () => {
 
 describe('seccionesMoviles', () => {
   it('devuelve las subentradas con enlace del módulo activo, como mucho 5', () => {
-    expect(seccionesMoviles(RUTAS_PLANIFICACION.calendario).map((s) => s.texto)).toEqual([
-      'Resumen',
-      'Calendario',
-      'Ciclos',
-      'Configuración',
-    ])
+    expect(
+      seccionesMoviles(RUTAS_PLANIFICACION.calendario, undefined, ['PLA.PLANIFICACION.GESTIONAR']).map((s) => s.texto),
+    ).toEqual(['Resumen', 'Calendario', 'Ciclos', 'Configuración'])
     expect(seccionesMoviles(RUTAS.panel)).toHaveLength(5)
     expect(seccionesMoviles(RUTAS_CORE.repositorio)).toEqual([])
     expect(seccionesMoviles('/')).toEqual([])
+  })
+})
+
+describe('Lo que el rol no puede usar no se muestra (AV-406)', () => {
+  const campo = MODULOS_MENU.find((m) => m.clave === 'campo')
+  const planificacion = MODULOS_MENU.find((m) => m.clave === 'planificacion')
+  const capataz = ['CAM.CUADRILLA.CONSULTAR', 'CAM.PARTE.REGISTRAR']
+  const jefe = ['CAM.CUADRILLA.CONSULTAR', 'CAM.CUADRILLA.GESTIONAR']
+
+  it('el capataz no ve Cuadrillas ni el catálogo de actividades, pero sí sus encargos y actividades', () => {
+    const textos = hijosVisibles(campo?.hijos ?? [], capataz).map((h) => h.texto)
+    expect(textos).toEqual(['Encargos', 'Actividades por cuadrilla', 'Participantes por actividad'])
+  })
+
+  it('la jefatura ve todo Operación de campo', () => {
+    const textos = hijosVisibles(campo?.hijos ?? [], jefe).map((h) => h.texto)
+    expect(textos).toContain('Cuadrillas')
+    expect(textos).toContain('Catálogo de actividades')
+  })
+
+  it('el módulo de campo se abre por una entrada que ven todos los roles', () => {
+    expect(campo?.ruta).toBe(RUTAS_CAMPO.encargos)
+    expect(hijosVisibles(campo?.hijos ?? [], capataz).map((h) => h.ruta)).toContain(campo?.ruta)
+  })
+
+  it('la configuración de planificación es solo de quien gestiona la planificación', () => {
+    const hijos = planificacion?.hijos ?? []
+    expect(hijosVisibles(hijos, ['PLA.PLANIFICACION.CONSULTAR']).map((h) => h.texto)).not.toContain('Configuración')
+    expect(hijosVisibles(hijos, ['PLA.PLANIFICACION.GESTIONAR']).map((h) => h.texto)).toContain('Configuración')
   })
 })
 
