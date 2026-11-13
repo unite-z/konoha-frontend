@@ -19,6 +19,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFiltro'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
@@ -101,9 +102,17 @@ const COLUMNAS: ColumnaTabla<FilaMapa>[] = [
   },
   { clave: 'tipo_atencion', titulo: 'Tipo de atención', ordenable: true },
   { clave: 'tipo_servicio', titulo: 'Tipo de servicio' },
-  { clave: 'estado', titulo: 'Estado', render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} /> },
+  {
+    clave: 'estado',
+    titulo: 'Estado',
+    render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
+  },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true },
-  { clave: 'ejemplar_codigo', titulo: 'Ejemplar', render: (f) => f.ejemplar_codigo ?? SIN_VALOR },
+  {
+    clave: 'ejemplar_codigo',
+    titulo: 'Ejemplar',
+    render: (f) => (f.ejemplar_codigo ? nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias) : SIN_VALOR),
+  },
   {
     clave: 'con_ubicacion',
     titulo: 'Ubicación',
@@ -161,10 +170,7 @@ export default function MapaAtencionesPage() {
     catalogos.reintentar()
   }
 
-  const { elementos, filas } = useMemo(
-    () => (datos ? prepararMapa(datos) : { elementos: [], filas: [] }),
-    [datos],
-  )
+  const { elementos, filas } = useMemo(() => (datos ? prepararMapa(datos) : { elementos: [], filas: [] }), [datos])
 
   // Si alguna vez hubo algo que dibujar en esta visita, el mapa se mantiene (A2) con el último encuadre.
   const limitesActuales = useMemo(() => limitesDeElementos(elementos), [elementos])
@@ -210,7 +216,10 @@ export default function MapaAtencionesPage() {
       clave: 'modalidad',
       texto: `Modalidad: ${textoOpcion(OPCIONES_MODALIDAD, aplicados.modalidad)}`,
     },
-    aplicados.es_riesgo && { clave: 'es_riesgo', texto: `Nivel de riesgo: ${textoOpcion(OPCIONES_RIESGO, aplicados.es_riesgo)}` },
+    aplicados.es_riesgo && {
+      clave: 'es_riesgo',
+      texto: `Nivel de riesgo: ${textoOpcion(OPCIONES_RIESGO, aplicados.es_riesgo)}`,
+    },
   ].filter((f): f is FiltroActivo => Boolean(f))
 
   function quitar(clave: string) {
@@ -232,7 +241,9 @@ export default function MapaAtencionesPage() {
         cargando={estado === 'cargando' && cargaVisible}
         onAplicar={(periodo) => {
           const sinCambios =
-            periodo.desde === filtros.desde && periodo.hasta === filtros.hasta && JSON.stringify(borrador) === claveAplicados
+            periodo.desde === filtros.desde &&
+            periodo.hasta === filtros.hasta &&
+            JSON.stringify(borrador) === claveAplicados
           if (sinCambios) reintentar()
           else establecer({ ...periodo, ...borrador })
         }}
@@ -274,7 +285,8 @@ export default function MapaAtencionesPage() {
   let contenido = null
   if (estado === 'error' && error) {
     if (erroresDePeriodo(error)) contenido = null // el mensaje va junto al campo del periodo
-    else if (error.estado === 403 || error.estado === 400) contenido = <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
+    else if (error.estado === 403 || error.estado === 400)
+      contenido = <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
     else contenido = <EstadoError titulo={TITULO_ERROR_CARGA} descripcion={error.detalle} onReintentar={reintentar} />
   } else if (estado === 'cargando' && (cargaVisible || !datos)) {
     contenido = cargaVisible ? <EstadoCarga forma="pagina" /> : null
@@ -364,7 +376,8 @@ export default function MapaAtencionesPage() {
               onFilaClick={(f) => setSeleccion(f.clave)}
               estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
               vacio={{
-                titulo: filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
+                titulo:
+                  filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
               }}
             />
           )}

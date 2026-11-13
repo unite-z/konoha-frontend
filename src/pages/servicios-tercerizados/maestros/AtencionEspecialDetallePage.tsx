@@ -10,6 +10,7 @@
 import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import { AreaTexto } from '@/components/ui/CampoFormulario'
@@ -91,10 +92,10 @@ export default function AtencionEspecialDetallePage() {
     }
   }
 
-  usePaginaActual(especial ? especial.ejemplar_codigo : 'Atención especial', [
+  usePaginaActual(especial ? nombreEjemplar(especial.ejemplar_codigo, especial.ejemplar_alias) : 'Atención especial', [
     MIGAS_TERCERIZADOS.serviciosTercerizados,
     MIGAS_TERCERIZADOS.controlFitosanitario,
-    { texto: especial ? especial.ejemplar_codigo : 'Ficha' },
+    { texto: especial ? nombreEjemplar(especial.ejemplar_codigo, especial.ejemplar_alias) : 'Ficha' },
   ])
 
   let contenido
@@ -129,7 +130,7 @@ export default function AtencionEspecialDetallePage() {
           <div className={estilos.cabeceraFicha}>
             <div className={estilos.enLinea}>
               <h2 id="titulo-especial" className={estilos.tituloPrincipal}>
-                {especial.ejemplar_codigo}
+                {nombreEjemplar(especial.ejemplar_codigo, especial.ejemplar_alias)}
               </h2>
               <Estado tono={tonoEstado} texto={especial.estado} />
             </div>
@@ -205,7 +206,7 @@ export default function AtencionEspecialDetallePage() {
       {especial && (
         <DialogoConfirmacion
           abierto={confirmando}
-          titulo={`Cancelar seguimiento de «${especial.ejemplar_codigo}»`}
+          titulo={`Cancelar seguimiento de «${nombreEjemplar(especial.ejemplar_codigo, especial.ejemplar_alias)}»`}
           consecuencia="No se podrán programar más aplicaciones adicionales. Lo ya registrado se conserva."
           textoConfirmar="Cancelar seguimiento"
           variante="destructivo"

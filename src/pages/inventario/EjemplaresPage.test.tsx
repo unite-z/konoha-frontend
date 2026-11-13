@@ -6,6 +6,7 @@ import EjemplaresPage from './EjemplaresPage'
 import { listarAdjuntos, subirAdjunto } from '@/services/api/core'
 import type { Adjunto } from '@/types/core'
 import {
+  cambiarAliasEjemplar,
   cambiarSituacionEjemplar,
   corregirUbicacionEjemplar,
   guardarAlturaEjemplar,
@@ -42,6 +43,7 @@ const { listarEjemplares, alturas, ubicaciones } = vi.hoisted(() => {
         {
           id: 2,
           codigo: 'ARB-0002',
+          alias: 'Robertito',
           codigo_placa_antigua: 'PLACA-55',
           especie_nombre_comun: 'Molle',
           especie_nombre_cientifico: 'Schinus molle',
@@ -113,6 +115,7 @@ vi.mock('@/services/api/ejemplares', () => ({
       : []),
   ],
   crearEjemplar: vi.fn(),
+  cambiarAliasEjemplar: vi.fn(async () => ({})),
   crearEspecie: vi.fn(),
   cambiarEspecie: vi.fn(),
   quitarPlacaAntigua: vi.fn(),
@@ -235,6 +238,33 @@ describe('EjemplaresPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guardar vínculo' }))
     expect(vincularEjemplarConArea).toHaveBeenCalledWith(2, 42)
     expect(await screen.findByText('Área vinculada al ejemplar.')).toBeTruthy()
+  })
+
+  it('muestra el alias junto al código y permite cambiarlo desde la ficha', async () => {
+    render(
+      <MemoryRouter>
+        <EjemplaresPage />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText('ARB-0001', { selector: 'strong' })).toBeTruthy()
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Código nuevo o placa antigua' }), {
+      target: { value: 'PLACA-55' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+    expect(await screen.findByText('Robertito (ARB-0002)', { selector: 'strong' })).toBeTruthy()
+    // Sin alias, solo el código.
+    expect(screen.getByText('ARB-0001', { selector: 'strong' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir ficha de ARB-0002' }))
+    const ficha = within(screen.getByRole('group', { name: 'Ficha de ARB-0002' }))
+    expect(ficha.getByRole('heading', { name: 'Molle · Robertito (ARB-0002)' })).toBeTruthy()
+    const campo = ficha.getByRole('textbox', { name: 'Alias del ejemplar' })
+    const guardar = ficha.getByRole('button', { name: 'Guardar alias' })
+    expect(guardar.getAttribute('aria-disabled')).toBe('true')
+    fireEvent.change(campo, { target: { value: '  Roberto ' } })
+    fireEvent.click(guardar)
+    expect(cambiarAliasEjemplar).toHaveBeenCalledWith(2, 'Roberto')
+    expect(await screen.findByText('Alias actualizado.')).toBeTruthy()
   })
 
   it('muestra vacío y exige el nombre científico al crear especie', async () => {
