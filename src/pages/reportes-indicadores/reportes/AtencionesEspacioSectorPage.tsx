@@ -40,7 +40,6 @@ import {
   AtencionesFrenteAlMaximo,
   BarraModalidad,
   LeyendaModalidad,
-  TiposAtencion,
 } from './atenciones-espacio-sector/PiezasAtenciones'
 import estilosPagina from './AtencionesEspacioSector.module.css'
 import { erroresDePeriodo } from './erroresPeriodo'
@@ -63,10 +62,6 @@ interface Borrador {
   sector_id: string
   modalidad: string
   orden: string
-}
-
-function textoAtenciones(n: number): string {
-  return `${formatearNumero(n)} ${n === 1 ? 'atención' : 'atenciones'}`
 }
 
 function plural(n: number, singular: string, varios: string): string {
@@ -312,14 +307,6 @@ export default function AtencionesEspacioSectorPage() {
             {datos.por_sector.map((sector) => (
               <BloqueSector key={sector.sector_id ?? SIN_SECTOR} sector={sector} />
             ))}
-
-            {datos.sin_espacio && datos.sin_espacio.total > 0 && (
-              <AvisoEnLinea tono="info" titulo="Atenciones sin espacio asociado">
-                <p>{textoAtenciones(datos.sin_espacio.total)} sobre ejemplares sin área verde registrada</p>
-                <BarraModalidad propio={datos.sin_espacio.personal_propio} tercerizado={datos.sin_espacio.tercerizado} />
-                <TiposAtencion porTipo={datos.sin_espacio.por_tipo} />
-              </AvisoEnLinea>
-            )}
 
             {datos.por_cuartel.length > 0 && (
               <section className={estilos.seccion} aria-labelledby="titulo-cuarteles">
