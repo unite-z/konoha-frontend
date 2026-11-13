@@ -24,7 +24,14 @@ import type {
   PaginaCampo,
   ParticipantesCampo,
 } from '@/types/operacionCampo'
-import { esJefeCampo, puedeAnularActividad, puedeRegistrarCampo, puedeRegistrarParte } from '@/utils/operacionCampo'
+import {
+  admiteVerificacion,
+  esJefeCampo,
+  puedeAnularActividad,
+  puedeRegistrarCampo,
+  puedeRegistrarParte,
+  textoEstadoActividad,
+} from '@/utils/operacionCampo'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, SeleccionOperarios, TablaCampo } from './ComponentesCampo'
@@ -179,6 +186,7 @@ export default function ParticipantesPage() {
             opciones={[
               { valor: 'Registrada', texto: 'Pendientes de verificar' },
               { valor: 'Verificada', texto: 'Verificadas' },
+              { valor: 'Observada', texto: 'Verificadas con observaciones' },
               { valor: 'Anulada', texto: 'Anuladas' },
             ]}
             onCambiar={(estado_actividad) => listado.filtrar({ estado_actividad })}
@@ -241,7 +249,7 @@ export default function ParticipantesPage() {
                   tono={
                     a.estado_actividad === 'Anulada' ? 'error' : a.estado_actividad === 'Verificada' ? 'exito' : 'aviso'
                   }
-                  texto={a.estado_actividad}
+                  texto={textoEstadoActividad(a.estado_actividad)}
                 />
               ),
             },
@@ -267,6 +275,9 @@ export default function ParticipantesPage() {
                     <span className={estilos.secundario}>
                       {formatearFechaHora(a.fecha_verificacion)} · {a.verificacion_observaciones}
                     </span>
+                    {a.estado_actividad === 'Observada' && a.encargo_seguimiento_id && (
+                      <span className={estilos.secundario}>Seguimiento: encargo n.º {a.encargo_seguimiento_id}</span>
+                    )}
                   </>
                 ) : (
                   'Pendiente de verificar'
@@ -355,7 +366,10 @@ export default function ParticipantesPage() {
                   { etiqueta: 'Ubicación', valor: detalleActividad.area_verde_nombre },
                   { etiqueta: 'Cuadrilla', valor: detalleActividad.cuadrilla_nombre },
                   { etiqueta: 'Estado del parte', valor: detalleActividad.estado },
-                  { etiqueta: 'Estado de la actividad', valor: detalleActividad.estado_actividad },
+                  {
+                    etiqueta: 'Estado de la actividad',
+                    valor: textoEstadoActividad(detalleActividad.estado_actividad),
+                  },
                   {
                     etiqueta: 'Tiempo empleado',
                     valor: detalleActividad.tiempo_minutos ? `${detalleActividad.tiempo_minutos} min` : null,
@@ -435,7 +449,7 @@ export default function ParticipantesPage() {
                   { etiqueta: 'Motivo de anulación', valor: detalleActividad.anulacion_motivo, ancho: true },
                 ]}
               />
-              {puedeVerificar && detalleActividad.estado_actividad !== 'Anulada' && (
+              {puedeVerificar && admiteVerificacion(detalleActividad.estado_actividad) && (
                 <Boton
                   variante="secundario"
                   onClick={() => {

@@ -1,4 +1,4 @@
-import type { EntradaEncargo, EstadoEncargo } from '../types/operacionCampo'
+import type { EntradaEncargo, EstadoActividadCampo, EstadoEncargo } from '../types/operacionCampo'
 import { tiene, type Permisos } from '../config/permisosSesion'
 
 /** Gestionar cuadrillas, encargos y verificar actividades: `CAM.CUADRILLA.GESTIONAR` (AV-382, por permiso). */
@@ -59,6 +59,16 @@ export function validarEncargoCampo(body: EntradaEncargo): Record<string, string
   if (body.fecha_reunion && body.fecha_reunion > body.fecha_fin)
     errors.fecha_reunion = 'La reunión no puede ser posterior al periodo'
   return errors
+}
+
+/** Texto de cada estado de la actividad: «Observada» se muestra como «Verificada con observaciones» (AV-402). */
+export function textoEstadoActividad(estado: EstadoActividadCampo): string {
+  return estado === 'Observada' ? 'Verificada con observaciones' : estado
+}
+
+/** Una actividad ya verificada con observaciones tiene su encargo de seguimiento y no se vuelve a verificar. */
+export function admiteVerificacion(estado: EstadoActividadCampo): boolean {
+  return estado === 'Registrada' || estado === 'Verificada'
 }
 
 /** Reprogramar un encargo mientras siga vivo: ni completado ni cancelado (AV-405). */

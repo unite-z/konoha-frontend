@@ -52,7 +52,7 @@ export default function EncargosPage() {
   const navegar = useNavigate()
   const [seguimiento, setSeguimiento] = useState<EncargoCampo | null>(null)
   const [reprogramando, setReprogramando] = useState<EncargoCampo | null>(null)
-  const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
+  const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta', 'vencidos'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
     [aviso, setAviso] = useState('')
   return (
@@ -79,6 +79,14 @@ export default function EncargosPage() {
             opcionTodos="Todos"
             onCambiar={(periodicidad) => listado.filtrar({ periodicidad })}
           />
+          <Selector
+            id="encargo-vencimiento"
+            etiqueta="Vencimiento"
+            valor={String(listado.params.vencidos ?? '')}
+            opciones={[{ valor: 'true', texto: 'Solo vencidos' }]}
+            opcionTodos="Todos"
+            onCambiar={(vencidos) => listado.filtrar({ vencidos })}
+          />
           <CampoFormulario
             id="encargo-desde"
             etiqueta="Desde"
@@ -93,7 +101,10 @@ export default function EncargosPage() {
             value={String(listado.params.hasta ?? '')}
             onChange={(e) => listado.filtrar({ hasta: e.target.value })}
           />
-          <Boton variante="fantasma" onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}>
+          <Boton
+            variante="fantasma"
+            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '', vencidos: '' })}
+          >
             Limpiar filtros
           </Boton>
         </div>
@@ -102,6 +113,7 @@ export default function EncargosPage() {
         titulo="Encargos por capataz"
         listado={listado}
         vacio="No hay encargos con estos filtros"
+        filaPeligro={(e) => e.vencido === true}
         columnas={[
           {
             clave: 'descripcion',
@@ -145,7 +157,12 @@ export default function EncargosPage() {
           {
             clave: 'plazo_previsto',
             titulo: 'Plazo previsto',
-            render: (e) => formatearFecha(e.plazo_previsto),
+            render: (e) => (
+              <>
+                {formatearFecha(e.plazo_previsto)}
+                {e.vencido && <Estado tono="error" texto="Vencido" />}
+              </>
+            ),
           },
           {
             clave: 'estado',
