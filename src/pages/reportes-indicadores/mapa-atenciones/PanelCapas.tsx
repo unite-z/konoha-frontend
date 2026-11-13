@@ -4,6 +4,7 @@
  * con acceso a la atención y al historial del espacio (paso 7). Presentacional.
  */
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Casilla from '@/components/ui/Casilla'
 import ListaDescripcion from '@/components/ui/ListaDescripcion'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
@@ -48,7 +49,10 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
           { etiqueta: 'Responsable', valor: fila.proveedor },
           { etiqueta: 'Evidencias disponibles', valor: textoEvidencias(fila.archivos_asociados) },
           { etiqueta: 'Espacio', valor: fila.espacio },
-          { etiqueta: 'Ejemplar', valor: fila.ejemplar_codigo ?? SIN_VALOR },
+          {
+            etiqueta: 'Ejemplar',
+            valor: fila.ejemplar_codigo ? nombreEjemplar(fila.ejemplar_codigo, fila.ejemplar_alias) : SIN_VALOR,
+          },
           { etiqueta: 'Nivel de riesgo', valor: fila.es_riesgo ? 'Atención de riesgo' : 'Sin riesgo' },
           { etiqueta: 'Ubicación', valor: fila.con_ubicacion ? 'En el mapa' : 'Sin ubicación registrada' },
         ]}
@@ -72,7 +76,13 @@ function Resumen({ fila, onVerHistorial }: { fila: FilaMapa; onVerHistorial: (ar
   )
 }
 
-export default function PanelCapas({ totales, visibles, onCambiarVisible, seleccionada, onVerHistorial }: PanelCapasProps) {
+export default function PanelCapas({
+  totales,
+  visibles,
+  onCambiarVisible,
+  seleccionada,
+  onVerHistorial,
+}: PanelCapasProps) {
   return (
     <aside className={estilos.panel} aria-labelledby="titulo-capas">
       <h2 id="titulo-capas" className={estilos.titulo}>

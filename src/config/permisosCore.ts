@@ -13,14 +13,22 @@ export const PERMISOS = {
   consultarRepositorio: 'CORE.REPOSITORIO.CONSULTAR',
   consultarHistorial: 'CORE.HISTORIAL.CONSULTAR',
   consultarPlanificacion: 'PLA.PLANIFICACION.CONSULTAR',
+  /** Configurar servicios y restricciones, y planificar ciclos: jefatura de sección. */
+  gestionarPlanificacion: 'PLA.PLANIFICACION.GESTIONAR',
   /** Marcar jardines de la ruta de corte (contrato de AV-260 y AV-252). */
   registrarCorte: 'PLA.CORTE.REGISTRAR',
   /** Reportar incidencias y consultar la bandeja y la ficha (AV-281: los cuatro roles). */
   registrarIncidencia: 'PLA.INCIDENCIA.REGISTRAR',
+  /** Clasificar, derivar, reasignar y cerrar incidencias: jefatura de sección. */
+  clasificarIncidencia: 'PLA.INCIDENCIA.CLASIFICAR',
   registrarAtencion: 'SER.ATENCION.REGISTRAR',
   consultarContratos: 'SER.CONTRATO.CONSULTAR',
+  /** Consultar todas las incidencias; sin él (capataz), solo las propias y las de su cuadrilla (AV-407). */
+  consultarTodasIncidencias: 'PLA.INCIDENCIA.CONSULTAR_TODAS',
   consultarIndicadores: 'REP.INDICADOR.CONSULTAR',
   consultarCuadrillas: 'CAM.CUADRILLA.CONSULTAR',
+  /** Crear cuadrillas y encargos y mantener el catálogo de actividades: jefatura de sección. */
+  gestionarCuadrillas: 'CAM.CUADRILLA.GESTIONAR',
   consultarPartes: 'CAM.PARTE.CONSULTAR',
   /** Anular una actividad registrada: solo jefatura de sección (AV-384). */
   anularParte: 'CAM.PARTE.ANULAR',

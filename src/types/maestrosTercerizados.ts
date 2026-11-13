@@ -90,6 +90,7 @@ export interface AtencionEspecial {
   id: number
   ejemplar_id: number
   ejemplar_codigo: string
+  ejemplar_alias?: string | null
   area_verde_id: number | null
   area_verde_nombre: string | null
   plaga_id: number
@@ -192,6 +193,7 @@ export interface ObservacionPlaga {
   area_verde_nombre: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   plaga_id: number
   plaga_nombre: string
   descripcion: string

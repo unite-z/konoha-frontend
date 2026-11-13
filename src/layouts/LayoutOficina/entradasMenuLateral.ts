@@ -6,7 +6,7 @@
  * primero entre módulos y después entre las entradas del módulo activo. Así nunca hay dos marcados a la vez.
  */
 import type { NombreIconoFigma } from '@/components/ui/Icono'
-import type { EntradaMenu } from '@/config/permisosCore'
+import { PERMISOS, type EntradaMenu } from '@/config/permisosCore'
 import { RUTAS_CAMPO, BASE_CAMPO } from '@/router/rutasCampo'
 import {
   PREFIJO_CORTE,
@@ -62,7 +62,13 @@ export const MODULOS_MENU: ModuloMenu[] = [
       { texto: 'Resumen', icono: 'dashboard', ruta: RUTAS_PLANIFICACION.resumen },
       { texto: 'Calendario', icono: 'calendar', ruta: RUTAS_PLANIFICACION.calendario },
       { texto: 'Ciclos', icono: 'arrow-right-left', ruta: RUTAS_PLANIFICACION.ciclos },
-      { texto: 'Configuración', textoMovil: 'Ajustes', icono: 'sliders', ruta: RUTAS_PLANIFICACION.configuracion },
+      {
+        texto: 'Configuración',
+        textoMovil: 'Ajustes',
+        icono: 'sliders',
+        ruta: RUTAS_PLANIFICACION.configuracion,
+        permiso: PERMISOS.gestionarPlanificacion,
+      },
     ],
   },
   // El capataz en el móvil (AV-271, «Barra inferior · Capataz» de Figma 380-8204): su ruta y su calendario.
@@ -99,14 +105,19 @@ export const MODULOS_MENU: ModuloMenu[] = [
     clave: 'campo',
     texto: 'Operación de campo',
     icono: 'clipboard',
-    ruta: RUTAS_CAMPO.cuadrillas,
+    ruta: RUTAS_CAMPO.encargos,
     prefijos: [BASE_CAMPO],
     hijos: [
-      { texto: 'Cuadrillas', icono: 'list', ruta: RUTAS_CAMPO.cuadrillas },
+      { texto: 'Cuadrillas', icono: 'list', ruta: RUTAS_CAMPO.cuadrillas, permiso: PERMISOS.gestionarCuadrillas },
       { texto: 'Encargos', icono: 'clipboard', ruta: RUTAS_CAMPO.encargos },
       { texto: 'Actividades por cuadrilla', icono: 'list', ruta: RUTAS_CAMPO.actividades },
       { texto: 'Participantes por actividad', icono: 'check', ruta: RUTAS_CAMPO.participantes },
-      { texto: 'Catálogo de actividades', icono: 'sliders', ruta: RUTAS_CAMPO.catalogoActividades },
+      {
+        texto: 'Catálogo de actividades',
+        icono: 'sliders',
+        ruta: RUTAS_CAMPO.catalogoActividades,
+        permiso: PERMISOS.gestionarCuadrillas,
+      },
     ],
   },
   {

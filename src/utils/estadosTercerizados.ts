@@ -3,6 +3,7 @@
  * Los estados se muestran con el texto exacto del back-end.
  */
 import type { Tono } from '@/design-system/Badge'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import type {
   CambioEstado,
   CategoriaDocumento,
@@ -135,10 +136,13 @@ export function textoAlcance(alcance: {
   area_verde_nombre: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   ejemplar_area_verde_nombre: string | null
 }): string {
   if (alcance.area_verde_id) return alcance.area_verde_nombre ?? `Área verde n.º ${alcance.area_verde_id}`
-  const codigo = alcance.ejemplar_codigo ?? `Ejemplar n.º ${alcance.ejemplar_id}`
+  const codigo = alcance.ejemplar_codigo
+    ? nombreEjemplar(alcance.ejemplar_codigo, alcance.ejemplar_alias)
+    : `Ejemplar n.º ${alcance.ejemplar_id}`
   return alcance.ejemplar_area_verde_nombre ? `${codigo} · ${alcance.ejemplar_area_verde_nombre}` : codigo
 }
 

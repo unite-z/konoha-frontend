@@ -161,6 +161,7 @@ export interface ActividadCampo {
   anulacion_motivo: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   ejemplar_altura_m: number | null
   pendiente_vinculacion: boolean
   cuadrilla_nombre: string

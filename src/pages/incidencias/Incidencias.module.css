@@ -489,3 +489,15 @@
 .evidenciaSeguimiento .foto {
   height: 8.75rem;
 }
+
+/* Buscador de la bandeja (AV-407): el campo ocupa lo que sobra y el botón queda en su línea. */
+.barraBusqueda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.campoBusqueda {
+  flex: 1 1 18rem;
+}

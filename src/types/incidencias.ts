@@ -59,7 +59,7 @@ export interface IncidenciaDetalle extends IncidenciaResumen {
   zona: string | null
   descripcion: string
   /** Ejemplar del inventario de MOD-02, si lo hay («T-0412 · Ficus · 7 m»). */
-  ejemplar: { codigo: string; especie: string; altura_m: number | null } | null
+  ejemplar: { codigo: string; alias?: string | null; especie: string; altura_m: number | null } | null
   reportado_por: string
   impacto: ImpactoIncidencia | null
   /** Foto de la evidencia; `null` sin foto. */
