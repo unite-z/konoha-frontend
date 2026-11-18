@@ -18,6 +18,10 @@ describe('configuracionServicios', () => {
     expect(estacionDe('2026-06-21')).toBe('Invierno')
     expect(estacionDe('2026-09-23')).toBe('Primavera')
     expect(estacionDe('2026-12-21')).toBe('Verano')
+    expect(estacionDe('2026-06-20')).toBe('Otoño')
+    expect(estacionDe('2026-09-22')).toBe('Invierno')
+    expect(estacionDe('2026-12-20')).toBe('Primavera')
+    expect(estacionDe('2028-02-29')).toBe('Verano')
   })
 
   it('resume frecuencia, duración y estado', () => {

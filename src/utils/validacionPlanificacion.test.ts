@@ -39,7 +39,7 @@ describe('validarDuracion', () => {
     expect(entrada).toEqual({ duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: '06:00', hora_fin: '12:30' })
   })
 
-  it.each(['', '0', '1,5', 'x'])('rechaza la duración %j', (duracion) => {
+  it.each(['', '0', '-1', '1,5', 'x'])('rechaza la duración %j', (duracion) => {
     expect(validarDuracion({ ...vacio, duracion }).errores.duracion).toBeDefined()
   })
 

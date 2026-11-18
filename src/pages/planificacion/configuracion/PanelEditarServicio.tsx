@@ -57,9 +57,10 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   const validacion = validarServicio(borrador, inicial)
   const hayCambios = JSON.stringify(borrador) !== JSON.stringify(inicial)
   const nuevaDuracion = validacion.duracion?.duracion_maxima_dias
+  const nuevoMaximo = nuevaDuracion ? nuevaDuracion + (validacion.duracion?.dias_limpieza ?? 0) : null
   const ciclosExcedidos = nuevaDuracion
     ? (ciclos.datos ?? []).filter(
-        (c) => c.tipo_servicio_id === servicio.id && c.estado === 'EnCurso' && diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > nuevaDuracion,
+        (c) => c.tipo_servicio_id === servicio.id && c.estado === 'EnCurso' && diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > (nuevoMaximo ?? 0),
       )
     : []
   const [cargandoIniciales, setCargandoIniciales] = useState(false)
@@ -124,7 +125,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
             etiqueta={`Frecuencia ${nombre} en ${estacion} (días)`}
             etiquetaOculta
             obligatorio={clave === 'teorica'}
-            formato="entero"
+            inputMode="numeric"
             compacto
             value={borrador.frecuencias[estacion][clave]}
             onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
@@ -190,7 +191,7 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       <div className={estilos.bloque}>
         <p className={estilos.apartado}>Duración del ciclo</p>
         <div className={estilos.pareja}>
-          <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
+          <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" negativo value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
           <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" formato="entero" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
           <CampoFormulario id="duracion-inicio" etiqueta="Hora de inicio" type="time" value={borrador.duracion.inicio} onChange={(e) => cambiarDuracion('inicio', e.target.value)} error={errorDuracion('inicio')} disabled={enviando} />
           <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ServicioPeriodico } from '@/types/planificacion'
 import PanelEditarServicio from './PanelEditarServicio'
+import { actualizarDuracion, actualizarFrecuencia } from '@/services/api/planificacion'
 
 const sello = { fecha_modificacion: '2026-10-28T09:12:00-05:00', modificado_por: 'Robert G.' }
 const corte: ServicioPeriodico = {
@@ -42,9 +43,92 @@ beforeAll(() => {
     this.open = false
   }
 })
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.clearAllMocks()
+})
 
 describe('PanelEditarServicio (Figma 367-3334 y 367-3617)', () => {
+  it.each(['teórica', 'práctica', 'máxima'])('rechaza una frecuencia %s negativa sin transformarla en positiva', async (campo) => {
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
+    const control = screen.getByLabelText(new RegExp(`Frecuencia ${campo} en Primavera`))
+    await usuario.clear(control)
+    await usuario.type(control, '-1')
+    expect((control as HTMLInputElement).value).toBe('-1')
+    const guardar = screen.getByRole('button', { name: 'Guardar cambios' })
+    expect(guardar.getAttribute('aria-disabled')).toBe('true')
+    await usuario.click(guardar)
+    expect(actualizarFrecuencia).not.toHaveBeenCalled()
+    expect(actualizarDuracion).not.toHaveBeenCalled()
+  })
+
+  it.each(['1.5', '2,5', 'abc'])('rechaza el formato de frecuencia %j sin transformarlo en otro intervalo', async (valor) => {
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
+    const control = screen.getByLabelText(/Frecuencia teórica en Primavera/)
+    await usuario.clear(control)
+    await usuario.type(control, valor)
+    expect((control as HTMLInputElement).value).toBe(valor)
+    const guardar = screen.getByRole('button', { name: 'Guardar cambios' })
+    expect(guardar.getAttribute('aria-disabled')).toBe('true')
+    await usuario.click(guardar)
+    expect(actualizarFrecuencia).not.toHaveBeenCalled()
+  })
+
+  it('guarda solo la estación modificada y conserva la duración de RF-PLA-002', async () => {
+    const actualizado = { ...corte, frecuencias: corte.frecuencias.map((f) => f.estacion === 'Primavera' ? { ...f, frecuencia_practica_dias: 40 } : f) }
+    vi.mocked(actualizarFrecuencia).mockResolvedValueOnce(actualizado)
+    const guardado = vi.fn()
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={guardado} />)
+    const practica = screen.getByLabelText('Frecuencia práctica en Primavera (días)')
+    await usuario.clear(practica)
+    await usuario.type(practica, '40')
+    await usuario.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(actualizarFrecuencia).toHaveBeenCalledExactlyOnceWith(1, 'Primavera', { frecuencia_teorica_dias: 21, frecuencia_practica_dias: 40, frecuencia_maxima_dias: 45 })
+    expect(actualizarDuracion).not.toHaveBeenCalled()
+    expect(guardado).toHaveBeenCalledWith(actualizado)
+  })
+
+  it.each(['', '0', '-1'])('impide guardar la duración inválida %j sin llamar a la API', async (valor) => {
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
+    const dias = screen.getByLabelText(/^Días de servicio/)
+    await usuario.clear(dias)
+    if (valor) await usuario.type(dias, valor)
+    const guardar = screen.getByRole('button', { name: 'Guardar cambios' }) as HTMLButtonElement
+    expect(guardar.getAttribute('aria-disabled')).toBe('true')
+    await usuario.click(guardar)
+    expect(actualizarDuracion).not.toHaveBeenCalled()
+  })
+
+  it('incluye los días de limpieza al decidir si el ciclo supera el nuevo máximo (RN-002)', async () => {
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
+    const servicio = screen.getByLabelText(/^Días de servicio/)
+    await usuario.clear(servicio)
+    await usuario.type(servicio, '2')
+    const limpieza = screen.getByLabelText(/^Días de limpieza/)
+    await usuario.clear(limpieza)
+    await usuario.type(limpieza, '2')
+    expect(screen.getByRole('button', { name: 'Guardar cambios' }).getAttribute('aria-disabled')).not.toBe('true')
+    expect(screen.queryByText(/ciclo en curso ya supera/)).toBeNull()
+  })
+
+  it('guarda una duración positiva con limpieza y devuelve el servicio actualizado', async () => {
+    const actualizado = { ...corte, duracion: { ...sello, duracion_maxima_dias: 4, dias_limpieza: 1, hora_inicio: null, hora_fin: null } }
+    vi.mocked(actualizarDuracion).mockResolvedValueOnce(actualizado)
+    const guardado = vi.fn()
+    const usuario = userEvent.setup()
+    render(<PanelEditarServicio servicio={corte} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={guardado} />)
+    const dias = screen.getByLabelText(/^Días de servicio/)
+    await usuario.clear(dias)
+    await usuario.type(dias, '4')
+    await usuario.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(actualizarDuracion).toHaveBeenCalledWith(1, { duracion_maxima_dias: 4, dias_limpieza: 1 })
+    expect(guardado).toHaveBeenCalledWith(actualizado)
+  })
   it('sin configurar, parte de los valores iniciales de la sección', async () => {
     render(<PanelEditarServicio servicio={fito} onCerrar={vi.fn()} onActualizado={vi.fn()} onGuardado={vi.fn()} />)
 
