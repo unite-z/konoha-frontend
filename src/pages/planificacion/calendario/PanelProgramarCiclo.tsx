@@ -30,6 +30,7 @@ import {
 } from '@/services/api/planificacion'
 import { listarProveedores, listarTodo } from '@/services/api/tercerizados'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
+import { hoyLima } from '@/utils/instanteLima'
 import { diaFigma, fechaCorta, fechaNumerica, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
 import {
   MAXIMO_JUSTIFICACION,
@@ -78,6 +79,7 @@ export default function PanelProgramarCiclo({
   )
   const [inicio, setInicio] = useState(reprogramar?.fecha_inicio_prevista ?? '')
   const [fin, setFin] = useState(reprogramar?.fecha_fin_prevista ?? '')
+  const [hoy] = useState(hoyLima)
   const [ventanaMes, setVentanaMes] = useState('')
   const [justificacion, setJustificacion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
@@ -248,10 +250,7 @@ export default function PanelProgramarCiclo({
             obligatorio
             valor={mesVentana}
             opcionTodos="Elige el mes"
-            opciones={mesesVentana(
-              fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)),
-              esMovil,
-            )}
+            opciones={mesesVentana(fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? hoy), esMovil)}
             onCambiar={setVentanaMes}
             error={validacion.errorVentana ?? undefined}
           />
