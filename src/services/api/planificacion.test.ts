@@ -24,34 +24,67 @@ describe('contrato de configuración RF-PLA-001 y RF-PLA-002', () => {
 
   it('envía la duración y permite recuperar la configuración con una consulta nueva', async () => {
     const servicio = { id: 7, duracion: { duracion_maxima_dias: 10 } }
-    const transporte = vi.fn()
+    const transporte = vi
+      .fn()
       .mockResolvedValueOnce(Response.json(servicio))
       .mockResolvedValueOnce(Response.json([servicio]))
     vi.stubGlobal('fetch', transporte)
     expect(await actualizarDuracion(7, { duracion_maxima_dias: 10 })).toEqual(servicio)
     expect(await listarServiciosPeriodicos()).toEqual([servicio])
     expect(transporte.mock.calls[0]?.[0]).toBe('/api/v1/planificacion/servicios/7/duracion/')
-    expect(transporte.mock.calls[0]?.[1]).toMatchObject({ method: 'PUT', body: '{"duracion_maxima_dias":10}', cache: 'no-store' })
+    expect(transporte.mock.calls[0]?.[1]).toMatchObject({
+      method: 'PUT',
+      body: '{"duracion_maxima_dias":10}',
+      cache: 'no-store',
+    })
     expect(transporte.mock.calls[1]?.[1]).toMatchObject({ method: 'GET', cache: 'no-store' })
   })
 
   it.each([401, 403])('propaga HTTP %i para que el diálogo muestre el error sin guardar', async (estado) => {
-    const transporte = vi.fn().mockResolvedValue(Response.json({ codigo: 'sin-permiso', detalle: 'Sin permiso' }, { status: estado }))
+    const transporte = vi
+      .fn()
+      .mockResolvedValue(Response.json({ codigo: 'sin-permiso', detalle: 'Sin permiso' }, { status: estado }))
     vi.stubGlobal('fetch', transporte)
     await expect(actualizarDuracion(7, { duracion_maxima_dias: 10 })).rejects.toMatchObject({ estado })
     expect(transporte).toHaveBeenCalledTimes(1)
   })
 
   it('conserva el error de máxima inferior a la habitual', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ codigo: 'frecuencia-maxima-menor', detalle: 'La máxima no puede ser menor' }, { status: 400 })))
-    await expect(actualizarFrecuencia(7, 'Verano', { frecuencia_teorica_dias: 30, frecuencia_maxima_dias: 20 }))
-      .rejects.toMatchObject({ estado: 400, codigo: 'frecuencia-maxima-menor' })
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json(
+            { codigo: 'frecuencia-maxima-menor', detalle: 'La máxima no puede ser menor' },
+            { status: 400 },
+          ),
+        ),
+    )
+    await expect(
+      actualizarFrecuencia(7, 'Verano', { frecuencia_teorica_dias: 30, frecuencia_maxima_dias: 20 }),
+    ).rejects.toMatchObject({ estado: 400, codigo: 'frecuencia-maxima-menor' })
   })
 
   it('conserva la validación por campo de duración', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ codigo: 'validacion', detalle: 'Revisa los datos', errores: { duracion_maxima_dias: ['Debe ser mayor que cero'] } }, { status: 400 })))
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json(
+            {
+              codigo: 'validacion',
+              detalle: 'Revisa los datos',
+              errores: { duracion_maxima_dias: ['Debe ser mayor que cero'] },
+            },
+            { status: 400 },
+          ),
+        ),
+    )
     await expect(actualizarDuracion(7, { duracion_maxima_dias: 0 })).rejects.toMatchObject({
-      estado: 400, errores_campo: { duracion_maxima_dias: ['Debe ser mayor que cero'] },
+      estado: 400,
+      errores_campo: { duracion_maxima_dias: ['Debe ser mayor que cero'] },
     })
   })
 })

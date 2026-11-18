@@ -17,7 +17,12 @@ import DialogoFormulario from '@/components/ui/DialogoFormulario'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { aErrorApi } from '@/services/api/cliente'
-import { actualizarDuracion, actualizarFrecuencia, listarProgramaciones, obtenerValoresIniciales } from '@/services/api/planificacion'
+import {
+  actualizarDuracion,
+  actualizarFrecuencia,
+  listarProgramaciones,
+  obtenerValoresIniciales,
+} from '@/services/api/planificacion'
 import { ESTACIONES, type Estacion, type ServicioPeriodico } from '@/types/planificacion'
 import { fechaLimaDeInstante, hoyLima } from '@/utils/instanteLima'
 import type { BorradorDuracion, BorradorFrecuencia } from '@/utils/validacionPlanificacion'
@@ -26,7 +31,14 @@ import { rangoCiclos } from '../ciclos/ciclos'
 import { fechaNumerica } from '../resumen/resumenPlanificacion'
 import DialogoHistorialServicio from './DialogoHistorialServicio'
 import estilos from './Configuracion.module.css'
-import { borradorInicial, conValoresIniciales, estadoServicio, subtituloServicio, ultimaModificacion, validarServicio } from './configuracionServicios'
+import {
+  borradorInicial,
+  conValoresIniciales,
+  estadoServicio,
+  subtituloServicio,
+  ultimaModificacion,
+  validarServicio,
+} from './configuracionServicios'
 
 export interface PanelEditarServicioProps {
   servicio: ServicioPeriodico
@@ -43,7 +55,12 @@ const CAMPOS: { clave: keyof BorradorFrecuencia; titulo: string; nombre: string 
 ]
 const ID_ERRORES_TABLA = 'frecuencias-errores'
 
-export default function PanelEditarServicio({ servicio, onCerrar, onActualizado, onGuardado }: PanelEditarServicioProps) {
+export default function PanelEditarServicio({
+  servicio,
+  onCerrar,
+  onActualizado,
+  onGuardado,
+}: PanelEditarServicioProps) {
   const [inicial] = useState(() => borradorInicial(servicio))
   const [borrador, setBorrador] = useState(inicial)
   const [error, setError] = useState<{ titulo: string; detalle: string } | null>(null)
@@ -60,7 +77,10 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   const nuevoMaximo = nuevaDuracion ? nuevaDuracion + (validacion.duracion?.dias_limpieza ?? 0) : null
   const ciclosExcedidos = nuevaDuracion
     ? (ciclos.datos ?? []).filter(
-        (c) => c.tipo_servicio_id === servicio.id && c.estado === 'EnCurso' && diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > (nuevoMaximo ?? 0),
+        (c) =>
+          c.tipo_servicio_id === servicio.id &&
+          c.estado === 'EnCurso' &&
+          diasDelPeriodo(c.fecha_inicio_real ?? c.fecha_inicio_prevista, hoy) > (nuevoMaximo ?? 0),
       )
     : []
   const [cargandoIniciales, setCargandoIniciales] = useState(false)
@@ -73,7 +93,10 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       const valores = await obtenerValoresIniciales(servicio)
       setBorrador(borradorInicial(conValoresIniciales(servicio, valores)))
     } catch (causa) {
-      setError({ titulo: 'No se pudieron cargar los valores iniciales', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      setError({
+        titulo: 'No se pudieron cargar los valores iniciales',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
     } finally {
       setCargandoIniciales(false)
     }
@@ -109,33 +132,35 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
   }
 
   const cambiarFrecuencia = (estacion: Estacion, clave: keyof BorradorFrecuencia, valor: string) =>
-    setBorrador((b) => ({ ...b, frecuencias: { ...b.frecuencias, [estacion]: { ...b.frecuencias[estacion], [clave]: valor } } }))
-  const cambiarDuracion = (clave: keyof BorradorDuracion, valor: string) => setBorrador((b) => ({ ...b, duracion: { ...b.duracion, [clave]: valor } }))
+    setBorrador((b) => ({
+      ...b,
+      frecuencias: { ...b.frecuencias, [estacion]: { ...b.frecuencias[estacion], [clave]: valor } },
+    }))
+  const cambiarDuracion = (clave: keyof BorradorDuracion, valor: string) =>
+    setBorrador((b) => ({ ...b, duracion: { ...b.duracion, [clave]: valor } }))
   const errorDuracion = (clave: keyof BorradorDuracion) => validacion.erroresDuracion[clave]
 
   const columnas: ColumnaTabla<Estacion>[] = [
     { clave: 'estacion', titulo: 'Estación', render: (estacion) => estacion },
-    ...CAMPOS.map(
-      ({ clave, titulo, nombre }): ColumnaTabla<Estacion> => ({
-        clave,
-        titulo,
-        render: (estacion) => (
-          <CampoFormulario
-            id={`frecuencia-${estacion}-${clave}`}
-            etiqueta={`Frecuencia ${nombre} en ${estacion} (días)`}
-            etiquetaOculta
-            obligatorio={clave === 'teorica'}
-            inputMode="numeric"
-            compacto
-            value={borrador.frecuencias[estacion][clave]}
-            onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
-            error={validacion.erroresFrecuencia[estacion]?.[clave]}
-            idErrorExterno={ID_ERRORES_TABLA}
-            disabled={enviando}
-          />
-        ),
-      }),
-    ),
+    ...CAMPOS.map(({ clave, titulo, nombre }): ColumnaTabla<Estacion> => ({
+      clave,
+      titulo,
+      render: (estacion) => (
+        <CampoFormulario
+          id={`frecuencia-${estacion}-${clave}`}
+          etiqueta={`Frecuencia ${nombre} en ${estacion} (días)`}
+          etiquetaOculta
+          obligatorio={clave === 'teorica'}
+          inputMode="numeric"
+          compacto
+          value={borrador.frecuencias[estacion][clave]}
+          onChange={(e) => cambiarFrecuencia(estacion, clave, e.target.value)}
+          error={validacion.erroresFrecuencia[estacion]?.[clave]}
+          idErrorExterno={ID_ERRORES_TABLA}
+          disabled={enviando}
+        />
+      ),
+    })),
   ]
 
   return (
@@ -173,7 +198,13 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
 
       <div className={estilos.bloque}>
         <p className={estilos.apartado}>Frecuencia por estación (días)</p>
-        <TablaDatos titulo="Frecuencia por estación (días)" columnas={columnas} filas={[...ESTACIONES]} claveFila={(e) => e} compacta />
+        <TablaDatos
+          titulo="Frecuencia por estación (días)"
+          columnas={columnas}
+          filas={[...ESTACIONES]}
+          claveFila={(e) => e}
+          compacta
+        />
         {erroresTabla.length > 0 && (
           <ul id={ID_ERRORES_TABLA} className={estilos.erroresTabla}>
             {erroresTabla.map((mensaje) => (
@@ -191,10 +222,44 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       <div className={estilos.bloque}>
         <p className={estilos.apartado}>Duración del ciclo</p>
         <div className={estilos.pareja}>
-          <CampoFormulario id="duracion-duracion" etiqueta="Días de servicio" obligatorio formato="entero" negativo value={borrador.duracion.duracion} onChange={(e) => cambiarDuracion('duracion', e.target.value)} error={errorDuracion('duracion')} disabled={enviando} />
-          <CampoFormulario id="duracion-limpieza" etiqueta="Días de limpieza" formato="entero" value={borrador.duracion.limpieza} onChange={(e) => cambiarDuracion('limpieza', e.target.value)} error={errorDuracion('limpieza')} disabled={enviando} />
-          <CampoFormulario id="duracion-inicio" etiqueta="Hora de inicio" type="time" value={borrador.duracion.inicio} onChange={(e) => cambiarDuracion('inicio', e.target.value)} error={errorDuracion('inicio')} disabled={enviando} />
-          <CampoFormulario id="duracion-fin" etiqueta="Hora de fin" type="time" value={borrador.duracion.fin} onChange={(e) => cambiarDuracion('fin', e.target.value)} error={errorDuracion('fin')} disabled={enviando} />
+          <CampoFormulario
+            id="duracion-duracion"
+            etiqueta="Días de servicio"
+            obligatorio
+            formato="entero"
+            negativo
+            value={borrador.duracion.duracion}
+            onChange={(e) => cambiarDuracion('duracion', e.target.value)}
+            error={errorDuracion('duracion')}
+            disabled={enviando}
+          />
+          <CampoFormulario
+            id="duracion-limpieza"
+            etiqueta="Días de limpieza"
+            formato="entero"
+            value={borrador.duracion.limpieza}
+            onChange={(e) => cambiarDuracion('limpieza', e.target.value)}
+            error={errorDuracion('limpieza')}
+            disabled={enviando}
+          />
+          <CampoFormulario
+            id="duracion-inicio"
+            etiqueta="Hora de inicio"
+            type="time"
+            value={borrador.duracion.inicio}
+            onChange={(e) => cambiarDuracion('inicio', e.target.value)}
+            error={errorDuracion('inicio')}
+            disabled={enviando}
+          />
+          <CampoFormulario
+            id="duracion-fin"
+            etiqueta="Hora de fin"
+            type="time"
+            value={borrador.duracion.fin}
+            onChange={(e) => cambiarDuracion('fin', e.target.value)}
+            error={errorDuracion('fin')}
+            disabled={enviando}
+          />
         </div>
       </div>
       {ciclosExcedidos.length > 0 && (
@@ -209,7 +274,8 @@ export default function PanelEditarServicio({ servicio, onCerrar, onActualizado,
       {modificado && !sinConfigurar && (
         <div className={estilos.pie}>
           <p className={estilos.modificado}>
-            Última modificación: {fechaNumerica(fechaLimaDeInstante(modificado.fecha) ?? modificado.fecha.slice(0, 10))} · {modificado.autor}
+            Última modificación: {fechaNumerica(fechaLimaDeInstante(modificado.fecha) ?? modificado.fecha.slice(0, 10))}{' '}
+            · {modificado.autor}
           </p>
           <Boton variante="fantasma" compacto className={estilos.enlace} onClick={() => setHistorial(true)}>
             Ver historial
