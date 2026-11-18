@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
@@ -11,27 +11,78 @@ const servicio: ServicioPeriodico = {
   id: 1,
   nombre: 'Corte de césped',
   es_ruidoso: true,
-  frecuencias: [{ estacion: 'Primavera', frecuencia_teorica_dias: 21, frecuencia_practica_dias: 30, frecuencia_maxima_dias: 45, ...modificacion }],
+  frecuencias: [
+    {
+      estacion: 'Primavera',
+      frecuencia_teorica_dias: 21,
+      frecuencia_practica_dias: 30,
+      frecuencia_maxima_dias: 45,
+      ...modificacion,
+    },
+  ],
   duracion: null,
 }
-const actualizarFrecuencia = vi.fn(async (_id: number, estacion: string, entrada: { frecuencia_teorica_dias: number }) => ({
-  ...servicio,
-  frecuencias: [...servicio.frecuencias, { estacion, frecuencia_teorica_dias: entrada.frecuencia_teorica_dias, frecuencia_practica_dias: null, frecuencia_maxima_dias: null, ...modificacion }],
-}))
+const actualizarFrecuencia = vi.fn(
+  async (_id: number, estacion: string, entrada: { frecuencia_teorica_dias: number }) => ({
+    ...servicio,
+    frecuencias: [
+      ...servicio.frecuencias,
+      {
+        estacion,
+        frecuencia_teorica_dias: entrada.frecuencia_teorica_dias,
+        frecuencia_practica_dias: null,
+        frecuencia_maxima_dias: null,
+        ...modificacion,
+      },
+    ],
+  }),
+)
 const darDeBajaRestriccion = vi.fn(async (_id: number, _serie: boolean) => undefined)
 vi.mock('@/services/api/planificacion', () => ({
   listarServiciosPeriodicos: async () => [servicio],
+  listarTiposRestriccion: async () => [
+    { id: 1, nombre: 'Tipo de prueba', efecto: 'Advertencia', aplica_servicios_ruidosos: false, activo: true },
+  ],
   listarProgramaciones: async () => [],
   listarRestricciones: async () => [
-    { id: 8, tipo_restriccion_id: 1, tipo: 'Clases', efecto: 'Advertencia', aplica_servicios_ruidosos: true, fecha_inicio: '2026-11-09', fecha_fin: '2026-11-09', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null, serie: 'a' },
-    { id: 9, tipo_restriccion_id: 1, tipo: 'Clases', efecto: 'Advertencia', aplica_servicios_ruidosos: true, fecha_inicio: '2026-11-16', fecha_fin: '2026-11-16', hora_inicio: null, hora_fin: null, area_verde_id: null, descripcion: null, serie: 'a' },
+    {
+      id: 8,
+      tipo_restriccion_id: 1,
+      tipo: 'Clases',
+      efecto: 'Advertencia',
+      aplica_servicios_ruidosos: true,
+      fecha_inicio: '2026-11-09',
+      fecha_fin: '2026-11-09',
+      hora_inicio: null,
+      hora_fin: null,
+      area_verde_id: null,
+      descripcion: null,
+      serie: 'a',
+    },
+    {
+      id: 9,
+      tipo_restriccion_id: 1,
+      tipo: 'Clases',
+      efecto: 'Advertencia',
+      aplica_servicios_ruidosos: true,
+      fecha_inicio: '2026-11-16',
+      fecha_fin: '2026-11-16',
+      hora_inicio: null,
+      hora_fin: null,
+      area_verde_id: null,
+      descripcion: null,
+      serie: 'a',
+    },
   ],
   darDeBajaRestriccion: (id: number, serie: boolean) => darDeBajaRestriccion(id, serie),
-  actualizarFrecuencia: (id: number, estacion: string, entrada: { frecuencia_teorica_dias: number }) => actualizarFrecuencia(id, estacion, entrada),
+  actualizarFrecuencia: (id: number, estacion: string, entrada: { frecuencia_teorica_dias: number }) =>
+    actualizarFrecuencia(id, estacion, entrada),
   actualizarDuracion: vi.fn(),
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
-vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'] }))
+vi.mock('@/sesion/ContextoSesion', () => ({
+  usePermisos: () => ['PLA.PLANIFICACION.GESTIONAR', 'PLA.PLANIFICACION.CONSULTAR'],
+}))
 vi.mock('@/utils/instanteLima', () => ({ hoyLima: () => '2026-11-04' }))
 
 beforeAll(() => {
@@ -96,4 +147,17 @@ describe('ConfiguracionPage', () => {
     expect(darDeBajaRestriccion).toHaveBeenCalledWith(8, true)
     expect(await screen.findByText('No hay restricciones próximas')).toBeTruthy()
   })
+})
+
+it('añade Tipos de restricción conservando las pestañas de servicios y series', async () => {
+  render(
+    <MemoryRouter>
+      <ConfiguracionPage />
+    </MemoryRouter>,
+  )
+  expect(await screen.findByRole('tab', { name: /Servicios periódicos/ })).toBeTruthy()
+  expect(screen.getByRole('tab', { name: /Series de restricciones/ })).toBeTruthy()
+  await userEvent.setup().click(screen.getByRole('tab', { name: 'Tipos de restricción' }))
+  expect(await screen.findByRole('table', { name: 'Tipos de restricción' })).toBeTruthy()
+  expect(screen.getByText('Tipo de prueba')).toBeTruthy()
 })

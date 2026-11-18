@@ -25,6 +25,7 @@ import { hoyLima } from '@/utils/instanteLima'
 import PanelEditarServicio from './PanelEditarServicio'
 import PanelNuevaRestriccion from '../calendario/PanelNuevaRestriccion'
 import SeriesRestricciones from './SeriesRestricciones'
+import TiposRestriccion from './TiposRestriccion'
 import {
   SIN_CONFIGURAR,
   detalleServicio,
@@ -35,7 +36,7 @@ import {
 } from './configuracionServicios'
 import { agruparSeries, rangoSeries } from './series'
 
-type PestanaConfiguracion = 'servicios' | 'series'
+type PestanaConfiguracion = 'servicios' | 'series' | 'tipos'
 
 export default function ConfiguracionPage() {
   usePaginaActual('Configuración', [MIGAS_PLANIFICACION.planificacion, { texto: 'Configuración' }])
@@ -146,11 +147,14 @@ export default function ConfiguracionPage() {
             texto: 'Series de restricciones',
             contador: restricciones.datos ? series.length : undefined,
           },
+          { valor: 'tipos', texto: 'Tipos de restricción' },
         ]}
         valor={pestana}
         onCambiar={(valor) => setPestana(valor as PestanaConfiguracion)}
       >
-        {pestana === 'servicios' ? (
+        {pestana === 'tipos' ? (
+          <TiposRestriccion puedeEditar={puedeEditar} />
+        ) : pestana === 'servicios' ? (
           <TablaDatos
             titulo="Servicios periódicos"
             columnas={columnas}
