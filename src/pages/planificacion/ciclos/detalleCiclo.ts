@@ -39,7 +39,12 @@ export function inicioEfectivo(ciclo: Programacion): FechaIso {
 }
 
 /** Error de la fecha real de inicio o fin, o `undefined` si es válida. */
-export function validarFechaReal(cambio: 'inicio' | 'fin', fecha: string, ciclo: Programacion, hoy: FechaIso): string | undefined {
+export function validarFechaReal(
+  cambio: 'inicio' | 'fin',
+  fecha: string,
+  ciclo: Programacion,
+  hoy: FechaIso,
+): string | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return 'Indica la fecha.'
   if (fecha > hoy) return 'La fecha no puede ser posterior a hoy.'
   const inicio = inicioEfectivo(ciclo)
@@ -60,7 +65,11 @@ export function duracionCiclo(ciclo: Programacion, hoy: FechaIso): DuracionCiclo
   const inicio = inicioEfectivo(ciclo)
   if (ciclo.estado === 'EnCurso') {
     const transcurridos = hoy < inicio ? 0 : diasDelPeriodo(inicio, hoy)
-    return { valor: `${transcurridos} de ${previstos}`, contexto: 'Días transcurridos sobre los previstos', exceso: Math.max(0, transcurridos - previstos) }
+    return {
+      valor: `${transcurridos} de ${previstos}`,
+      contexto: 'Días transcurridos sobre los previstos',
+      exceso: Math.max(0, transcurridos - previstos),
+    }
   }
   if (ciclo.estado === 'Completada' && ciclo.fecha_fin_real) {
     const reales = diasDelPeriodo(inicio, ciclo.fecha_fin_real)
@@ -85,7 +94,11 @@ function franja(servicio: ServicioPeriodico | undefined): string | null {
 
 /** «Fumigaciones Demo S.A. · 30/11 · 06:00 a 18:00», bajo el título (Figma 380-7171). */
 export function subtituloCiclo(ciclo: Programacion, servicio: ServicioPeriodico | undefined): string {
-  return [ciclo.proveedor ?? 'Personal propio', fechasCiclo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista), franja(servicio)]
+  return [
+    ciclo.proveedor ?? 'Personal propio',
+    fechasCiclo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista),
+    franja(servicio),
+  ]
     .filter(Boolean)
     .join(' · ')
 }
@@ -110,24 +123,36 @@ function textoMaximo(servicio: ServicioPeriodico | undefined, previstos: number)
 
 /** «1 aviso», «2 avisos y 1 prohibición» o «Ninguna», con los días («Jue 19 · con constancia»). */
 export function indicadorRestricciones(conflictos: Restriccion[]): IndicadorCiclo {
-  if (conflictos.length === 0) return { etiqueta: 'Restricciones', valor: 'Ninguna', contexto: 'Sin conflictos', exceso: 0 }
+  if (conflictos.length === 0)
+    return { etiqueta: 'Restricciones', valor: 'Ninguna', contexto: 'Sin conflictos', exceso: 0 }
   const avisos = conflictos.filter((r) => r.efecto === 'Advertencia').length
   const prohibiciones = conflictos.filter((r) => r.efecto === 'Prohibicion').length
   const valor = listaConY(
-    [avisos && `${avisos} ${avisos === 1 ? 'aviso' : 'avisos'}`, prohibiciones && `${prohibiciones} ${prohibiciones === 1 ? 'prohibición' : 'prohibiciones'}`].filter(
-      (parte): parte is string => Boolean(parte),
-    ),
+    [
+      avisos && `${avisos} ${avisos === 1 ? 'aviso' : 'avisos'}`,
+      prohibiciones && `${prohibiciones} ${prohibiciones === 1 ? 'prohibición' : 'prohibiciones'}`,
+    ].filter((parte): parte is string => Boolean(parte)),
   )
   const diasConflicto = listaConY([...new Set(conflictos.map((r) => diaFigma(r.fecha_inicio)))])
   // Con avisos se programó con justificación («con constancia», RF-PLA-004).
-  return { etiqueta: 'Restricciones', valor, contexto: avisos > 0 && prohibiciones === 0 ? `${diasConflicto} · con constancia` : diasConflicto, exceso: 0 }
+  return {
+    etiqueta: 'Restricciones',
+    valor,
+    contexto: avisos > 0 && prohibiciones === 0 ? `${diasConflicto} · con constancia` : diasConflicto,
+    exceso: 0,
+  }
 }
 
 /**
  * Los tres indicadores del detalle (Figma 370-3811 y 380-7171): «Fechas previstas» si aún no empezó o «Inicio
  * real» si ya empezó, «Duración» con el máximo y la franja, y «Restricciones».
  */
-export function indicadoresCiclo(ciclo: Programacion, servicio: ServicioPeriodico | undefined, conflictos: Restriccion[], hoy: FechaIso): IndicadorCiclo[] {
+export function indicadoresCiclo(
+  ciclo: Programacion,
+  servicio: ServicioPeriodico | undefined,
+  conflictos: Restriccion[],
+  hoy: FechaIso,
+): IndicadorCiclo[] {
   const previstos = diasDelPeriodo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)
   const horario = franja(servicio)
   const duracion = duracionCiclo(ciclo, hoy)
@@ -135,15 +160,22 @@ export function indicadoresCiclo(ciclo: Programacion, servicio: ServicioPeriodic
     ? {
         etiqueta: 'Inicio real',
         valor: fechaNumerica(ciclo.fecha_inicio_real),
-        contexto: ciclo.fecha_fin_real ? `Fin real el ${fechaNumerica(ciclo.fecha_fin_real)}` : ciclo.estado === 'EnCurso' ? 'En curso' : undefined,
-        nota: horaCorta(servicio?.duracion?.hora_inicio) ? `Previsto a las ${horaCorta(servicio?.duracion?.hora_inicio)}` : `Previsto el ${fechaNumerica(ciclo.fecha_inicio_prevista)}`,
+        contexto: ciclo.fecha_fin_real
+          ? `Fin real el ${fechaNumerica(ciclo.fecha_fin_real)}`
+          : ciclo.estado === 'EnCurso'
+            ? 'En curso'
+            : undefined,
+        nota: horaCorta(servicio?.duracion?.hora_inicio)
+          ? `Previsto a las ${horaCorta(servicio?.duracion?.hora_inicio)}`
+          : `Previsto el ${fechaNumerica(ciclo.fecha_inicio_prevista)}`,
         exceso: 0,
       }
     : {
         etiqueta: 'Fechas previstas',
         // «16 al 19/11», como en Figma 370-3811 (sin la raya); de un mes a otro, «30/11 al 02/12».
         valor:
-          ciclo.fecha_inicio_prevista !== ciclo.fecha_fin_prevista && ciclo.fecha_inicio_prevista.slice(0, 7) === ciclo.fecha_fin_prevista.slice(0, 7)
+          ciclo.fecha_inicio_prevista !== ciclo.fecha_fin_prevista &&
+          ciclo.fecha_inicio_prevista.slice(0, 7) === ciclo.fecha_fin_prevista.slice(0, 7)
             ? `${ciclo.fecha_inicio_prevista.slice(8, 10)} al ${fechaNumerica(ciclo.fecha_fin_prevista)}`
             : fechasCiclo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista),
         contexto: servicio?.duracion?.dias_limpieza
@@ -152,7 +184,8 @@ export function indicadoresCiclo(ciclo: Programacion, servicio: ServicioPeriodic
         nota: ciclo.estado === 'Cancelada' ? 'Cancelado' : 'Sin iniciar',
         exceso: 0,
       }
-  const transcurridos = ciclo.estado === 'EnCurso' ? (hoy < inicioEfectivo(ciclo) ? 0 : diasDelPeriodo(inicioEfectivo(ciclo), hoy)) : null
+  const transcurridos =
+    ciclo.estado === 'EnCurso' ? (hoy < inicioEfectivo(ciclo) ? 0 : diasDelPeriodo(inicioEfectivo(ciclo), hoy)) : null
   return [
     primero,
     {
@@ -179,7 +212,11 @@ export function historialCiclo(ciclo: Programacion): { clave: string; texto: str
     .sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora))
     .map((evento) => {
       const local = instanteALocalLima(evento.fecha_hora) ?? evento.fecha_hora
-      return { clave: `${evento.estado}-${evento.fecha_hora}`, texto: TEXTO_EVENTO[evento.estado], detalle: `${local.slice(8, 10)}/${local.slice(5, 7)} ${local.slice(11, 16)} · ${evento.autor}` }
+      return {
+        clave: `${evento.estado}-${evento.fecha_hora}`,
+        texto: evento.motivo || TEXTO_EVENTO[evento.estado],
+        detalle: `${local.slice(8, 10)}/${local.slice(5, 7)} ${local.slice(11, 16)} · ${evento.autor}`,
+      }
     })
 }
 
@@ -188,7 +225,9 @@ export function historialCiclo(ciclo: Programacion): { clave: string; texto: str
  * generado en Servicios tercerizados», o por qué no se generó. `null` si no aplica (sin proveedor o sin ruta).
  */
 export function textoRequerimiento(ciclo: Programacion): string | null {
-  if (ciclo.requerimiento) return `requerimiento ${codigoCorto(ciclo.requerimiento.codigo)} generado en Servicios tercerizados`
-  if (ciclo.motivo_sin_requerimiento) return `sin requerimiento en Servicios tercerizados: ${ciclo.motivo_sin_requerimiento.charAt(0).toLowerCase()}${ciclo.motivo_sin_requerimiento.slice(1)}`
+  if (ciclo.requerimiento)
+    return `requerimiento ${codigoCorto(ciclo.requerimiento.codigo)} generado en Servicios tercerizados`
+  if (ciclo.motivo_sin_requerimiento)
+    return `sin requerimiento en Servicios tercerizados: ${ciclo.motivo_sin_requerimiento.charAt(0).toLowerCase()}${ciclo.motivo_sin_requerimiento.slice(1)}`
   return null
 }

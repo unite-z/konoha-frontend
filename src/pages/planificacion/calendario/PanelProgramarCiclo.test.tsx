@@ -1,18 +1,34 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
+import type { Programacion, Restriccion, ServicioPeriodico } from '@/types/planificacion'
 import PanelProgramarCiclo from './PanelProgramarCiclo'
 
 const api = vi.hoisted(() => ({
   restricciones: [] as Restriccion[],
   sinZonas: false,
-  propuesta: { estacion: 'Primavera', fecha_inicio: '2026-11-11', fecha_fin: '2026-11-14', conflictos: [], ventana_libre_inicio: '2026-11-16' as string | null },
-  crear: vi.fn(async () => ({ id: 9, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-11', fecha_fin_prevista: '2026-11-14' })),
+  propuesta: {
+    estacion: 'Primavera',
+    fecha_inicio: '2026-11-11',
+    fecha_fin: '2026-11-14',
+    conflictos: [],
+    ventana_libre_inicio: '2026-11-16' as string | null,
+  },
+  crear: vi.fn(async () => ({
+    id: 9,
+    servicio: 'Corte de césped',
+    fecha_inicio_prevista: '2026-11-11',
+    fecha_fin_prevista: '2026-11-14',
+  })),
   cancelar: vi.fn(async () => ({})),
-  reprogramar: vi.fn(async () => ({ id: 5, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-23', fecha_fin_prevista: '2026-11-25' })),
+  reprogramar: vi.fn(async () => ({
+    id: 5,
+    servicio: 'Corte de césped',
+    fecha_inicio_prevista: '2026-11-23',
+    fecha_fin_prevista: '2026-11-25',
+  })),
 }))
 vi.mock('@/services/api/planificacion', () => ({
   obtenerPropuesta: async () => api.propuesta,
@@ -26,18 +42,21 @@ vi.mock('@/services/api/corte', () => ({
     zonas: api.sinZonas
       ? []
       : [
-      { zona: 'Ciencias', jardines: 16, en_ruta: true },
-      { zona: 'Sociales', jardines: 11, en_ruta: true },
-      { zona: 'Letras', jardines: 9, en_ruta: true },
-      { zona: 'Ingeniería', jardines: 9, en_ruta: true },
-      { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
+          { zona: 'Ciencias', jardines: 16, en_ruta: true },
+          { zona: 'Sociales', jardines: 11, en_ruta: true },
+          { zona: 'Letras', jardines: 9, en_ruta: true },
+          { zona: 'Ingeniería', jardines: 9, en_ruta: true },
+          { zona: 'Estacionamientos', jardines: 6, en_ruta: false },
         ],
     fuera_de_frecuencia: { dias_desde_ultimo: 47, maximo_dias: 45 },
   }),
 }))
 vi.mock('@/services/api/tercerizados', () => ({
   listarProveedores: async () => ({ count: 1, next: null, previous: null, results: [] }),
-  listarTodo: async () => ({ resultados: [{ id: 4, razon_social: 'Servicios Verdes Demo S.A.C.', activo: true }], completo: true }),
+  listarTodo: async () => ({
+    resultados: [{ id: 4, razon_social: 'Servicios Verdes Demo S.A.C.', activo: true }],
+    completo: true,
+  }),
 }))
 
 beforeAll(() => {
@@ -60,7 +79,28 @@ const corte: ServicioPeriodico = {
   nombre: 'Corte de césped',
   es_ruidoso: true,
   frecuencias: [],
-  duracion: { duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: null, hora_fin: null, fecha_modificacion: '2026-10-01T10:00:00-05:00', modificado_por: 'jefe' },
+  duracion: {
+    duracion_maxima_dias: 3,
+    dias_limpieza: 1,
+    hora_inicio: null,
+    hora_fin: null,
+    fecha_modificacion: '2026-10-01T10:00:00-05:00',
+    modificado_por: 'jefe',
+  },
+}
+
+const cicloParaReprogramar: Programacion = {
+  id: 5,
+  tipo_servicio_id: 1,
+  servicio: 'Corte de césped',
+  proveedor_id: 4,
+  proveedor: 'Servicios Verdes Demo S.A.C.',
+  estacion: 'Primavera',
+  fecha_inicio_prevista: '2026-11-16',
+  fecha_fin_prevista: '2026-11-18',
+  estado: 'Programada',
+  fecha_inicio_real: null,
+  fecha_fin_real: null,
 }
 
 function restriccion(parcial: Partial<Restriccion>): Restriccion {
@@ -82,6 +122,68 @@ function restriccion(parcial: Partial<Restriccion>): Restriccion {
 }
 
 describe('PanelProgramarCiclo', () => {
+  it('un reintento tras fallar la cancelación reutiliza el ciclo creado y no genera otro', async () => {
+    api.restricciones = []
+    api.cancelar.mockRejectedValueOnce(new Error('No se pudo cancelar el anterior'))
+    const onProgramada = vi.fn()
+    const usuario = userEvent.setup()
+    render(
+      <PanelProgramarCiclo
+        servicios={[corte]}
+        servicioInicial={null}
+        reprogramar={cicloParaReprogramar}
+        onCerrar={vi.fn()}
+        onProgramada={onProgramada}
+      />,
+    )
+    await usuario.selectOptions(screen.getByLabelText(/^Proveedor/), 'propio')
+    await usuario.click(screen.getByRole('button', { name: 'Reprogramar' }))
+    expect(
+      await screen.findByText('El ciclo nuevo quedó programado, pero no se pudo cancelar el anterior'),
+    ).toBeTruthy()
+    expect(onProgramada).not.toHaveBeenCalled()
+    await usuario.click(screen.getByRole('button', { name: /^(Reprogramar|Reintentar cancelación)$/ }))
+    await waitFor(() => expect(onProgramada).toHaveBeenCalled())
+    expect(api.crear).toHaveBeenCalledTimes(1)
+    expect(api.cancelar).toHaveBeenCalledTimes(2)
+  })
+
+  it('dos envíos en el mismo instante solo ejecutan un PATCH', async () => {
+    api.restricciones = []
+    let resolver: (valor: Awaited<ReturnType<typeof api.reprogramar>>) => void = () => {}
+    api.reprogramar.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolver = resolve
+        }),
+    )
+    render(
+      <PanelProgramarCiclo
+        servicios={[corte]}
+        servicioInicial={null}
+        reprogramar={cicloParaReprogramar}
+        onCerrar={vi.fn()}
+        onProgramada={vi.fn()}
+      />,
+    )
+    await screen.findByLabelText(/^Inicio/)
+    const formulario = screen.getByRole('dialog').querySelector('form')
+    if (!formulario) throw new Error('Falta el formulario de reprogramación')
+    act(() => {
+      fireEvent.submit(formulario)
+      fireEvent.submit(formulario)
+    })
+    expect(api.reprogramar).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      resolver({
+        id: 5,
+        servicio: 'Corte de césped',
+        fecha_inicio_prevista: '2026-11-16',
+        fecha_fin_prevista: '2026-11-18',
+      })
+    })
+  })
+
   it('entra con la propuesta y, con un aviso, exige justificación antes de programar con constancia', async () => {
     api.restricciones = [restriccion({})]
     const usuario = userEvent.setup()
@@ -144,7 +246,15 @@ describe('PanelProgramarCiclo', () => {
   })
 
   it('con una prohibición no deja programar y «Usar» aplica la ventana libre', async () => {
-    api.restricciones = [restriccion({ id: 2, tipo: 'Examen de admisión', efecto: 'Prohibicion', fecha_inicio: '2026-11-13', fecha_fin: '2026-11-13' })]
+    api.restricciones = [
+      restriccion({
+        id: 2,
+        tipo: 'Examen de admisión',
+        efecto: 'Prohibicion',
+        fecha_inicio: '2026-11-13',
+        fecha_fin: '2026-11-13',
+      }),
+    ]
     const usuario = userEvent.setup()
     render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={1} onCerrar={vi.fn()} onProgramada={vi.fn()} />)
 
@@ -173,12 +283,25 @@ describe('PanelProgramarCiclo', () => {
       fecha_inicio_real: null,
       fecha_fin_real: null,
     }
-    render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={null} reprogramar={ciclo} onCerrar={vi.fn()} onProgramada={onProgramada} />)
+    render(
+      <PanelProgramarCiclo
+        servicios={[corte]}
+        servicioInicial={null}
+        reprogramar={ciclo}
+        onCerrar={vi.fn()}
+        onProgramada={onProgramada}
+      />,
+    )
     expect(screen.getByRole('dialog', { name: 'Reprogramar ciclo' })).toBeTruthy()
     await waitFor(() => expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).value).toBe('2026-11-16'))
 
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Reprogramar' }))
-    await waitFor(() => expect(api.reprogramar).toHaveBeenCalledWith(5, expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-18' })))
+    await waitFor(() =>
+      expect(api.reprogramar).toHaveBeenCalledWith(
+        5,
+        expect.objectContaining({ fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-18' }),
+      ),
+    )
     expect(api.crear).not.toHaveBeenCalled()
     expect(api.cancelar).not.toHaveBeenCalled()
     expect(onProgramada).toHaveBeenCalled()

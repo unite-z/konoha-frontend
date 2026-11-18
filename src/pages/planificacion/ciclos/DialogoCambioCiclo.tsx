@@ -1,9 +1,9 @@
 /**
  * Diálogos del detalle de ciclo (AV-269, Figma 370-4060, 370-4167 y 380-7409): «Iniciar CC-2026-11» y «Finalizar
- * …» piden la fecha real (hoy por defecto, nunca futura); «Cancelar …» pide el motivo, obligatorio (contrato de
- * AV-253: se envía ya y el backend lo ignora hasta entonces). Botones «Volver» y la acción.
+ * …» piden la fecha real (hoy por defecto, nunca futura); «Cancelar …» pide el motivo obligatorio que el backend
+ * conserva en el ciclo y en su historial. Botones «Volver» y la acción.
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import DialogoConfirmacion from '@/components/ui/DialogoConfirmacion'
@@ -34,16 +34,28 @@ export default function DialogoCambioCiclo({ ciclo, cambio, hoy, onCerrar, onCam
   const nombre = ciclo.codigo ?? ciclo.servicio
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
+  const enCurso = useRef(false)
   const [errorEnvio, setErrorEnvio] = useState<{ titulo: string; detalle: string } | null>(null)
 
   async function enviar(fechaReal?: FechaIso) {
+    if (enCurso.current) return
+    enCurso.current = true
     setEnviando(true)
     setErrorEnvio(null)
     try {
-      const actualizado = await cambiarEstadoCiclo(ciclo.id, cambio, fechaReal, cambio === 'cancelacion' ? motivo.trim() : undefined)
+      const actualizado = await cambiarEstadoCiclo(
+        ciclo.id,
+        cambio,
+        fechaReal,
+        cambio === 'cancelacion' ? motivo.trim() : undefined,
+      )
       onCambiado(actualizado, cambio === 'cancelacion' ? 'Ciclo cancelado.' : TEXTOS[cambio].exito)
     } catch (causa) {
-      setErrorEnvio({ titulo: 'No se pudo registrar el cambio', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
+      enCurso.current = false
+      setErrorEnvio({
+        titulo: 'No se pudo registrar el cambio',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
       setEnviando(false)
     }
   }

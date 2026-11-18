@@ -13,6 +13,8 @@ import type {
   RestriccionEntrada,
   ServicioPeriodico,
   TipoRestriccion,
+  EntradaTipoRestriccion,
+  ResultadoTipoRestriccion,
   ValoresIniciales,
   CambioServicio,
 } from '@/types/planificacion'
@@ -44,8 +46,21 @@ export function actualizarDuracion(servicioId: number, cuerpo: DuracionEntrada) 
   return solicitarPlanificacion<ServicioPeriodico>(`servicios/${servicioId}/duracion/`, { metodo: 'PUT', cuerpo })
 }
 
-export function listarTiposRestriccion(signal?: AbortSignal) {
-  return solicitarPlanificacion<TipoRestriccion[]>('tipos-restriccion/', { signal })
+export function listarTiposRestriccion(signal?: AbortSignal, incluirInactivos = false) {
+  return solicitarPlanificacion<TipoRestriccion[]>('tipos-restriccion/', {
+    signal,
+    ...(incluirInactivos ? { parametros: { incluir_inactivos: true } } : {}),
+  })
+}
+
+export function crearTipoRestriccion(entrada: EntradaTipoRestriccion) {
+  return solicitarPlanificacion<ResultadoTipoRestriccion>('tipos-restriccion/', { metodo: 'POST', cuerpo: entrada })
+}
+export function modificarTipoRestriccion(id: number, entrada: Partial<EntradaTipoRestriccion> & { activo?: boolean }) {
+  return solicitarPlanificacion<ResultadoTipoRestriccion>(`tipos-restriccion/${id}/`, {
+    metodo: 'PATCH',
+    cuerpo: entrada,
+  })
 }
 
 /** `GET restricciones/?desde&hasta` (periodo máximo de 400 días). */

@@ -50,6 +50,7 @@ export interface FilaCumplimiento {
   dias_limpieza_maximo: number | null
   maximo_total: number | null
   estado_duracion: EstadoDuracion
+  estado_limpieza?: 'Cumplida' | 'Pendiente' | 'No requerida' | 'Límite no configurado'
   faltantes: string[]
 }
 
