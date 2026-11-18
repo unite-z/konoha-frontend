@@ -69,18 +69,16 @@ describe('contrato de configuración RF-PLA-001 y RF-PLA-002', () => {
   it('conserva la validación por campo de duración', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          Response.json(
-            {
-              codigo: 'validacion',
-              detalle: 'Revisa los datos',
-              errores: { duracion_maxima_dias: ['Debe ser mayor que cero'] },
-            },
-            { status: 400 },
-          ),
+      vi.fn().mockResolvedValue(
+        Response.json(
+          {
+            codigo: 'validacion',
+            detalle: 'Revisa los datos',
+            errores: { duracion_maxima_dias: ['Debe ser mayor que cero'] },
+          },
+          { status: 400 },
         ),
+      ),
     )
     await expect(actualizarDuracion(7, { duracion_maxima_dias: 0 })).rejects.toMatchObject({
       estado: 400,
