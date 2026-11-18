@@ -165,7 +165,11 @@ export default function EncargosPage() {
             // «Vencido» es una presentación derivada: el estado persistido conserva sus
             // transiciones y acciones de negocio (AV-403).
             render: (e) =>
-              e.vencido ? <Estado tono="error" texto="Vencido" /> : <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />,
+              e.vencido ? (
+                <Estado tono="error" texto="Vencido" />
+              ) : (
+                <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />
+              ),
           },
           {
             clave: 'acciones',

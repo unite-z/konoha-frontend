@@ -54,18 +54,10 @@ it('aceptar sin observaciones oculta el campo y no envía texto residual', async
   const guardado = vi.fn()
   const anular = vi.fn()
   render(
-    <VerificacionActividad
-      actividad={base}
-      puedeAnular
-      onAnular={anular}
-      onCerrar={vi.fn()}
-      onGuardado={guardado}
-    />,
+    <VerificacionActividad actividad={base} puedeAnular onAnular={anular} onCerrar={vi.fn()} onGuardado={guardado} />,
   )
 
-  expect((screen.getByLabelText('Resultado de la verificación') as HTMLSelectElement).value).toBe(
-    'sin-observaciones',
-  )
+  expect((screen.getByLabelText('Resultado de la verificación') as HTMLSelectElement).value).toBe('sin-observaciones')
   expect(screen.queryByLabelText('Observaciones de la verificación')).toBeNull()
   await userEvent.setup().click(screen.getByRole('button', { name: 'Anular actividad' }))
   expect(anular).toHaveBeenCalledOnce()
