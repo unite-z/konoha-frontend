@@ -66,9 +66,9 @@ export function textoEstadoActividad(estado: EstadoActividadCampo): string {
   return estado === 'Observada' ? 'Verificada con observaciones' : estado
 }
 
-/** Una actividad ya verificada con observaciones tiene su encargo de seguimiento y no se vuelve a verificar. */
+/** Toda actividad salvo la anulada admite verificar o actualizar su resultado (AV-402, AV-384). */
 export function admiteVerificacion(estado: EstadoActividadCampo): boolean {
-  return estado === 'Registrada' || estado === 'Verificada'
+  return estado !== 'Anulada'
 }
 
 /** Reprogramar un encargo mientras siga vivo: ni completado ni cancelado (AV-405). */
@@ -95,6 +95,9 @@ export function validarReprogramacion(actual: EntradaEncargo, nueva: EntradaRepr
   const resultado: Record<string, string> = {}
   for (const clave of ['fecha_inicio', 'fecha_fin', 'plazo_previsto'])
     if (errores[clave]) resultado[clave] = errores[clave]
+  if (resultado.plazo_previsto === 'El plazo debe estar dentro del periodo') {
+    resultado.plazo_previsto = 'El plazo previsto debe estar dentro del nuevo periodo programado'
+  }
   if (
     nueva.fecha_inicio === actual.fecha_inicio &&
     nueva.fecha_fin === actual.fecha_fin &&

@@ -79,10 +79,10 @@ describe('estado de la actividad (AV-402)', () => {
     expect(textoEstadoActividad('Registrada')).toBe('Registrada')
   })
 
-  it('solo se verifica lo registrado o verificado: lo observado ya tiene su seguimiento y lo anulado no', () => {
+  it('permite actualizar verificadas y observadas, pero nunca una anulada', () => {
     expect(admiteVerificacion('Registrada')).toBe(true)
     expect(admiteVerificacion('Verificada')).toBe(true)
-    expect(admiteVerificacion('Observada')).toBe(false)
+    expect(admiteVerificacion('Observada')).toBe(true)
     expect(admiteVerificacion('Anulada')).toBe(false)
   })
 })
@@ -139,7 +139,7 @@ describe('reprogramar encargos (AV-405)', () => {
     }
     expect(validarReprogramacion(periodico, nueva)).toEqual({
       fecha_fin: 'El periodo debe tener entre 1 y 7 días',
-      plazo_previsto: 'El plazo debe estar dentro del periodo',
+      plazo_previsto: 'El plazo previsto debe estar dentro del nuevo periodo programado',
     })
   })
 

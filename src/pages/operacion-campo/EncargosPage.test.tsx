@@ -166,7 +166,9 @@ it('marca los encargos vencidos con un texto y permite filtrar solo los vencidos
   const tabla = await screen.findByRole('table')
   const filas = within(tabla).getAllByRole('row')
   expect(within(filas[1]).getByText('Vencido')).toBeTruthy()
+  expect(within(filas[1]).queryByText('Por completar')).toBeNull()
   expect(within(filas[2]).queryByText('Vencido')).toBeNull()
+  expect(within(filas[2]).getByText('Por completar')).toBeTruthy()
 
   await userEvent.setup().selectOptions(screen.getByLabelText('Vencimiento'), 'true')
   await waitFor(() =>
@@ -198,6 +200,7 @@ it('la jefatura reprograma un encargo vivo con justificación y el capataz no ve
 
   await usuario.click(screen.getByRole('button', { name: 'Reprogramar el encargo 5' }))
   const dialogo = within(screen.getByRole('dialog'))
+  expect(dialogo.getByText(/Fecha límite para completar el encargo/)).toBeTruthy()
   // Sin cambios ni justificación no se envía.
   await usuario.click(dialogo.getByRole('button', { name: 'Reprogramar' }))
   expect(await dialogo.findByText('Explica por qué se reprograma')).toBeTruthy()
