@@ -157,17 +157,15 @@ export default function EncargosPage() {
           {
             clave: 'plazo_previsto',
             titulo: 'Plazo previsto',
-            render: (e) => (
-              <>
-                {formatearFecha(e.plazo_previsto)}
-                {e.vencido && <Estado tono="error" texto="Vencido" />}
-              </>
-            ),
+            render: (e) => formatearFecha(e.plazo_previsto),
           },
           {
             clave: 'estado',
             titulo: 'Estado',
-            render: (e) => <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />,
+            // «Vencido» es una presentación derivada: el estado persistido conserva sus
+            // transiciones y acciones de negocio (AV-403).
+            render: (e) =>
+              e.vencido ? <Estado tono="error" texto="Vencido" /> : <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />,
           },
           {
             clave: 'acciones',
@@ -535,6 +533,7 @@ function DialogoReprogramar({
             value={plazo}
             onChange={(e) => setPlazo(e.target.value)}
             error={errores.plazo_previsto}
+            ayuda="Fecha límite para completar el encargo. Debe estar dentro del nuevo periodo programado."
           />
         </div>
         <AreaTexto

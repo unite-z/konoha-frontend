@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import HistorialCambios from '@/components/core/HistorialCambios'
-import Boton from '@/components/ui/Boton'
-import Casilla from '@/components/ui/Casilla'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
+import Boton from '@/design-system/Boton'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import Selector from '@/design-system/Selector'
 import { campoApi } from '@/services/api/operacionCampo'
 import type { ActividadCampo } from '@/types/operacionCampo'
 import { formatearFechaHora } from '@/utils/formato'
@@ -19,6 +20,8 @@ interface Props {
   onAnular?: () => void
 }
 
+type ResultadoVerificacion = 'sin-observaciones' | 'con-observaciones'
+
 export default function VerificacionActividad({
   actividad,
   onCerrar,
@@ -26,23 +29,40 @@ export default function VerificacionActividad({
   puedeAnular = false,
   onAnular,
 }: Props) {
-  const [observaciones, setObservaciones] = useState(actividad.verificacion_observaciones ?? '')
+  const resultadoInicial: ResultadoVerificacion =
+    actividad.estado_actividad === 'Observada' ? 'con-observaciones' : 'sin-observaciones'
+  const tieneSeguimiento = Boolean(actividad.encargo_seguimiento_id)
+  const [resultado, setResultado] = useState<ResultadoVerificacion>(resultadoInicial)
+  const [observaciones, setObservaciones] = useState(
+    resultadoInicial === 'con-observaciones' ? (actividad.verificacion_observaciones ?? '') : '',
+  )
   const [error, setError] = useState('')
-  // «Aceptar con observaciones» obliga a crear un encargo de seguimiento vinculado a esta actividad (AV-402).
-  const [conSeguimiento, setConSeguimiento] = useState(false)
   const [descripcionSeguimiento, setDescripcionSeguimiento] = useState('')
   const [plazoSeguimiento, setPlazoSeguimiento] = useState('')
   const [erroresSeguimiento, setErroresSeguimiento] = useState<{ descripcion?: string; plazo?: string }>({})
   const mutacion = useMutacionCampo()
-  const hayCambios = conSeguimiento || observaciones !== (actividad.verificacion_observaciones ?? '')
+  const conObservaciones = resultado === 'con-observaciones'
+  const hayCambios =
+    !actividad.fecha_verificacion ||
+    resultado !== resultadoInicial ||
+    (conObservaciones && observaciones !== (actividad.verificacion_observaciones ?? '')) ||
+    (conObservaciones && !tieneSeguimiento && Boolean(descripcionSeguimiento || plazoSeguimiento))
+
+  function cambiarResultado(valor: string) {
+    const siguiente = valor as ResultadoVerificacion
+    setResultado(siguiente)
+    setError('')
+    setErroresSeguimiento({})
+    if (siguiente === 'sin-observaciones') setObservaciones('')
+  }
 
   function guardar() {
-    if (!observaciones.trim()) {
+    if (conObservaciones && !observaciones.trim()) {
       setError('Escribe las observaciones de la verificación')
       document.getElementById('verificacion-observaciones')?.focus()
       return
     }
-    if (conSeguimiento) {
+    if (conObservaciones && !tieneSeguimiento) {
       const errores: { descripcion?: string; plazo?: string } = {}
       if (!descripcionSeguimiento.trim()) errores.descripcion = 'Describe qué hay que hacer en el seguimiento'
       if (!plazoSeguimiento) errores.plazo = 'Indica el plazo del seguimiento'
@@ -58,8 +78,9 @@ export default function VerificacionActividad({
         const actualizada = await campoApi<ActividadCampo>(`actividades/${actividad.id}/verificacion/`, {
           metodo: 'PUT',
           cuerpo: {
-            observaciones: observaciones.trim(),
-            ...(conSeguimiento
+            con_observaciones: conObservaciones,
+            observaciones: conObservaciones ? observaciones.trim() : null,
+            ...(conObservaciones && !tieneSeguimiento
               ? {
                   encargo_seguimiento: {
                     descripcion: descripcionSeguimiento.trim(),
@@ -88,7 +109,7 @@ export default function VerificacionActividad({
       hayCambios={hayCambios}
       envioDeshabilitado={!hayCambios}
       ancho="extraAmplio"
-      conObligatorios={conSeguimiento}
+      conObligatorios={conObservaciones}
     >
       <div className={estilos.detalleVerificacion}>
         <p>
@@ -102,26 +123,43 @@ export default function VerificacionActividad({
           </p>
         )}
       </div>
-      <AreaTexto
-        id="verificacion-observaciones"
-        etiqueta="Observaciones de la verificación"
-        obligatorio
-        maxLength={1000}
-        value={observaciones}
-        onChange={(evento) => {
-          setObservaciones(evento.target.value)
-          setError('')
-        }}
-        error={error}
-        ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
+      <Selector
+        id="verificacion-resultado"
+        etiqueta="Resultado de la verificación"
+        valor={resultado}
+        opciones={[
+          { valor: 'sin-observaciones', texto: 'Aceptar sin observaciones' },
+          { valor: 'con-observaciones', texto: 'Aceptar con observaciones' },
+        ]}
+        onCambiar={cambiarResultado}
       />
-      <Casilla
-        etiqueta="Aceptar con observaciones"
-        ayuda="Obliga a crear un encargo de seguimiento para la misma cuadrilla, vinculado a esta actividad."
-        marcada={conSeguimiento}
-        onCambiar={setConSeguimiento}
-      />
-      {conSeguimiento && (
+      {conObservaciones && (
+        <AreaTexto
+          id="verificacion-observaciones"
+          etiqueta="Observaciones de la verificación"
+          obligatorio
+          maxLength={1000}
+          value={observaciones}
+          onChange={(evento) => {
+            setObservaciones(evento.target.value)
+            setError('')
+          }}
+          error={error}
+          ayuda="Describe lo comprobado en campo y cualquier corrección necesaria."
+        />
+      )}
+      {conObservaciones && tieneSeguimiento && (
+        <AvisoEnLinea tono="info">
+          Se reutilizará el encargo de seguimiento n.º {actividad.encargo_seguimiento_id}. No se creará otro.
+        </AvisoEnLinea>
+      )}
+      {!conObservaciones && tieneSeguimiento && (
+        <AvisoEnLinea tono="advertencia">
+          El encargo de seguimiento n.º {actividad.encargo_seguimiento_id} se conservará con su historial. Si ya no
+          procede, cancélalo expresamente desde Encargos.
+        </AvisoEnLinea>
+      )}
+      {conObservaciones && !tieneSeguimiento && (
         <>
           <AreaTexto
             id="seguimiento-descripcion"

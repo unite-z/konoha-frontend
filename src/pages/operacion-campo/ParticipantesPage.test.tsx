@@ -174,6 +174,41 @@ it('ubica la acción autorizada junto a los datos de verificación', async () =>
   expect(within(verificacion as HTMLElement).getByRole('button', { name: 'Verificar actividad' })).toBeTruthy()
 })
 
+it('permite actualizar una actividad observada desde la tabla y el detalle', async () => {
+  sesionPrueba.rol = 'Jefe de sección'
+  sesionPrueba.permisos = JEFE
+  const observada = {
+    ...actividad,
+    estado_actividad: 'Observada',
+    fecha_verificacion: '2026-11-10T12:00:00-05:00',
+    verificado_por_usuario_id: 4,
+    verificado_por_nombre: 'Jefa de sección',
+    verificacion_observaciones: 'Corregir el acabado',
+    encargo_seguimiento_id: 12,
+  }
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (ruta: string) => {
+      const url = new URL(ruta, 'http://localhost')
+      if (url.pathname.endsWith('/cuadrillas/')) return Response.json(pagina([{ id: 2, nombre: 'Cuadrilla Norte' }]))
+      if (url.pathname.endsWith('/actividades/')) return Response.json(pagina([observada], 0))
+      return Response.json(pagina([]))
+    }),
+  )
+
+  render(
+    <MemoryRouter>
+      <ParticipantesPage />
+    </MemoryRouter>,
+  )
+  const usuario = userEvent.setup()
+  const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
+  expect(within(tabla).getByRole('button', { name: 'Actualizar verificación de actividad 8' })).toBeTruthy()
+
+  await usuario.click(within(tabla).getByRole('button', { name: 'Ver detalle de Riego manual' }))
+  expect(screen.getByRole('button', { name: 'Actualizar verificación' })).toBeTruthy()
+})
+
 it('avisa de las actividades pendientes, filtra por estado y amplía el diálogo de fotografías', async () => {
   sesionPrueba.rol = 'Jefe de sección'
   sesionPrueba.permisos = JEFE
@@ -229,7 +264,8 @@ it('avisa de las actividades pendientes, filtra por estado y amplía el diálogo
 })
 
 it('mantiene la actividad anulada consultable y bloquea sus acciones de modificación', async () => {
-  sesionPrueba.permisos = CAPATAZ
+  sesionPrueba.rol = 'Jefe de sección'
+  sesionPrueba.permisos = JEFE
   const anulada = {
     ...actividad,
     estado_actividad: 'Anulada',
@@ -258,6 +294,7 @@ it('mantiene la actividad anulada consultable y bloquea sus acciones de modifica
   const usuario = userEvent.setup()
   const tabla = await screen.findByRole('table', { name: 'Actividades y operarios participantes' })
   expect(within(tabla).getByText('Anulada')).toBeTruthy()
+  expect(within(tabla).queryByRole('button', { name: /verificación de actividad 8/i })).toBeNull()
   await usuario.click(within(tabla).getByRole('button', { name: 'Ver detalle de Riego manual' }))
   expect(screen.getByText('Registro duplicado')).toBeTruthy()
   expect(screen.getByRole('button', { name: 'Ver participantes' })).toBeTruthy()

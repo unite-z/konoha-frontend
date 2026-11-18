@@ -18,9 +18,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-it('separa la ejecución y registra la verificación con el contrato esperado', async () => {
-  const cuerpos: Record<string, unknown>[] = []
-  const actividad = {
+function actividad(parcial: Partial<ActividadCampo> = {}): ActividadCampo {
+  return {
     id: 7,
     tipo_actividad_nombre: 'Poda menor',
     area_verde_nombre: 'Jardín central',
@@ -29,108 +28,118 @@ it('separa la ejecución y registra la verificación con el contrato esperado', 
     verificado_por_usuario_id: null,
     verificado_por_nombre: null,
     fecha_verificacion: null,
-  } as ActividadCampo
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (ruta: string, opciones: RequestInit = {}) => {
-      if (opciones.method === 'PUT') {
-        cuerpos.push(JSON.parse(String(opciones.body)) as Record<string, unknown>)
-        return Response.json({ ...actividad, ...cuerpos[0] })
-      }
-      if (String(ruta).includes('/historial/'))
-        return Response.json([
-          {
-            accion: 'Alta',
-            usuario: 'Capataz',
-            fecha_hora: '2026-11-10T08:00:00-05:00',
-            valores_anteriores: {},
-            valores_nuevos: { tipo_actividad_nombre: 'Poda menor' },
-            motivo: null,
-          },
-        ])
-      return Response.json({})
-    }),
-  )
-  const guardadas: ActividadCampo[] = []
-  const anular = vi.fn()
-  render(
-    <VerificacionActividad
-      actividad={actividad}
-      puedeAnular
-      onAnular={anular}
-      onCerrar={() => {}}
-      onGuardado={(valor) => guardadas.push(valor)}
-    />,
-  )
-  expect(screen.getByRole('dialog', { name: 'Verificar actividad en campo' }).className).toMatch(/extraAmplio/)
-  expect(screen.queryByText('* Campo obligatorio')).toBeNull()
-  expect(await screen.findByRole('region', { name: 'Historial de cambios' })).toBeTruthy()
-  expect(screen.getByText(/El capataz retiró ramas secas/)).toBeTruthy()
-  const usuario = userEvent.setup()
-  await usuario.click(screen.getByRole('button', { name: 'Anular actividad' }))
-  expect(anular).toHaveBeenCalledOnce()
-  await usuario.type(screen.getByLabelText(/Observaciones de la verificación/), '  Conforme en campo  ')
-  await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
-  await waitFor(() => expect(guardadas).toHaveLength(1))
-  expect(cuerpos).toEqual([{ observaciones: 'Conforme en campo' }])
-})
-
-function actividadSinVerificar() {
-  return {
-    id: 7,
-    tipo_actividad_nombre: 'Poda menor',
-    area_verde_nombre: 'Jardín central',
-    observaciones: null,
-    verificacion_observaciones: null,
-    verificado_por_usuario_id: null,
-    verificado_por_nombre: null,
-    fecha_verificacion: null,
+    estado_actividad: 'Registrada',
+    encargo_seguimiento_id: null,
+    ...parcial,
   } as ActividadCampo
 }
 
-it('aceptar con observaciones exige el encargo de seguimiento y lo envía con la verificación (AV-402)', async () => {
-  const cuerpos: Record<string, unknown>[] = []
+function simularApi(cuerpos: Record<string, unknown>[], respuesta: ActividadCampo) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (_ruta: string, opciones: RequestInit = {}) => {
       if (opciones.method === 'PUT') {
         cuerpos.push(JSON.parse(String(opciones.body)) as Record<string, unknown>)
-        return Response.json({ ...actividadSinVerificar(), estado_actividad: 'Observada' })
+        return Response.json(respuesta)
       }
       return Response.json([])
     }),
   )
-  const guardadas: ActividadCampo[] = []
+}
+
+it('aceptar sin observaciones oculta el campo y no envía texto residual', async () => {
+  const cuerpos: Record<string, unknown>[] = []
+  const base = actividad()
+  simularApi(cuerpos, { ...base, estado_actividad: 'Verificada' })
+  const guardado = vi.fn()
+  const anular = vi.fn()
   render(
     <VerificacionActividad
-      actividad={actividadSinVerificar()}
-      onCerrar={() => {}}
-      onGuardado={(v) => guardadas.push(v)}
+      actividad={base}
+      puedeAnular
+      onAnular={anular}
+      onCerrar={vi.fn()}
+      onGuardado={guardado}
     />,
   )
-  const usuario = userEvent.setup()
-  await usuario.type(screen.getByLabelText(/Observaciones de la verificación/), 'Falta terminar el borde')
-  await usuario.click(screen.getByRole('checkbox', { name: /Aceptar con observaciones/ }))
 
-  // Sin el seguimiento no se envía nada.
+  expect((screen.getByLabelText('Resultado de la verificación') as HTMLSelectElement).value).toBe(
+    'sin-observaciones',
+  )
+  expect(screen.queryByLabelText('Observaciones de la verificación')).toBeNull()
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Anular actividad' }))
+  expect(anular).toHaveBeenCalledOnce()
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Registrar verificación' }))
+  await waitFor(() => expect(guardado).toHaveBeenCalledOnce())
+  expect(cuerpos).toEqual([{ con_observaciones: false, observaciones: null }])
+})
+
+it('aceptar con observaciones exige las notas y crea el seguimiento vinculado', async () => {
+  const cuerpos: Record<string, unknown>[] = []
+  const base = actividad()
+  simularApi(cuerpos, { ...base, estado_actividad: 'Observada', encargo_seguimiento_id: 12 })
+  render(<VerificacionActividad actividad={base} onCerrar={vi.fn()} onGuardado={vi.fn()} />)
+  const usuario = userEvent.setup()
+  await usuario.selectOptions(screen.getByLabelText('Resultado de la verificación'), 'con-observaciones')
+  const campoObservaciones = screen.getByLabelText(/^Observaciones de la verificación/)
+  expect(campoObservaciones).toBeTruthy()
+
   await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
-  expect(await screen.findByText('Describe qué hay que hacer en el seguimiento')).toBeTruthy()
+  expect(await screen.findByText('Escribe las observaciones de la verificación')).toBeTruthy()
   expect(cuerpos).toEqual([])
 
-  await usuario.type(screen.getByLabelText(/Qué hay que hacer en el seguimiento/), '  Terminar el borde norte ')
-  fireEvent.change(screen.getByLabelText(/Plazo del seguimiento/), { target: { value: '2099-06-20' } })
+  await usuario.type(campoObservaciones, '  Falta terminar el borde ')
   await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
-  await waitFor(() => expect(guardadas).toHaveLength(1))
+  expect(await screen.findByText('Describe qué hay que hacer en el seguimiento')).toBeTruthy()
+  await usuario.type(screen.getByLabelText(/^Qué hay que hacer en el seguimiento/), '  Terminar el borde norte ')
+  fireEvent.change(screen.getByLabelText(/^Plazo del seguimiento/), { target: { value: '2099-06-20' } })
+  await usuario.click(screen.getByRole('button', { name: 'Registrar verificación' }))
+  await waitFor(() => expect(cuerpos).toHaveLength(1))
   expect(cuerpos).toEqual([
     {
+      con_observaciones: true,
       observaciones: 'Falta terminar el borde',
       encargo_seguimiento: { descripcion: 'Terminar el borde norte', plazo_previsto: '2099-06-20' },
     },
   ])
 })
 
-it('sin aceptar con observaciones no se pide ni se envía seguimiento (AV-402)', async () => {
-  render(<VerificacionActividad actividad={actividadSinVerificar()} onCerrar={() => {}} onGuardado={() => {}} />)
-  expect(screen.queryByLabelText(/Qué hay que hacer en el seguimiento/)).toBeNull()
-  expect(screen.queryByLabelText(/Plazo del seguimiento/)).toBeNull()
+it('actualiza una actividad observada reutilizando su seguimiento', async () => {
+  const cuerpos: Record<string, unknown>[] = []
+  const observada = actividad({
+    estado_actividad: 'Observada',
+    verificacion_observaciones: 'Falta el borde',
+    fecha_verificacion: '2026-11-10T12:00:00-05:00',
+    encargo_seguimiento_id: 12,
+  })
+  simularApi(cuerpos, observada)
+  render(<VerificacionActividad actividad={observada} onCerrar={vi.fn()} onGuardado={vi.fn()} />)
+
+  const campoObservaciones = screen.getByLabelText(/^Observaciones de la verificación/) as HTMLTextAreaElement
+  expect(campoObservaciones.value).toBe('Falta el borde')
+  expect(screen.getByText(/Se reutilizará el encargo de seguimiento n.º 12/)).toBeTruthy()
+  expect(screen.queryByLabelText('Qué hay que hacer en el seguimiento')).toBeNull()
+  await userEvent.setup().type(campoObservaciones, ' y el sendero')
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Actualizar verificación' }))
+  await waitFor(() => expect(cuerpos).toHaveLength(1))
+  expect(cuerpos).toEqual([{ con_observaciones: true, observaciones: 'Falta el borde y el sendero' }])
+})
+
+it('cambia de observada a verificada sin borrar ni cancelar silenciosamente el seguimiento', async () => {
+  const cuerpos: Record<string, unknown>[] = []
+  const observada = actividad({
+    estado_actividad: 'Observada',
+    verificacion_observaciones: 'Falta el borde',
+    fecha_verificacion: '2026-11-10T12:00:00-05:00',
+    encargo_seguimiento_id: 12,
+  })
+  simularApi(cuerpos, { ...observada, estado_actividad: 'Verificada', verificacion_observaciones: null })
+  render(<VerificacionActividad actividad={observada} onCerrar={vi.fn()} onGuardado={vi.fn()} />)
+
+  await userEvent.setup().selectOptions(screen.getByLabelText('Resultado de la verificación'), 'sin-observaciones')
+  expect(screen.queryByLabelText('Observaciones de la verificación')).toBeNull()
+  expect(screen.getByText(/se conservará con su historial/)).toBeTruthy()
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Actualizar verificación' }))
+  await waitFor(() => expect(cuerpos).toHaveLength(1))
+  expect(cuerpos).toEqual([{ con_observaciones: false, observaciones: null }])
 })

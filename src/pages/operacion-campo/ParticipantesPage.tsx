@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import AccionFila from '@/design-system/AccionFila'
+import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
@@ -287,12 +287,22 @@ export default function ParticipantesPage() {
               clave: 'acciones',
               titulo: 'Acciones',
               render: (a) => (
-                <AccionFila
-                  icono="eye"
-                  nombre="Ver detalle"
-                  etiqueta={`Ver detalle de ${a.tipo_actividad_nombre}`}
-                  onClick={() => setDetalleActividad(a)}
-                />
+                <AccionesFila>
+                  <AccionFila
+                    icono="eye"
+                    nombre="Ver detalle"
+                    etiqueta={`Ver detalle de ${a.tipo_actividad_nombre}`}
+                    onClick={() => setDetalleActividad(a)}
+                  />
+                  {puedeVerificar && admiteVerificacion(a.estado_actividad) && (
+                    <AccionFila
+                      icono="pencil"
+                      nombre={a.fecha_verificacion ? 'Actualizar verificación' : 'Verificar'}
+                      etiqueta={`${a.fecha_verificacion ? 'Actualizar verificación' : 'Verificar'} de actividad ${a.id}`}
+                      onClick={() => setVerificacionActividad(a)}
+                    />
+                  )}
+                </AccionesFila>
               ),
             },
             {
@@ -323,25 +333,6 @@ export default function ParticipantesPage() {
                 </Boton>
               ),
             },
-            ...(puedeVerificar
-              ? [
-                  {
-                    clave: 'verificar',
-                    titulo: 'Revisión',
-                    render: (a: ActividadCampo) =>
-                      a.estado_actividad === 'Anulada' ? null : (
-                        <Boton
-                          variante="fantasma"
-                          compacto
-                          aria-label={`Verificar actividad ${a.id}`}
-                          onClick={() => setVerificacionActividad(a)}
-                        >
-                          {a.fecha_verificacion ? 'Actualizar verificación' : 'Verificar'}
-                        </Boton>
-                      ),
-                  },
-                ]
-              : []),
           ] satisfies ColumnaTabla<ActividadCampo>[]
         ).filter((columna) =>
           ['tipo_actividad_nombre', 'cuadrilla_nombre', 'fecha', 'estado_actividad', 'cantidad', 'acciones'].includes(
