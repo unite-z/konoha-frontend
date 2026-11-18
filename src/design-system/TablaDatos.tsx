@@ -24,8 +24,12 @@ import estilos from './TablaDatos.module.css'
 
 /** `true` si el evento sale de un control dentro de la fila (botón, enlace, campo), no de la fila misma. */
 function desdeControl(evento: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
-  const control = (evento.target as HTMLElement).closest('button, a, input, select, textarea, label')
-  return control !== null && evento.currentTarget.contains(control)
+  const origen = evento.target
+  if (!(origen instanceof Element)) return false
+  const control = origen.closest(
+    'button, a, input, select, textarea, label, summary, [tabindex], [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="checkbox"], [role="switch"], [role="menuitem"], [role="combobox"], [role="textbox"]',
+  )
+  return control !== null && control !== evento.currentTarget && evento.currentTarget.contains(control)
 }
 
 export interface ColumnaTabla<F> {

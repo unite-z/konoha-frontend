@@ -8,7 +8,7 @@
  *
  * El paso «Ruta» del corte llega con AV-270.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import Boton from '@/components/ui/Boton'
 import Icono from '@/components/ui/Icono'
@@ -21,7 +21,13 @@ import AvisoDatosSimulados from '@/components/reportes-indicadores/AvisoDatosSim
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import { obtenerRutaCorte } from '@/services/api/corte'
 import { useConsulta } from '@/hooks/useConsulta'
-import { cambiarEstadoCiclo, crearProgramacion, listarRestricciones, obtenerPropuesta, reprogramarProgramacion } from '@/services/api/planificacion'
+import {
+  cambiarEstadoCiclo,
+  crearProgramacion,
+  listarRestricciones,
+  obtenerPropuesta,
+  reprogramarProgramacion,
+} from '@/services/api/planificacion'
 import { listarProveedores, listarTodo } from '@/services/api/tercerizados'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
 import { diaFigma, fechaCorta, fechaNumerica, periodoRestriccion, sumarDias } from '../resumen/resumenPlanificacion'
@@ -49,23 +55,35 @@ export interface PanelProgramarCicloProps {
   fechaInicial?: string | null
   /**
    * Ciclo programado que se reprograma («Reprogramar» del Calendario): el panel entra con su servicio, proveedor y
-   * fechas y, al guardar, crea el ciclo nuevo y cancela este. Cuando llegue AV-362 será un solo `PATCH`.
+   * fechas. Si solo cambian las fechas usa PATCH (AV-362); si cambia el servicio o quien lo hace, crea otro
+   * ciclo y cancela el anterior mediante dos operaciones independientes.
    */
   reprogramar?: Programacion | null
   onCerrar: () => void
   onProgramada: (programacion: Programacion) => void
 }
 
-export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaInicial = null, reprogramar = null, onCerrar, onProgramada }: PanelProgramarCicloProps) {
+export default function PanelProgramarCiclo({
+  servicios,
+  servicioInicial,
+  fechaInicial = null,
+  reprogramar = null,
+  onCerrar,
+  onProgramada,
+}: PanelProgramarCicloProps) {
   const inicialServicio = reprogramar ? reprogramar.tipo_servicio_id : servicioInicial
   const [servicioId, setServicioId] = useState(inicialServicio ? String(inicialServicio) : '')
-  const [proveedor, setProveedor] = useState(reprogramar ? (reprogramar.proveedor_id === null ? PERSONAL_PROPIO : String(reprogramar.proveedor_id)) : '')
+  const [proveedor, setProveedor] = useState(
+    reprogramar ? (reprogramar.proveedor_id === null ? PERSONAL_PROPIO : String(reprogramar.proveedor_id)) : '',
+  )
   const [inicio, setInicio] = useState(reprogramar?.fecha_inicio_prevista ?? '')
   const [fin, setFin] = useState(reprogramar?.fecha_fin_prevista ?? '')
   const [ventanaMes, setVentanaMes] = useState('')
   const [justificacion, setJustificacion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
+  const enCurso = useRef(false)
+  const [creadaPendiente, setCreadaPendiente] = useState<Programacion | null>(null)
   const [errorEnvio, setErrorEnvio] = useState<{ titulo: string; detalle: string } | null>(null)
 
   const esMovil = useEsMovil()
@@ -73,18 +91,26 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
   // Corte de césped (Figma 372-5523): un segundo paso «Ruta» con las zonas de MOD-02 (AV-259).
   const corte = servicio ? esCorte(servicio.nombre) : false
   const [paso, setPaso] = useState('fechas')
-  const ruta = useConsulta(corte && servicio ? `programar-ruta:${servicio.id}` : null, (signal) => obtenerRutaCorte(Number(servicioId), signal))
+  const ruta = useConsulta(corte && servicio ? `programar-ruta:${servicio.id}` : null, (signal) =>
+    obtenerRutaCorte(Number(servicioId), signal),
+  )
   const [zonasElegidas, setZonasElegidas] = useState<string[] | null>(null)
   const zonasRuta = zonasElegidas ?? (ruta.datos?.zonas ?? []).filter((z) => z.en_ruta).map((z) => z.zona)
   function cambiarZona(zona: string, incluida: boolean) {
     setZonasElegidas(incluida ? [...zonasRuta, zona] : zonasRuta.filter((z) => z !== zona))
   }
-  const proveedores = useConsulta('programar-proveedores', (signal) => listarTodo((page) => listarProveedores({ activo: true, page }, signal)))
-  const propuesta = useConsulta(servicioId ? `programar-propuesta:${servicioId}` : null, (signal) => obtenerPropuesta(Number(servicioId), signal))
+  const proveedores = useConsulta('programar-proveedores', (signal) =>
+    listarTodo((page) => listarProveedores({ activo: true, page }, signal)),
+  )
+  const propuesta = useConsulta(servicioId ? `programar-propuesta:${servicioId}` : null, (signal) =>
+    obtenerPropuesta(Number(servicioId), signal),
+  )
   const fechasValidas = /^\d{4}-\d{2}-\d{2}$/.test(inicio) && /^\d{4}-\d{2}-\d{2}$/.test(fin)
   const desde = fechasValidas ? sumarDias(inicio, -2) : ''
-  const hasta = fechasValidas ? [fin, sumarDias(inicio, 7)].sort().at(-1) ?? fin : ''
-  const restricciones = useConsulta(fechasValidas ? `programar-restricciones:${desde}:${hasta}` : null, (signal) => listarRestricciones(desde, hasta, signal))
+  const hasta = fechasValidas ? ([fin, sumarDias(inicio, 7)].sort().at(-1) ?? fin) : ''
+  const restricciones = useConsulta(fechasValidas ? `programar-restricciones:${desde}:${hasta}` : null, (signal) =>
+    listarRestricciones(desde, hasta, signal),
+  )
 
   // Al elegir servicio, el panel entra con las fechas que propone el sistema; con un día elegido en el calendario,
   // empieza ese día y conserva la duración propuesta.
@@ -111,197 +137,257 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
   const errorProveedor = mostrarErrores && !proveedor ? 'Elige quién lo hace.' : undefined
 
   async function programar() {
+    if (enCurso.current) return
     setMostrarErrores(true)
-    if (!servicio || !proveedor || !validacion.puedeGuardar) return
+    if (!creadaPendiente && (!servicio || !proveedor || !validacion.puedeGuardar)) return
+    enCurso.current = true
     setEnviando(true)
     setErrorEnvio(null)
+    let completada = false
     const proveedorId = proveedor === PERSONAL_PROPIO ? null : Number(proveedor)
     // Reprogramar con el mismo servicio y quien lo hace solo cambia las fechas (AV-362): el ciclo conserva su código y
     // su historial. Si cambia el servicio o el proveedor, se programa otro ciclo y se cancela el anterior.
-    if (reprogramar && servicio.id === reprogramar.tipo_servicio_id && proveedorId === reprogramar.proveedor_id) {
-      try {
-        onProgramada(await reprogramarProgramacion(reprogramar.id, { fecha_inicio_prevista: inicio, fecha_fin_prevista: fin, justificacion: justificacion.trim() || undefined }))
-      } catch (causa) {
-        setErrorEnvio({ titulo: 'No se pudo reprogramar el ciclo', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
-        setEnviando(false)
-      }
-      return
-    }
     try {
-      const creada = await crearProgramacion({
-        tipo_servicio_id: servicio.id,
-        proveedor_id: proveedorId,
-        fecha_inicio_prevista: inicio,
-        fecha_fin_prevista: fin,
-        justificacion: justificacion.trim() || undefined,
-        ventana_mes: mesVentana || undefined,
-        // Sin zonas en MOD-02, el corte se programa sin ruta (AV-369); con zonas, el backend exige al menos una.
-        zonas: corte && (ruta.datos?.zonas.length ?? 0) > 0 ? zonasRuta : undefined,
-      })
+      if (
+        !creadaPendiente &&
+        reprogramar &&
+        servicio?.id === reprogramar.tipo_servicio_id &&
+        proveedorId === reprogramar.proveedor_id
+      ) {
+        onProgramada(
+          await reprogramarProgramacion(reprogramar.id, {
+            fecha_inicio_prevista: inicio,
+            fecha_fin_prevista: fin,
+            justificacion: justificacion.trim() || undefined,
+          }),
+        )
+        completada = true
+        return
+      }
+      let creada = creadaPendiente
+      if (!creada) {
+        if (!servicio) return
+        creada = await crearProgramacion({
+          tipo_servicio_id: servicio.id,
+          proveedor_id: proveedorId,
+          fecha_inicio_prevista: inicio,
+          fecha_fin_prevista: fin,
+          justificacion: justificacion.trim() || undefined,
+          ventana_mes: mesVentana || undefined,
+          reemplaza_programacion_id: reprogramar?.id,
+          // Sin zonas en MOD-02, el corte se programa sin ruta (AV-369); con zonas, el backend exige al menos una.
+          zonas: corte && (ruta.datos?.zonas.length ?? 0) > 0 ? zonasRuta : undefined,
+        })
+        if (reprogramar) setCreadaPendiente(creada)
+      }
       if (reprogramar) {
         try {
-          await cambiarEstadoCiclo(reprogramar.id, 'cancelacion', undefined, `Reprogramado como ${creada.codigo ?? creada.servicio}`)
+          await cambiarEstadoCiclo(
+            reprogramar.id,
+            'cancelacion',
+            undefined,
+            `Reprogramado como ${creada.codigo ?? creada.servicio}`,
+          )
         } catch (causa) {
           setErrorEnvio({
             titulo: 'El ciclo nuevo quedó programado, pero no se pudo cancelar el anterior',
             detalle: causa instanceof Error ? causa.message : 'Cancélalo desde su detalle.',
           })
-          setEnviando(false)
           return
         }
       }
       onProgramada(creada)
+      completada = true
     } catch (causa) {
-      setErrorEnvio({ titulo: reprogramar ? 'No se pudo reprogramar el ciclo' : 'No se pudo programar el ciclo', detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.' })
-      setEnviando(false)
+      setErrorEnvio({
+        titulo: reprogramar ? 'No se pudo reprogramar el ciclo' : 'No se pudo programar el ciclo',
+        detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
+      })
+    } finally {
+      if (!completada) {
+        enCurso.current = false
+        setEnviando(false)
+      }
     }
   }
 
   const pasoFechas = (
     <>
       <Selector
-          id="programar-servicio"
-          etiqueta="Servicio"
+        id="programar-servicio"
+        etiqueta="Servicio"
+        obligatorio
+        valor={servicioId}
+        opcionTodos="Elige un servicio"
+        opciones={servicios.map((s) => ({ valor: String(s.id), texto: s.nombre }))}
+        onCambiar={(valor) => {
+          setServicioId(valor)
+          setInicio('')
+          setFin('')
+        }}
+        error={errorServicio}
+      />
+      <div className={tercerizado ? estilos.proveedorVentana : undefined}>
+        <Selector
+          id="programar-proveedor"
+          etiqueta="Proveedor"
           obligatorio
-          valor={servicioId}
-          opcionTodos="Elige un servicio"
-          opciones={servicios.map((s) => ({ valor: String(s.id), texto: s.nombre }))}
-          onCambiar={(valor) => {
-            setServicioId(valor)
-            setInicio('')
-            setFin('')
-          }}
-          error={errorServicio}
+          valor={proveedor}
+          opcionTodos="Elige quién lo hace"
+          opciones={[
+            { valor: PERSONAL_PROPIO, texto: 'Personal propio' },
+            ...(proveedores.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.razon_social })),
+          ]}
+          onCambiar={setProveedor}
+          error={errorProveedor}
         />
-        <div className={tercerizado ? estilos.proveedorVentana : undefined}>
+        {tercerizado && (
           <Selector
-            id="programar-proveedor"
-            etiqueta="Proveedor"
+            id="programar-ventana"
+            etiqueta="Ventana"
             obligatorio
-            valor={proveedor}
-            opcionTodos="Elige quién lo hace"
-            opciones={[
-              { valor: PERSONAL_PROPIO, texto: 'Personal propio' },
-              ...(proveedores.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.razon_social })),
-            ]}
-            onCambiar={setProveedor}
-            error={errorProveedor}
+            valor={mesVentana}
+            opcionTodos="Elige el mes"
+            opciones={mesesVentana(
+              fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)),
+              esMovil,
+            )}
+            onCambiar={setVentanaMes}
+            error={validacion.errorVentana ?? undefined}
           />
-          {tercerizado && (
-            <Selector
-              id="programar-ventana"
-              etiqueta="Ventana"
+        )}
+      </div>
+
+      {propuesta.estado === 'error' && (
+        <AvisoEnLinea tono="error" titulo="No hay propuesta para este servicio">
+          {propuesta.error?.detalle}
+        </AvisoEnLinea>
+      )}
+
+      {servicio && (
+        <>
+          <div className={estilos.fechasPanel}>
+            <CampoFormulario
+              id="programar-inicio"
+              etiqueta="Inicio"
               obligatorio
-              valor={mesVentana}
-              opcionTodos="Elige el mes"
-              opciones={mesesVentana(fechasValidas ? inicio : (propuesta.datos?.fecha_inicio ?? new Date().toISOString().slice(0, 10)), esMovil)}
-              onCambiar={setVentanaMes}
-              error={validacion.errorVentana ?? undefined}
+              type="date"
+              value={inicio}
+              onChange={(e) => setInicio(e.target.value)}
+            />
+            <CampoFormulario
+              id="programar-fin"
+              etiqueta="Fin"
+              obligatorio
+              type="date"
+              value={fin}
+              onChange={(e) => setFin(e.target.value)}
+              error={fechasValidas ? (validacion.errorPeriodo ?? undefined) : undefined}
+            />
+          </div>
+          {esPropuesta && (
+            <p className={`${estilos.detalle} ${estilos.soloEscritorio}`}>Fechas propuestas por el sistema</p>
+          )}
+
+          {fechasValidas && fin >= inicio && (
+            <div className={estilos.bloqueAgenda}>
+              <ul className={estilos.franja} aria-label="Días alrededor del periodo">
+                {franjaDeDias(inicio, fin, delPeriodo).map((dia) => (
+                  <li
+                    key={dia.fecha}
+                    className={[
+                      estilos.diaFranja,
+                      dia.seleccionado ? estilos.diaElegido : '',
+                      dia.restriccion ? estilos[dia.restriccion] : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    aria-label={`${fechaCorta(dia.fecha)}${dia.seleccionado ? ', en el periodo' : ''}${dia.restriccion === 'prohibicion' ? ', prohibido' : dia.restriccion === 'aviso' ? ', con aviso' : ''}`}
+                  >
+                    <span className={estilos.letraFranja} aria-hidden="true">
+                      {dia.letra}
+                    </span>
+                    <span aria-hidden="true">{dia.dia}</span>
+                  </li>
+                ))}
+              </ul>
+              {validacion.diasExcedidos ? (
+                <p className={estilos.diasExcedidos}>{validacion.diasExcedidos}</p>
+              ) : (
+                textoDuracion(servicio) && (
+                  <p className={estilos.detalle}>
+                    {textoDuracion(servicio)} Duración seleccionada:{' '}
+                    {inicio && fin && fin >= inicio ? diasDelPeriodo(inicio, fin) : '—'} días.
+                  </p>
+                )
+              )}
+            </div>
+          )}
+
+          {conflictos.length > 0 && (
+            <div className={estilos.bloqueAgenda}>
+              <p className={`${estilos.rotuloConflictos} ${estilos.soloEscritorio}`}>
+                Conflictos con restricciones{' '}
+                <Estado
+                  tono={validacion.prohibiciones.length > 0 ? 'error' : 'aviso'}
+                  texto={String(conflictos.length)}
+                  punto={false}
+                />
+              </p>
+              {[...validacion.avisos, ...validacion.prohibiciones]
+                .sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio) || a.id - b.id)
+                .map((r) =>
+                  r.efecto === 'Prohibicion' ? (
+                    <AvisoEnLinea
+                      key={r.id}
+                      tono="error"
+                      titulo={`No se puede programar el ${textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })}`}
+                    >
+                      {r.tipo} · prohibición
+                    </AvisoEnLinea>
+                  ) : (
+                    <AvisoEnLinea
+                      key={r.id}
+                      tono="advertencia"
+                      titulo={`${r.fecha_inicio === r.fecha_fin ? `${diaFigma(r.fecha_inicio).slice(0, 3)} ${fechaNumerica(r.fecha_inicio)}` : textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })} · ${r.tipo}`}
+                    >
+                      {r.descripcion || 'Todo el campus'}
+                    </AvisoEnLinea>
+                  ),
+                )}
+              {ventana && !(ventana.inicio === inicio && ventana.fin === fin) && (
+                <div className={estilos.ventanaLibre}>
+                  <Icono nombre="calendar" tamano="base" />
+                  <span>Ventana libre: {textoVentana(ventana)}</span>
+                  <Boton
+                    variante="secundario"
+                    compacto
+                    onClick={() => {
+                      setInicio(ventana.inicio)
+                      setFin(ventana.fin)
+                    }}
+                  >
+                    Usar
+                  </Boton>
+                </div>
+              )}
+            </div>
+          )}
+
+          {validacion.requiereJustificacion && (
+            <AreaTexto
+              id="programar-justificacion"
+              etiqueta="Justificación"
+              obligatorio
+              value={justificacion}
+              maxLength={MAXIMO_JUSTIFICACION}
+              onChange={(e) => setJustificacion(e.target.value)}
+              ayuda={`${justificacion.length}/${MAXIMO_JUSTIFICACION}`}
+              error={mostrarErrores ? (validacion.errorJustificacion ?? undefined) : undefined}
             />
           )}
-        </div>
-  
-        {propuesta.estado === 'error' && (
-          <AvisoEnLinea tono="error" titulo="No hay propuesta para este servicio">
-            {propuesta.error?.detalle}
-          </AvisoEnLinea>
-        )}
-  
-        {servicio && (
-          <>
-            <div className={estilos.fechasPanel}>
-              <CampoFormulario id="programar-inicio" etiqueta="Inicio" obligatorio type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
-              <CampoFormulario
-                id="programar-fin"
-                etiqueta="Fin"
-                obligatorio
-                type="date"
-                value={fin}
-                onChange={(e) => setFin(e.target.value)}
-                error={fechasValidas ? (validacion.errorPeriodo ?? undefined) : undefined}
-              />
-            </div>
-            {esPropuesta && <p className={`${estilos.detalle} ${estilos.soloEscritorio}`}>Fechas propuestas por el sistema</p>}
-  
-            {fechasValidas && fin >= inicio && (
-              <div className={estilos.bloqueAgenda}>
-                <ul className={estilos.franja} aria-label="Días alrededor del periodo">
-                  {franjaDeDias(inicio, fin, delPeriodo).map((dia) => (
-                    <li
-                      key={dia.fecha}
-                      className={[estilos.diaFranja, dia.seleccionado ? estilos.diaElegido : '', dia.restriccion ? estilos[dia.restriccion] : ''].filter(Boolean).join(' ')}
-                      aria-label={`${fechaCorta(dia.fecha)}${dia.seleccionado ? ', en el periodo' : ''}${dia.restriccion === 'prohibicion' ? ', prohibido' : dia.restriccion === 'aviso' ? ', con aviso' : ''}`}
-                    >
-                      <span className={estilos.letraFranja} aria-hidden="true">
-                        {dia.letra}
-                      </span>
-                      <span aria-hidden="true">{dia.dia}</span>
-                    </li>
-                  ))}
-                </ul>
-                {validacion.diasExcedidos ? (
-                  <p className={estilos.diasExcedidos}>{validacion.diasExcedidos}</p>
-                ) : (
-                  textoDuracion(servicio) && <p className={`${estilos.detalle} ${estilos.soloEscritorio}`}>{textoDuracion(servicio)}</p>
-                )}
-              </div>
-            )}
-  
-            {conflictos.length > 0 && (
-              <div className={estilos.bloqueAgenda}>
-                <p className={`${estilos.rotuloConflictos} ${estilos.soloEscritorio}`}>
-                  Conflictos con restricciones <Estado tono={validacion.prohibiciones.length > 0 ? 'error' : 'aviso'} texto={String(conflictos.length)} punto={false} />
-                </p>
-                {[...validacion.avisos, ...validacion.prohibiciones]
-                  .sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio) || a.id - b.id)
-                  .map((r) =>
-                    r.efecto === 'Prohibicion' ? (
-                      <AvisoEnLinea key={r.id} tono="error" titulo={`No se puede programar el ${textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })}`}>
-                        {r.tipo} · prohibición
-                      </AvisoEnLinea>
-                    ) : (
-                      <AvisoEnLinea
-                        key={r.id}
-                        tono="advertencia"
-                        titulo={`${r.fecha_inicio === r.fecha_fin ? `${diaFigma(r.fecha_inicio).slice(0, 3)} ${fechaNumerica(r.fecha_inicio)}` : textoVentana({ inicio: r.fecha_inicio, fin: r.fecha_fin })} · ${r.tipo}`}
-                      >
-                        {r.descripcion || 'Todo el campus'}
-                      </AvisoEnLinea>
-                    ),
-                  )}
-                {ventana && !(ventana.inicio === inicio && ventana.fin === fin) && (
-                  <div className={estilos.ventanaLibre}>
-                    <Icono nombre="calendar" tamano="base" />
-                    <span>Ventana libre: {textoVentana(ventana)}</span>
-                    <Boton
-                      variante="secundario"
-                      compacto
-                      onClick={() => {
-                        setInicio(ventana.inicio)
-                        setFin(ventana.fin)
-                      }}
-                    >
-                      Usar
-                    </Boton>
-                  </div>
-                )}
-              </div>
-            )}
-  
-            {validacion.requiereJustificacion && (
-              <AreaTexto
-                id="programar-justificacion"
-                etiqueta="Justificación"
-                obligatorio
-                value={justificacion}
-                maxLength={MAXIMO_JUSTIFICACION}
-                onChange={(e) => setJustificacion(e.target.value)}
-                ayuda={`${justificacion.length}/${MAXIMO_JUSTIFICACION}`}
-                error={mostrarErrores ? (validacion.errorJustificacion ?? undefined) : undefined}
-              />
-            )}
-          </>
-        )}
+        </>
+      )}
     </>
   )
 
@@ -311,17 +397,43 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
       ancho="lateral"
       titulo={reprogramar ? 'Reprogramar ciclo' : 'Programar ciclo'}
       junto={corte && ruta.datos?.fuera_de_frecuencia ? <Estado tono="error" texto="Fuera de frecuencia" /> : undefined}
-      descripcion={reprogramar ? `${reprogramar.servicio} · previsto del ${periodoRestriccion(reprogramar.fecha_inicio_prevista, reprogramar.fecha_fin_prevista)}` : undefined}
-      textoConfirmar={validacion.requiereJustificacion ? 'Programar con constancia' : reprogramar ? 'Reprogramar' : 'Programar ciclo'}
+      descripcion={
+        reprogramar
+          ? `${reprogramar.servicio} · previsto del ${periodoRestriccion(reprogramar.fecha_inicio_prevista, reprogramar.fecha_fin_prevista)}`
+          : undefined
+      }
+      textoConfirmar={
+        creadaPendiente
+          ? 'Reintentar cancelación'
+          : validacion.requiereJustificacion
+            ? 'Programar con constancia'
+            : reprogramar
+              ? 'Reprogramar'
+              : 'Programar ciclo'
+      }
+      textoCancelar={creadaPendiente ? 'Cerrar' : 'Cancelar'}
       enviando={enviando}
-      hayCambios={Boolean(servicioId || justificacion)}
+      hayCambios={!creadaPendiente && Boolean(servicioId || justificacion)}
       error={errorEnvio}
       conObligatorios={false}
-      envioDeshabilitado={Boolean(servicio) && fechasValidas && Boolean(validacion.errorPeriodo || validacion.errorVentana || validacion.prohibiciones.length > 0)}
+      envioDeshabilitado={
+        !creadaPendiente &&
+        Boolean(servicio) &&
+        fechasValidas &&
+        Boolean(validacion.errorPeriodo || validacion.errorVentana || validacion.prohibiciones.length > 0)
+      }
       onEnviar={() => void programar()}
       onCerrar={onCerrar}
     >
-      {corte ? (
+      {creadaPendiente ? (
+        <AvisoEnLinea
+          tono="advertencia"
+          titulo={`El ciclo ${creadaPendiente.codigo ?? creadaPendiente.id} ya está creado`}
+        >
+          Falta cancelar el ciclo anterior. Puedes reintentar esa cancelación sin crear otro ciclo. Si cierras, ambos
+          registros se conservan.
+        </AvisoEnLinea>
+      ) : corte ? (
         <Pestanas
           etiqueta="Pasos para programar el corte"
           valor={paso}
@@ -337,7 +449,12 @@ export default function PanelProgramarCiclo({ servicios, servicioInicial, fechaI
           ) : (
             <div className={estilos.pasoPanel}>
               <AvisoDatosSimulados />
-              <PasoRutaCorte ruta={ruta.datos ?? undefined} error={ruta.estado === 'error' ? (ruta.error?.detalle ?? 'Inténtalo de nuevo.') : null} zonas={zonasRuta} onCambiar={cambiarZona} />
+              <PasoRutaCorte
+                ruta={ruta.datos ?? undefined}
+                error={ruta.estado === 'error' ? (ruta.error?.detalle ?? 'Inténtalo de nuevo.') : null}
+                zonas={zonasRuta}
+                onCambiar={cambiarZona}
+              />
             </div>
           )}
         </Pestanas>

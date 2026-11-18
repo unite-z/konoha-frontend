@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { Restriccion, ServicioPeriodico } from '@/types/planificacion'
+import type { Programacion, Restriccion, ServicioPeriodico } from '@/types/planificacion'
 import PanelProgramarCiclo from './PanelProgramarCiclo'
 
 const api = vi.hoisted(() => ({
@@ -63,6 +63,13 @@ const corte: ServicioPeriodico = {
   duracion: { duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: null, hora_fin: null, fecha_modificacion: '2026-10-01T10:00:00-05:00', modificado_por: 'jefe' },
 }
 
+const cicloParaReprogramar: Programacion = {
+  id: 5, tipo_servicio_id: 1, servicio: 'Corte de césped', proveedor_id: 4,
+  proveedor: 'Servicios Verdes Demo S.A.C.', estacion: 'Primavera',
+  fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-18',
+  estado: 'Programada', fecha_inicio_real: null, fecha_fin_real: null,
+}
+
 function restriccion(parcial: Partial<Restriccion>): Restriccion {
   return {
     id: 1,
@@ -82,6 +89,38 @@ function restriccion(parcial: Partial<Restriccion>): Restriccion {
 }
 
 describe('PanelProgramarCiclo', () => {
+  it('un reintento tras fallar la cancelación reutiliza el ciclo creado y no genera otro', async () => {
+    api.restricciones = []
+    api.cancelar.mockRejectedValueOnce(new Error('No se pudo cancelar el anterior'))
+    const onProgramada = vi.fn()
+    const usuario = userEvent.setup()
+    render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={null} reprogramar={cicloParaReprogramar} onCerrar={vi.fn()} onProgramada={onProgramada} />)
+    await usuario.selectOptions(screen.getByLabelText(/^Proveedor/), 'propio')
+    await usuario.click(screen.getByRole('button', { name: 'Reprogramar' }))
+    expect(await screen.findByText('El ciclo nuevo quedó programado, pero no se pudo cancelar el anterior')).toBeTruthy()
+    expect(onProgramada).not.toHaveBeenCalled()
+    await usuario.click(screen.getByRole('button', { name: /^(Reprogramar|Reintentar cancelación)$/ }))
+    await waitFor(() => expect(onProgramada).toHaveBeenCalled())
+    expect(api.crear).toHaveBeenCalledTimes(1)
+    expect(api.cancelar).toHaveBeenCalledTimes(2)
+  })
+
+  it('dos envíos en el mismo instante solo ejecutan un PATCH', async () => {
+    api.restricciones = []
+    let resolver: (valor: Awaited<ReturnType<typeof api.reprogramar>>) => void = () => {}
+    api.reprogramar.mockImplementationOnce(() => new Promise((resolve) => { resolver = resolve }))
+    render(<PanelProgramarCiclo servicios={[corte]} servicioInicial={null} reprogramar={cicloParaReprogramar} onCerrar={vi.fn()} onProgramada={vi.fn()} />)
+    await screen.findByLabelText(/^Inicio/)
+    const formulario = screen.getByRole('dialog').querySelector('form')
+    if (!formulario) throw new Error('Falta el formulario de reprogramación')
+    act(() => {
+      fireEvent.submit(formulario)
+      fireEvent.submit(formulario)
+    })
+    expect(api.reprogramar).toHaveBeenCalledTimes(1)
+    await act(async () => { resolver({ id: 5, servicio: 'Corte de césped', fecha_inicio_prevista: '2026-11-16', fecha_fin_prevista: '2026-11-18' }) })
+  })
+
   it('entra con la propuesta y, con un aviso, exige justificación antes de programar con constancia', async () => {
     api.restricciones = [restriccion({})]
     const usuario = userEvent.setup()

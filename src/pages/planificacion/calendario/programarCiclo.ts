@@ -26,7 +26,12 @@ export function diasDelPeriodo(inicio: FechaIso, fin: FechaIso): number {
  * Restricciones que afectan al periodo: las prohibiciones y los avisos que se solapan con él. Las que solo valen
  * para servicios ruidosos no afectan a uno que no lo es; las favorables nunca son conflicto.
  */
-export function conflictosDelPeriodo(restricciones: Restriccion[], inicio: FechaIso, fin: FechaIso, ruidoso: boolean): Restriccion[] {
+export function conflictosDelPeriodo(
+  restricciones: Restriccion[],
+  inicio: FechaIso,
+  fin: FechaIso,
+  ruidoso: boolean,
+): Restriccion[] {
   return restricciones
     .filter(
       (r) =>
@@ -74,10 +79,15 @@ export function validarProgramacion(
     if (dias > permitidos) {
       errorPeriodo = `${dias} días: máximo ${maxima}${limpieza ? ` + ${limpieza} de limpieza` : ''}`
       diasExcedidos = `${dias} días seleccionados`
+    } else if (servicio.nombre.toLowerCase().startsWith('corte') && dias < 1 + (limpieza ?? 0)) {
+      errorPeriodo = `Reserva al menos un día de corte y ${limpieza ?? 0} de limpieza en jornadas posteriores.`
     }
   }
   const errorVentana =
-    ventana && FECHA_VALIDA.test(inicio) && FECHA_VALIDA.test(fin) && (inicio.slice(0, 7) !== ventana || fin.slice(0, 7) !== ventana)
+    ventana &&
+    FECHA_VALIDA.test(inicio) &&
+    FECHA_VALIDA.test(fin) &&
+    (inicio.slice(0, 7) !== ventana || fin.slice(0, 7) !== ventana)
       ? 'Las fechas tienen que caer en el mes de la ventana'
       : null
   const prohibiciones = conflictos.filter((r) => r.efecto === 'Prohibicion')
@@ -85,9 +95,11 @@ export function validarProgramacion(
   const requiereJustificacion = avisos.length > 0
   const texto = justificacion.trim()
   const errorJustificacion =
-    requiereJustificacion && !texto ? 'Justifica por qué se programa en estas fechas.'
-    : texto.length > MAXIMO_JUSTIFICACION ? `Máximo ${MAXIMO_JUSTIFICACION} caracteres.`
-    : null
+    requiereJustificacion && !texto
+      ? 'Justifica por qué se programa en estas fechas.'
+      : texto.length > MAXIMO_JUSTIFICACION
+        ? `Máximo ${MAXIMO_JUSTIFICACION} caracteres.`
+        : null
   return {
     errorPeriodo,
     diasExcedidos,
@@ -96,7 +108,12 @@ export function validarProgramacion(
     avisos,
     requiereJustificacion,
     errorJustificacion,
-    puedeGuardar: Boolean(servicio?.duracion) && !errorPeriodo && !errorVentana && prohibiciones.length === 0 && !errorJustificacion,
+    puedeGuardar:
+      Boolean(servicio?.duracion) &&
+      !errorPeriodo &&
+      !errorVentana &&
+      prohibiciones.length === 0 &&
+      !errorJustificacion,
   }
 }
 
@@ -106,7 +123,7 @@ export function textoDuracion(servicio: ServicioPeriodico | undefined): string |
   const { duracion_maxima_dias: maxima, dias_limpieza: limpieza } = servicio.duracion
   const total = maxima + (limpieza ?? 0)
   const de = servicio.nombre.toLowerCase().startsWith('corte') ? 'de corte' : 'de servicio'
-  return limpieza ? `${total} días: ${maxima} ${de} + ${limpieza} de limpieza` : `${total} ${total === 1 ? 'día' : 'días'} ${de}`
+  return `Máximo de ejecución: ${maxima} ${maxima === 1 ? 'día' : 'días'} ${de}. Limpieza ${servicio.nombre.toLowerCase().startsWith('corte') ? 'requerida' : 'configurada'}: ${limpieza ?? 0} ${limpieza === 1 ? 'día' : 'días'}. Máximo total: ${total} ${total === 1 ? 'día' : 'días'}.`
 }
 
 /**
@@ -114,11 +131,27 @@ export function textoDuracion(servicio: ServicioPeriodico | undefined): string |
  * «Nov 2026», como el campo estrecho de móvil en Figma (352-2324); en escritorio, «Noviembre 2026».
  */
 export function mesesVentana(desde: FechaIso, corto = false): { valor: string; texto: string }[] {
-  const nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  const nombres = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ]
   const [anio, mes] = desde.split('-').map(Number)
   return [0, 1, 2].map((desplazamiento) => {
     const fecha = new Date(Date.UTC(anio, mes - 1 + desplazamiento, 1))
-    return { valor: fecha.toISOString().slice(0, 7), texto: `${corto ? nombres[fecha.getUTCMonth()].slice(0, 3) : nombres[fecha.getUTCMonth()]} ${fecha.getUTCFullYear()}` }
+    return {
+      valor: fecha.toISOString().slice(0, 7),
+      texto: `${corto ? nombres[fecha.getUTCMonth()].slice(0, 3) : nombres[fecha.getUTCMonth()]} ${fecha.getUTCFullYear()}`,
+    }
   })
 }
 
@@ -142,13 +175,20 @@ export function franjaDeDias(inicio: string, fin: string, restricciones: Restric
       letra: LETRAS_DIA[new Date(`${fecha}T00:00:00Z`).getUTCDay()],
       dia: Number(fecha.slice(8, 10)),
       seleccionado: FECHA_VALIDA.test(fin) && fecha >= inicio && fecha <= fin,
-      restriccion: del.some((r) => r.efecto === 'Prohibicion') ? 'prohibicion' : del.some((r) => r.efecto === 'Advertencia') ? 'aviso' : null,
+      restriccion: del.some((r) => r.efecto === 'Prohibicion')
+        ? 'prohibicion'
+        : del.some((r) => r.efecto === 'Advertencia')
+          ? 'aviso'
+          : null,
     }
   })
 }
 
 /** Ventana libre que propone el backend, con la duración completa del servicio. */
-export function ventanaLibre(inicioLibre: FechaIso | null, servicio: ServicioPeriodico | undefined): { inicio: FechaIso; fin: FechaIso } | null {
+export function ventanaLibre(
+  inicioLibre: FechaIso | null,
+  servicio: ServicioPeriodico | undefined,
+): { inicio: FechaIso; fin: FechaIso } | null {
   if (!inicioLibre || !servicio?.duracion) return null
   const total = servicio.duracion.duracion_maxima_dias + (servicio.duracion.dias_limpieza ?? 0)
   return { inicio: inicioLibre, fin: sumarDias(inicioLibre, total - 1) }

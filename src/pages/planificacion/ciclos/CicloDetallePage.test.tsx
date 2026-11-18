@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -52,6 +52,19 @@ vi.mock('@/services/api/planificacion', async () => {
     },
     { ...programada, id: 11, requerimiento: { id: 55, codigo: 'AT-1a2b3c4d5e6f', estado: 'Requerimiento registrado' } },
     { ...programada, id: 12, motivo_sin_requerimiento: 'El proveedor no tiene contrato vigente para este servicio' },
+    {
+      ...programada,
+      id: 13,
+      servicio: 'Corte de césped',
+      historial: [
+        {
+          estado: 'Programada',
+          fecha_hora: '2026-11-16T10:00:00-05:00',
+          autor: 'Jefe Demo',
+          motivo: 'Reprogramada del 24/11/2026 al 26/11/2026',
+        },
+      ],
+    },
   ]
   return {
     obtenerProgramacion: async (id: number) => {
@@ -132,6 +145,12 @@ function pintar(id: string) {
 }
 
 describe('CicloDetallePage', () => {
+  it('muestra también el historial cuando el ciclo tiene ruta de corte', async () => {
+    pintar('13')
+    expect(await screen.findByText('Historial')).toBeTruthy()
+    expect(screen.getByText(/Reprogramada del 24\/11\/2026 al 26\/11\/2026/)).toBeTruthy()
+    expect(screen.getByText(/Jefe Demo/)).toBeTruthy()
+  })
   it('muestra el ciclo con sus restricciones e inicia con la fecha real', async () => {
     pintar('7')
     expect(await screen.findByText('Programada')).toBeTruthy()
@@ -232,7 +251,7 @@ describe('CicloDetallePage', () => {
     expect(screen.getByRole('button', { name: 'Cerrar ciclo' })).toBeTruthy()
     await usuario.click(screen.getByRole('tab', { name: 'Limpieza' }))
     expect(screen.getByText('Total: 3 días de corte + 2 de limpieza = 5')).toBeTruthy()
-    expect(screen.getByText('No cumple')).toBeTruthy()
+    expect(screen.getByText('Duración excedida')).toBeTruthy()
     await usuario.click(screen.getByRole('button', { name: 'Registrar jornada' }))
     expect(await screen.findByText('Total: 3 días de corte + 3 de limpieza = 6')).toBeTruthy()
   })

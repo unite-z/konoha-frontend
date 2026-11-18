@@ -6,7 +6,7 @@
 import type { FechaIso } from '@/types/comun'
 import type { CicloCorte, JardinRuta } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { instanteALocalLima } from '@/utils/instanteLima'
+import { hoyLima, instanteALocalLima } from '@/utils/instanteLima'
 import { diasDelPeriodo } from '../calendario/programarCiclo'
 import { diaFigma, fechaNumerica, sumarDias } from '../resumen/resumenPlanificacion'
 
@@ -22,7 +22,11 @@ export function esCorte(servicio: string): boolean {
 
 export function avanceRuta(jardines: JardinRuta[]): { cortados: number; total: number; porcentaje: number } {
   const cortados = jardines.filter((j) => j.estado === 'Cortado').length
-  return { cortados, total: jardines.length, porcentaje: jardines.length === 0 ? 0 : Math.round((cortados / jardines.length) * 100) }
+  return {
+    cortados,
+    total: jardines.length,
+    porcentaje: jardines.length === 0 ? 0 : Math.round((cortados / jardines.length) * 100),
+  }
 }
 
 /** «Hoy 10:42», «Ayer 08:15» o «16/11 10:42» de un instante, visto desde `ahora` (`AAAA-MM-DDTHH:mm` de Lima). */
@@ -51,15 +55,25 @@ export function ultimaMarca(jardines: JardinRuta[], ahora: string): { texto: str
   const local = instanteALocalLima(ultima) ?? ultima
   const horas = Math.floor(minutosEntre(local.slice(0, 16), ahora) / 60)
   const cuando = momento(ultima, ahora)
-  if (horas > 24) return { texto: `Actualizado ${cuando.charAt(0).toLowerCase()}${cuando.slice(1)} · hace ${horas} h`, desfasada: true }
+  if (horas > 24)
+    return {
+      texto: `Actualizado ${cuando.charAt(0).toLowerCase()}${cuando.slice(1)} · hace ${horas} h`,
+      desfasada: true,
+    }
   return { texto: `Última marca ${cuando.charAt(0).toLowerCase()}${cuando.slice(1)}`, desfasada: false }
 }
 
 /** Cortados de cada día del ciclo, desde el inicio hasta hoy o el fin («Lun 16 · 15»). */
-export function cortadosPorDia(jardines: JardinRuta[], inicio: FechaIso, hasta: FechaIso): { fecha: FechaIso; texto: string; cortados: number }[] {
+export function cortadosPorDia(
+  jardines: JardinRuta[],
+  inicio: FechaIso,
+  hasta: FechaIso,
+): { fecha: FechaIso; texto: string; cortados: number }[] {
   const dias: { fecha: FechaIso; texto: string; cortados: number }[] = []
   for (let fecha = inicio; fecha <= hasta && dias.length < 14; fecha = sumarDias(fecha, 1)) {
-    const cortados = jardines.filter((j) => j.marcado_en && (instanteALocalLima(j.marcado_en) ?? j.marcado_en).slice(0, 10) === fecha).length
+    const cortados = jardines.filter(
+      (j) => j.marcado_en && (instanteALocalLima(j.marcado_en) ?? j.marcado_en).slice(0, 10) === fecha,
+    ).length
     dias.push({ fecha, texto: diaFigma(fecha), cortados })
   }
   return dias
@@ -74,7 +88,12 @@ export function porCortar(jardines: JardinRuta[]): JardinRuta[] {
 }
 
 /** Último día que se enseña en «Cortados por día»: hoy o, si es antes, el último día de corte previsto. */
-export function ultimoDiaCorte(inicio: FechaIso, hoy: FechaIso, servicio: ServicioPeriodico | undefined, finReal: FechaIso | null): FechaIso {
+export function ultimoDiaCorte(
+  inicio: FechaIso,
+  hoy: FechaIso,
+  servicio: ServicioPeriodico | undefined,
+  finReal: FechaIso | null,
+): FechaIso {
   if (finReal) return finReal
   const ultimoPrevisto = sumarDias(inicio, (servicio?.duracion?.duracion_maxima_dias ?? 1) - 1)
   return ultimoPrevisto > hoy ? ultimoPrevisto : hoy
@@ -82,7 +101,8 @@ export function ultimoDiaCorte(inicio: FechaIso, hoy: FechaIso, servicio: Servic
 
 /** «Hoy 10:42 · J. Ramos», «Detenido por interrupción» o `null` (sin marca). */
 export function textoMarcado(jardin: JardinRuta, ahora: string): string | null {
-  if (jardin.marcado_en) return `${momento(jardin.marcado_en, ahora)}${jardin.marcado_por ? ` · ${jardin.marcado_por}` : ''}`
+  if (jardin.marcado_en)
+    return `${momento(jardin.marcado_en, ahora)}${jardin.marcado_por ? ` · ${jardin.marcado_por}` : ''}`
   return jardin.detenido_por_interrupcion ? 'Detenido por interrupción' : null
 }
 
@@ -103,11 +123,19 @@ export interface IndicadorCorte {
 }
 
 /** «Avance de la ruta», «Duración» («Día 2 de 4») e «Interrupciones» del corte en curso o completado. */
-export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodico | undefined, corte: CicloCorte, hoy: FechaIso, ahora: string): IndicadorCorte[] {
+export function indicadoresCorte(
+  ciclo: Programacion,
+  servicio: ServicioPeriodico | undefined,
+  corte: CicloCorte,
+  hoy: FechaIso,
+  ahora: string,
+): IndicadorCorte[] {
   const avance = avanceRuta(corte.jardines)
   const marca = ultimaMarca(corte.jardines, ahora)
   const duracion = servicio?.duracion
-  const total = duracion ? duracion.duracion_maxima_dias + (duracion.dias_limpieza ?? 0) : diasDelPeriodo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)
+  const total = duracion
+    ? duracion.duracion_maxima_dias + (duracion.dias_limpieza ?? 0)
+    : diasDelPeriodo(ciclo.fecha_inicio_prevista, ciclo.fecha_fin_prevista)
   const inicio = ciclo.fecha_inicio_real ?? ciclo.fecha_inicio_prevista
   const fin = ciclo.fecha_fin_real ?? hoy
   const dia = fin < inicio ? 0 : diasDelPeriodo(inicio, fin)
@@ -126,7 +154,9 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
     {
       etiqueta: 'Duración',
       valor: `Día ${dia} de ${total}`,
-      contexto: duracion?.dias_limpieza ? `${duracion.duracion_maxima_dias} de corte + ${duracion.dias_limpieza} de limpieza` : undefined,
+      contexto: duracion?.dias_limpieza
+        ? `${duracion.duracion_maxima_dias} de corte + ${duracion.dias_limpieza} de limpieza`
+        : undefined,
       nota:
         exceso > 0
           ? `Supera el máximo en ${exceso} ${exceso === 1 ? 'día' : 'días'}`
@@ -147,7 +177,12 @@ export function indicadoresCorte(ciclo: Programacion, servicio: ServicioPeriodic
 /** Indicador del avance de un corte que aún no empezó (Figma 370-3811): «0 %», «0 de 45 jardines». */
 export function indicadorAvanceProgramado(corte: CicloCorte): IndicadorCorte {
   const avance = avanceRuta(corte.jardines)
-  return { etiqueta: 'Avance de la ruta', valor: `${avance.porcentaje} %`, contexto: `${avance.cortados} de ${jardines(avance.total)}`, nota: 'Sin marcas todavía' }
+  return {
+    etiqueta: 'Avance de la ruta',
+    valor: `${avance.porcentaje} %`,
+    contexto: `${avance.cortados} de ${jardines(avance.total)}`,
+    nota: 'Sin marcas todavía',
+  }
 }
 
 /** La ruta está completa: ya se puede registrar la limpieza y cerrar el ciclo (RF-COR-006). */
@@ -157,14 +192,51 @@ export function rutaCompleta(corte: CicloCorte): boolean {
 
 /**
  * «Total: 3 días de corte + 1 de limpieza = 4» frente al máximo (RN-002: 3 + 1), con «Cumple» o «No cumple»
- * (Figma 371-4838 y 371-5092). Los días de corte son los días con alguna marca.
+ * (Figma 371-4838 y 371-5092). Exige también las jornadas de limpieza posteriores requeridas.
+ * Los días de corte son los días con alguna marca de jardín cortado.
  */
-export function totalLimpieza(corte: CicloCorte, servicio: ServicioPeriodico | undefined): { texto: string; cumple: boolean } {
-  const diasCorte = new Set(corte.jardines.map((j) => (j.marcado_en ? (instanteALocalLima(j.marcado_en) ?? j.marcado_en).slice(0, 10) : null)).filter(Boolean)).size
+export function totalLimpieza(
+  corte: CicloCorte,
+  servicio: ServicioPeriodico | undefined,
+): { texto: string; cumple: boolean } {
+  const diasCorte = new Set(
+    corte.jardines
+      .filter((j) => j.estado === 'Cortado')
+      .map((j) => (j.marcado_en ? (instanteALocalLima(j.marcado_en) ?? j.marcado_en).slice(0, 10) : null))
+      .filter(Boolean),
+  ).size
   const limpieza = corte.limpiezas.length
   const total = diasCorte + limpieza
-  const maximo = servicio?.duracion ? servicio.duracion.duracion_maxima_dias + (servicio.duracion.dias_limpieza ?? 0) : 4
-  return { texto: `Total: ${diasCorte} ${diasCorte === 1 ? 'día' : 'días'} de corte + ${limpieza} de limpieza = ${total}`, cumple: total <= maximo }
+  const maximo = servicio?.duracion
+    ? servicio.duracion.duracion_maxima_dias + (servicio.duracion.dias_limpieza ?? 0)
+    : 4
+  const estado = cumplimientoLimpieza(corte, servicio)
+  return {
+    texto: `Total: ${diasCorte} ${diasCorte === 1 ? 'día' : 'días'} de corte + ${limpieza} de limpieza = ${total}`,
+    cumple: total <= maximo && estado.duracion && estado.limpieza,
+  }
+}
+
+export function cumplimientoLimpieza(corte: CicloCorte, servicio: ServicioPeriodico | undefined) {
+  const dias = [
+    ...new Set(
+      corte.jardines
+        .filter((j) => j.estado === 'Cortado' && j.marcado_en)
+        .map((j) => instanteALocalLima(j.marcado_en ?? '')?.slice(0, 10))
+        .filter((d): d is string => Boolean(d)),
+    ),
+  ].sort()
+  const ultimo = dias.at(-1)
+  const requeridos = servicio?.duracion?.dias_limpieza ?? 0
+  const maxima = servicio?.duracion?.duracion_maxima_dias ?? 3
+  const validas = corte.limpiezas.filter((l) => ultimo && l.fecha > ultimo && l.fecha <= hoyLima()).length
+  return {
+    duracion: dias.length <= maxima && dias.length + corte.limpiezas.length <= maxima + requeridos,
+    limpieza: validas >= requeridos,
+    requeridos,
+    validas,
+    ultimo,
+  }
 }
 
 /** «19/11/2026». */

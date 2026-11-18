@@ -10,6 +10,7 @@ import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
 import { CeldaDobleLinea, CeldaTexto } from '@/components/ui/CeldasTabla'
 import Estado from '@/components/ui/Estado'
 import EstadoError from '@/components/ui/EstadoError'
+import EstadoCarga from '@/design-system/EstadoCarga'
 import Pestanas from '@/components/ui/Pestanas'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
 import { puedeEditarPlanificacion } from '@/config/permisosPlanificacion'
@@ -192,7 +193,14 @@ export default function CiclosPage() {
           vacio={{ titulo: 'Sin ciclos en esta pestaña', descripcion: 'Los ciclos que se programen aparecerán aquí.' }}
         />
       </Pestanas>
-      {cambio && (
+      {consulta.estado === 'error' && consulta.datos && (
+        <EstadoError
+          titulo="No pudimos actualizar los ciclos"
+          descripcion={consulta.error?.detalle ?? ''}
+          onReintentar={consulta.reintentar}
+        />
+      )}
+      {puedeEditar && cambio && (
         <DialogoCambioCiclo
           ciclo={cambio.ciclo}
           cambio={cambio.cambio}
@@ -205,7 +213,17 @@ export default function CiclosPage() {
           }}
         />
       )}
-      {reprogramando && servicios.datos && (
+      {puedeEditar && reprogramando && servicios.estado === 'cargando' && (
+        <EstadoCarga retrasar texto="Cargando servicios para reprogramar" />
+      )}
+      {puedeEditar && reprogramando && servicios.estado === 'error' && (
+        <EstadoError
+          titulo="No pudimos cargar los servicios para reprogramar"
+          descripcion={servicios.error?.detalle ?? ''}
+          onReintentar={servicios.reintentar}
+        />
+      )}
+      {puedeEditar && reprogramando && servicios.estado === 'exito' && servicios.datos && (
         <PanelProgramarCiclo
           servicios={servicios.datos}
           servicioInicial={null}

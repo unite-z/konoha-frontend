@@ -4,9 +4,8 @@
  * o inicio real, duración con el máximo y restricciones) y el historial. El jefe inicia, finaliza o cancela, y un
  * ciclo programado lo reprograma con el mismo panel que el Calendario (AV-398).
  *
- * No hay `GET programaciones/{id}/`: el ciclo se busca en `GET programaciones/` del mismo rango que la lista.
- * El código (AV-364) y el historial (AV-253) se simulan hasta que lleguen (D9). Faltan el requerimiento asociado
- * (AV-263) y «confirmado por» de los avisos (AV-253). La ruta del corte la añade AV-270.
+ * Consulta `GET programaciones/{id}/` con código e historial reales. La reprogramación conserva la identidad
+ * cuando solo cambian fechas; con otro servicio o proveedor pasa a la ficha del ciclo nuevo.
  */
 import { useCallback, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -235,7 +234,7 @@ function FichaCiclo({
 
       {corte && !esMovil && <PestanasCorte ciclo={ciclo} corte={corte} servicio={servicio} hoy={hoy} ahora={ahora} />}
 
-      {!corte && !esMovil && historial.length > 0 && (
+      {!esMovil && historial.length > 0 && (
         <Tarjeta titulo="Historial">
           <ul className={estilos.historial}>
             {historial.map((evento) => (
@@ -347,7 +346,7 @@ export default function CicloDetallePage() {
           }}
         />
       )}
-      {ciclo && reprogramando && servicios.datos && (
+      {ciclo && ciclo.estado === 'Programada' && puedeEditar && reprogramando && servicios.datos && (
         <PanelProgramarCiclo
           servicios={servicios.datos}
           servicioInicial={null}

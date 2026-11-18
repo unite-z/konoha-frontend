@@ -1,7 +1,26 @@
-import { describe, expect, it } from 'vitest'
+﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cicloCorteSimulado } from '@/services/simulados/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, esCorte, jardines, ultimoDiaCorte, indicadoresCorte, momento, porCortar, rutaCompleta, textoMarcado, totalLimpieza, ultimaMarca } from './corte'
+import {
+  avanceRuta,
+  cortadosPorDia,
+  esCorte,
+  jardines,
+  ultimoDiaCorte,
+  indicadoresCorte,
+  momento,
+  porCortar,
+  rutaCompleta,
+  textoMarcado,
+  totalLimpieza,
+  ultimaMarca,
+} from './corte'
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-21T12:00:00-05:00'))
+})
+afterEach(() => vi.useRealTimers())
 
 const ciclo: Programacion = {
   id: 1,
@@ -21,7 +40,14 @@ const corte: ServicioPeriodico = {
   nombre: 'Corte de césped',
   es_ruidoso: true,
   frecuencias: [],
-  duracion: { duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: null, hora_fin: null, fecha_modificacion: '2026-10-01T10:00:00-05:00', modificado_por: 'jefe' },
+  duracion: {
+    duracion_maxima_dias: 3,
+    dias_limpieza: 1,
+    hora_inicio: null,
+    hora_fin: null,
+    fecha_modificacion: '2026-10-01T10:00:00-05:00',
+    modificado_por: 'jefe',
+  },
 }
 const datos = cicloCorteSimulado(ciclo, '2026-11-17')
 
@@ -34,13 +60,26 @@ describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
     expect([esCorte('Corte de césped'), esCorte('Poda')]).toEqual([true, false])
     expect(avanceRuta(datos.jardines)).toEqual({ cortados: 28, total: 45, porcentaje: 62 })
     expect(porCortar(datos.jardines)).toHaveLength(17)
-    expect(porCortar(datos.jardines).slice(0, 3).map((j) => j.codigo)).toEqual(['J-016', 'J-031', 'J-040'])
-    expect([ultimoDiaCorte('2026-11-16', '2026-11-17', corte, null), ultimoDiaCorte('2026-11-16', '2026-11-20', corte, null)]).toEqual(['2026-11-18', '2026-11-20'])
+    expect(
+      porCortar(datos.jardines)
+        .slice(0, 3)
+        .map((j) => j.codigo),
+    ).toEqual(['J-016', 'J-031', 'J-040'])
+    expect([
+      ultimoDiaCorte('2026-11-16', '2026-11-17', corte, null),
+      ultimoDiaCorte('2026-11-16', '2026-11-20', corte, null),
+    ]).toEqual(['2026-11-18', '2026-11-20'])
   })
 
   it('dice la última marca y la destaca si pasan más de 24 h', () => {
-    expect(ultimaMarca(datos.jardines, '2026-11-17T11:00')).toEqual({ texto: 'Última marca hoy 10:42', desfasada: false })
-    expect(ultimaMarca(datos.jardines, '2026-11-18T12:50')).toEqual({ texto: 'Actualizado ayer 10:42 · hace 26 h', desfasada: true })
+    expect(ultimaMarca(datos.jardines, '2026-11-17T11:00')).toEqual({
+      texto: 'Última marca hoy 10:42',
+      desfasada: false,
+    })
+    expect(ultimaMarca(datos.jardines, '2026-11-18T12:50')).toEqual({
+      texto: 'Actualizado ayer 10:42 · hace 26 h',
+      desfasada: true,
+    })
     expect(ultimaMarca([], '2026-11-17T11:00').texto).toBe('Sin marcas todavía')
     expect(momento('2026-11-15T09:00:00-05:00', '2026-11-17T11:00')).toBe('15/11 09:00')
   })
@@ -53,11 +92,15 @@ describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
     ])
     const [j014] = datos.jardines
     expect(textoMarcado(j014, '2026-11-17T11:00')).toBe('Hoy 10:42 · J. Ramos')
-    expect(textoMarcado(datos.jardines.find((j) => j.codigo === 'J-031') ?? j014, '2026-11-17T11:00')).toBe('Detenido por interrupción')
+    expect(textoMarcado(datos.jardines.find((j) => j.codigo === 'J-031') ?? j014, '2026-11-17T11:00')).toBe(
+      'Detenido por interrupción',
+    )
   })
 
   it('da avance, duración «Día 2 de 4» e interrupciones', () => {
-    expect(indicadoresCorte(ciclo, corte, datos, '2026-11-17', '2026-11-17T11:00').map((i) => [i.valor, i.contexto, i.nota])).toEqual([
+    expect(
+      indicadoresCorte(ciclo, corte, datos, '2026-11-17', '2026-11-17T11:00').map((i) => [i.valor, i.contexto, i.nota]),
+    ).toEqual([
       ['62 %', '28 de 45 jardines', 'Última marca hoy 10:42'],
       ['Día 2 de 4', '3 de corte + 1 de limpieza', '0,5 días de interrupción descontados'],
       ['1', 'Sociales → Ciencias', '35 min descontados'],
@@ -71,6 +114,19 @@ describe('detalle del corte (Figma 346-1334 y 371-4306)', () => {
     const quinto = cicloCorteSimulado(ciclo, '2026-11-20')
     expect(totalLimpieza(quinto, corte)).toEqual({ texto: 'Total: 3 días de corte + 2 de limpieza = 5', cumple: false })
     const [avance, duracion] = indicadoresCorte(ciclo, corte, quinto, '2026-11-20', '2026-11-20T10:00')
-    expect([avance.nota, duracion.valor, duracion.nota, duracion.notaError]).toEqual(['Ruta completa', 'Día 5 de 4', 'Supera el máximo en 1 día', true])
+    expect([avance.nota, duracion.valor, duracion.nota, duracion.notaError]).toEqual([
+      'Ruta completa',
+      'Día 5 de 4',
+      'Supera el máximo en 1 día',
+      true,
+    ])
   })
+})
+
+it('sin limpieza registrada no cumple aunque la duración sea corta; una limpieza el mismo día tampoco vale', () => {
+  const base = cicloCorteSimulado(ciclo, '2026-11-19')
+  expect(totalLimpieza({ ...base, limpiezas: [] }, corte).cumple).toBe(false)
+  expect(totalLimpieza({ ...base, limpiezas: [{ id: 100, fecha: '2026-11-18', autor: 'Demo' }] }, corte).cumple).toBe(
+    false,
+  )
 })

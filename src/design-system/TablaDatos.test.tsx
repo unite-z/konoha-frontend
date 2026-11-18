@@ -135,6 +135,45 @@ describe('TablaDatos', () => {
     expect(abrir).not.toHaveBeenCalled()
   })
 
+  it('respeta controles personalizados y editables al hacer clic o pulsar Enter y Espacio', async () => {
+    const usuario = userEvent.setup()
+    const abrir = vi.fn()
+    render(
+      <TablaDatos
+        titulo="Ruta"
+        columnas={[
+          {
+            clave: 'control',
+            titulo: 'Control',
+            render: () => (
+              <>
+                <span role="button" tabIndex={0}>
+                  <span>Acción propia</span>
+                </span>
+                <span contentEditable suppressContentEditableWarning>
+                  Texto editable
+                </span>
+                <a href="#destino">Enlace</a>
+              </>
+            ),
+          },
+        ]}
+        filas={filas(1)}
+        claveFila={(f) => String(f.id)}
+        onFilaClick={abrir}
+      />,
+    )
+    for (const control of [
+      screen.getByText('Acción propia'),
+      screen.getByText('Texto editable'),
+      screen.getByRole('link'),
+    ]) {
+      await usuario.click(control)
+      await usuario.keyboard('{Enter} ')
+    }
+    expect(abrir).not.toHaveBeenCalled()
+  })
+
   it('estados vacío y error sustituyen a la tabla', () => {
     const { rerender } = render(
       <TablaDatos

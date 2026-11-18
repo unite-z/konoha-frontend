@@ -49,6 +49,12 @@ export interface CicloCorte {
   limpiezas: LimpiezaCorte[]
   /** Días de interrupción que no cuentan en la duración (0,5 = media jornada). */
   dias_interrupcion_descontados: number
+  dias_corte?: number
+  maximo_dias?: number
+  cumple?: boolean
+  cumple_duracion?: boolean
+  cumple_limpieza?: boolean
+  dias_limpieza_requeridos?: number
 }
 
 /** Zona alternativa pendiente de la ruta para trasladar el corte (AV-258), con su aviso del día si lo hay. */

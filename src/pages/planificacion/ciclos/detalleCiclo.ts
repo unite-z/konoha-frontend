@@ -179,7 +179,7 @@ export function historialCiclo(ciclo: Programacion): { clave: string; texto: str
     .sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora))
     .map((evento) => {
       const local = instanteALocalLima(evento.fecha_hora) ?? evento.fecha_hora
-      return { clave: `${evento.estado}-${evento.fecha_hora}`, texto: TEXTO_EVENTO[evento.estado], detalle: `${local.slice(8, 10)}/${local.slice(5, 7)} ${local.slice(11, 16)} · ${evento.autor}` }
+      return { clave: `${evento.estado}-${evento.fecha_hora}`, texto: evento.motivo || TEXTO_EVENTO[evento.estado], detalle: `${local.slice(8, 10)}/${local.slice(5, 7)} ${local.slice(11, 16)} · ${evento.autor}` }
     })
 }
 
