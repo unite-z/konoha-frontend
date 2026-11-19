@@ -44,6 +44,8 @@ export interface EjemplarCampana {
   ubicacion: string | null
   area_verde_id: number | null
   estado_intervencion: 'Pendiente' | 'Incompleta' | 'Verificada'
+  /** La intervención que da el estado: la verificada o, si no hay, la última incompleta. */
+  intervencion_id: number | null
 }
 
 export interface TramoRendimiento {

@@ -7,7 +7,7 @@ import { API_CORE_URL } from '@/services/api/clienteCore'
 import { API_TERCERIZADOS_URL } from '@/services/api/clienteTercerizados'
 import { useConsulta } from '@/hooks/useConsulta'
 import { listarHistorialEjemplar, type FuenteHistorialEjemplar } from '@/services/api/ejemplares'
-import { rutaDetalleAtencion } from '@/router/rutasApp'
+import { rutaDetalleAtencion, rutaIntervencionPoda } from '@/router/rutasApp'
 import { formatearFecha } from '@/utils/formato'
 import estilos from './Catalogos.module.css'
 
@@ -71,6 +71,11 @@ export default function HistorialEjemplar({ ejemplarId }: { ejemplarId: number }
                     >
                       Descargar documento del proveedor
                     </a>
+                  </p>
+                )}
+                {evento.entidad === 'intervencion' && (
+                  <p>
+                    <Link to={rutaIntervencionPoda(evento.id)}>Ver la intervención</Link>
                   </p>
                 )}
                 {evento.entidad === 'atencion' && (

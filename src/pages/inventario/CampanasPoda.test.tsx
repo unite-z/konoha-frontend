@@ -40,12 +40,19 @@ const permiso = vi.hoisted(() => ({ planificar: true, registrar: false }))
 
 vi.mock('@/services/api/campanasPoda', () => api)
 vi.mock('@/services/api/ejemplares', () => ({
-  listarEjemplares: async () => [{ id: 3, codigo: 'EJ-0003', especie_nombre_comun: 'Molle', referencia_catastro: 'CAT-1' }],
+  listarEjemplares: async () => [
+    { id: 3, codigo: 'EJ-0003', especie_nombre_comun: 'Molle', referencia_catastro: 'CAT-1' },
+  ],
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
 vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ usuario: { id: 7 } }) }))
-vi.mock('@/config/permisosCore', () => ({ PERMISOS: { planificarPoda: 'planificar', registrarPoda: 'registrar' }, puede: (_sesion: unknown, codigo: string) => (codigo === 'registrar' ? permiso.registrar : permiso.planificar) }))
-vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
+vi.mock('@/config/permisosCore', () => ({
+  PERMISOS: { planificarPoda: 'planificar', registrarPoda: 'registrar' },
+  puede: (_sesion: unknown, codigo: string) => (codigo === 'registrar' ? permiso.registrar : permiso.planificar),
+}))
+vi.mock('@/layouts/LayoutOficina/AccionesPagina', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
 
 function pagina(ruta: string) {
   return render(
@@ -54,6 +61,7 @@ function pagina(ruta: string) {
         <Route path="/areas-verdes/campanas-poda" element={<CampanasPodaPage />} />
         <Route path="/areas-verdes/campanas-poda/nueva" element={<PlanificarCampanaPage />} />
         <Route path="/areas-verdes/campanas-poda/:id" element={<CampanaPodaDetallePage />} />
+        <Route path="/areas-verdes/intervenciones-poda/:id" element={<p>Ficha de la intervención</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -63,8 +71,28 @@ beforeEach(() => {
   permiso.planificar = true
   api.listarCampanas.mockResolvedValue({ count: 1, next: null, previous: null, results: [CAMPANA] })
   api.obtenerCampana.mockResolvedValue(CAMPANA)
-  api.listarEjemplaresCampana.mockResolvedValue({ count: 1, next: null, previous: null, results: [{ id: 3, codigo: 'EJ-0003', referencia_catastro: 'CAT-1', codigo_placa_antigua: null, especie_nombre_comun: 'Molle', ubicacion: null, area_verde_id: null }] })
-  api.consultarVentanaCierre.mockResolvedValue({ anio: 2026, fecha_inicio: '2026-12-20', fecha_fin: '2027-01-19', duracion_maxima_dias: 10 })
+  api.listarEjemplaresCampana.mockResolvedValue({
+    count: 1,
+    next: null,
+    previous: null,
+    results: [
+      {
+        id: 3,
+        codigo: 'EJ-0003',
+        referencia_catastro: 'CAT-1',
+        codigo_placa_antigua: null,
+        especie_nombre_comun: 'Molle',
+        ubicacion: null,
+        area_verde_id: null,
+      },
+    ],
+  })
+  api.consultarVentanaCierre.mockResolvedValue({
+    anio: 2026,
+    fecha_inicio: '2026-12-20',
+    fecha_fin: '2027-01-19',
+    duracion_maxima_dias: 10,
+  })
   api.crearCampana.mockResolvedValue(CAMPANA)
 })
 
@@ -121,20 +149,29 @@ describe('PlanificarCampanaPage', () => {
   })
 
   it('una segunda campaña pide motivo y se envía como extraordinaria', async () => {
-    api.crearCampana.mockRejectedValueOnce(new ErrorApi(409, 'campana-anual-existente', 'Ya existe una campaña anual en 2026'))
+    api.crearCampana.mockRejectedValueOnce(
+      new ErrorApi(409, 'campana-anual-existente', 'Ya existe una campaña anual en 2026'),
+    )
     pagina('/areas-verdes/campanas-poda/nueva')
     await waitFor(() => expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-12-29'))
 
     fireEvent.click(screen.getByRole('button', { name: 'Crear campaña' }))
-    fireEvent.change(await screen.findByLabelText(/Motivo extraordinario/), { target: { value: 'Atención urgente por riesgo' } })
+    fireEvent.change(await screen.findByLabelText(/Motivo extraordinario/), {
+      target: { value: 'Atención urgente por riesgo' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Continuar extraordinaria' }))
 
     await waitFor(() => expect(api.crearCampana).toHaveBeenCalledTimes(2))
-    expect(api.crearCampana.mock.calls[1][0]).toMatchObject({ clase: 'Extraordinaria', motivo_extraordinaria: 'Atención urgente por riesgo' })
+    expect(api.crearCampana.mock.calls[1][0]).toMatchObject({
+      clase: 'Extraordinaria',
+      motivo_extraordinaria: 'Atención urgente por riesgo',
+    })
   })
 
   it('un borrador que resulta ser la segunda campaña sigue siendo borrador', async () => {
-    api.crearCampana.mockRejectedValueOnce(new ErrorApi(409, 'campana-anual-existente', 'Ya existe una campaña anual en 2026'))
+    api.crearCampana.mockRejectedValueOnce(
+      new ErrorApi(409, 'campana-anual-existente', 'Ya existe una campaña anual en 2026'),
+    )
     pagina('/areas-verdes/campanas-poda/nueva')
     await waitFor(() => expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-12-29'))
 
@@ -147,14 +184,18 @@ describe('PlanificarCampanaPage', () => {
   })
 
   it('avisa si el cierre no está registrado y deja escribir las fechas', async () => {
-    api.consultarVentanaCierre.mockRejectedValueOnce(new ErrorApi(409, 'cierre-no-registrado', 'Registra el cierre del campus de 2026'))
+    api.consultarVentanaCierre.mockRejectedValueOnce(
+      new ErrorApi(409, 'cierre-no-registrado', 'Registra el cierre del campus de 2026'),
+    )
     pagina('/areas-verdes/campanas-poda/nueva')
     expect(await screen.findByText('Registra el cierre del campus de 2026')).toBeTruthy()
     expect((screen.getByLabelText(/^Inicio/) as HTMLInputElement).disabled).toBe(false)
   })
 
   it('muestra el error del servidor al rechazar el periodo', async () => {
-    api.crearCampana.mockRejectedValueOnce(new ErrorApi(400, 'campana-duracion-excedida', 'La campaña no puede durar más de 10 días'))
+    api.crearCampana.mockRejectedValueOnce(
+      new ErrorApi(400, 'campana-duracion-excedida', 'La campaña no puede durar más de 10 días'),
+    )
     pagina('/areas-verdes/campanas-poda/nueva')
     await waitFor(() => expect((screen.getByLabelText(/^Fin/) as HTMLInputElement).value).toBe('2026-12-29'))
 
@@ -180,6 +221,34 @@ describe('CampanaPodaDetallePage', () => {
 
     await waitFor(() => expect(api.iniciarCampana).toHaveBeenCalledWith(5))
     expect(await screen.findByText('Ejecución autorizada.')).toBeTruthy()
+  })
+
+  it('la intervención incompleta se abre desde la campaña para completarla', async () => {
+    const fila = {
+      id: 3,
+      codigo: 'EJ-0003',
+      referencia_catastro: 'CAT-1',
+      codigo_placa_antigua: null,
+      especie_nombre_comun: 'Molle',
+      ubicacion: null,
+      area_verde_id: null,
+    }
+    api.listarEjemplaresCampana.mockResolvedValue({
+      count: 3,
+      next: null,
+      previous: null,
+      results: [
+        { ...fila, estado_intervencion: 'Incompleta', intervencion_id: 41 },
+        { ...fila, id: 4, codigo: 'EJ-0004', estado_intervencion: 'Verificada', intervencion_id: 42 },
+        { ...fila, id: 5, codigo: 'EJ-0005', estado_intervencion: 'Pendiente', intervencion_id: null },
+      ],
+    })
+    pagina('/areas-verdes/campanas-poda/5')
+
+    expect(await screen.findByRole('link', { name: 'Ver la intervención de EJ-0004' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /EJ-0005/ })).toBeNull()
+    fireEvent.click(screen.getByRole('link', { name: 'Completar la intervención de EJ-0003' }))
+    expect(await screen.findByText('Ficha de la intervención')).toBeTruthy()
   })
 
   it('una campaña en ejecución no se edita ni se retira', async () => {
