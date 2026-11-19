@@ -22,10 +22,12 @@ import {
   Marker,
   NavigationControl,
   ScaleControl,
+  setWorkerUrl,
   type GeoJSONSource,
   type GeoJSONSourceSpecification,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import urlWorkerMapLibre from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import {
   claveFilaMapa,
   limitesDeElementos,
@@ -51,6 +53,11 @@ export interface LienzoMapaAtencionesProps {
   /** E1: el componente geográfico no se pudo cargar. */
   onError: () => void
 }
+
+// MapLibre 6 busca su worker junto a su propio fichero (`import.meta.url`). Vite, en desarrollo, sirve la librería
+// preempaquetada desde otra carpeta donde el worker no existe («Worker failed to load»): se le da la URL del fichero
+// real, que Vite resuelve igual en desarrollo y en el build (el worker no importa nada más).
+setWorkerUrl(urlWorkerMapLibre)
 
 const ID_FUENTE = 'atenciones-areas'
 
