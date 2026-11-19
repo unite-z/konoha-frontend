@@ -3,12 +3,15 @@ import type { AtencionMapa, ResultadoMapaAtenciones, TipoAtencion } from '../typ
 import {
   aConsultaMapa,
   claveFilaMapa,
+  esAtencionTercerizada,
   esGeometriaValida,
-  limitesDeElementos,
+  filasDeArea,
+  filasDeEjemplar,
+  poligonosConAtenciones,
   prepararMapa,
-  puntoRepresentativo,
+  puntosDeEjemplares,
   soloTiposVisibles,
-  textoMarcador,
+  usosDeFilas,
 } from './mapaAtenciones'
 
 // Coordenadas claramente ficticias (cerca de 0,0): las pruebas no dependen de la ubicación real del campus.
@@ -42,11 +45,16 @@ function atencion(cambios: Partial<AtencionMapa> = {}): AtencionMapa {
     ejemplar_id: null,
     ejemplar_codigo: null,
     archivos_asociados: 0,
+    tipo_uso_id: null,
+    area_inventario_id: null,
     ...cambios,
   }
 }
 
-function respuesta(features: { geometry: unknown; properties: AtencionMapa }[], sin: AtencionMapa[]): ResultadoMapaAtenciones {
+function respuesta(
+  features: { geometry: unknown; properties: AtencionMapa }[],
+  sin: AtencionMapa[],
+): ResultadoMapaAtenciones {
   return {
     periodo: { desde: '2026-10-01', hasta: '2026-10-31' },
     filtros_aplicados: {
@@ -79,7 +87,15 @@ describe('esGeometriaValida', () => {
 
   it('rechaza coordenadas fuera de rango, tipos desconocidos y null', () => {
     expect(esGeometriaValida({ type: 'Point', coordinates: [200, 0] })).toBe(false)
-    expect(esGeometriaValida({ type: 'LineString', coordinates: [[0, 0], [1, 1]] })).toBe(false)
+    expect(
+      esGeometriaValida({
+        type: 'LineString',
+        coordinates: [
+          [0, 0],
+          [1, 1],
+        ],
+      }),
+    ).toBe(false)
     expect(esGeometriaValida(null)).toBe(false)
   })
 })
@@ -115,28 +131,83 @@ describe('prepararMapa', () => {
 
 describe('claveFilaMapa', () => {
   it('distingue la misma atención en espacios o ejemplares distintos', () => {
-    expect(claveFilaMapa(atencion())).toBe('1-3-sin')
-    expect(claveFilaMapa(atencion({ area_verde_id: null, ejemplar_id: 9 }))).toBe('1-sin-9')
+    expect(claveFilaMapa(atencion())).toBe('Tercerizado-1-3-sin')
+    expect(claveFilaMapa(atencion({ area_verde_id: null, ejemplar_id: 9 }))).toBe('Tercerizado-1-sin-9')
+  })
+
+  it('no confunde una actividad propia con una atención del mismo id', () => {
+    expect(claveFilaMapa(atencion({ modalidad: 'PersonalPropio' }))).not.toBe(claveFilaMapa(atencion()))
   })
 })
 
-describe('limitesDeElementos', () => {
-  it('devuelve null sin elementos', () => {
-    expect(limitesDeElementos([])).toBeNull()
+describe('esAtencionTercerizada', () => {
+  it('solo las de MOD-05 tienen ficha de atención', () => {
+    expect(esAtencionTercerizada(atencion())).toBe(true)
+    expect(esAtencionTercerizada(atencion({ modalidad: 'PersonalPropio', codigo: 'ACT-1' }))).toBe(false)
+  })
+})
+
+describe('usosDeFilas', () => {
+  const USOS = [
+    { id: 1, nombre: 'Recreativo', color: 'verde' },
+    { id: 2, nombre: 'Institucional', color: 'azul' },
+    { id: 3, nombre: 'Ornamental', color: 'rojo' },
+  ]
+
+  it('deja los tipos de uso de los espacios con atenciones, en el orden del catálogo', () => {
+    const filas = [atencion({ tipo_uso_id: 3 }), atencion({ tipo_uso_id: 1 })]
+    expect(usosDeFilas(filas, USOS).map((u) => u.nombre)).toEqual(['Recreativo', 'Ornamental'])
   })
 
-  it('combina puntos y polígonos', () => {
-    expect(limitesDeElementos([{ geometry: { type: 'Point', coordinates: [-1, 5] } }, { geometry: CUADRADO }])).toEqual([
-      [-1, 0],
-      [4, 5],
+  it('sin tipo de uso no hay leyenda de usos', () => {
+    expect(usosDeFilas([atencion()], USOS)).toEqual([])
+  })
+})
+
+describe('poligonosConAtenciones', () => {
+  it('resalta los polígonos vinculados a las áreas de MOD-02 que tienen atenciones', () => {
+    const vinculos = [
+      { id_fuente: 'p1', area_verde_id: 10 },
+      { id_fuente: 'p2', area_verde_id: 10 },
+      { id_fuente: 'p3', area_verde_id: 20 },
+      { id_fuente: 'p4', area_verde_id: null },
+    ]
+    const filas = [atencion({ area_inventario_id: 10 }), atencion({ area_inventario_id: null })]
+    expect([...poligonosConAtenciones(filas, vinculos)].sort()).toEqual(['p1', 'p2'])
+  })
+})
+
+describe('filasDeArea y filasDeEjemplar', () => {
+  const filas = [
+    atencion({ atencion_id: 1, area_inventario_id: 10 }),
+    atencion({ atencion_id: 2, area_inventario_id: 10, ejemplar_id: 5 }),
+    atencion({ atencion_id: 3, area_inventario_id: 20 }),
+  ]
+
+  it('un área reúne las atenciones del espacio y de sus ejemplares', () => {
+    expect(filasDeArea(filas, 10).map((f) => f.atencion_id)).toEqual([1, 2])
+  })
+
+  it('un ejemplar, solo las suyas', () => {
+    expect(filasDeEjemplar(filas, 5).map((f) => f.atencion_id)).toEqual([2])
+  })
+})
+
+describe('puntosDeEjemplares', () => {
+  it('un punto por ejemplar con su número de atenciones; los polígonos no son puntos', () => {
+    const { elementos } = prepararMapa(
+      respuesta(
+        [
+          { geometry: PUNTO, properties: atencion({ atencion_id: 1, ejemplar_id: 7, ejemplar_codigo: 'EJ-7' }) },
+          { geometry: PUNTO, properties: atencion({ atencion_id: 2, ejemplar_id: 7, ejemplar_codigo: 'EJ-7' }) },
+          { geometry: CUADRADO, properties: atencion({ atencion_id: 3 }) },
+        ],
+        [],
+      ),
+    )
+    expect(puntosDeEjemplares(elementos)).toEqual([
+      { id: 7, codigo: 'EJ-7', especie: '2 atenciones', longitud: 1, latitud: 2 },
     ])
-  })
-})
-
-describe('puntoRepresentativo', () => {
-  it('usa el Point tal cual y el centro de la caja de un polígono', () => {
-    expect(puntoRepresentativo(PUNTO)).toEqual([1, 2])
-    expect(puntoRepresentativo(CUADRADO)).toEqual([2, 2])
   })
 })
 
@@ -148,26 +219,27 @@ describe('soloTiposVisibles', () => {
   })
 })
 
-describe('textoMarcador', () => {
-  it('incluye código, tipo, fecha y espacio', () => {
-    expect(textoMarcador(atencion())).toBe('Atención AT-001, Poda, 10 oct. 2026, Jardín de ejemplo')
-    expect(textoMarcador(atencion({ area_verde_id: null, espacio: 'Sin espacio' }))).toBe(
-      'Atención AT-001, Poda, 10 oct. 2026, Sin espacio',
-    )
-  })
-})
-
 describe('aConsultaMapa', () => {
   const VACIOS = {
     desde: '2026-10-01',
     hasta: '2026-10-31',
     tipo_atencion: '',
+    tipo_uso_id: '',
     area_verde_id: '',
     tipo_servicio_id: '',
     estado: '',
     modalidad: '',
     es_riesgo: '',
   }
+
+  it('envía el tipo de uso si es un id válido', () => {
+    expect(aConsultaMapa({ ...VACIOS, tipo_uso_id: '4' })).toEqual({
+      desde: '2026-10-01',
+      hasta: '2026-10-31',
+      tipo_uso_id: 4,
+    })
+    expect(aConsultaMapa({ ...VACIOS, tipo_uso_id: 'abc' })).toEqual({ desde: '2026-10-01', hasta: '2026-10-31' })
+  })
 
   it('omite los vacíos', () => {
     expect(aConsultaMapa(VACIOS)).toEqual({ desde: '2026-10-01', hasta: '2026-10-31' })

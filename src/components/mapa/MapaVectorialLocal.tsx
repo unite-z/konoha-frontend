@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import { nombrePoligonoMapa, nombreUsoMapa } from './clasificacionMapa'
-import estilos from './MapaAreasVerdesPage.module.css'
+import estilos from './MapaVectorialLocal.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
 type UsoMapaLocal = { nombre: string; color: string }
@@ -23,6 +23,11 @@ interface Props {
   onSeleccionar?: (feature: FeatureArea) => void
   seleccionado?: FeatureArea
   poligonosBloqueados?: ReadonlySet<string>
+  /**
+   * Polígonos (por `mapa_id`) que se destacan con el color de su tipo de uso; el resto se atenúa, pero se puede
+   * seguir eligiendo. Lo usa el mapa de atenciones de MOD-06 para marcar los espacios con atenciones.
+   */
+  poligonosResaltados?: ReadonlySet<string>
   puntos?: PuntoEjemplar[]
   ejemplarId?: number | null
   onEjemplar?: (id: number) => void
@@ -45,7 +50,7 @@ interface Hover {
 const VISTA_GENERAL = { x: 500, y: 350, zoom: 1 }
 
 export default function MapaVectorialLocal({
-  datos, usos, usoSeleccionado, onSeleccionar, seleccionado, poligonosBloqueados,
+  datos, usos, usoSeleccionado, onSeleccionar, seleccionado, poligonosBloqueados, poligonosResaltados,
   puntos = [], ejemplarId, onEjemplar, onElegirPunto,
 }: Props) {
   const limites = useMemo(() => obtenerLimites(datos.features), [datos.features])
@@ -179,10 +184,12 @@ export default function MapaVectorialLocal({
         </g>
         {visibles.map(({ feature, uso, trazo }, indice) => {
           const bloqueado = poligonosBloqueados?.has(texto(feature.properties.mapa_id)) ?? false
+          const atenuado = poligonosResaltados ? !poligonosResaltados.has(texto(feature.properties.mapa_id)) : false
           const color = poligonosBloqueados
             ? bloqueado ? 'var(--color-text-secondary)' : 'var(--color-action-primary)'
-            : colores.get(uso) ?? 'var(--color-text-secondary)'
+            : atenuado ? 'var(--color-text-secondary)' : colores.get(uso) ?? 'var(--color-text-secondary)'
           const activo = hover?.feature === feature || seleccionado === feature
+          const opacidad = bloqueado ? 0.18 : activo ? 0.95 : atenuado ? 0.14 : poligonosResaltados ? 0.85 : 0.58
           return (
             <path
               key={`${texto(feature.properties?.mapa_id)}-${indice}`}
@@ -191,7 +198,7 @@ export default function MapaVectorialLocal({
               d={trazo}
               fill={color}
               fillRule="evenodd"
-              fillOpacity={bloqueado ? 0.18 : activo ? 0.95 : 0.58}
+              fillOpacity={opacidad}
               stroke={activo ? 'var(--map-selected-stroke)' : color}
               strokeWidth={activo ? 2.5 : 1}
               onMouseEnter={(evento) => posicionar(evento, feature)}

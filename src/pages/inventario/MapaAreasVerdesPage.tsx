@@ -32,8 +32,8 @@ import {
   nombrePoligonoMapa,
   nombreUsoMapa,
   type TipoUsoMapa,
-} from './clasificacionMapa'
-import MapaVectorialLocal, { type PuntoEjemplar } from './MapaVectorialLocal'
+} from '@/components/mapa/clasificacionMapa'
+import MapaVectorialLocal, { type PuntoEjemplar } from '@/components/mapa/MapaVectorialLocal'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 type Poligono = AreasVerdesGeoJSON['features'][number]

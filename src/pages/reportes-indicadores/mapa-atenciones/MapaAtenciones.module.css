@@ -1,27 +1,58 @@
-/* Mapa de atenciones: patrón «Mapa con capas» (Guía Web 5.8 y 6.1). */
-.composicion {
-  --ancho-panel-capas: var(--web-map-panel-width);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--ancho-panel-capas);
-  gap: var(--space-6);
-  align-items: start;
+/*
+ * Mapa de atenciones: patrón «Mapa con capas» (Guía Web 5.8 y 6.1). El mapa del campus ocupa el escenario y los
+ * filtros y las capas flotan encima; en móvil van encima y debajo, sin taparlo.
+ */
+.escenario {
+  position: relative;
+  height: clamp(32rem, 78vh, 56rem);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
 }
 
-/* Tablet (extensión del escritorio): una columna, con el panel debajo del mapa. */
-@media (max-width: 1023px) {
-  .composicion {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.lienzo {
+  position: absolute;
+  inset: 0;
 }
 
-.columnaMapa {
+/* Filtros, arriba a la izquierda; dejan libre la columna de los controles del mapa (arriba a la derecha). */
+.capaFiltros {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  right: calc(var(--space-3) * 2 + 2.75rem);
+  max-height: calc(100% - var(--space-6));
+  overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-2);
 }
 
-/* Panel de capas acoplado a la derecha. */
+.cabeceraCapa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Capas y leyenda, abajo a la izquierda (la ayuda del zoom va abajo a la derecha). */
+.capaCapas {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  width: var(--web-map-panel-width);
+  max-width: calc(100% - var(--space-6));
+  max-height: 55%;
+  overflow: auto;
+}
+
+/* Panel de capas. */
 .panel {
   display: flex;
   flex-direction: column;
@@ -30,6 +61,49 @@
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
+  box-shadow: var(--web-elev-2);
+}
+
+.leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.muestra {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--map-swatch-outline);
+}
+
+.puntoLeyenda {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-inline: 0.125rem;
+  border: 2px solid var(--color-bg-surface);
+  border-radius: var(--radius-full);
+  background: var(--color-text-primary);
+  box-shadow: 0 0 0 1px var(--color-border-default);
+}
+
+/* Ventana de un espacio o ejemplar. */
+.ventana {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .titulo {
@@ -59,21 +133,6 @@
   color: var(--color-text-secondary);
 }
 
-.seleccion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--web-border-subtle);
-}
-
-.cabeceraSeleccion {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
 .acciones {
   display: flex;
   flex-wrap: wrap;
@@ -85,7 +144,7 @@
 .filtros {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-3);
 }
 
 /* Campo con ayuda emergente: el icono queda en la línea de la etiqueta, sin mover los demás filtros. */
@@ -164,6 +223,40 @@
 }
 
 @media (max-width: 767px) {
+  /* Móvil: los filtros arriba y las capas abajo, fuera del mapa, que queda más bajo. */
+  .escenario {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+  .lienzo {
+    position: relative;
+    order: 2;
+    height: 62vh;
+    overflow: hidden;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+  }
+  .capaFiltros,
+  .capaCapas {
+    position: static;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    box-shadow: none;
+  }
+  .capaFiltros {
+    order: 1;
+    margin-bottom: var(--space-3);
+  }
+  .capaCapas {
+    order: 3;
+    margin-top: var(--space-3);
+  }
+
   /* Barra de filtros: campos y botón a todo el ancho. */
   .filtros form > * {
     flex: 1 1 100%;

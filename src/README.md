@@ -15,6 +15,7 @@ Código de la PWA. Este fichero dice **dónde va cada cosa y quién puede import
 | `layouts/`                         | `LayoutOficina`: cabecera, menú y migas                                                                         | `app/layout/`                                                                       |
 | `design-system/`                   | componentes base, `tokens.css` y `global.css` (ficheros planos, AV-352)                                         | se queda en `design-system/`                                                        |
 | `components/core/`                 | `Adjuntos` e `HistorialCambios`                                                                                 | `compartido/`                                                                       |
+| `components/mapa/`                 | mapa del campus de MOD-02 (`MapaVectorialLocal` y su clasificación), que también usa el mapa de atenciones de MOD-06 | `compartido/mapa/`                                                                  |
 | `components/reportes-indicadores/` | componentes solo de MOD-06                                                                                      | `modulos/reportes-indicadores/componentes/`                                         |
 | `components/tercerizados/`         | componentes solo de MOD-05                                                                                      | `modulos/servicios-tercerizados/componentes/`                                       |
 | `pages/<modulo>/`                  | pantallas de cada módulo                                                                                        | `modulos/<modulo>/paginas/` (MOD-01 en `modulos/core/`)                             |
@@ -33,7 +34,7 @@ Cada carpeta con README propio explica qué va y qué no.
 ```
 app (router, sesion, config, layouts)
   └─> pages/<modulo> + components/<modulo>     (un módulo)
-        └─> components/core, hooks, utils genéricas, services/api/cliente.ts   (compartido)
+        └─> components/core, components/mapa, hooks, utils genéricas, services/api/cliente.ts   (compartido)
               └─> design-system                   (sistema de diseño)
 ```
 
