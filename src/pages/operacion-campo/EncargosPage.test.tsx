@@ -45,7 +45,8 @@ const encargo = {
   area_verde_nombre: 'Jardín A',
 }
 
-function simularSeguimiento(cambiar: (cuerpo: unknown) => void) {
+function simularSeguimiento(cambiar: (cuerpo: unknown) => void, incidenciaOrigen: number | null = null) {
+  const encargoConOrigen = { ...encargo, incidencia_origen_id: incidenciaOrigen }
   vi.stubGlobal(
     'fetch',
     vi.fn(async (ruta: string, opciones: RequestInit = {}) => {
@@ -54,8 +55,8 @@ function simularSeguimiento(cambiar: (cuerpo: unknown) => void) {
         cambiar(JSON.parse(String(opciones.body)))
         return Response.json({ ...encargo, estado: 'En curso' })
       }
-      if (path.endsWith('/encargos/5/')) return Response.json(encargo)
-      const resultados = path.endsWith('/encargos/') ? [encargo] : []
+      if (path.endsWith('/encargos/5/')) return Response.json(encargoConOrigen)
+      const resultados = path.endsWith('/encargos/') ? [encargoConOrigen] : []
       return Response.json({ count: resultados.length, results: resultados, next: null, previous: null })
     }),
   )
@@ -144,6 +145,23 @@ it('desde el encargo se llega a sus tareas, por el texto y por «Ver tareas» (A
   expect(enlace.getAttribute('href')).toBe('/operacion-campo/participantes?encargo_id=5')
   expect(screen.getByRole('button', { name: 'Ver tareas del encargo 5' })).toBeTruthy()
 })
+
+it.each([
+  { origen: 42, permisos: [...JEFE, 'PLA.PLANIFICACION.CONSULTAR', 'PLA.INCIDENCIA.REGISTRAR'], visible: true },
+  { origen: null, permisos: [...JEFE, 'PLA.PLANIFICACION.CONSULTAR', 'PLA.INCIDENCIA.REGISTRAR'], visible: false },
+  { origen: 42, permisos: CAPATAZ, visible: false },
+])(
+  'el acceso a la incidencia respeta el origen y los permisos ($visible, $origen)',
+  async ({ origen, permisos, visible }) => {
+    sesion.permisos = permisos
+    simularSeguimiento(vi.fn(), origen)
+    render(<EncargosPage />, { wrapper: MemoryRouter })
+    await screen.findByRole('link', { name: 'Podar junto al sendero' })
+    const enlace = screen.queryByRole('link', { name: 'Ver incidencia de origen del encargo 5' })
+    if (visible) expect(enlace?.getAttribute('href')).toBe('/incidencias/42')
+    else expect(enlace).toBeNull()
+  },
+)
 
 it('marca los encargos vencidos con un texto y permite filtrar solo los vencidos (AV-403)', async () => {
   sesion.permisos = CAPATAZ

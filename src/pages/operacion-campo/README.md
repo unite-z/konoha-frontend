@@ -2,6 +2,11 @@
 
 Operación de campo: `CuadrillasPage`, `EncargosPage` y `ParticipantesPage`, con `DialogoNuevaActividad`, piezas comunes en `ComponentesCampo.tsx` y el hook del módulo `useCampo.ts`.
 
+Los encargos derivados de una incidencia muestran «Ver incidencia de origen» en sus acciones.
+El listado y el detalle de encargos reciben `incidencia_origen_id` (nulo si no hay origen) del
+vínculo de MOD-03. El acceso usa la ruta existente de incidencias y exige los permisos actuales
+de esa ruta y de su API: `PLA.PLANIFICACION.CONSULTAR` y `PLA.INCIDENCIA.REGISTRAR`.
+
 `ActividadesPage` (AV-316) consulta el parte real por cuadrilla y fecha del parte,
 con paginación, actualización y estados de carga, vacío y error. Muestra por
 separado la hora de ejecución y la de registro en Lima. El listado recibe

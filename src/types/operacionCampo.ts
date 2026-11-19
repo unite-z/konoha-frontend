@@ -107,6 +107,7 @@ export interface ReprogramacionEncargo {
 }
 
 export interface EncargoCampo extends EntradaEncargo {
+  incidencia_origen_id?: number | null
   estado: EstadoEncargo
   /** Plazo previsto pasado sin completar ni cancelar (lo calcula el servidor con la fecha de Lima, AV-403). */
   vencido?: boolean
