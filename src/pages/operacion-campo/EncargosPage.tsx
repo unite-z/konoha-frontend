@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
+import AccionFila, { AccionesFila, AccionFilaEnlace } from '@/design-system/AccionFila'
+import { PERMISOS } from '@/config/permisosCore'
 import Boton from '@/design-system/Boton'
 import Tarjeta from '@/design-system/Tarjeta'
 import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
@@ -11,6 +12,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
 import { rutaTareasDeEncargo } from '@/router/rutasCampo'
+import { rutaIncidencia } from '@/router/rutasApp'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
 import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
@@ -176,6 +178,16 @@ export default function EncargosPage() {
             titulo: 'Acciones',
             render: (e) => (
               <AccionesFila>
+                {e.incidencia_origen_id &&
+                  permisos?.includes(PERMISOS.consultarPlanificacion) &&
+                  permisos.includes(PERMISOS.registrarIncidencia) && (
+                    <AccionFilaEnlace
+                      icono="eye"
+                      nombre="Ver incidencia de origen"
+                      etiqueta={`Ver incidencia de origen del encargo ${e.id}`}
+                      to={rutaIncidencia(e.incidencia_origen_id)}
+                    />
+                  )}
                 <AccionFila
                   icono="list"
                   nombre="Ver tareas"
