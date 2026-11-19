@@ -14,7 +14,7 @@ import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/
 import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import { cargarAreasVerdesGeoJSON, type PropiedadesAreaMapa } from '@/services/api/mapaInventario'
 import type { AreaVerde } from '@/types/areasVerdes'
-import MapaVectorialLocal from './MapaVectorialLocal'
+import MapaVectorialLocal from '@/components/mapa/MapaVectorialLocal'
 import estilos from './AreasVerdes.module.css'
 import estilosMapa from './MapaAreasVerdesPage.module.css'
 

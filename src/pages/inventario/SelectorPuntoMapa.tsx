@@ -3,7 +3,7 @@ import EstadoError from '@/components/ui/EstadoError'
 import { useConsulta } from '@/hooks/useConsulta'
 import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import { cargarAreasVerdesGeoJSON } from '@/services/api/mapaInventario'
-import MapaVectorialLocal from './MapaVectorialLocal'
+import MapaVectorialLocal from '@/components/mapa/MapaVectorialLocal'
 import estilos from './MapaAreasVerdesPage.module.css'
 
 export default function SelectorPuntoMapa({ areaId, latitud, longitud, puntoActual, compacto = false, onElegir }: {

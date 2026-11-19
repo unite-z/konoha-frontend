@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import type { Feature, MultiPolygon } from 'geojson'
 import type { AreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import { nombrePoligonoMapa, nombreUsoMapa } from './clasificacionMapa'
-import estilos from './MapaAreasVerdesPage.module.css'
+import estilos from './MapaVectorialLocal.module.css'
 
 type FeatureArea = Feature<MultiPolygon, Record<string, number | string | null>>
 type UsoMapaLocal = { nombre: string; color: string }
