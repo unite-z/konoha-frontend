@@ -6,7 +6,14 @@ import { cargarAreasVerdesGeoJSON } from '@/services/api/mapaInventario'
 import MapaVectorialLocal from '@/components/mapa/MapaVectorialLocal'
 import estilos from './MapaAreasVerdesPage.module.css'
 
-export default function SelectorPuntoMapa({ areaId, latitud, longitud, puntoActual, compacto = false, onElegir }: {
+export default function SelectorPuntoMapa({
+  areaId,
+  latitud,
+  longitud,
+  puntoActual,
+  compacto = false,
+  onElegir,
+}: {
   areaId: number | null
   latitud: string
   longitud: string
@@ -17,15 +24,33 @@ export default function SelectorPuntoMapa({ areaId, latitud, longitud, puntoActu
   const mapa = useConsulta('seleccionar-punto-mapa', cargarAreasVerdesGeoJSON)
   const vinculos = useConsulta(areaId === null ? null : 'seleccionar-punto-vinculos', listarPoligonosMapa)
   if (mapa.estado === 'error') {
-    return <EstadoError titulo="No pudimos cargar el mapa" descripcion={mapa.error?.detalle ?? ''} onReintentar={mapa.reintentar} nivel={3} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar el mapa"
+        descripcion={mapa.error?.detalle ?? ''}
+        onReintentar={mapa.reintentar}
+        nivel={3}
+      />
+    )
   }
   if (!mapa.datos) return <EstadoCarga forma="tabla" texto="Cargando mapa del campus…" />
 
-  const poligonos = new Set(vinculos.datos?.filter((vinculo) => vinculo.area_verde_id === areaId).map((vinculo) => vinculo.id_fuente))
+  const poligonos = new Set(
+    vinculos.datos?.filter((vinculo) => vinculo.area_verde_id === areaId).map((vinculo) => vinculo.id_fuente),
+  )
   const seleccionado = mapa.datos.features.find((poligono) => poligonos.has(String(poligono.properties.mapa_id)))
-  const puntoNuevo = latitud && longitud && Number.isFinite(Number(latitud)) && Number.isFinite(Number(longitud))
-    ? [{ id: 0, codigo: puntoActual ? 'Punto nuevo' : 'Ubicación elegida', especie: '', latitud: Number(latitud), longitud: Number(longitud) }]
-    : []
+  const puntoNuevo =
+    latitud && longitud && Number.isFinite(Number(latitud)) && Number.isFinite(Number(longitud))
+      ? [
+          {
+            id: 0,
+            codigo: puntoActual ? 'Punto nuevo' : 'Ubicación elegida',
+            especie: '',
+            latitud: Number(latitud),
+            longitud: Number(longitud),
+          },
+        ]
+      : []
   const puntos = puntoActual
     ? [{ id: -1, codigo: 'Punto actual', especie: '', ...puntoActual }, ...puntoNuevo]
     : puntoNuevo
@@ -34,9 +59,16 @@ export default function SelectorPuntoMapa({ areaId, latitud, longitud, puntoActu
     <section aria-label="Elegir ubicación del ejemplar">
       <p>Toca el mapa para marcar la ubicación. Puedes acercar la vista con los controles.</p>
       <div className={compacto ? `${estilos.panelMapa} ${estilos.panelMapaCompacto}` : estilos.panelMapa}>
-        <MapaVectorialLocal key={String(seleccionado?.properties.mapa_id ?? '')}
-          datos={mapa.datos} usos={[]} usoSeleccionado="" seleccionado={seleccionado}
-          puntos={puntos} ejemplarId={0} onElegirPunto={onElegir} />
+        <MapaVectorialLocal
+          key={String(seleccionado?.properties.mapa_id ?? '')}
+          datos={mapa.datos}
+          usos={[]}
+          usoSeleccionado=""
+          seleccionado={seleccionado}
+          puntos={puntos}
+          ejemplarId={0}
+          onElegirPunto={onElegir}
+        />
       </div>
     </section>
   )

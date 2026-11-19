@@ -71,7 +71,10 @@ export default function MapaCampusAtenciones({
   )
   const resaltados = useMemo(() => poligonosConAtenciones(filas, vinculos.datos ?? []), [filas, vinculos.datos])
   const puntos = useMemo(() => puntosDeEjemplares(elementos), [elementos])
-  const area = useMemo(() => new Map((vinculos.datos ?? []).map((v) => [v.id_fuente, v.area_verde_id])), [vinculos.datos])
+  const area = useMemo(
+    () => new Map((vinculos.datos ?? []).map((v) => [v.id_fuente, v.area_verde_id])),
+    [vinculos.datos],
+  )
   const elegido = mapa?.features.find((f) => texto(f.properties.mapa_id) === idFuenteElegido)
 
   const error = plano.error ?? vinculos.error

@@ -97,7 +97,9 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
   }
 
   const pendiente = [coberturas, usos, sectores, cuarteles].some((consulta) => !consulta.datos)
-  const consultaConError = [coberturas, usos, sectores, cuarteles].find((consulta) => consulta.estado === 'error' && !consulta.datos)
+  const consultaConError = [coberturas, usos, sectores, cuarteles].find(
+    (consulta) => consulta.estado === 'error' && !consulta.datos,
+  )
 
   function cambiar(campo: keyof ValoresArea, valor: string) {
     setValoresManuales((actual) => ({ ...actual, [campo]: valor }))
@@ -115,14 +117,23 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
       setError('Completa nombre, lugar, ubicación y una superficie mayor que cero.')
       return
     }
-    if (modo === 'editar' && area?.activo && valores.activo === 'false' && !window.confirm('¿Confirmas dar de baja esta área verde? Se conservarán sus referencias e historial.')) return
+    if (
+      modo === 'editar' &&
+      area?.activo &&
+      valores.activo === 'false' &&
+      !window.confirm('¿Confirmas dar de baja esta área verde? Se conservarán sus referencias e historial.')
+    )
+      return
 
     setGuardando(true)
     try {
       let respuesta: AreaVerde
       if (modo === 'crear') {
         respuesta = await registrarAreaVerde({
-          nombre, lugar, ubicacion, superficie_m2: superficie,
+          nombre,
+          lugar,
+          ubicacion,
+          superficie_m2: superficie,
           tipo_cobertura_id: valores.cobertura ? Number(valores.cobertura) : null,
           tipo_uso_id: valores.uso ? Number(valores.uso) : null,
           sector_id: valores.sector ? Number(valores.sector) : null,
@@ -132,7 +143,10 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
       } else {
         if (!area) throw new Error('No se encontró el área que quieres editar.')
         respuesta = await modificarAreaVerde(area.id, {
-          nombre, lugar, ubicacion, superficie_m2: superficie,
+          nombre,
+          lugar,
+          ubicacion,
+          superficie_m2: superficie,
           activo: valores.activo === 'true',
           ...(valores.cobertura ? { tipo_cobertura_id: Number(valores.cobertura) } : {}),
           ...(valores.uso ? { tipo_uso_id: Number(valores.uso) } : {}),
@@ -148,66 +162,193 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
   }
 
   if (consultaConError) {
-    return <EstadoError titulo="No pudimos cargar los catálogos" descripcion={consultaConError.error?.detalle ?? ''} onReintentar={() => { coberturas.reintentar(); usos.reintentar(); sectores.reintentar(); cuarteles.reintentar() }} />
+    return (
+      <EstadoError
+        titulo="No pudimos cargar los catálogos"
+        descripcion={consultaConError.error?.detalle ?? ''}
+        onReintentar={() => {
+          coberturas.reintentar()
+          usos.reintentar()
+          sectores.reintentar()
+          cuarteles.reintentar()
+        }}
+      />
+    )
   }
-  if (pendiente || !coberturas.datos || !usos.datos || !sectores.datos || !cuarteles.datos) return <EstadoCarga forma="tabla" texto="Cargando campos del área…" />
+  if (pendiente || !coberturas.datos || !usos.datos || !sectores.datos || !cuarteles.datos)
+    return <EstadoCarga forma="tabla" texto="Cargando campos del área…" />
 
-  const ocupados = new Set(vinculos.datos?.filter((vinculo) => vinculo.area_verde_id !== null).map((vinculo) => vinculo.id_fuente))
-  const opcionesPoligonos = vincularMapa && vinculos.datos ? (poligonos.datos?.features ?? []).flatMap(({ properties }, indice) => {
-    const valor = typeof properties.mapa_id === 'string' ? properties.mapa_id : ''
-    if (!valor || ocupados.has(valor)) return []
-    const nombre = properties.Nombre || `Área del mapa ${indice + 1}`
-    return [{ valor, texto: `${nombre} · ${properties.Uso ?? 'Sin tipo de uso'}${properties['Área'] ? ` · ${Math.round(Number(properties['Área']))} m²` : ''}` }]
-  }).sort((a, b) => a.texto.localeCompare(b.texto, 'es')) : []
+  const ocupados = new Set(
+    vinculos.datos?.filter((vinculo) => vinculo.area_verde_id !== null).map((vinculo) => vinculo.id_fuente),
+  )
+  const opcionesPoligonos =
+    vincularMapa && vinculos.datos
+      ? (poligonos.datos?.features ?? [])
+          .flatMap(({ properties }, indice) => {
+            const valor = typeof properties.mapa_id === 'string' ? properties.mapa_id : ''
+            if (!valor || ocupados.has(valor)) return []
+            const nombre = properties.Nombre || `Área del mapa ${indice + 1}`
+            return [
+              {
+                valor,
+                texto: `${nombre} · ${properties.Uso ?? 'Sin tipo de uso'}${properties['Área'] ? ` · ${Math.round(Number(properties['Área']))} m²` : ''}`,
+              },
+            ]
+          })
+          .sort((a, b) => a.texto.localeCompare(b.texto, 'es'))
+      : []
   const opcionSeleccionada = opcionesPoligonos.find(({ valor }) => valor === poligonoId)
 
   return (
-    <Tarjeta titulo={modo === 'crear' ? 'Registrar área verde' : 'Editar área verde'} relleno="amplio" className={estilos.formulario}>
+    <Tarjeta
+      titulo={modo === 'crear' ? 'Registrar área verde' : 'Editar área verde'}
+      relleno="amplio"
+      className={estilos.formulario}
+    >
       <form className={estilosMapa.formularioConMapa} onSubmit={guardar}>
         <div className={estilosMapa.distribucionFormulario}>
           <div className={estilos.campos}>
-            <CampoFormulario id="nombre-area" etiqueta="Nombre" obligatorio value={valores.nombre} onChange={(e) => cambiar('nombre', e.target.value)} required maxLength={150} />
-            <CampoFormulario id="lugar-area" etiqueta="Lugar o referente" obligatorio value={valores.lugar} onChange={(e) => cambiar('lugar', e.target.value)} required maxLength={150} />
-            <CampoFormulario id="ubicacion-area" etiqueta="Ubicación" obligatorio value={valores.ubicacion} onChange={(e) => cambiar('ubicacion', e.target.value)} required maxLength={250} />
-            <CampoFormulario id="superficie-area" etiqueta="Superficie (m²)" obligatorio type="number" min="0.01" step="0.01" formato="decimal" value={valores.superficie} onChange={(e) => cambiar('superficie', e.target.value)} required />
-            {modo === 'crear' && <Selector id="sector-area" etiqueta="Sector de mantenimiento" valor={valores.sector} onCambiar={(valor) => cambiar('sector', valor)} opcionTodos="Sin sector asignado" opciones={sectores.datos.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))} />}
-            <Selector id="uso-area" etiqueta="Tipo de uso" valor={valores.uso} onCambiar={(valor) => cambiar('uso', valor)} opcionTodos="Sin tipo de uso" opciones={usos.datos.map((uso) => ({ valor: String(uso.id), texto: uso.nombre }))} />
-            <Selector id="cobertura-area" etiqueta="Cobertura" valor={valores.cobertura} onCambiar={(valor) => cambiar('cobertura', valor)} opcionTodos="Sin cobertura" opciones={coberturas.datos.map((cobertura) => ({ valor: String(cobertura.id), texto: cobertura.nombre }))} />
-            <Selector id="cuartel-area" etiqueta="Cuartel histórico (opcional)" valor={valores.cuartel} onCambiar={(valor) => cambiar('cuartel', valor)} opcionTodos="Sin cuartel asociado" opciones={cuarteles.datos.map((cuartel) => ({ valor: String(cuartel.id), texto: `${cuartel.numero} · ${cuartel.nombre}${cuartel.estado === 'desaparecido' ? ' (desaparecido)' : ''}` }))} />
+            <CampoFormulario
+              id="nombre-area"
+              etiqueta="Nombre"
+              obligatorio
+              value={valores.nombre}
+              onChange={(e) => cambiar('nombre', e.target.value)}
+              required
+              maxLength={150}
+            />
+            <CampoFormulario
+              id="lugar-area"
+              etiqueta="Lugar o referente"
+              obligatorio
+              value={valores.lugar}
+              onChange={(e) => cambiar('lugar', e.target.value)}
+              required
+              maxLength={150}
+            />
+            <CampoFormulario
+              id="ubicacion-area"
+              etiqueta="Ubicación"
+              obligatorio
+              value={valores.ubicacion}
+              onChange={(e) => cambiar('ubicacion', e.target.value)}
+              required
+              maxLength={250}
+            />
+            <CampoFormulario
+              id="superficie-area"
+              etiqueta="Superficie (m²)"
+              obligatorio
+              type="number"
+              min="0.01"
+              step="0.01"
+              formato="decimal"
+              value={valores.superficie}
+              onChange={(e) => cambiar('superficie', e.target.value)}
+              required
+            />
+            {modo === 'crear' && (
+              <Selector
+                id="sector-area"
+                etiqueta="Sector de mantenimiento"
+                valor={valores.sector}
+                onCambiar={(valor) => cambiar('sector', valor)}
+                opcionTodos="Sin sector asignado"
+                opciones={sectores.datos.map((sector) => ({ valor: String(sector.id), texto: sector.nombre }))}
+              />
+            )}
+            <Selector
+              id="uso-area"
+              etiqueta="Tipo de uso"
+              valor={valores.uso}
+              onCambiar={(valor) => cambiar('uso', valor)}
+              opcionTodos="Sin tipo de uso"
+              opciones={usos.datos.map((uso) => ({ valor: String(uso.id), texto: uso.nombre }))}
+            />
+            <Selector
+              id="cobertura-area"
+              etiqueta="Cobertura"
+              valor={valores.cobertura}
+              onCambiar={(valor) => cambiar('cobertura', valor)}
+              opcionTodos="Sin cobertura"
+              opciones={coberturas.datos.map((cobertura) => ({ valor: String(cobertura.id), texto: cobertura.nombre }))}
+            />
+            <Selector
+              id="cuartel-area"
+              etiqueta="Cuartel histórico (opcional)"
+              valor={valores.cuartel}
+              onCambiar={(valor) => cambiar('cuartel', valor)}
+              opcionTodos="Sin cuartel asociado"
+              opciones={cuarteles.datos.map((cuartel) => ({
+                valor: String(cuartel.id),
+                texto: `${cuartel.numero} · ${cuartel.nombre}${cuartel.estado === 'desaparecido' ? ' (desaparecido)' : ''}`,
+              }))}
+            />
             {vincularMapa && (
               <div className={estilos.selectorPoligono}>
-                <Boton variante="secundario" aria-expanded={mapaAbierto} aria-controls="mapa-alta-area"
-                  deshabilitado={!poligonos.datos || !vinculos.datos} onClick={() => setMapaAbierto(!mapaAbierto)}>
+                <Boton
+                  variante="secundario"
+                  aria-expanded={mapaAbierto}
+                  aria-controls="mapa-alta-area"
+                  deshabilitado={!poligonos.datos || !vinculos.datos}
+                  onClick={() => setMapaAbierto(!mapaAbierto)}
+                >
                   {mapaAbierto ? 'Ocultar mapa' : 'Elegir área en el mapa'}
                 </Boton>
                 {opcionSeleccionada && (
                   <>
-                    <p role="status">Área del mapa seleccionada · {opcionSeleccionada.texto}. Revisa los datos completados a partir del mapa.</p>
-                    <Boton variante="fantasma" deshabilitado={guardando} onClick={() => setPoligonoId('')}>Quitar selección</Boton>
+                    <p role="status">
+                      Área del mapa seleccionada · {opcionSeleccionada.texto}. Revisa los datos completados a partir del
+                      mapa.
+                    </p>
+                    <Boton variante="fantasma" deshabilitado={guardando} onClick={() => setPoligonoId('')}>
+                      Quitar selección
+                    </Boton>
                   </>
                 )}
-                <Selector id="poligono-area" etiqueta="Área del mapa (opcional)" valor={poligonoId} onCambiar={setPoligonoId}
-                  disabled={guardando || !poligonos.datos || !vinculos.datos} opcionTodos="Sin área del mapa vinculada"
-                  opciones={opcionesPoligonos} />
+                <Selector
+                  id="poligono-area"
+                  etiqueta="Área del mapa (opcional)"
+                  valor={poligonoId}
+                  onCambiar={setPoligonoId}
+                  disabled={guardando || !poligonos.datos || !vinculos.datos}
+                  opcionTodos="Sin área del mapa vinculada"
+                  opciones={opcionesPoligonos}
+                />
               </div>
             )}
             {vincularMapa && (poligonos.estado === 'error' || vinculos.estado === 'error') && (
-              <EstadoError titulo="No pudimos cargar las áreas del mapa disponibles" nivel={3}
+              <EstadoError
+                titulo="No pudimos cargar las áreas del mapa disponibles"
+                nivel={3}
                 descripcion={poligonos.error?.detalle ?? vinculos.error?.detalle ?? ''}
-                onReintentar={() => { poligonos.reintentar(); vinculos.reintentar() }} />
+                onReintentar={() => {
+                  poligonos.reintentar()
+                  vinculos.reintentar()
+                }}
+              />
             )}
-            {error && <div className={estilos.errorFormulario}><AvisoEnLinea tono="error">{error}</AvisoEnLinea></div>}
+            {error && (
+              <div className={estilos.errorFormulario}>
+                <AvisoEnLinea tono="error">{error}</AvisoEnLinea>
+              </div>
+            )}
           </div>
           <div id="mapa-alta-area" className={estilosMapa.mapaFormulario} hidden={!mapaAbierto}>
             {mapaAbierto && poligonos.datos && vinculos.datos && (
               <>
                 <p>Selecciona un área disponible. Las áreas atenuadas ya tienen una ficha vinculada.</p>
                 <div className={estilosMapa.panelMapa}>
-                  <MapaVectorialLocal datos={poligonos.datos} usos={[]} usoSeleccionado=""
-                    seleccionado={poligonoSeleccionado} poligonosBloqueados={ocupados}
+                  <MapaVectorialLocal
+                    datos={poligonos.datos}
+                    usos={[]}
+                    usoSeleccionado=""
+                    seleccionado={poligonoSeleccionado}
+                    poligonosBloqueados={ocupados}
                     onSeleccionar={({ properties }) => {
                       if (!guardando && typeof properties.mapa_id === 'string') setPoligonoId(properties.mapa_id)
-                    }} />
+                    }}
+                  />
                 </div>
               </>
             )}
@@ -215,16 +356,33 @@ export default function AreaVerdeForm({ modo, area, puedeVincularMapa = false, a
         </div>
         {modo === 'editar' ? (
           <div className={estilos.pieEdicion}>
-            <Selector id="estado-area" etiqueta="Estado" valor={valores.activo} onCambiar={(valor) => cambiar('activo', valor)} opciones={[{ valor: 'true', texto: 'Activa' }, { valor: 'false', texto: 'De baja' }]} />
+            <Selector
+              id="estado-area"
+              etiqueta="Estado"
+              valor={valores.activo}
+              onCambiar={(valor) => cambiar('activo', valor)}
+              opciones={[
+                { valor: 'true', texto: 'Activa' },
+                { valor: 'false', texto: 'De baja' },
+              ]}
+            />
             <div className={estilos.acciones}>
-              <Boton type="button" variante="fantasma" onClick={alCancelar}>Cancelar</Boton>
-              <Boton type="submit" variante="primario" cargando={guardando}>Guardar cambios</Boton>
+              <Boton type="button" variante="fantasma" onClick={alCancelar}>
+                Cancelar
+              </Boton>
+              <Boton type="submit" variante="primario" cargando={guardando}>
+                Guardar cambios
+              </Boton>
             </div>
           </div>
         ) : (
           <div className={estilos.acciones}>
-            <Boton type="button" variante="fantasma" onClick={alCancelar}>Cancelar</Boton>
-            <Boton type="submit" variante="primario" cargando={guardando}>Guardar área</Boton>
+            <Boton type="button" variante="fantasma" onClick={alCancelar}>
+              Cancelar
+            </Boton>
+            <Boton type="submit" variante="primario" cargando={guardando}>
+              Guardar área
+            </Boton>
           </div>
         )}
       </form>

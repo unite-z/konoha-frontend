@@ -47,7 +47,7 @@
   vector-effect: non-scaling-stroke;
 }
 
-.poligonoLocal[data-bloqueado="true"] {
+.poligonoLocal[data-bloqueado='true'] {
   cursor: not-allowed;
 }
 
@@ -65,7 +65,7 @@
   stroke-width: 2;
 }
 
-.puntoEjemplar[data-seleccionado="true"] {
+.puntoEjemplar[data-seleccionado='true'] {
   fill: var(--color-action-primary);
   stroke-width: 3;
 }
@@ -90,7 +90,7 @@
   cursor: pointer;
 }
 
-.controlesMapaLocal button[aria-pressed="true"] {
+.controlesMapaLocal button[aria-pressed='true'] {
   border-color: var(--color-action-primary);
   background: var(--color-success-bg);
 }

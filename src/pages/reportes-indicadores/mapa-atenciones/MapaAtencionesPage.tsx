@@ -20,7 +20,9 @@
  */
 import { useMemo, useState } from 'react'
 import AyudaEmergente from '@/components/reportes-indicadores/AyudaEmergente'
-import SelectoresFiltroGestion, { type CampoFiltroGestion } from '@/components/reportes-indicadores/SelectoresFiltroGestion'
+import SelectoresFiltroGestion, {
+  type CampoFiltroGestion,
+} from '@/components/reportes-indicadores/SelectoresFiltroGestion'
 import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
@@ -55,7 +57,7 @@ import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { ESTADOS_FILTRO_MAPA, TIPOS_ATENCION } from '@/utils/reportesGestion'
 import { erroresDePeriodo } from '../reportes/erroresPeriodo'
 import estilosReportes from '../reportes/Reportes.module.css'
-import { COLUMNAS_LISTA } from './columnasAtenciones'
+import { COLUMNAS_LISTA } from './ColumnasAtenciones'
 import ListaAtencionesMovil from './ListaAtencionesMovil'
 import MapaCampusAtenciones, { type AreaElegida } from './MapaCampusAtenciones'
 import estilos from './MapaAtenciones.module.css'
@@ -351,11 +353,7 @@ export default function MapaAtencionesPage() {
           <div className={estilos.cabeceraCapa}>
             <p className={estilos.subtitulo}>Filtros</p>
             {!esMovil && (
-              <Boton
-                variante="fantasma"
-                aria-expanded={filtrosVisibles}
-                onClick={() => setFiltrosVisibles((v) => !v)}
-              >
+              <Boton variante="fantasma" aria-expanded={filtrosVisibles} onClick={() => setFiltrosVisibles((v) => !v)}>
                 {filtrosVisibles ? 'Ocultar filtros' : 'Mostrar filtros'}
               </Boton>
             )}

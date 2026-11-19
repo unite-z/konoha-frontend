@@ -10,7 +10,7 @@ import TablaDatos from '@/design-system/TablaDatos'
 import { formatearNumero } from '@/utils/formato'
 import type { FilaMapa } from '@/utils/mapaAtenciones'
 import { TIPOS_ATENCION } from '@/utils/reportesGestion'
-import { COLUMNAS_VENTANA } from './columnasAtenciones'
+import { COLUMNAS_VENTANA } from './ColumnasAtenciones'
 import estilos from './MapaAtenciones.module.css'
 
 /** Lo que se abre en la ventana: un espacio (polígono) o un ejemplar. */
@@ -47,7 +47,12 @@ export default function VentanaAtencionesEspacio({
 }: VentanaAtencionesEspacioProps) {
   const areaVerdeId = eleccion?.filas.find((f) => f.area_verde_id !== null)?.area_verde_id ?? null
   return (
-    <DialogoDetalle abierto={eleccion !== null} titulo={eleccion?.titulo ?? ''} descripcion={periodo} onCerrar={onCerrar}>
+    <DialogoDetalle
+      abierto={eleccion !== null}
+      titulo={eleccion?.titulo ?? ''}
+      descripcion={periodo}
+      onCerrar={onCerrar}
+    >
       {eleccion && (
         <div className={estilos.ventana}>
           {eleccion.datos.length > 0 && <ListaDescripcion columnas="una" elementos={eleccion.datos} />}

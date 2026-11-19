@@ -11,7 +11,19 @@ vi.mock('@/services/api/mapaInventario', () => ({
     features: ['p-1', 'p-2'].map((id, i) => ({
       type: 'Feature',
       properties: { mapa_id: id, Nombre: `Jardín ${i + 1}`, Uso: 'Recreación', Área: 100 * (i + 1) },
-      geometry: { type: 'MultiPolygon', coordinates: [[[[i, 0], [i + 1, 0], [i + 1, 1], [i, 0]]]] },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [i, 0],
+              [i + 1, 0],
+              [i + 1, 1],
+              [i, 0],
+            ],
+          ],
+        ],
+      },
     })),
   }),
 }))
