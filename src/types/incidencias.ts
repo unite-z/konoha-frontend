@@ -2,6 +2,7 @@
  * Tipos del contrato de incidencias de MOD-03 (AV-274 registro, AV-280 alertas de plazo). Claves en snake_case.
  * El backend aún no existe: los servicios responden con `services/simulados/incidencias.ts` (D9).
  */
+import type { MotivoPodaAltura } from './intervencionesPoda'
 import type { InstanteIso } from './comun'
 
 /** Los 8 estados de AV-274. */
@@ -58,7 +59,7 @@ export interface IncidenciaDetalle extends IncidenciaResumen {
   zona: string | null
   descripcion: string
   /** Ejemplar del inventario de MOD-02, si lo hay («T-0412 · Ficus · 7 m»). */
-  ejemplar: { codigo: string; especie: string; altura_m: number | null } | null
+  ejemplar: { codigo: string; alias?: string | null; especie: string; altura_m: number | null } | null
   reportado_por: string
   impacto: ImpactoIncidencia | null
   /** Foto de la evidencia; `null` sin foto. */
@@ -171,6 +172,8 @@ export interface NuevoRequerimiento {
   tipo_atencion: TipoAtencion
   /** Crear también la poda del ejemplar (si lo hay). */
   crear_poda: boolean
+  /** Motivo de esa poda de altura (RF-POD-005, AV-312); sin él, el backend usa «Riesgo». */
+  motivo_poda?: MotivoPodaAltura
 }
 
 /** Cuerpo de `POST incidencias/{id}/devolver/` (AV-279): vuelve a En atención con observaciones obligatorias. */

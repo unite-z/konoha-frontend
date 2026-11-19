@@ -1,8 +1,8 @@
 /**
  * Ruta no encontrada (`*`).
  */
-import { BotonEnlace } from '../components/ui/Boton'
-import EstadoVacio from '../components/ui/EstadoVacio'
+import { BotonEnlace } from '@/design-system/Boton'
+import EstadoVacio from '@/design-system/EstadoVacio'
 import { usePaginaActual } from '../hooks/usePaginaActual'
 import { RUTAS } from '../router/rutasApp'
 

@@ -9,6 +9,7 @@
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import Boton, { BotonEnlace } from '@/components/ui/Boton'
 import EstadoVacio from '@/components/ui/EstadoVacio'
 import Selector, { OPCION_TODOS } from '@/components/ui/Selector'
@@ -25,7 +26,13 @@ import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ObservacionPlaga } from '@/types/maestrosTercerizados'
 import { formatearFecha, formatearNumero, SIN_VALOR } from '@/utils/formato'
 import BarraFiltros from './BarraFiltros'
-import { avisoDeNavegacion, FILTROS_MAESTROS_VACIOS, paginaDe, POR_PAGINA, type ClaveFiltroMaestros } from './filtrosMaestros'
+import {
+  avisoDeNavegacion,
+  FILTROS_MAESTROS_VACIOS,
+  paginaDe,
+  POR_PAGINA,
+  type ClaveFiltroMaestros,
+} from './filtrosMaestros'
 import estilos from './Maestros.module.css'
 
 const TITULO = 'Observaciones de plagas'
@@ -35,14 +42,19 @@ const COLUMNAS: ColumnaTabla<ObservacionPlaga>[] = [
   {
     clave: 'destino',
     titulo: 'Espacio o ejemplar',
-    render: (o) => o.area_verde_nombre ?? o.ejemplar_codigo ?? SIN_VALOR,
+    render: (o) =>
+      o.area_verde_nombre ?? (o.ejemplar_codigo ? nombreEjemplar(o.ejemplar_codigo, o.ejemplar_alias) : SIN_VALOR),
   },
   { clave: 'plaga', titulo: 'Plaga', render: (o) => o.plaga_nombre },
   { clave: 'autor', titulo: 'Registrado por', render: (o) => o.usuario_creacion_nombre },
 ]
 
 export default function ObservacionesPlagasPage() {
-  usePaginaActual(TITULO, [MIGAS_TERCERIZADOS.serviciosTercerizados, MIGAS_TERCERIZADOS.controlFitosanitario, { texto: TITULO }])
+  usePaginaActual(TITULO, [
+    MIGAS_TERCERIZADOS.serviciosTercerizados,
+    MIGAS_TERCERIZADOS.controlFitosanitario,
+    { texto: TITULO },
+  ])
   const { state } = useLocation()
   const navegar = useNavigate()
   const permisos = usePermisos()
@@ -53,7 +65,8 @@ export default function ObservacionesPlagasPage() {
   const { filtros, establecer } = useFiltrosUrl<ClaveFiltroMaestros>(FILTROS_MAESTROS_VACIOS)
   const pagina = paginaDe(filtros.pagina)
   const q = filtros.q
-  const plagaId = Number.isInteger(Number(filtros.plaga)) && Number(filtros.plaga) > 0 ? Number(filtros.plaga) : undefined
+  const plagaId =
+    Number.isInteger(Number(filtros.plaga)) && Number(filtros.plaga) > 0 ? Number(filtros.plaga) : undefined
   const conFiltros = Boolean(q) || plagaId !== undefined
 
   const consulta = useConsulta(
@@ -105,7 +118,9 @@ export default function ObservacionesPlagasPage() {
           valor={plagaId ? String(plagaId) : ''}
           opciones={(plagas.datos?.resultados ?? []).map((p) => ({ valor: String(p.id), texto: p.nombre }))}
           opcionTodos={OPCION_TODOS}
-          bloqueadoMotivo={plagas.estado === 'error' ? 'No se pudo cargar el catálogo de plagas. Recarga la página' : undefined}
+          bloqueadoMotivo={
+            plagas.estado === 'error' ? 'No se pudo cargar el catálogo de plagas. Recarga la página' : undefined
+          }
           onCambiar={(valor) => aplicar({ plaga: valor || null })}
         />
       </BarraFiltros>
@@ -161,7 +176,8 @@ export default function ObservacionesPlagasPage() {
                 }
               : {
                   titulo: 'Aún no hay observaciones registradas',
-                  descripcion: 'Registra la presencia de una plaga en un espacio o ejemplar para justificar una aplicación.',
+                  descripcion:
+                    'Registra la presencia de una plaga en un espacio o ejemplar para justificar una aplicación.',
                   accion: puedeRegistrar ? (
                     <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaObservacionPlaga} variante="secundario">
                       Registrar observación

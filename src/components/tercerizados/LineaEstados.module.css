@@ -2,11 +2,19 @@
 .linea {
   --marca: var(--space-8);
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Tantas columnas como pasos reales (6 en el ciclo normal, 7 con «Observado»): nunca deja uno huérfano en su fila. */
+.linea[data-pasos='6'] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.linea[data-pasos='7'] {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .paso {
@@ -87,7 +95,9 @@
 
 /* Pantallas estrechas: lista vertical. */
 @media (max-width: 1023px) {
-  .linea {
+  .linea,
+  .linea[data-pasos='6'],
+  .linea[data-pasos='7'] {
     grid-template-columns: minmax(0, 1fr);
   }
 

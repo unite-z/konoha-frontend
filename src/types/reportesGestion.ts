@@ -247,6 +247,7 @@ export interface AtencionMapa {
   espacio: string
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   archivos_asociados: number
   /** Tipo de uso del espacio en MOD-02 (para colorearlo); null si no lo tiene o no hay espacio. */
   tipo_uso_id: number | null

@@ -7,7 +7,7 @@
  * - Si viene incompleto, se muestran las opciones cargadas con una ayuda.
  */
 import { useCallback } from 'react'
-import type { OpcionSelector } from '../ui/Selector'
+import type { OpcionSelector } from '@/design-system/Selector'
 import { useConsulta } from '@/hooks/useConsulta'
 import { listarAreasVerdes, listarTiposServicio, listarTodo } from '@/services/api/tercerizados'
 
@@ -25,7 +25,8 @@ export interface CatalogosFiltros {
 }
 
 /** Motivo del selector bloqueado cuando su catálogo no se pudo cargar. */
-export const MOTIVO_CATALOGO_NO_DISPONIBLE = 'No se pudo cargar la lista. Usa «Actualizar» o vuelve a intentarlo más tarde'
+export const MOTIVO_CATALOGO_NO_DISPONIBLE =
+  'No se pudo cargar la lista. Usa «Actualizar» o vuelve a intentarlo más tarde'
 
 /** Ayuda del selector cuando el catálogo tiene más elementos que los cargados. */
 export const AYUDA_CATALOGO_INCOMPLETO = 'Se muestran los primeros resultados'

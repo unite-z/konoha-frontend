@@ -2,8 +2,8 @@
  * Lógica pura de RN-IA-002 (prioridades de atención con IA): insignias, resumen de la bandeja, orden y filtro del
  * ranking, decisiones por elemento y el cuerpo de la validación. La IA solo propone (RN-IA-001).
  */
-import type { NombreIcono } from '../components/ui/Icono'
-import type { Tono } from '../components/ui/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
+import type { Tono } from '@/design-system/tonos'
 import type { AccionDecision } from '../types/ia'
 import type {
   AlcancePriorizacion,
@@ -61,7 +61,10 @@ export function ordenarPorPuntuacion(elementos: ElementoPriorizado[]): ElementoP
 }
 
 /** Solo los de una prioridad sugerida (vacío = todos). */
-export function filtrarPorPrioridad(elementos: ElementoPriorizado[], prioridad: PrioridadAtencion | ''): ElementoPriorizado[] {
+export function filtrarPorPrioridad(
+  elementos: ElementoPriorizado[],
+  prioridad: PrioridadAtencion | '',
+): ElementoPriorizado[] {
   return prioridad ? elementos.filter((e) => e.prioridad_sugerida === prioridad) : elementos
 }
 
@@ -86,7 +89,8 @@ export function decisionesCompletas(
   for (const e of elementos) {
     const decision = decisiones[e.clave]
     if (!decision?.accion) errores[e.clave] = MENSAJES_PRIORIZACION.sinDecision
-    else if (decision.accion === 'corregir' && !decision.prioridad) errores[e.clave] = MENSAJES_PRIORIZACION.sinPrioridad
+    else if (decision.accion === 'corregir' && !decision.prioridad)
+      errores[e.clave] = MENSAJES_PRIORIZACION.sinPrioridad
   }
   return errores
 }
@@ -112,7 +116,10 @@ export function cuerpoValidacion(
 }
 
 /** «Aceptada: Alta», «Corregida: Media → Alta» o «Descartada». */
-export function textoDecisionFinal(sugerida: PrioridadAtencion, decision: DecisionElementoPrioridad | undefined): string {
+export function textoDecisionFinal(
+  sugerida: PrioridadAtencion,
+  decision: DecisionElementoPrioridad | undefined,
+): string {
   if (!decision) return 'Sin decisión'
   if (decision.accion === 'descartar') return 'Descartada'
   if (decision.accion === 'corregir') return `Corregida: ${sugerida} → ${decision.prioridad_final ?? sugerida}`

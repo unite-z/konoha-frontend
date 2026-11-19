@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import Tarjeta from '@/components/ui/Tarjeta'
 import Casilla from '@/components/ui/Casilla'
@@ -106,14 +107,12 @@ export default function CuadrillasPage() {
             clave: 'acciones',
             titulo: 'Acciones',
             render: (c) => (
-              <Boton
-                variante="fantasma"
-                compacto
-                aria-label={`${jefe ? 'Editar' : 'Ver'} ${c.nombre}`}
+              <AccionFila
+                icono={jefe ? 'pencil' : 'eye'}
+                nombre={jefe ? 'Editar cuadrilla' : 'Ver integrantes'}
+                etiqueta={`${jefe ? 'Editar' : 'Ver'} ${c.nombre}`}
                 onClick={() => setDialogo(c)}
-              >
-                {jefe ? 'Editar cuadrilla' : 'Ver integrantes'}
-              </Boton>
+              />
             ),
           },
         ]}

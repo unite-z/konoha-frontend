@@ -5,7 +5,7 @@
  * No valida estados ni modalidades: si la URL trae un valor que el back-end no acepta, el back-end responde
  * 400 con el mensaje en el campo y la página lo muestra.
  */
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
 import type {
   ClaveIndicadorPanel,
   ComparacionMes,
@@ -170,7 +170,13 @@ export function filasComparacion(comparacion: ComparacionMes[]): FilaComparacion
       ['Trasladado', mes.trasladado],
     ]
     return grupos.flatMap(([movimiento, totales]) =>
-      totales.map((t) => ({ mes: mes.mes, movimiento, tipo_material: t.tipo_material, unidad: t.unidad, cantidad: t.cantidad })),
+      totales.map((t) => ({
+        mes: mes.mes,
+        movimiento,
+        tipo_material: t.tipo_material,
+        unidad: t.unidad,
+        cantidad: t.cantidad,
+      })),
     )
   })
 }

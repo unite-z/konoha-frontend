@@ -64,6 +64,17 @@ export interface TipoRestriccion {
   nombre: string
   efecto: EfectoRestriccion
   aplica_servicios_ruidosos: boolean
+  activo?: boolean
+  protegido?: boolean
+}
+
+export interface EntradaTipoRestriccion {
+  nombre: string
+  efecto: EfectoRestriccion
+  aplica_servicios_ruidosos: boolean
+}
+export interface ResultadoTipoRestriccion extends TipoRestriccion {
+  ciclos_afectados: { id: number; servicio: string; fecha_inicio_prevista: FechaIso; fecha_fin_prevista: FechaIso }[]
 }
 
 export interface Restriccion {
@@ -143,6 +154,8 @@ export interface EventoCiclo {
   estado: EstadoProgramacion
   fecha_hora: string
   autor: string
+  /** Reprogramación con fechas anteriores/nuevas o motivo de cancelación, si lo devuelve la API. */
+  motivo?: string | null
 }
 
 /**
@@ -195,6 +208,9 @@ export interface NuevaProgramacion {
   ventana_mes?: string
   /** Zonas de la ruta que entran en el corte (AV-259); solo para el corte de césped. */
   zonas?: string[]
+  reemplaza_programacion_id?: number
+  cuadrilla_id?: number | null
+  area_verde_ids?: number[]
 }
 
 /** Campo que cambió en la configuración del servicio (AV-256); `inicial` es la primera configuración. */

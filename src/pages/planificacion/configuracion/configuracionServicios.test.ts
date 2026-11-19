@@ -1,13 +1,30 @@
 import { describe, expect, it } from 'vitest'
 import type { ServicioPeriodico } from '@/types/planificacion'
-import { borradorInicial, detalleServicio, textoCambio, estacionDe, estadoServicio, textoDuracionServicio, textoFrecuencia, validarServicio } from './configuracionServicios'
+import {
+  borradorInicial,
+  detalleServicio,
+  textoCambio,
+  estacionDe,
+  estadoServicio,
+  textoDuracionServicio,
+  textoFrecuencia,
+  validarServicio,
+} from './configuracionServicios'
 
 const modificacion = { fecha_modificacion: '2026-10-28T09:12:00-05:00', modificado_por: 'Robert G.' }
 const servicio: ServicioPeriodico = {
   id: 1,
   nombre: 'Corte de césped',
   es_ruidoso: true,
-  frecuencias: [{ estacion: 'Primavera', frecuencia_teorica_dias: 21, frecuencia_practica_dias: 30, frecuencia_maxima_dias: 45, ...modificacion }],
+  frecuencias: [
+    {
+      estacion: 'Primavera',
+      frecuencia_teorica_dias: 21,
+      frecuencia_practica_dias: 30,
+      frecuencia_maxima_dias: 45,
+      ...modificacion,
+    },
+  ],
   duracion: { duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: null, hora_fin: null, ...modificacion },
 }
 
@@ -18,12 +35,23 @@ describe('configuracionServicios', () => {
     expect(estacionDe('2026-06-21')).toBe('Invierno')
     expect(estacionDe('2026-09-23')).toBe('Primavera')
     expect(estacionDe('2026-12-21')).toBe('Verano')
+    expect(estacionDe('2026-06-20')).toBe('Otoño')
+    expect(estacionDe('2026-09-22')).toBe('Invierno')
+    expect(estacionDe('2026-12-20')).toBe('Primavera')
+    expect(estacionDe('2028-02-29')).toBe('Verano')
   })
 
   it('resume frecuencia, duración y estado', () => {
     expect(textoFrecuencia(servicio.frecuencias[0])).toBe('Cada 30 días · máx. 45')
     expect(textoFrecuencia(undefined)).toBe('Sin configurar')
-    expect(textoFrecuencia({ ...servicio.frecuencias[0], frecuencia_teorica_dias: 365, frecuencia_practica_dias: 365, frecuencia_maxima_dias: 365 })).toBe('Anual')
+    expect(
+      textoFrecuencia({
+        ...servicio.frecuencias[0],
+        frecuencia_teorica_dias: 365,
+        frecuencia_practica_dias: 365,
+        frecuencia_maxima_dias: 365,
+      }),
+    ).toBe('Anual')
     expect([
       detalleServicio({ ...servicio, via: 'Tercerizado', es_ruidoso: true }),
       detalleServicio({ ...servicio, via: 'PersonalPropio', es_ruidoso: false }),
@@ -40,7 +68,11 @@ describe('configuracionServicios', () => {
 
     const conCambios = {
       ...inicial,
-      frecuencias: { ...inicial.frecuencias, Verano: { teorica: '21', practica: '30', maxima: '25' }, Otoño: { teorica: '20', practica: '', maxima: '' } },
+      frecuencias: {
+        ...inicial.frecuencias,
+        Verano: { teorica: '21', practica: '30', maxima: '25' },
+        Otoño: { teorica: '20', practica: '', maxima: '' },
+      },
       duracion: { ...inicial.duracion, duracion: '4' },
     }
     const resultado = validarServicio(conCambios, inicial)
@@ -52,14 +84,23 @@ describe('configuracionServicios', () => {
 
   it('no deja vaciar una frecuencia ya configurada', () => {
     const inicial = borradorInicial(servicio)
-    const vaciada = { ...inicial, frecuencias: { ...inicial.frecuencias, Primavera: { teorica: '', practica: '', maxima: '' } } }
+    const vaciada = {
+      ...inicial,
+      frecuencias: { ...inicial.frecuencias, Primavera: { teorica: '', practica: '', maxima: '' } },
+    }
     expect(validarServicio(vaciada, inicial).erroresFrecuencia.Primavera?.teorica).toBeTruthy()
   })
 })
 
 describe('textoCambio (Figma 367-3527)', () => {
   it('escribe cada cambio con su valor anterior y nuevo', () => {
-    const base = { estacion: null, anterior: null, nuevo: null, fecha_hora: '2026-10-28T09:12:00-05:00', autor: 'Robert G.' }
+    const base = {
+      estacion: null,
+      anterior: null,
+      nuevo: null,
+      fecha_hora: '2026-10-28T09:12:00-05:00',
+      autor: 'Robert G.',
+    }
     expect([
       textoCambio({ ...base, campo: 'duracion_maxima_dias', anterior: '4', nuevo: '3' }),
       textoCambio({ ...base, campo: 'frecuencia_maxima_dias', estacion: 'Otoño', anterior: '50', nuevo: '45' }),

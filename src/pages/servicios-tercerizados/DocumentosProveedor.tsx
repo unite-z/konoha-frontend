@@ -9,6 +9,7 @@
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import Estado from '@/components/ui/Estado'
 import EstadoCarga from '@/components/ui/EstadoCarga'
@@ -78,16 +79,14 @@ function RevisionReporte({
       clave: 'accion',
       titulo: 'Acción',
       render: (d) => (
-        <Boton
-          variante="fantasma"
-          compacto
+        <AccionFila
+          icono="download"
+          nombre="Descargar"
+          etiqueta={`Descargar ${d.archivo.nombre_original}`}
           cargando={descarga.enCurso === d.id}
           deshabilitado={descarga.enCurso !== null && descarga.enCurso !== d.id}
           onClick={() => onDescargar(reporte, d)}
-          aria-label={`Descargar ${d.archivo.nombre_original}`}
-        >
-          Descargar
-        </Boton>
+        />
       ),
     },
   ]
@@ -131,7 +130,11 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
     (datos) => datos.results.length === 0,
   )
   // Revisiones de páginas posteriores (más antiguas), cargadas a pedido.
-  const [anteriores, setAnteriores] = useState<{ clave: string; reportes: ReporteProveedor[]; siguiente: number | null }>({
+  const [anteriores, setAnteriores] = useState<{
+    clave: string
+    reportes: ReporteProveedor[]
+    siguiente: number | null
+  }>({
     clave: '',
     reportes: [],
     siguiente: null,
@@ -157,7 +160,11 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
     setErrorMas(null)
     try {
       const pagina = await listarReportes(atencion.id, siguiente)
-      setAnteriores({ clave: claveDatos, reportes: [...extra.reportes, ...pagina.results], siguiente: pagina.next ? siguiente + 1 : null })
+      setAnteriores({
+        clave: claveDatos,
+        reportes: [...extra.reportes, ...pagina.results],
+        siguiente: pagina.next ? siguiente + 1 : null,
+      })
     } catch (causa) {
       setErrorMas(aErrorApi(causa).detalle)
     } finally {
@@ -172,7 +179,10 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
       await descargarDocumento(atencion.id, reporte.id, documento.id, documento.archivo.nombre_original)
       setDescarga({ enCurso: null, error: null })
     } catch (causa) {
-      setDescarga({ enCurso: null, error: { documento: documento.archivo.nombre_original, detalle: aErrorApi(causa).detalle } })
+      setDescarga({
+        enCurso: null,
+        error: { documento: documento.archivo.nombre_original, detalle: aErrorApi(causa).detalle },
+      })
     }
   }
 
@@ -219,7 +229,10 @@ export default function DocumentosProveedor({ atencion, version = 0 }: { atencio
             <RevisionReporte
               key={reporte.id}
               reporte={reporte}
-              observacion={atencion.conformidades?.find((c) => c.revision === reporte.revision - 1 && c.resultado === 'Observada')?.comentarios}
+              observacion={
+                atencion.conformidades?.find((c) => c.revision === reporte.revision - 1 && c.resultado === 'Observada')
+                  ?.comentarios
+              }
               vigente={indice === 0}
               alcances={alcances}
               descarga={descarga}

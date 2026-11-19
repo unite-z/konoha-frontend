@@ -1,5 +1,5 @@
 // RF-T-008 · Historial de altas y modificaciones (HU-MOD01-010)
-import TablaDatos, { type ColumnaTabla } from '../ui/TablaDatos'
+import TablaDatos, { type ColumnaTabla } from '@/design-system/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { historialRegistro } from '@/services/api/core'
 import type { EntidadRegistro, EntradaHistorial } from '@/types/core'
@@ -35,8 +35,8 @@ const CAMPOS_ACTIVIDAD: CampoActividad[] = [
   { clave: 'cantidad_solicitada', etiqueta: 'Cantidad solicitada', formato: 'numero' },
   { clave: 'unidad_medida_nombre', etiqueta: 'Unidad de medida' },
   { clave: 'observaciones', etiqueta: 'Observaciones' },
-  { clave: 'fecha_verificacion', etiqueta: 'Fecha de verificación', formato: 'fecha' },
   { clave: 'verificacion_observaciones', etiqueta: 'Observaciones de verificación' },
+  { clave: 'estado_actividad', etiqueta: 'Estado de la actividad' },
 ]
 
 function tieneValor(valor: unknown): boolean {
@@ -65,26 +65,21 @@ function DetalleActividad({ entrada }: { entrada: EntradaHistorial }) {
     const antes = entrada.valores_anteriores[campo.clave]
     const despues = entrada.valores_nuevos[campo.clave]
     if (alta) {
-      return tieneValor(despues)
-        ? [{ etiqueta: campo.etiqueta, valor: formatearValor(despues, campo.formato) }]
-        : []
+      return tieneValor(despues) ? [{ etiqueta: campo.etiqueta, valor: formatearValor(despues, campo.formato) }] : []
     }
     if (JSON.stringify(antes) === JSON.stringify(despues)) return []
     if (!tieneValor(antes) && !tieneValor(despues)) return []
-    return [{
-      etiqueta: campo.etiqueta,
-      valor: `${tieneValor(antes) ? formatearValor(antes, campo.formato) : 'Sin registrar'} → ${
-        tieneValor(despues) ? formatearValor(despues, campo.formato) : 'Sin registrar'
-      }`,
-    }]
+    return [
+      {
+        etiqueta: campo.etiqueta,
+        valor: `${tieneValor(antes) ? formatearValor(antes, campo.formato) : 'Sin registrar'} → ${
+          tieneValor(despues) ? formatearValor(despues, campo.formato) : 'Sin registrar'
+        }`,
+      },
+    ]
   })
-  const antesVerificada = tieneValor(entrada.valores_anteriores.fecha_verificacion)
-  const despuesVerificada = tieneValor(entrada.valores_nuevos.fecha_verificacion)
-  if (!alta && antesVerificada !== despuesVerificada) {
-    elementos.unshift({
-      etiqueta: 'Estado de verificación',
-      valor: `${antesVerificada ? 'Verificada' : 'Sin verificar'} → ${despuesVerificada ? 'Verificada' : 'Sin verificar'}`,
-    })
+  if (entrada.accion === 'Anulacion' && tieneValor(entrada.motivo)) {
+    elementos.push({ etiqueta: 'Motivo de anulación', valor: entrada.motivo ?? '' })
   }
   if (!elementos.length) return <span>Cambio registrado sin datos funcionales adicionales.</span>
   return (
@@ -112,11 +107,14 @@ export default function HistorialCambios({ entidad, registroId, presentacion = '
     (datos) => datos.length === 0,
   )
   const sinPermiso = consulta.error?.estado === 403
-  const columnas = presentacion === 'actividad'
-    ? COLUMNAS_BASE.map((columna) => columna.clave === 'detalle'
-      ? { ...columna, render: (entrada: EntradaHistorial) => <DetalleActividad entrada={entrada} /> }
-      : columna)
-    : COLUMNAS_BASE
+  const columnas =
+    presentacion === 'actividad'
+      ? COLUMNAS_BASE.map((columna) =>
+          columna.clave === 'detalle'
+            ? { ...columna, render: (entrada: EntradaHistorial) => <DetalleActividad entrada={entrada} /> }
+            : columna,
+        )
+      : COLUMNAS_BASE
   return (
     <div className={presentacion === 'actividad' ? estilos.actividad : undefined}>
       <TablaDatos
@@ -129,7 +127,9 @@ export default function HistorialCambios({ entidad, registroId, presentacion = '
         vacio={{ titulo: 'Sin cambios registrados', nivel: 3 }}
         error={{
           titulo: sinPermiso ? 'No tiene permiso para ver el historial' : 'No pudimos cargar el historial',
-          descripcion: sinPermiso ? 'Tu rol no incluye la consulta del historial de este registro.' : (consulta.error?.detalle ?? ''),
+          descripcion: sinPermiso
+            ? 'Tu rol no incluye la consulta del historial de este registro.'
+            : (consulta.error?.detalle ?? ''),
           onReintentar: consulta.reintentar,
           nivel: 3,
         }}

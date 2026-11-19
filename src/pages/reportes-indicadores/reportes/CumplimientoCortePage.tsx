@@ -233,10 +233,7 @@ function FichaCiclo({ ciclo: c }: { ciclo: FilaCumplimiento }) {
 function ListaCiclosMovil({ ciclos }: { ciclos: FilaCumplimiento[] }) {
   const [visibles, setVisibles] = useState(FICHAS_POR_TANDA)
   const ordenados = useMemo(
-    () =>
-      [...ciclos].sort(
-        (a, b) => b.fecha_inicio_real.localeCompare(a.fecha_inicio_real) || b.ciclo_id - a.ciclo_id,
-      ),
+    () => [...ciclos].sort((a, b) => b.fecha_inicio_real.localeCompare(a.fecha_inicio_real) || b.ciclo_id - a.ciclo_id),
     [ciclos],
   )
   const mostrados = ordenados.slice(0, visibles)
@@ -326,6 +323,16 @@ const COLUMNAS: ColumnaTabla<FilaCumplimiento>[] = [
     render: (c) => <Estado tono={TONO_ESTADO[tonoCumplimiento(c.estado_duracion)]} texto={c.estado_duracion} />,
   },
   {
+    clave: 'estado_limpieza',
+    titulo: 'Cumplimiento de limpieza',
+    render: (c) => (
+      <Estado
+        tono={c.estado_limpieza === 'Cumplida' || c.estado_limpieza === 'No requerida' ? 'exito' : 'aviso'}
+        texto={c.estado_limpieza ?? 'Sin datos de limpieza'}
+      />
+    ),
+  },
+  {
     clave: 'faltantes',
     titulo: 'Faltantes',
     multilinea: true,
@@ -356,7 +363,9 @@ export default function CumplimientoCortePage() {
             idBase={ID_PERIODO}
             desde={desde}
             hasta={hasta}
-            onAplicar={(periodo) => (periodo.desde === desde && periodo.hasta === hasta ? consulta.reintentar() : establecer(periodo))}
+            onAplicar={(periodo) =>
+              periodo.desde === desde && periodo.hasta === hasta ? consulta.reintentar() : establecer(periodo)
+            }
             erroresServidor={erroresDePeriodo(consulta.error)}
             cargando={consulta.estado === 'cargando' && consulta.cargaVisible}
           />
@@ -393,8 +402,8 @@ export default function CumplimientoCortePage() {
               </h2>
               {hayFaltas && (
                 <AvisoEnLinea tono="advertencia">
-                  Hay ciclos sin fechas o sin límites configurados: su cumplimiento no se calcula. Revisa la
-                  frecuencia y la duración del servicio en Planificación.
+                  Hay ciclos sin fechas o sin límites configurados: su cumplimiento no se calcula. Revisa la frecuencia
+                  y la duración del servicio en Planificación.
                 </AvisoEnLinea>
               )}
               {esMovil ? (

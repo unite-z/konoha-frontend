@@ -3,6 +3,7 @@
  * Las páginas nunca llaman a `fetch`: usan estas funciones.
  */
 import type {
+  AparienciaCuenta,
   Acceso,
   Adjunto,
   CanalAcceso,
@@ -47,6 +48,11 @@ export function cerrarSesionCore(): Promise<void> {
 
 export function cambiarContrasena(cambio: CambioContrasena): Promise<void> {
   return solicitarCore('auth/contrasena/', { metodo: 'POST', cuerpo: cambio })
+}
+
+/** `PUT auth/apariencia/` (AV-391): guarda en la cuenta el tema y el acento de Configuración. */
+export function guardarAparienciaCuenta(apariencia: AparienciaCuenta): Promise<AparienciaCuenta> {
+  return solicitarCore('auth/apariencia/', { metodo: 'PUT', cuerpo: apariencia })
 }
 
 // --- Usuarios y roles (RF-T-002 y RF-T-003) ------------------------------------------------------------
@@ -186,7 +192,11 @@ export function validarImportacion(tipo: TipoImportacion, archivo: File): Promis
   return solicitarCore('importaciones/', { metodo: 'POST', formulario })
 }
 
-export function listarFilasImportacion(id: number, page: number, signal?: AbortSignal): Promise<PaginaCore<FilaImportacion>> {
+export function listarFilasImportacion(
+  id: number,
+  page: number,
+  signal?: AbortSignal,
+): Promise<PaginaCore<FilaImportacion>> {
   return solicitarCore(`importaciones/${id}/filas/`, { parametros: { page }, signal })
 }
 

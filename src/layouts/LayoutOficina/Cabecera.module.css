@@ -1,5 +1,10 @@
 /* Cabecera y migas de pan: sistema de diseño de Figma (DESIGN.md, 4.3). */
 .cabecera {
+  /* Fija arriba del panel, que es lo que se desplaza (AV-393): las migas dicen siempre en qué página estás. */
+  position: sticky;
+  top: 0;
+  /* Sobre el contenido y las cabeceras de tabla (1-3), bajo avisos y desplegables (10) y burbujas (40). */
+  z-index: 5;
   display: flex;
   align-items: center;
   min-height: var(--web-header-height);

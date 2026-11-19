@@ -1,0 +1,107 @@
+/* Acción de fila de tabla: botón de solo icono con burbuja (AV-390). */
+.accion {
+  display: inline-flex;
+}
+
+.grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-action-text);
+  cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion),
+    color var(--duracion-transicion);
+}
+
+.boton:hover {
+  background: var(--color-action-subtle);
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--web-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.peligro {
+  color: var(--color-error);
+}
+
+.peligro:hover {
+  background: var(--color-error-bg);
+}
+
+.boton[data-deshabilitado] {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.boton[data-deshabilitado]:hover {
+  background: transparent;
+}
+
+.girando {
+  animation: girar 1s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Encima del botón y centrada; con data-debajo, debajo. Fija para que el desplazamiento de la tabla no la corte. */
+.burbuja {
+  position: fixed;
+  left: var(--burbuja-x, 0);
+  top: var(--burbuja-arriba, 0);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: max-content;
+  max-width: 16rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-text-primary);
+  color: var(--color-bg-surface);
+  box-shadow: var(--web-elev-2);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  text-align: left;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-2)));
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--duracion-transicion);
+}
+
+.burbuja[data-debajo='si'] {
+  top: var(--burbuja-abajo, 0);
+  transform: translate(-50%, var(--space-2));
+}
+
+.burbuja[data-visible] {
+  visibility: visible;
+  opacity: 1;
+}
+
+.nombre {
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.descripcion {
+  opacity: 0.85;
+}

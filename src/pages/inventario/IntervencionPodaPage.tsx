@@ -22,6 +22,7 @@ import { formatearFecha } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
 import { TEXTO_MOTIVO_PODA_ALTURA } from '@/utils/podaAltura'
 import estilos from './CampanasPoda.module.css'
+import PlantaMuertaEjemplar from './PlantaMuertaEjemplar'
 
 export default function IntervencionPodaPage() {
   const id = Number(useParams().id)
@@ -167,6 +168,8 @@ export default function IntervencionPodaPage() {
           ]}
         />
       </Tarjeta>
+
+      {intervencion.motivo === 'PlantaMuerta' && <PlantaMuertaEjemplar intervencion={intervencion} />}
 
       {solicitada && puedeRegistrar && (
         <Tarjeta

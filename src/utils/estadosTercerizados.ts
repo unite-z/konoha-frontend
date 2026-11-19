@@ -2,7 +2,8 @@
  * Presentación de los valores de dominio de MOD-05 (Guía Web 5.6: el badge cambia de texto, no de patrón).
  * Los estados se muestran con el texto exacto del back-end.
  */
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import type {
   CambioEstado,
   CategoriaDocumento,
@@ -79,9 +80,9 @@ export function textoClase(clase: ClaseAtencion): string {
   return TEXTO_CLASE[clase] ?? clase
 }
 
-export const OPCIONES_CLASE: { valor: ClaseAtencion; texto: string }[] = (Object.keys(TEXTO_CLASE) as ClaseAtencion[]).map(
-  (valor) => ({ valor, texto: TEXTO_CLASE[valor] }),
-)
+export const OPCIONES_CLASE: { valor: ClaseAtencion; texto: string }[] = (
+  Object.keys(TEXTO_CLASE) as ClaseAtencion[]
+).map((valor) => ({ valor, texto: TEXTO_CLASE[valor] }))
 
 /** La extraordinaria se tramita con orden de servicio; la programada, con la orden de compra de Logística. */
 export function textoOrden(clase: ClaseAtencion, mayuscula = false): string {
@@ -135,10 +136,13 @@ export function textoAlcance(alcance: {
   area_verde_nombre: string | null
   ejemplar_id: number | null
   ejemplar_codigo: string | null
+  ejemplar_alias?: string | null
   ejemplar_area_verde_nombre: string | null
 }): string {
   if (alcance.area_verde_id) return alcance.area_verde_nombre ?? `Área verde n.º ${alcance.area_verde_id}`
-  const codigo = alcance.ejemplar_codigo ?? `Ejemplar n.º ${alcance.ejemplar_id}`
+  const codigo = alcance.ejemplar_codigo
+    ? nombreEjemplar(alcance.ejemplar_codigo, alcance.ejemplar_alias)
+    : `Ejemplar n.º ${alcance.ejemplar_id}`
   return alcance.ejemplar_area_verde_nombre ? `${codigo} · ${alcance.ejemplar_area_verde_nombre}` : codigo
 }
 

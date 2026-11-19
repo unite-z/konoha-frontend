@@ -3,7 +3,7 @@
  * una tabla, con las restricciones con las que coinciden. La fila en conflicto se resalta y, si el ciclo está
  * programado, ofrece «Reprogramar» al jefe.
  */
-import Boton from '@/components/ui/Boton'
+import AccionFila from '@/design-system/AccionFila'
 import Estado from '@/components/ui/Estado'
 import EventoCalendario from '@/components/ui/EventoCalendario'
 import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
@@ -29,7 +29,8 @@ export default function VistaLista({ eventos, desde, hasta, onReprogramar }: Vis
       clave: 'responsable',
       titulo: 'Responsable',
       multilinea: true,
-      render: (evento) => (evento.capa === 'actividad' ? (evento.programacion.proveedor ?? 'Personal propio') : SIN_VALOR),
+      render: (evento) =>
+        evento.capa === 'actividad' ? (evento.programacion.proveedor ?? 'Personal propio') : SIN_VALOR,
     },
     {
       clave: 'estado',
@@ -47,19 +48,26 @@ export default function VistaLista({ eventos, desde, hasta, onReprogramar }: Vis
       render: (evento) => {
         const coinciden = coincidencias(evento, eventos)
         if (coinciden.length === 0) return SIN_VALOR
-        const reprogramable = onReprogramar && evento.capa === 'actividad' && evento.programacion.estado === 'Programada'
+        const reprogramable =
+          onReprogramar && evento.capa === 'actividad' && evento.programacion.estado === 'Programada'
         return (
           <span className={estilos.celdaConflicto}>
             <span className={estilos.restriccionesFila}>
               {coinciden.map((restriccion) => (
-                <EventoCalendario key={restriccion.clave} tipo={restriccion.tipo} texto={`${diaFigma(restriccion.inicio)} · ${restriccion.texto}`} />
+                <EventoCalendario
+                  key={restriccion.clave}
+                  tipo={restriccion.tipo}
+                  texto={`${diaFigma(restriccion.inicio)} · ${restriccion.texto}`}
+                />
               ))}
             </span>
             {reprogramable && evento.capa === 'actividad' && (
-              <Boton variante="fantasma" compacto onClick={() => onReprogramar(evento.programacion)}>
-                <span aria-hidden="true">Reprogramar</span>
-                <span className="sr-only">{`Reprogramar ${evento.texto}`}</span>
-              </Boton>
+              <AccionFila
+                icono="calendar"
+                nombre="Reprogramar"
+                etiqueta={`Reprogramar ${evento.texto}`}
+                onClick={() => onReprogramar(evento.programacion)}
+              />
             )}
           </span>
         )

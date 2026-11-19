@@ -3,8 +3,8 @@
  * lado a lado de los registros, los recuentos de los filtros y el enlace de cada registro a su módulo.
  * La IA solo señala posibles problemas: nada de aquí modifica registros.
  */
-import type { NombreIcono } from '../components/ui/Icono'
-import type { Tono } from '../components/ui/tonos'
+import type { NombreIcono } from '@/design-system/Icono'
+import type { Tono } from '@/design-system/tonos'
 import { rutaDetalleAtencion, RUTAS_INVENTARIO, RUTAS_TERCERIZADOS } from '../router/rutasApp'
 import type { EstadoSugerencia } from '../types/ia'
 import type {
@@ -71,7 +71,9 @@ export function insigniaEstadoHallazgo(estado: EstadoSugerencia): { texto: strin
 }
 
 /** «Campo: valor», solo el valor, o `SIN_VALOR` (criterio 1: el dato observado). */
-export function textoDatoObservado(contenido: Pick<ContenidoInconsistencia, 'campo_observado' | 'valor_observado'>): string {
+export function textoDatoObservado(
+  contenido: Pick<ContenidoInconsistencia, 'campo_observado' | 'valor_observado'>,
+): string {
   const { campo_observado: campo, valor_observado: valor } = contenido
   if (campo && valor) return `${campo}: ${valor}`
   return valor ?? campo ?? SIN_VALOR
@@ -105,7 +107,12 @@ export function contarPorEstado(sugerencias: SugerenciaInconsistencia[]): Record
 
 /** Recuento de sugerencias por tipo de hallazgo. */
 export function contarPorTipo(sugerencias: SugerenciaInconsistencia[]): Record<TipoHallazgo, number> {
-  const cuenta: Record<TipoHallazgo, number> = { Duplicado: 0, ValorAtipico: 0, CamposIncompatibles: 0, NombreNoNormalizado: 0 }
+  const cuenta: Record<TipoHallazgo, number> = {
+    Duplicado: 0,
+    ValorAtipico: 0,
+    CamposIncompatibles: 0,
+    NombreNoNormalizado: 0,
+  }
   for (const s of sugerencias) cuenta[s.contenido.tipo_hallazgo] += 1
   return cuenta
 }
@@ -114,7 +121,9 @@ export function contarPorTipo(sugerencias: SugerenciaInconsistencia[]): Record<T
  * Enlace del registro a su módulo: la atención tiene ficha propia; ejemplares, áreas verdes y proveedores solo
  * tienen su listado («Buscar en …»). `null` si la entidad no tiene pantalla.
  */
-export function rutaRegistro(registro: Pick<RegistroImplicado, 'entidad' | 'registro_id'>): { ruta: string; texto: string } | null {
+export function rutaRegistro(
+  registro: Pick<RegistroImplicado, 'entidad' | 'registro_id'>,
+): { ruta: string; texto: string } | null {
   switch (registro.entidad) {
     case 'atencion':
       return { ruta: rutaDetalleAtencion(registro.registro_id), texto: 'Abrir la atención' }
@@ -131,7 +140,12 @@ export function rutaRegistro(registro: Pick<RegistroImplicado, 'entidad' | 'regi
 }
 
 /** Filtros válidos de la URL para la API (los desconocidos se ignoran). */
-export function filtrosDesdeUrl(url: { estado: string; tipo: string; conjunto: string; page: string }): FiltrosInconsistencias {
+export function filtrosDesdeUrl(url: {
+  estado: string
+  tipo: string
+  conjunto: string
+  page: string
+}): FiltrosInconsistencias {
   const pagina = Math.max(1, Number(url.page) || 1)
   return {
     estado: ESTADOS_HALLAZGO.find((e) => e.valor === url.estado)?.valor,

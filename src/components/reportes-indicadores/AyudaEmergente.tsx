@@ -4,7 +4,7 @@
  *
  * Excepción al sistema (AV-351): botón de solo icono con burbuja; pasa a `components/ui` en la fase 5.
  */
-import Icono from '../ui/Icono'
+import Icono from '@/design-system/Icono'
 import estilos from './AyudaEmergente.module.css'
 
 export interface AyudaEmergenteProps {

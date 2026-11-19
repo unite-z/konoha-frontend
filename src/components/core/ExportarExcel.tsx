@@ -4,8 +4,8 @@
  * servidor vuelve a comprobarlo y un rechazo se avisa sin salir de la pantalla.
  */
 import { useState } from 'react'
-import Boton from '../ui/Boton'
-import AvisoTemporal from '../ui/AvisoTemporal'
+import Boton from '@/design-system/Boton'
+import AvisoTemporal from '@/design-system/AvisoTemporal'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import { aErrorApi } from '@/services/api/cliente'
 import { guardarArchivo } from '@/services/api/clienteReportesGestion'

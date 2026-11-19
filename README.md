@@ -1,6 +1,6 @@
 # konoha-frontend
 
-Interfaz (PWA) del sistema de gestión de áreas verdes del campus PUCP (DP2). React 19, TypeScript y Vite. Estilos con CSS Modules y los tokens de `src/styles/tokens.css` (Guía de Estilo Web).
+Interfaz (PWA) del sistema de gestión de áreas verdes del campus PUCP (DP2). React 19, TypeScript y Vite. Estilos con CSS Modules y los tokens de `src/design-system/tokens.css` (Guía de Estilo Web).
 
 Repos hermanos: `konoha-backend` (API Spring Boot) y `konoha-infra` (despliegue, estándares comunes y ADR).
 

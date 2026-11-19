@@ -9,6 +9,10 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
+import AparienciaPage from '../pages/configuracion/AparienciaPage'
+import ConfiguracionUsuarioPage from '../pages/configuracion/ConfiguracionPage'
+import InteligenciaArtificialPage from '../pages/configuracion/InteligenciaArtificialPage'
+import UsoIaPage from '../pages/configuracion/UsoIaPage'
 import PaginaNoEncontrada from '../pages/PaginaNoEncontrada'
 import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
 import AsistenciaIaIndexPage from '../pages/reportes-indicadores/asistencia-ia/AsistenciaIaIndexPage'
@@ -62,6 +66,8 @@ import CampanaPodaDetallePage from '../pages/inventario/CampanaPodaDetallePage'
 import PlanificarCampanaPage from '../pages/inventario/PlanificarCampanaPage'
 import RegistrarPodaPage from '../pages/inventario/RegistrarPodaPage'
 import IntervencionPodaPage from '../pages/inventario/IntervencionPodaPage'
+import FichaTecnicaEjemplarPage from '../pages/inventario/FichaTecnicaEjemplarPage'
+import RutaCortePage from '../pages/inventario/RutaCortePage'
 import EspeciesCampanaPage from '../pages/inventario/EspeciesCampanaPage'
 import SolicitarPodaAlturaPage from '../pages/inventario/SolicitarPodaAlturaPage'
 import RendimientoCampanaPage from '../pages/inventario/RendimientoCampanaPage'
@@ -93,6 +99,7 @@ import ImportacionPage from '../pages/usuarios-roles/ImportacionPage'
 import RolesPermisosPage from '../pages/usuarios-roles/RolesPermisosPage'
 import UsuarioDetallePage from '../pages/usuarios-roles/UsuarioDetallePage'
 import UsuariosPage from '../pages/usuarios-roles/UsuariosPage'
+import { PERMISO_VALIDAR_IA } from '../config/permisos'
 import { PERMISOS } from '../config/permisosCore'
 import {
   PREFIJO_CORTE,
@@ -133,19 +140,34 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <InicioRol /> },
           { path: RUTAS_CORE.pendientes, element: <PendientesPage /> }, // RF-T-012: cualquier sesión
+          { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-397: panel de módulos
+          { path: RUTAS_CORE.configuracionApariencia, element: <AparienciaPage /> }, // AV-389: cualquier sesión
+          {
+            element: <RutaConPermiso permiso={PERMISO_VALIDAR_IA} />,
+            children: [
+              { path: RUTAS_CORE.configuracionIa, element: <InteligenciaArtificialPage /> }, // AV-395
+              { path: RUTAS_CORE.configuracionUsoIa, element: <UsoIaPage /> }, // AV-396
+            ],
+          },
           {
             element: <RutaConPermiso permiso={PERMISOS.consultarCuadrillas} />,
             children: [
-              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
+              { path: RUTAS_CAMPO.ingreso, element: <Navigate to={RUTAS_CAMPO.encargos} replace /> },
               {
                 path: BASE_CAMPO,
                 children: [
-                  { index: true, element: <Navigate to={RUTAS_CAMPO.cuadrillas} replace /> },
-                  { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                  { index: true, element: <Navigate to={RUTAS_CAMPO.encargos} replace /> },
                   { path: RUTAS_CAMPO.encargos, element: <EncargosPage /> },
                   { path: RUTAS_CAMPO.actividades, element: <ActividadesPage /> },
                   { path: RUTAS_CAMPO.participantes, element: <ParticipantesPage /> },
-                  { path: RUTAS_CAMPO.catalogoActividades, element: <CatalogoActividadesPage /> },
+                  // Solo la jefatura: el menú no las muestra a quien no puede gestionarlas (AV-406).
+                  {
+                    element: <RutaConPermiso permiso={PERMISOS.gestionarCuadrillas} seccion="Cuadrillas y catálogo" />,
+                    children: [
+                      { path: RUTAS_CAMPO.cuadrillas, element: <CuadrillasPage /> },
+                      { path: RUTAS_CAMPO.catalogoActividades, element: <CatalogoActividadesPage /> },
+                    ],
+                  },
                 ],
               },
             ],
@@ -194,6 +216,9 @@ export const router = createBrowserRouter([
                   { path: 'coberturas', element: <CoberturasPage /> },
                   { path: 'catalogos', element: <CatalogosPage /> },
                   { path: 'ejemplares', element: <EjemplaresPage /> },
+                  { path: 'ejemplares/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
+                  { path: 'ruta-corte', element: <RutaCortePage /> },
+                  { path: 'ejemplares/:id/ficha-tecnica', element: <FichaTecnicaEjemplarPage /> },
                   { path: 'campanas-poda', element: <CampanasPodaPage /> },
                   { path: 'campanas-poda/nueva', element: <PlanificarCampanaPage /> },
                   { path: 'campanas-poda/:id', element: <CampanaPodaDetallePage /> },
@@ -289,7 +314,12 @@ export const router = createBrowserRouter([
               { path: RUTAS_PLANIFICACION.calendario, element: <CalendarioPage /> }, // HU-MOD03-003 y 005, RF-PLA-003 y 007
               { path: RUTAS_PLANIFICACION.ciclos, element: <CiclosPage /> }, // RF-PLA-004 y CU-007
               { path: `${RUTAS_PLANIFICACION.ciclos}/:id`, element: <CicloDetallePage /> }, // CU-004 y CU-007
-              { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
+              {
+                element: <RutaConPermiso permiso={PERMISOS.gestionarPlanificacion} seccion="Configuración" />,
+                children: [
+                  { path: RUTAS_PLANIFICACION.configuracion, element: <ConfiguracionPage /> }, // HU-MOD03-001 y 002 (AV-268)
+                ],
+              },
               {
                 path: RUTAS_PLANIFICACION_ANTIGUAS.servicios,
                 element: <Navigate to={RUTAS_PLANIFICACION.configuracion} replace />,

@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import AccionFila from '@/design-system/AccionFila'
 import Boton from '@/components/ui/Boton'
 import { GrupoChips } from '@/components/ui/ChipsFiltro'
 import TablaDatos, { type ColumnaTabla, type EstadoTabla } from '@/components/ui/TablaDatos'
@@ -30,7 +31,14 @@ export interface HistorialExportacionesProps {
   onCambiarPagina: (pagina: number) => void
 }
 
-export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, onCambiarTipo, onCambiarPagina }: HistorialExportacionesProps) {
+export default function HistorialExportaciones({
+  consulta,
+  tipos,
+  tipo,
+  pagina,
+  onCambiarTipo,
+  onCambiarPagina,
+}: HistorialExportacionesProps) {
   const esMovil = useEsMovil()
   const [descargando, setDescargando] = useState<number | null>(null)
   const [errorDescarga, setErrorDescarga] = useState<string | null>(null)
@@ -47,16 +55,31 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
     }
   }
 
+  const etiquetaDescargar = (r: ReporteGenerado) =>
+    `Descargar ${r.etiqueta_tipo} del ${formatearFechaHora(r.fecha_hora)}`
+
   const botonDescargar = (r: ReporteGenerado) => (
     <Boton
       variante="fantasma"
       cargando={descargando === r.id}
       deshabilitado={r.archivo === null}
-      aria-label={`Descargar ${r.etiqueta_tipo} del ${formatearFechaHora(r.fecha_hora)}`}
+      aria-label={etiquetaDescargar(r)}
       onClick={() => void descargar(r)}
     >
       Descargar
     </Boton>
+  )
+
+  const accionDescargar = (r: ReporteGenerado) => (
+    <AccionFila
+      icono="download"
+      nombre="Descargar"
+      etiqueta={etiquetaDescargar(r)}
+      descripcion={r.archivo === null ? 'Sin archivo para descargar' : undefined}
+      cargando={descargando === r.id}
+      deshabilitado={r.archivo === null}
+      onClick={() => void descargar(r)}
+    />
   )
 
   const columnas: ColumnaTabla<ReporteGenerado>[] = [
@@ -66,13 +89,19 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
     { clave: 'formato', titulo: 'Formato', render: (r) => <Estado tono="neutro" texto={TEXTO_FORMATO[r.formato]} /> },
     { clave: 'filas', titulo: 'Filas', alineacion: 'derecha', render: (r) => formatearNumero(r.filas) },
     { clave: 'usuario', titulo: 'Generado por' },
-    { clave: 'tamano', titulo: 'Tamaño', alineacion: 'derecha', render: (r) => formatearTamanoArchivo(r.archivo?.tamano_bytes) },
-    { clave: 'accion', titulo: 'Acción', render: botonDescargar },
+    {
+      clave: 'tamano',
+      titulo: 'Tamaño',
+      alineacion: 'derecha',
+      render: (r) => formatearTamanoArchivo(r.archivo?.tamano_bytes),
+    },
+    { clave: 'accion', titulo: 'Acción', render: accionDescargar },
   ]
 
   let estado: EstadoTabla | null = null
   if (consulta.estado === 'error') estado = 'error'
-  else if (consulta.estado === 'cargando' && (consulta.cargaVisible || !consulta.datos)) estado = consulta.cargaVisible ? 'cargando' : null
+  else if (consulta.estado === 'cargando' && (consulta.cargaVisible || !consulta.datos))
+    estado = consulta.cargaVisible ? 'cargando' : null
   else if (consulta.datos) estado = consulta.datos.count === 0 ? 'vacio' : 'exito'
 
   const reportes = consulta.datos?.results ?? []
@@ -109,7 +138,9 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
                     <span className={estilos.nombreTipo}>{r.etiqueta_tipo}</span>
                     <Estado tono="neutro" texto={TEXTO_FORMATO[r.formato]} />
                   </div>
-                  <p className={estilos.metaFicha}>{formatearFechaHora(r.fecha_hora)} · {r.usuario}</p>
+                  <p className={estilos.metaFicha}>
+                    {formatearFechaHora(r.fecha_hora)} · {r.usuario}
+                  </p>
                   <p className={estilos.metaFicha}>{r.resumen_parametros}</p>
                   <div className={estilos.pieFicha}>
                     <span className={`${estilos.metaFicha} cifra`}>
@@ -128,7 +159,11 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
                 <Boton variante="secundario" deshabilitado={pagina <= 1} onClick={() => onCambiarPagina(pagina - 1)}>
                   Anterior
                 </Boton>
-                <Boton variante="secundario" deshabilitado={pagina * POR_PAGINA >= total} onClick={() => onCambiarPagina(pagina + 1)}>
+                <Boton
+                  variante="secundario"
+                  deshabilitado={pagina * POR_PAGINA >= total}
+                  onClick={() => onCambiarPagina(pagina + 1)}
+                >
                   Siguiente
                 </Boton>
               </div>
@@ -145,7 +180,11 @@ export default function HistorialExportaciones({ consulta, tipos, tipo, pagina, 
             vacio={vacio}
             error={
               consulta.error
-                ? { titulo: 'No se pudieron cargar los reportes generados', descripcion: consulta.error.detalle, onReintentar: consulta.reintentar }
+                ? {
+                    titulo: 'No se pudieron cargar los reportes generados',
+                    descripcion: consulta.error.detalle,
+                    onReintentar: consulta.reintentar,
+                  }
                 : undefined
             }
           />

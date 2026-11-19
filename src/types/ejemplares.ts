@@ -13,6 +13,7 @@ export interface EspecieVegetal {
 export interface EjemplarInventario {
   id: number
   codigo: string
+  alias: string | null
   referencia_catastro: string | null
   codigo_catastro: string | null
   codigo_placa_antigua: string | null

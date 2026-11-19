@@ -163,3 +163,61 @@ export type SugerenciaIAGenerica<C> = Omit<SugerenciaIA, 'contenido'> & { conten
 export function claveCampo(campoId: number): string {
   return `campo_${campoId}`
 }
+
+/** Proveedor de IA que se puede elegir en Configuración (AV-395). */
+export type ProveedorIa = 'gemini' | 'deepseek'
+
+/** `GET ia/configuracion/`: proveedor y modelo activos y los que se pueden elegir. */
+export interface ConfiguracionIa {
+  proveedor: ProveedorIa
+  modelo: string
+  /** `configuracion`: elegido en esta pantalla; `entorno`: el del servidor. */
+  origen: 'configuracion' | 'entorno'
+  actualizado_en?: string
+  proveedores: { id: ProveedorIa; nombre: string; modelos: string[]; clave_configurada: boolean }[]
+}
+
+/** `POST ia/configuracion/probar/`. */
+export interface PruebaConexionIa {
+  ok: boolean
+  proveedor: ProveedorIa
+  modelo: string
+  duracion_ms: number
+  detalle?: string
+}
+
+/** Métricas de un grupo de llamadas a la IA (AV-396). `coste_usd` es nulo si ninguna tiene precio. */
+export interface MetricasUsoIa {
+  llamadas: number
+  fallidas: number
+  duracion_media_ms: number | null
+  tokens_entrada: number
+  tokens_salida: number
+  tokens_cache: number
+  coste_usd: number | null
+  /** Llamadas correctas sin coste: el modelo no tiene precio o el proveedor no dio los tokens. */
+  sin_coste: number
+}
+
+/** `GET ia/uso/`: uso y coste de la IA en un periodo. */
+export interface UsoIa {
+  desde: string
+  hasta: string
+  totales: MetricasUsoIa & { duracion_p95_ms: number | null }
+  por_asistente: (MetricasUsoIa & { asistente: string })[]
+  por_modelo: (MetricasUsoIa & { proveedor: string; modelo: string })[]
+  por_dia: (MetricasUsoIa & { fecha: string })[]
+  historial: {
+    id: number
+    solicitado_en: string
+    asistente: string
+    proveedor: string
+    modelo: string
+    duracion_ms: number
+    correcto: boolean
+    error: string | null
+    tokens_entrada: number | null
+    tokens_salida: number | null
+    coste_usd: number | null
+  }[]
+}

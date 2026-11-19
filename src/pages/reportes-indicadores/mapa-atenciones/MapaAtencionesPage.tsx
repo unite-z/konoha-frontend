@@ -22,6 +22,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
 import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFiltro'
 import EstadoCarga from '@/components/ui/EstadoCarga'
 import EstadoError from '@/components/ui/EstadoError'
@@ -127,7 +128,11 @@ const COLUMNAS: ColumnaTabla<FilaMapa>[] = [
       ),
   },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true },
-  { clave: 'ejemplar_codigo', titulo: 'Ejemplar', render: (f) => f.ejemplar_codigo ?? SIN_VALOR },
+  {
+    clave: 'ejemplar_codigo',
+    titulo: 'Ejemplar',
+    render: (f) => (f.ejemplar_codigo ? nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias) : SIN_VALOR),
+  },
   {
     clave: 'con_ubicacion',
     titulo: 'Ubicación',

@@ -4,7 +4,7 @@
  * periodos rápidos de los meses anteriores.
  */
 import type { BarraGrafico } from '../components/reportes-indicadores/graficos/BarrasHorizontales'
-import type { Tono } from '../components/ui/Badge'
+import type { Tono } from '@/design-system/Badge'
 import type { FechaIso, InstanteIso, Periodo } from '../types/comun'
 import type { Modalidad } from '../types/reportes'
 import type {
@@ -67,7 +67,13 @@ export function insigniaSituacion(situacion: SituacionProgramacion): { texto: st
 
 /** Recuento de filas por situación (para los chips). */
 export function contarPorSituacion(filas: FilaProgramadoEjecutado[]): Record<SituacionProgramacion, number> {
-  const cuenta: Record<SituacionProgramacion, number> = { Ejecutado: 0, EjecutadoConDesviacion: 0, EnCurso: 0, Pendiente: 0, Cancelado: 0 }
+  const cuenta: Record<SituacionProgramacion, number> = {
+    Ejecutado: 0,
+    EjecutadoConDesviacion: 0,
+    EnCurso: 0,
+    Pendiente: 0,
+    Cancelado: 0,
+  }
   for (const fila of filas) cuenta[fila.situacion] += 1
   return cuenta
 }
@@ -81,7 +87,9 @@ export function esVencido(fila: Pick<FilaProgramadoEjecutado, 'fin_previsto'>, h
 export function ordenarPendientes(filas: FilaProgramadoEjecutado[], hoy: FechaIso): FilaProgramadoEjecutado[] {
   return filas
     .filter((f) => f.situacion === 'Pendiente')
-    .sort((a, b) => Number(esVencido(b, hoy)) - Number(esVencido(a, hoy)) || a.fin_previsto.localeCompare(b.fin_previsto))
+    .sort(
+      (a, b) => Number(esVencido(b, hoy)) - Number(esVencido(a, hoy)) || a.fin_previsto.localeCompare(b.fin_previsto),
+    )
 }
 
 /** «+3 días», «+1 día», «En plazo» o `SIN_VALOR` (sin fin real). */
@@ -93,7 +101,9 @@ export function textoDesviacion(dias: number | null): string {
 
 /** Media de días de retraso de las filas con desviación, o `null` si no hay. */
 export function promedioDesviacion(filas: FilaProgramadoEjecutado[]): number | null {
-  const dias = filas.filter((f) => f.situacion === 'EjecutadoConDesviacion' && f.desviacion_dias !== null).map((f) => f.desviacion_dias ?? 0)
+  const dias = filas
+    .filter((f) => f.situacion === 'EjecutadoConDesviacion' && f.desviacion_dias !== null)
+    .map((f) => f.desviacion_dias ?? 0)
   return dias.length === 0 ? null : dias.reduce((a, b) => a + b, 0) / dias.length
 }
 
@@ -173,7 +183,10 @@ export function filasDeBarra(
     }
   }
   if (parte === 'pendientes') {
-    return { titulo: `${servicio.tipo_servicio}: pendientes`, filas: delServicio.filter((f) => f.situacion === 'Pendiente') }
+    return {
+      titulo: `${servicio.tipo_servicio}: pendientes`,
+      filas: delServicio.filter((f) => f.situacion === 'Pendiente'),
+    }
   }
   return { titulo: `${servicio.tipo_servicio}: programados`, filas: delServicio }
 }
@@ -182,14 +195,18 @@ export function filasDeBarra(
 export type FiltroTarjeta = 'Pendiente' | 'EjecutadoConDesviacion' | 'sin-programar'
 
 /** «Por servicio» recalculado con las filas visibles (al filtrar la página), sin los servicios que quedan vacíos. */
-export function porServicioDe(filas: FilaProgramadoEjecutado[], servicios: ComparacionPorServicio[]): ComparacionPorServicio[] {
+export function porServicioDe(
+  filas: FilaProgramadoEjecutado[],
+  servicios: ComparacionPorServicio[],
+): ComparacionPorServicio[] {
   return servicios
     .map((s) => {
       const propias = filas.filter((f) => f.tipo_servicio === s.tipo_servicio)
       return {
         ...s,
         programados: propias.length,
-        ejecutados: propias.filter((f) => f.situacion === 'Ejecutado' || f.situacion === 'EjecutadoConDesviacion').length,
+        ejecutados: propias.filter((f) => f.situacion === 'Ejecutado' || f.situacion === 'EjecutadoConDesviacion')
+          .length,
         pendientes: propias.filter((f) => f.situacion === 'Pendiente').length,
       }
     })

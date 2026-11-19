@@ -8,7 +8,7 @@
  * La ayuda fija de «Tipo de servicio» va en una ayuda emergente (icono de información) para no descuadrar la
  * barra; los avisos variables del catálogo (por ejemplo, incompleto) siguen visibles bajo el campo.
  */
-import Selector, { OPCION_TODOS } from '../ui/Selector'
+import Selector, { OPCION_TODOS } from '@/design-system/Selector'
 import AyudaEmergente from './AyudaEmergente'
 import { OPCIONES_MODALIDAD } from '@/utils/estados'
 import estilos from './SelectoresFiltroGestion.module.css'

@@ -1,7 +1,7 @@
 /**
  * Textos y tonos de los valores estables de MOD-01. La API envía códigos; la interfaz decide la etiqueta.
  */
-import type { Tono } from '../components/ui/tonos'
+import type { Tono } from '@/design-system/tonos'
 import type { CanalAcceso, CodigoRol, Destacado, EstadoCuenta, ResultadoAcceso } from '../types/core'
 
 export const NOMBRE_ROL: Record<CodigoRol, string> = {
@@ -50,6 +50,7 @@ const ACCION: Record<string, string> = {
   CambioEstado: 'Cambio de estado',
   CambioRol: 'Cambio de rol',
   BajaLogica: 'Baja',
+  Anulacion: 'Anulación',
 }
 
 export function textoAccion(accion: string): string {

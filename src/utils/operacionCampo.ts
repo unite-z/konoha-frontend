@@ -1,33 +1,110 @@
-import type { EntradaEncargo } from '../types/operacionCampo'
+import type { EntradaEncargo, EstadoActividadCampo, EstadoEncargo } from '../types/operacionCampo'
 import { tiene, type Permisos } from '../config/permisosSesion'
 
 /** Gestionar cuadrillas, encargos y verificar actividades: `CAM.CUADRILLA.GESTIONAR` (AV-382, por permiso). */
-export function esJefeCampo(permisos: Permisos): boolean { return tiene(permisos, 'CAM.CUADRILLA.GESTIONAR') }
+export function esJefeCampo(permisos: Permisos): boolean {
+  return tiene(permisos, 'CAM.CUADRILLA.GESTIONAR')
+}
 /** Registrar en el parte de la propia cuadrilla: `CAM.PARTE.REGISTRAR`. */
-export function puedeRegistrarParte(permisos: Permisos): boolean { return tiene(permisos, 'CAM.PARTE.REGISTRAR') }
-export function puedeRegistrarCampo(permisos: Permisos): boolean { return esJefeCampo(permisos) || puedeRegistrarParte(permisos) }
+export function puedeRegistrarParte(permisos: Permisos): boolean {
+  return tiene(permisos, 'CAM.PARTE.REGISTRAR')
+}
+/** Invalidar una actividad registrada conservando su trazabilidad (AV-384). */
+export function puedeAnularActividad(permisos: Permisos): boolean {
+  return tiene(permisos, 'CAM.PARTE.ANULAR')
+}
+/** Avanzar el estado de los encargos propios (capataz responsable): `PLA.ENCARGO.ACTUALIZAR_ESTADO`, como el backend. */
+export function puedeCambiarEstadoEncargo(permisos: Permisos): boolean {
+  return tiene(permisos, 'PLA.ENCARGO.ACTUALIZAR_ESTADO')
+}
+export function puedeRegistrarCampo(permisos: Permisos): boolean {
+  return esJefeCampo(permisos) || puedeRegistrarParte(permisos)
+}
 export { hoyLima } from './instanteLima'
 export function sumarDiasCampo(fecha: string, dias: number): string {
   const date = new Date(`${fecha}T12:00:00Z`)
-  if(Number.isNaN(date.valueOf())) return ''
-  date.setUTCDate(date.getUTCDate()+dias)
-  return date.toISOString().slice(0,10)
+  if (Number.isNaN(date.valueOf())) return ''
+  date.setUTCDate(date.getUTCDate() + dias)
+  return date.toISOString().slice(0, 10)
 }
-export function validarEncargoCampo(body: EntradaEncargo): Record<string,string> {
-  const errors: Record<string,string> = {}
-  if(!body.cuadrilla_id) errors.cuadrilla_id = 'Selecciona una cuadrilla'
-  if(!body.tipo_actividad_id) errors.tipo_actividad_id = 'Selecciona una actividad'
-  if(!body.area_verde_id) errors.area_verde_id = 'Selecciona un espacio'
-  if(!body.descripcion.trim()) errors.descripcion = 'Describe el encargo'
-  for(const field of ['fecha_reunion','fecha_inicio','fecha_fin','plazo_previsto'] as const) {
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(body[field]) || Number.isNaN(Date.parse(body[field]))) errors[field] = 'Indica una fecha válida'
+export function validarEncargoCampo(body: EntradaEncargo): Record<string, string> {
+  const errors: Record<string, string> = {}
+  if (!body.cuadrilla_id) errors.cuadrilla_id = 'Selecciona una cuadrilla'
+  if (!body.tipo_actividad_id) errors.tipo_actividad_id = 'Selecciona una actividad'
+  if (!body.area_verde_id) errors.area_verde_id = 'Selecciona un espacio'
+  if (!body.descripcion.trim()) errors.descripcion = 'Describe el encargo'
+  const fechas =
+    body.periodicidad === 'Directo'
+      ? (['plazo_previsto'] as const)
+      : (['fecha_reunion', 'fecha_inicio', 'fecha_fin', 'plazo_previsto'] as const)
+  for (const field of fechas) {
+    const valor = body[field]
+    if (!valor || !/^\d{4}-\d{2}-\d{2}$/.test(valor) || Number.isNaN(Date.parse(valor))) {
+      errors[field] = 'Indica una fecha válida'
+    }
   }
-  if(!errors.fecha_inicio && !errors.fecha_fin) {
-    const days = (Date.parse(body.fecha_fin)-Date.parse(body.fecha_inicio))/86400000+1
-    const max = body.periodicidad==='Semanal'?7:14
-    if(days<1||days>max) errors.fecha_fin = `El periodo debe tener entre 1 y ${max} días`
+  if (body.periodicidad === 'Directo') {
+    if (!errors.plazo_previsto && body.plazo_previsto < body.fecha_inicio) {
+      errors.plazo_previsto = 'El plazo no puede ser anterior al inicio del encargo'
+    }
+    return errors
   }
-  if(body.plazo_previsto<body.fecha_inicio || body.plazo_previsto>body.fecha_fin) errors.plazo_previsto = 'El plazo debe estar dentro del periodo'
-  if(body.fecha_reunion>body.fecha_fin) errors.fecha_reunion = 'La reunión no puede ser posterior al periodo'
+  if (!errors.fecha_inicio && !errors.fecha_fin) {
+    const days = (Date.parse(body.fecha_fin) - Date.parse(body.fecha_inicio)) / 86400000 + 1
+    const max = body.periodicidad === 'Semanal' ? 7 : 14
+    if (days < 1 || days > max) errors.fecha_fin = `El periodo debe tener entre 1 y ${max} días`
+  }
+  if (body.plazo_previsto < body.fecha_inicio || body.plazo_previsto > body.fecha_fin)
+    errors.plazo_previsto = 'El plazo debe estar dentro del periodo'
+  if (body.fecha_reunion && body.fecha_reunion > body.fecha_fin)
+    errors.fecha_reunion = 'La reunión no puede ser posterior al periodo'
   return errors
+}
+
+/** Texto de cada estado de la actividad: «Observada» se muestra como «Verificada con observaciones» (AV-402). */
+export function textoEstadoActividad(estado: EstadoActividadCampo): string {
+  return estado === 'Observada' ? 'Verificada con observaciones' : estado
+}
+
+/** Toda actividad salvo la anulada admite verificar o actualizar su resultado (AV-402, AV-384). */
+export function admiteVerificacion(estado: EstadoActividadCampo): boolean {
+  return estado !== 'Anulada'
+}
+
+/** Reprogramar un encargo mientras siga vivo: ni completado ni cancelado (AV-405). */
+export function puedeReprogramarEncargo(estado: EstadoEncargo): boolean {
+  return estado === 'Por completar' || estado === 'En curso' || estado === 'Observado'
+}
+
+export interface EntradaReprogramacion {
+  fecha_inicio: string
+  fecha_fin: string
+  plazo_previsto: string
+  justificacion: string
+}
+
+/** Valida las fechas nuevas con las reglas del encargo y exige la justificación. */
+export function validarReprogramacion(actual: EntradaEncargo, nueva: EntradaReprogramacion): Record<string, string> {
+  const errores = validarEncargoCampo({
+    ...actual,
+    fecha_inicio: nueva.fecha_inicio,
+    fecha_fin: nueva.fecha_fin,
+    plazo_previsto: nueva.plazo_previsto,
+  })
+  // Solo se cambian las fechas: lo demás del encargo ya era válido.
+  const resultado: Record<string, string> = {}
+  for (const clave of ['fecha_inicio', 'fecha_fin', 'plazo_previsto'])
+    if (errores[clave]) resultado[clave] = errores[clave]
+  if (resultado.plazo_previsto === 'El plazo debe estar dentro del periodo') {
+    resultado.plazo_previsto = 'El plazo previsto debe estar dentro del nuevo periodo programado'
+  }
+  if (
+    nueva.fecha_inicio === actual.fecha_inicio &&
+    nueva.fecha_fin === actual.fecha_fin &&
+    nueva.plazo_previsto === actual.plazo_previsto
+  ) {
+    resultado.plazo_previsto ??= 'Cambia alguna fecha para reprogramar'
+  }
+  if (!nueva.justificacion.trim()) resultado.justificacion = 'Explica por qué se reprograma'
+  return resultado
 }

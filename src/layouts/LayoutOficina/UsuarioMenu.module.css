@@ -87,11 +87,76 @@
   flex-direction: column;
   align-items: stretch;
   gap: var(--space-1);
-  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: var(--space-1);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   background: var(--color-bg-surface);
   box-shadow: var(--web-elev-3);
+  white-space: normal;
+}
+
+/* Cabecera del desplegable: quién tiene abierta la sesión (AV-394). */
+.cuenta {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border-default);
+  margin-bottom: var(--space-1);
+}
+
+.cuentaNombre {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  color: var(--color-text-primary);
+}
+
+.cuentaCorreo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-muted);
+}
+
+/* Opción: como un Elemento de menú, alineada a la izquierda con su icono. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duracion-transicion);
+}
+
+.opcion:hover {
+  background: var(--color-bg-hover);
+}
+
+.opcion:focus-visible {
+  outline: 2px solid var(--web-focus-ring-color);
+  outline-offset: -2px;
+}
+
+.opcion svg {
+  color: var(--color-text-muted);
+}
+
+.separador {
+  margin: var(--space-1) 0;
+  border: 0;
+  border-top: 1px solid var(--color-border-default);
 }
 
 .lista[hidden] {

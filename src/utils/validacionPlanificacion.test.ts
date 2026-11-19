@@ -3,7 +3,9 @@ import { validarDuracion, validarFrecuencia, validarRestriccion } from './valida
 
 describe('validarFrecuencia', () => {
   it('acepta solo la teórica', () => {
-    expect(validarFrecuencia({ teorica: '7', practica: '', maxima: '' }).entrada).toEqual({ frecuencia_teorica_dias: 7 })
+    expect(validarFrecuencia({ teorica: '7', practica: '', maxima: '' }).entrada).toEqual({
+      frecuencia_teorica_dias: 7,
+    })
   })
 
   it('incluye práctica y máxima cuando existen', () => {
@@ -30,8 +32,13 @@ describe('validarDuracion', () => {
   })
 
   it('pide días de servicio mayores que 0 y acepta 0 días de limpieza (Figma 367-3334)', () => {
-    expect(validarDuracion({ duracion: '0', limpieza: '0', inicio: '', fin: '' }).errores).toEqual({ duracion: 'Debe ser mayor que 0' })
-    expect(validarDuracion({ duracion: '1', limpieza: '0', inicio: '', fin: '' }).entrada).toEqual({ duracion_maxima_dias: 1, dias_limpieza: 0 })
+    expect(validarDuracion({ duracion: '0', limpieza: '0', inicio: '', fin: '' }).errores).toEqual({
+      duracion: 'Debe ser mayor que 0',
+    })
+    expect(validarDuracion({ duracion: '1', limpieza: '0', inicio: '', fin: '' }).entrada).toEqual({
+      duracion_maxima_dias: 1,
+      dias_limpieza: 0,
+    })
   })
 
   it('incluye limpieza y horario', () => {
@@ -39,7 +46,7 @@ describe('validarDuracion', () => {
     expect(entrada).toEqual({ duracion_maxima_dias: 3, dias_limpieza: 1, hora_inicio: '06:00', hora_fin: '12:30' })
   })
 
-  it.each(['', '0', '1,5', 'x'])('rechaza la duración %j', (duracion) => {
+  it.each(['', '0', '-1', '1,5', 'x'])('rechaza la duración %j', (duracion) => {
     expect(validarDuracion({ ...vacio, duracion }).errores.duracion).toBeDefined()
   })
 
@@ -50,10 +57,21 @@ describe('validarDuracion', () => {
 })
 
 describe('validarRestriccion', () => {
-  const base = { tipo: '2', fechaInicio: '2026-10-20', fechaFin: '2026-10-22', horaInicio: '', horaFin: '', descripcion: '' }
+  const base = {
+    tipo: '2',
+    fechaInicio: '2026-10-20',
+    fechaFin: '2026-10-22',
+    horaInicio: '',
+    horaFin: '',
+    descripcion: '',
+  }
 
   it('acepta lo mínimo', () => {
-    expect(validarRestriccion(base).entrada).toEqual({ tipo_restriccion_id: 2, fecha_inicio: '2026-10-20', fecha_fin: '2026-10-22' })
+    expect(validarRestriccion(base).entrada).toEqual({
+      tipo_restriccion_id: 2,
+      fecha_inicio: '2026-10-20',
+      fecha_fin: '2026-10-22',
+    })
   })
 
   it('incluye horas y descripción recortada', () => {

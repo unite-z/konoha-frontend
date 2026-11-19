@@ -98,6 +98,8 @@ export const RUTAS_INVENTARIO = {
   campanasPoda: `${BASE_INVENTARIO}/campanas-poda`,
   nuevaCampanaPoda: `${BASE_INVENTARIO}/campanas-poda/nueva`,
   podaAltura: `${BASE_INVENTARIO}/poda-altura`,
+  fichaTecnica: `${BASE_INVENTARIO}/ejemplares/ficha-tecnica`, // RF-INV-005
+  rutaCorte: `${BASE_INVENTARIO}/ruta-corte`, // RF-INV-004
 } as const
 
 export function rutaCampanaPoda(id: number): string {
@@ -128,6 +130,11 @@ export function rutaIntervencionPoda(id: number): string {
   return `${BASE_INVENTARIO}/intervenciones-poda/${id}`
 }
 
+/** Ficha técnica y evaluación del ejemplar (AV-133). */
+export function rutaFichaTecnicaEjemplar(ejemplarId: number): string {
+  return `${RUTAS_INVENTARIO.ejemplares}/${ejemplarId}/ficha-tecnica`
+}
+
 export function rutaEditarCampanaPoda(id: number): string {
   return `${rutaCampanaPoda(id)}/editar`
 }
@@ -144,6 +151,7 @@ export const MIGAS_INVENTARIO = {
   catalogos: { texto: 'Catálogos y sectores', ruta: RUTAS_INVENTARIO.catalogos },
   campanasPoda: { texto: 'Campañas de poda', ruta: RUTAS_INVENTARIO.campanasPoda },
   podaAltura: { texto: 'Poda a demanda', ruta: RUTAS_INVENTARIO.podaAltura },
+  ejemplares: { texto: 'Ejemplares y especies', ruta: RUTAS_INVENTARIO.ejemplares },
 } satisfies Record<string, Miga>
 
 // --- MOD-05 «Servicios tercerizados» ---------------------------------------------------------------------
@@ -325,6 +333,10 @@ export const RUTAS_CORE = {
   rolesPermisos: `${BASE_USUARIOS}/roles`, // AV-381: solo el superadministrador
   repositorio: '/repositorio', // RF-T-010
   pendientes: '/pendientes', // RF-T-012: lo que falta por sincronizar desde este dispositivo
+  configuracion: '/configuracion', // AV-397: panel de módulos de configuración
+  configuracionApariencia: '/configuracion/apariencia', // AV-389: cualquier sesión
+  configuracionIa: '/configuracion/inteligencia-artificial', // AV-395: IA.PROPUESTA.VALIDAR
+  configuracionUsoIa: '/configuracion/uso-ia', // AV-396: IA.PROPUESTA.VALIDAR
 } as const
 
 /** Prefijo de «Usuarios y roles» (menú). */

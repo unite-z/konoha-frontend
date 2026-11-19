@@ -1,37 +1,64 @@
 import { useState } from 'react'
-import Boton from '@/components/ui/Boton'
-import Tarjeta from '@/components/ui/Tarjeta'
-import CampoFormulario, { AreaTexto } from '@/components/ui/CampoFormulario'
-import Selector from '@/components/ui/Selector'
-import DialogoFormulario from '@/components/ui/DialogoFormulario'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
+import { Link, useNavigate } from 'react-router'
+import AccionFila, { AccionesFila } from '@/design-system/AccionFila'
+import Boton from '@/design-system/Boton'
+import Tarjeta from '@/design-system/Tarjeta'
+import CampoFormulario, { AreaTexto } from '@/design-system/CampoFormulario'
+import Selector from '@/design-system/Selector'
+import DialogoFormulario from '@/design-system/DialogoFormulario'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import AccionesPagina from '@/layouts/LayoutOficina/AccionesPagina'
 import { useConsulta } from '@/hooks/useConsulta'
+import { rutaTareasDeEncargo } from '@/router/rutasCampo'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import { campoApi, todosCampo } from '@/services/api/operacionCampo'
-import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo } from '@/types/operacionCampo'
-import { esJefeCampo, hoyLima, sumarDiasCampo, validarEncargoCampo } from '@/utils/operacionCampo'
-import { formatearFecha } from '@/utils/formato'
+import type { CatalogoCampo, CuadrillaCampo, EncargoCampo, EntradaEncargo, EstadoEncargo } from '@/types/operacionCampo'
+import {
+  esJefeCampo,
+  hoyLima,
+  puedeCambiarEstadoEncargo,
+  puedeReprogramarEncargo,
+  sumarDiasCampo,
+  validarEncargoCampo,
+  validarReprogramacion,
+} from '@/utils/operacionCampo'
+import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { BuscarCampo, EstadoCatalogos, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo, useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
-import Estado from '@/components/ui/Estado'
+import Estado, { type TonoEstado } from '@/design-system/Estado'
+
+const tonosEncargo: Record<EstadoEncargo, TonoEstado> = {
+  'Por completar': 'neutro',
+  'En curso': 'info',
+  Completado: 'exito',
+  Observado: 'aviso',
+  Cancelado: 'error',
+}
+
+const transiciones: Record<EstadoEncargo, EstadoEncargo[]> = {
+  'Por completar': ['En curso'],
+  'En curso': ['Completado', 'Observado'],
+  Completado: [],
+  Observado: ['En curso'],
+  Cancelado: [],
+}
 
 export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])
-  const jefe = esJefeCampo(usePermisos())
-  const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta'])
+  const permisos = usePermisos()
+  const jefe = esJefeCampo(permisos)
+  const navegar = useNavigate()
+  const [seguimiento, setSeguimiento] = useState<EncargoCampo | null>(null)
+  const [reprogramando, setReprogramando] = useState<EncargoCampo | null>(null)
+  const listado = useListadoCampo<EncargoCampo>('encargos', ['periodicidad', 'desde', 'hasta', 'vencidos'])
   const [dialogo, setDialogo] = useState<EncargoCampo | 'nuevo' | null>(null),
     [aviso, setAviso] = useState('')
   return (
     <div className={estilos.pagina}>
-      <AccionesPagina>
-        {jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}
-      </AccionesPagina>
-      <p className={estilos.descripcion}>
-        Organiza los encargos de la reunión de planificación por capataz y periodo.
-      </p>
+      <AccionesPagina>{jefe && <Boton onClick={() => setDialogo('nuevo')}>Registrar encargo</Boton>}</AccionesPagina>
+      <p className={estilos.descripcion}>Consulta y organiza los encargos directos y periódicos por capataz.</p>
       {aviso && (
         <AvisoEnLinea tono="exito" accion={{ texto: 'Cerrar aviso', onClick: () => setAviso('') }}>
           {aviso}
@@ -42,14 +69,23 @@ export default function EncargosPage() {
           <BuscarCampo valor={String(listado.params.q ?? '')} onBuscar={(q) => listado.filtrar({ q })} />
           <Selector
             id="encargo-periodicidad"
-            etiqueta="Periodo"
+            etiqueta="Modalidad"
             valor={String(listado.params.periodicidad ?? '')}
             opciones={[
               { valor: 'Semanal', texto: 'Semanal' },
               { valor: 'Quincenal', texto: 'Quincenal' },
+              { valor: 'Directo', texto: 'Directo' },
             ]}
             opcionTodos="Todos"
             onCambiar={(periodicidad) => listado.filtrar({ periodicidad })}
+          />
+          <Selector
+            id="encargo-vencimiento"
+            etiqueta="Vencimiento"
+            valor={String(listado.params.vencidos ?? '')}
+            opciones={[{ valor: 'true', texto: 'Solo vencidos' }]}
+            opcionTodos="Todos"
+            onCambiar={(vencidos) => listado.filtrar({ vencidos })}
           />
           <CampoFormulario
             id="encargo-desde"
@@ -67,7 +103,7 @@ export default function EncargosPage() {
           />
           <Boton
             variante="fantasma"
-            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '' })}
+            onClick={() => listado.filtrar({ q: '', periodicidad: '', desde: '', hasta: '', vencidos: '' })}
           >
             Limpiar filtros
           </Boton>
@@ -77,6 +113,7 @@ export default function EncargosPage() {
         titulo="Encargos por capataz"
         listado={listado}
         vacio="No hay encargos con estos filtros"
+        filaPeligro={(e) => e.vencido === true}
         columnas={[
           {
             clave: 'descripcion',
@@ -84,7 +121,9 @@ export default function EncargosPage() {
             multilinea: true,
             render: (e) => (
               <>
-                <span className={estilos.celdaPrincipal}>{e.descripcion}</span>
+                <Link className={estilos.celdaPrincipal} to={rutaTareasDeEncargo(e.id)}>
+                  {e.descripcion}
+                </Link>
                 <span className={estilos.secundario}>
                   {e.tipo_actividad_nombre} · {e.area_verde_nombre}
                 </span>
@@ -107,9 +146,11 @@ export default function EncargosPage() {
             render: (e) => (
               <>
                 <Estado tono="info" texto={e.periodicidad} />
-                <span className={estilos.secundario}>
-                  {formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}
-                </span>
+                {e.periodicidad !== 'Directo' && (
+                  <span className={estilos.secundario}>
+                    {formatearFecha(e.fecha_inicio)} — {formatearFecha(e.fecha_fin)}
+                  </span>
+                )}
               </>
             ),
           },
@@ -121,24 +162,75 @@ export default function EncargosPage() {
           {
             clave: 'estado',
             titulo: 'Estado',
-            render: (e) => <Estado tono="neutro" texto={e.estado ?? 'Pendiente de integrar'} />,
+            // «Vencido» es una presentación derivada: el estado persistido conserva sus
+            // transiciones y acciones de negocio (AV-403).
+            render: (e) =>
+              e.vencido ? (
+                <Estado tono="error" texto="Vencido" />
+              ) : (
+                <Estado tono={tonosEncargo[e.estado]} texto={e.estado} />
+              ),
           },
           {
             clave: 'acciones',
             titulo: 'Acciones',
             render: (e) => (
-              <Boton
-                variante="fantasma"
-                compacto
-                aria-label={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
-                onClick={() => setDialogo(e)}
-              >
-                {jefe ? 'Editar encargo' : 'Ver encargo'}
-              </Boton>
+              <AccionesFila>
+                <AccionFila
+                  icono="list"
+                  nombre="Ver tareas"
+                  etiqueta={`Ver tareas del encargo ${e.id}`}
+                  onClick={() => navegar(rutaTareasDeEncargo(e.id))}
+                />
+                <AccionFila
+                  icono={jefe ? 'pencil' : 'eye'}
+                  nombre={jefe ? 'Editar encargo' : 'Ver encargo'}
+                  etiqueta={`${jefe ? 'Editar' : 'Ver'} encargo ${e.id}`}
+                  onClick={() => setDialogo(e)}
+                />
+                {jefe && puedeReprogramarEncargo(e.estado) && (
+                  <AccionFila
+                    icono="calendar"
+                    nombre="Reprogramar"
+                    etiqueta={`Reprogramar el encargo ${e.id}`}
+                    onClick={() => setReprogramando(e)}
+                  />
+                )}
+                <AccionFila
+                  icono="history"
+                  nombre="Seguimiento"
+                  etiqueta={`Seguimiento del encargo ${e.id}`}
+                  onClick={() => setSeguimiento(e)}
+                />
+              </AccionesFila>
             ),
           },
         ]}
       />
+      {seguimiento && (
+        <DialogoSeguimiento
+          id={seguimiento.id}
+          puedeCambiar={puedeCambiarEstadoEncargo(permisos)}
+          puedeCancelar={jefe}
+          onCerrar={() => setSeguimiento(null)}
+          onGuardado={() => {
+            setSeguimiento(null)
+            setAviso('El estado del encargo se guardó correctamente')
+            listado.consulta.reintentar()
+          }}
+        />
+      )}
+      {reprogramando && (
+        <DialogoReprogramar
+          encargo={reprogramando}
+          onCerrar={() => setReprogramando(null)}
+          onGuardado={() => {
+            setReprogramando(null)
+            setAviso('El encargo se reprogramó correctamente')
+            listado.consulta.reintentar()
+          }}
+        />
+      )}
       {dialogo && (
         <DialogoEncargo
           actual={dialogo === 'nuevo' ? null : dialogo}
@@ -180,6 +272,7 @@ function DialogoEncargo({
       plazo_previsto: sumarDiasCampo(hoy, 6),
     },
   )
+  const directo = body.periodicidad === 'Directo'
   const [errores, setErrores] = useState<Record<string, string>>({}),
     [cambios, setCambios] = useState(false)
   const mutacion = useMutacionCampo()
@@ -212,15 +305,19 @@ function DialogoEncargo({
       return
     }
     // Solo se envían los campos de entrada, nunca las etiquetas o auditoría de una respuesta GET.
-    const entrada: EntradaEncargo = {
+    const entrada = {
       cuadrilla_id: body.cuadrilla_id,
       tipo_actividad_id: body.tipo_actividad_id,
       area_verde_id: body.area_verde_id,
       descripcion: body.descripcion.trim(),
       periodicidad: body.periodicidad,
-      fecha_reunion: body.fecha_reunion,
-      fecha_inicio: body.fecha_inicio,
-      fecha_fin: body.fecha_fin,
+      ...(directo
+        ? {}
+        : {
+            fecha_reunion: body.fecha_reunion,
+            fecha_inicio: body.fecha_inicio,
+            fecha_fin: body.fecha_fin,
+          }),
       plazo_previsto: body.plazo_previsto,
     }
     void mutacion.enviar(
@@ -263,16 +360,20 @@ function DialogoEncargo({
               />
               <Selector
                 id="form-encargo-periodicidad"
-                etiqueta="Periodicidad"
+                etiqueta="Modalidad"
                 valor={body.periodicidad}
                 opciones={[
                   { valor: 'Semanal', texto: 'Semanal · hasta 7 días' },
                   { valor: 'Quincenal', texto: 'Quincenal · hasta 14 días' },
+                  { valor: 'Directo', texto: 'Directo · con plazo' },
                 ]}
                 onCambiar={(v) => {
-                  const fin = sumarDiasCampo(body.fecha_inicio, v === 'Semanal' ? 6 : 13)
+                  const inicio = v === 'Directo' && actual?.periodicidad !== 'Directo' ? hoy : body.fecha_inicio
+                  const fin = v === 'Directo' ? inicio : sumarDiasCampo(inicio, v === 'Semanal' ? 6 : 13)
                   cambiar({
                     periodicidad: v as EntradaEncargo['periodicidad'],
+                    fecha_reunion: v === 'Directo' ? null : (body.fecha_reunion ?? hoy),
+                    fecha_inicio: inicio,
                     fecha_fin: fin,
                     plazo_previsto: fin,
                   })
@@ -302,7 +403,10 @@ function DialogoEncargo({
                 onCambiar={(v) => cambiar({ area_verde_id: Number(v) })}
                 error={errores.area_verde_id}
               />
-              {(['fecha_reunion', 'fecha_inicio', 'fecha_fin', 'plazo_previsto'] as const).map((key) => (
+              {(directo
+                ? (['plazo_previsto'] as const)
+                : (['fecha_reunion', 'fecha_inicio', 'fecha_fin', 'plazo_previsto'] as const)
+              ).map((key) => (
                 <CampoFormulario
                   key={key}
                   id={`form-encargo-${key}`}
@@ -316,7 +420,7 @@ function DialogoEncargo({
                   }
                   type="date"
                   obligatorio
-                  value={body[key]}
+                  value={body[key] ?? ''}
                   onChange={(e) => cambiar({ [key]: e.target.value })}
                   error={errores[key]}
                 />
@@ -335,6 +439,252 @@ function DialogoEncargo({
               Los encargos con ejecución registrada conservan su planificación y no pueden redefinirse.
             </p>
           </fieldset>
+        )}
+      </EstadoCatalogos>
+    </DialogoFormulario>
+  )
+}
+
+/** Cambia el periodo y el plazo de un encargo vivo, con la justificación que queda en su historial (AV-405). */
+function DialogoReprogramar({
+  encargo,
+  onCerrar,
+  onGuardado,
+}: {
+  encargo: EncargoCampo
+  onCerrar: () => void
+  onGuardado: () => void
+}) {
+  const directo = encargo.periodicidad === 'Directo'
+  const [inicio, setInicio] = useState(encargo.fecha_inicio)
+  const [fin, setFin] = useState(encargo.fecha_fin)
+  const [plazo, setPlazo] = useState(encargo.plazo_previsto)
+  const [justificacion, setJustificacion] = useState('')
+  const [errores, setErrores] = useState<Record<string, string>>({})
+  const mutacion = useMutacionCampo()
+  // En el encargo directo el periodo termina en el plazo.
+  const finEfectivo = directo ? plazo : fin
+  const hayCambios =
+    inicio !== encargo.fecha_inicio ||
+    finEfectivo !== encargo.fecha_fin ||
+    plazo !== encargo.plazo_previsto ||
+    Boolean(justificacion)
+
+  function guardar() {
+    const entrada = { fecha_inicio: inicio, fecha_fin: finEfectivo, plazo_previsto: plazo, justificacion }
+    const problemas = validarReprogramacion(encargo, entrada)
+    setErrores(problemas)
+    const primero = Object.keys(problemas)[0]
+    if (primero) {
+      document.getElementById(`reprogramar-${primero}`)?.focus()
+      return
+    }
+    void mutacion.enviar(
+      () =>
+        campoApi(`encargos/${encargo.id}/reprogramacion/`, {
+          metodo: 'POST',
+          cuerpo: {
+            ...(directo ? {} : { fecha_inicio: inicio, fecha_fin: fin }),
+            plazo_previsto: plazo,
+            justificacion: justificacion.trim(),
+          },
+        }),
+      onGuardado,
+    )
+  }
+
+  return (
+    <DialogoFormulario
+      abierto
+      titulo="Reprogramar encargo"
+      descripcion={`${encargo.descripcion} · ${encargo.cuadrilla_nombre}`}
+      textoConfirmar="Reprogramar"
+      onEnviar={guardar}
+      onCerrar={onCerrar}
+      enviando={mutacion.enviando}
+      error={mutacion.error}
+      hayCambios={hayCambios}
+    >
+      <fieldset className={estilos.formulario} disabled={mutacion.enviando}>
+        <div className={estilos.rejilla}>
+          {!directo && (
+            <>
+              <CampoFormulario
+                id="reprogramar-fecha_inicio"
+                etiqueta="Inicio del periodo"
+                type="date"
+                obligatorio
+                value={inicio}
+                onChange={(e) => setInicio(e.target.value)}
+                error={errores.fecha_inicio}
+              />
+              <CampoFormulario
+                id="reprogramar-fecha_fin"
+                etiqueta="Fin del periodo"
+                type="date"
+                obligatorio
+                value={fin}
+                onChange={(e) => setFin(e.target.value)}
+                error={errores.fecha_fin}
+              />
+            </>
+          )}
+          <CampoFormulario
+            id="reprogramar-plazo_previsto"
+            etiqueta="Plazo previsto"
+            type="date"
+            obligatorio
+            value={plazo}
+            onChange={(e) => setPlazo(e.target.value)}
+            error={errores.plazo_previsto}
+            ayuda="Fecha límite para completar el encargo. Debe estar dentro del nuevo periodo programado."
+          />
+        </div>
+        <AreaTexto
+          id="reprogramar-justificacion"
+          etiqueta="Justificación"
+          obligatorio
+          maxLength={1000}
+          value={justificacion}
+          onChange={(e) => setJustificacion(e.target.value)}
+          error={errores.justificacion}
+        />
+        <p className={estilos.ayuda}>
+          Las actividades ya registradas deben quedar dentro del nuevo periodo. El cambio queda en el historial del
+          encargo.
+        </p>
+      </fieldset>
+    </DialogoFormulario>
+  )
+}
+
+function DialogoSeguimiento({
+  id,
+  puedeCambiar,
+  puedeCancelar,
+  onCerrar,
+  onGuardado,
+}: {
+  id: number
+  puedeCambiar: boolean
+  puedeCancelar: boolean
+  onCerrar: () => void
+  onGuardado: () => void
+}) {
+  const consulta = useConsulta(`encargo-seguimiento-${id}`, (signal) =>
+    campoApi<EncargoCampo>(`encargos/${id}/`, { signal }),
+  )
+  const [estado, setEstado] = useState<EstadoEncargo | ''>('')
+  const [observaciones, setObservaciones] = useState('')
+  const mutacion = useMutacionCampo()
+  const actual = consulta.datos
+  const opciones: EstadoEncargo[] = []
+  if (actual && puedeCambiar) opciones.push(...transiciones[actual.estado])
+  if (actual && puedeCancelar && actual.estado !== 'Completado' && actual.estado !== 'Cancelado') {
+    opciones.push('Cancelado')
+  }
+  const requiereMotivo = estado === 'Observado' || estado === 'Cancelado'
+
+  function guardar() {
+    if (!opciones.length) {
+      onCerrar()
+      return
+    }
+    if (!actual || !estado || !opciones.includes(estado)) {
+      mutacion.setDetalle('Selecciona el nuevo estado')
+      return
+    }
+    if (requiereMotivo && !observaciones.trim()) {
+      mutacion.setDetalle(
+        estado === 'Cancelado' ? 'Indica el motivo de la cancelación' : 'Indica el motivo de la observación',
+      )
+      return
+    }
+    void mutacion.enviar(
+      () =>
+        campoApi(`encargos/${id}/estado/`, {
+          metodo: 'POST',
+          cuerpo: { estado_anterior: actual.estado, estado, observaciones: observaciones.trim() },
+        }),
+      onGuardado,
+    )
+  }
+
+  return (
+    <DialogoFormulario
+      abierto
+      titulo="Seguimiento del encargo"
+      textoConfirmar={opciones.length ? 'Guardar estado' : 'Cerrar'}
+      onCerrar={onCerrar}
+      onEnviar={guardar}
+      error={mutacion.error}
+      enviando={mutacion.enviando}
+      hayCambios={Boolean(estado || observaciones)}
+      conObligatorios={opciones.length > 0}
+    >
+      <EstadoCatalogos consulta={consulta}>
+        {(encargo) => (
+          <>
+            <p>{encargo.descripcion}</p>
+            <Estado tono={tonosEncargo[encargo.estado]} texto={encargo.estado} />
+            {opciones.length > 0 && (
+              <fieldset className={estilos.formulario} disabled={mutacion.enviando}>
+                <Selector
+                  id="nuevo-estado-encargo"
+                  etiqueta="Nuevo estado"
+                  obligatorio
+                  valor={estado}
+                  opcionTodos="Selecciona un estado"
+                  opciones={opciones.map((valor) => ({ valor, texto: valor }))}
+                  onCambiar={(valor) => setEstado(valor as EstadoEncargo | '')}
+                />
+                <AreaTexto
+                  id="observaciones-estado-encargo"
+                  etiqueta="Observaciones"
+                  obligatorio={requiereMotivo}
+                  maxLength={1000}
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                />
+              </fieldset>
+            )}
+            <h3>Historial de estados</h3>
+            {encargo.historial_estados?.length ? (
+              <ul>
+                {encargo.historial_estados.map((cambio) => (
+                  <li key={cambio.id}>
+                    <strong>
+                      {cambio.estado_anterior} → {cambio.estado_nuevo}
+                    </strong>
+                    <span className={estilos.secundario}>
+                      {cambio.autor} · {formatearFechaHora(cambio.fecha)}
+                    </span>
+                    {cambio.observaciones && <p>{cambio.observaciones}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Sin cambios de estado registrados.</p>
+            )}
+            {Boolean(encargo.reprogramaciones?.length) && (
+              <>
+                <h3>Reprogramaciones</h3>
+                <ul>
+                  {encargo.reprogramaciones?.map((cambio) => (
+                    <li key={cambio.id}>
+                      <strong>
+                        Plazo {formatearFecha(cambio.plazo_anterior)} → {formatearFecha(cambio.plazo_nuevo)}
+                      </strong>
+                      <span className={estilos.secundario}>
+                        {cambio.autor} · {formatearFechaHora(cambio.fecha)}
+                      </span>
+                      <p>{cambio.justificacion}</p>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
         )}
       </EstadoCatalogos>
     </DialogoFormulario>

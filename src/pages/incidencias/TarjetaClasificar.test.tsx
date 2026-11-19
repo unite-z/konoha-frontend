@@ -18,6 +18,9 @@ vi.mock('@/services/api/incidencias', () => ({
   solicitarInspeccion: (id: number, cuerpo: unknown) => solicitarInspeccion(id, cuerpo),
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+// Quien gestiona incidencias (jefatura): sin este permiso las tarjetas de acción no se pintan (AV-406).
+const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CLASIFICAR'] as string[] }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
@@ -56,7 +59,12 @@ describe('TarjetaClasificar (en el detalle de incidencia)', () => {
     await usuario.click(screen.getByRole('radio', { name: 'Media' }))
     await usuario.click(screen.getByRole('radio', { name: 'Alto' }))
     await usuario.click(screen.getByRole('button', { name: 'Clasificar y derivar' }))
-    expect(clasificarIncidencia).toHaveBeenCalledWith(41, { severidad: 'Media', impacto: 'Alto', via: 'Tercerizada', motivo_cambio_via: undefined })
+    expect(clasificarIncidencia).toHaveBeenCalledWith(41, {
+      severidad: 'Media',
+      impacto: 'Alto',
+      via: 'Tercerizada',
+      motivo_cambio_via: undefined,
+    })
     expect(await screen.findByText('INC-2026-041 clasificada')).toBeTruthy()
   })
 
@@ -74,7 +82,10 @@ describe('TarjetaClasificar (en el detalle de incidencia)', () => {
     expect(screen.getByText('Explica por qué cambias la vía sugerida.')).toBeTruthy()
     await usuario.type(screen.getByLabelText(/^Motivo del cambio/), 'La cuadrilla B tiene escalera')
     await usuario.click(screen.getByRole('button', { name: 'Clasificar y derivar' }))
-    expect(clasificarIncidencia).toHaveBeenCalledWith(41, expect.objectContaining({ via: 'PersonalPropio', motivo_cambio_via: 'La cuadrilla B tiene escalera' }))
+    expect(clasificarIncidencia).toHaveBeenCalledWith(
+      41,
+      expect.objectContaining({ via: 'PersonalPropio', motivo_cambio_via: 'La cuadrilla B tiene escalera' }),
+    )
   })
 
   it('descarta con motivo (394-8700) y pide la inspección en campo (394-8782)', async () => {
@@ -99,7 +110,10 @@ describe('TarjetaClasificar (en el detalle de incidencia)', () => {
     await usuario.selectOptions(await screen.findByLabelText(/^Responsable/), '1')
     await usuario.type(screen.getByLabelText('Qué verificar'), 'Riesgo de caída del resto de la rama')
     await usuario.click(screen.getByRole('button', { name: 'Solicitar' }))
-    expect(solicitarInspeccion).toHaveBeenCalledWith(41, { responsable_id: 1, que_verificar: 'Riesgo de caída del resto de la rama' })
+    expect(solicitarInspeccion).toHaveBeenCalledWith(41, {
+      responsable_id: 1,
+      que_verificar: 'Riesgo de caída del resto de la rama',
+    })
     expect(await screen.findByText('Inspección solicitada a Ing. Carla M.')).toBeTruthy()
   })
 })

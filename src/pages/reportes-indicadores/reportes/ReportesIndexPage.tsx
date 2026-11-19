@@ -6,7 +6,7 @@
  */
 import { usePaginaActual } from '@/hooks/usePaginaActual'
 import { MIGAS, RUTAS } from '@/router/rutasApp'
-import ListaEnlaces from '../ListaEnlaces'
+import ListaEnlaces from '@/design-system/ListaEnlaces'
 
 const FILTROS = 'Filtros'
 

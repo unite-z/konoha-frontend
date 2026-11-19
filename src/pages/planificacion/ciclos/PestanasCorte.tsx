@@ -19,7 +19,17 @@ import type { FechaIso } from '@/types/comun'
 import { registrarLimpieza } from '@/services/api/corte'
 import type { CicloCorte, InterrupcionCorte, JardinRuta, LimpiezaCorte } from '@/types/corte'
 import type { Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { avanceRuta, cortadosPorDia, fechaCompleta, momento, porCortar, textoMarcado, totalLimpieza, ultimoDiaCorte } from './corte'
+import {
+  avanceRuta,
+  cumplimientoLimpieza,
+  cortadosPorDia,
+  fechaCompleta,
+  momento,
+  porCortar,
+  textoMarcado,
+  totalLimpieza,
+  ultimoDiaCorte,
+} from './corte'
 import estilos from './Ciclos.module.css'
 
 const VISIBLES_POR_CORTAR = 3
@@ -39,6 +49,7 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
   const [registrando, setRegistrando] = useState(false)
   const [errorLimpieza, setErrorLimpieza] = useState<string | null>(null)
   const total = totalLimpieza({ ...corte, limpiezas }, servicio)
+  const cumplimiento = cumplimientoLimpieza({ ...corte, limpiezas }, servicio)
 
   async function registrarJornada() {
     setRegistrando(true)
@@ -56,23 +67,43 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
   const completa = avance.total > 0 && avance.cortados === avance.total
   const pendientes = porCortar(corte.jardines)
   const inicio = ciclo.fecha_inicio_real
-  const dias = inicio ? cortadosPorDia(corte.jardines, inicio, ultimoDiaCorte(inicio, hoy, servicio, ciclo.fecha_fin_real)) : []
+  const dias = inicio
+    ? cortadosPorDia(corte.jardines, inicio, ultimoDiaCorte(inicio, hoy, servicio, ciclo.fecha_fin_real))
+    : []
   const maximoDia = Math.max(1, ...dias.map((d) => d.cortados))
 
   const columnasRuta: ColumnaTabla<JardinRuta>[] = [
     { clave: 'zona', titulo: 'Zona', render: (j) => <CeldaTexto texto={j.zona} tono="secundario" /> },
-    { clave: 'jardin', titulo: 'Jardín', multilinea: true, render: (j) => <CeldaTexto texto={`${j.codigo} · ${j.nombre}`} destacado /> },
+    {
+      clave: 'jardin',
+      titulo: 'Jardín',
+      multilinea: true,
+      render: (j) => <CeldaTexto texto={`${j.codigo} · ${j.nombre}`} destacado />,
+    },
     {
       clave: 'estado',
       titulo: 'Estado',
       render: (j) => <Estado tono={j.estado === 'Cortado' ? 'exito' : 'neutro'} texto={j.estado} />,
     },
-    { clave: 'marcado', titulo: 'Marcado', render: (j) => <CeldaTexto texto={textoMarcado(j, ahora)} tono="secundario" /> },
+    {
+      clave: 'marcado',
+      titulo: 'Marcado',
+      render: (j) => <CeldaTexto texto={textoMarcado(j, ahora)} tono="secundario" />,
+    },
   ]
   const columnasInterrupciones: ColumnaTabla<InterrupcionCorte>[] = [
     { clave: 'hora', titulo: 'Hora', render: (i) => momento(i.hora, ahora) },
-    { clave: 'zonas', titulo: 'Traslado', render: (i) => `${i.zona_afectada} → ${i.zona_alternativa ?? 'sin zona libre'}` },
-    { clave: 'motivo', titulo: 'Motivo', multilinea: true, render: (i) => <CeldaTexto texto={i.motivo} tono="secundario" /> },
+    {
+      clave: 'zonas',
+      titulo: 'Traslado',
+      render: (i) => `${i.zona_afectada} → ${i.zona_alternativa ?? 'sin zona libre'}`,
+    },
+    {
+      clave: 'motivo',
+      titulo: 'Motivo',
+      multilinea: true,
+      render: (i) => <CeldaTexto texto={i.motivo} tono="secundario" />,
+    },
     { clave: 'descontado', titulo: 'Descontado', alineacion: 'derecha', render: (i) => `${i.minutos_descontados} min` },
   ]
 
@@ -108,7 +139,12 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
                   {dias.map((dia) => (
                     <li key={dia.fecha} className={estilos.dia}>
                       <span className={estilos.detalleEvento}>{dia.texto}</span>
-                      <BarraAvance valor={dia.cortados} maximo={maximoDia} etiqueta={`Cortados el ${dia.texto}`} textoValor={String(dia.cortados)} />
+                      <BarraAvance
+                        valor={dia.cortados}
+                        maximo={maximoDia}
+                        etiqueta={`Cortados el ${dia.texto}`}
+                        textoValor={String(dia.cortados)}
+                      />
                       <span className={estilos.cifraDia}>{dia.cortados}</span>
                     </li>
                   ))}
@@ -128,11 +164,20 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
                     </li>
                   ))}
                 </ul>
-                {pendientes.length > VISIBLES_POR_CORTAR && <p className={estilos.masPorCortar}>+{pendientes.length - VISIBLES_POR_CORTAR} más</p>}
+                {pendientes.length > VISIBLES_POR_CORTAR && (
+                  <p className={estilos.masPorCortar}>+{pendientes.length - VISIBLES_POR_CORTAR} más</p>
+                )}
               </section>
             </div>
           )}
-          <TablaDatos titulo="Ruta de jardines" sinMarco compacta columnas={columnasRuta} filas={corte.jardines} claveFila={(j) => String(j.id)} />
+          <TablaDatos
+            titulo="Ruta de jardines"
+            sinMarco
+            compacta
+            columnas={columnasRuta}
+            filas={corte.jardines}
+            claveFila={(j) => String(j.id)}
+          />
         </>
       )}
       {pestana === 'interrupciones' && (
@@ -144,14 +189,21 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
           filas={corte.interrupciones}
           claveFila={(i) => String(i.id)}
           estado={corte.interrupciones.length === 0 ? 'vacio' : 'exito'}
-          vacio={{ titulo: 'Sin interrupciones', descripcion: 'Las interrupciones por molestia aparecerán aquí.', nivel: 3 }}
+          vacio={{
+            titulo: 'Sin interrupciones',
+            descripcion: 'Las interrupciones por molestia aparecerán aquí.',
+            nivel: 3,
+          }}
         />
       )}
       {pestana === 'limpieza' && (
         <div className={estilos.panelLimpieza}>
           {!completa ? (
             <>
-              <AvisoEnLinea tono="advertencia" titulo={`Faltan ${pendientes.length} ${pendientes.length === 1 ? 'jardín' : 'jardines'} por cortar`}>
+              <AvisoEnLinea
+                tono="advertencia"
+                titulo={`Faltan ${pendientes.length} ${pendientes.length === 1 ? 'jardín' : 'jardines'} por cortar`}
+              >
                 La limpieza se registra con la ruta completa.
               </AvisoEnLinea>
               <ul className={estilos.listaSimple}>
@@ -172,12 +224,23 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
                   </li>
                 ))}
               </ul>
-              {limpiezas.length > 0 && (
+              {
                 <div className={`${estilos.totalLimpieza} ${total.cumple ? estilos.cumple : estilos.noCumple}`}>
                   <span>{total.texto}</span>
-                  <Estado tono={total.cumple ? 'exito' : 'error'} texto={total.cumple ? 'Cumple' : 'No cumple'} />
+                  <Estado
+                    tono={cumplimiento.duracion ? 'exito' : 'error'}
+                    texto={cumplimiento.duracion ? 'Dentro de duración máxima' : 'Duración excedida'}
+                  />
+                  <Estado
+                    tono={cumplimiento.limpieza ? 'exito' : 'aviso'}
+                    texto={
+                      cumplimiento.limpieza
+                        ? 'Limpieza cumplida'
+                        : `Limpieza pendiente: ${cumplimiento.validas}/${cumplimiento.requeridos}`
+                    }
+                  />
                 </div>
-              )}
+              }
             </>
           )}
           {errorLimpieza && (
@@ -186,7 +249,15 @@ export default function PestanasCorte({ ciclo, corte, servicio, hoy, ahora }: Pe
             </AvisoEnLinea>
           )}
           <div>
-            <Boton variante="secundario" deshabilitado={!completa} cargando={registrando} onClick={() => void registrarJornada()}>
+            <p>La limpieza requiere una jornada posterior al último corte; solo cuentan las jornadas registradas.</p>
+            <Boton
+              variante="secundario"
+              deshabilitado={
+                !completa || ciclo.estado !== 'EnCurso' || !cumplimiento.ultimo || hoy <= cumplimiento.ultimo
+              }
+              cargando={registrando}
+              onClick={() => void registrarJornada()}
+            >
               Registrar jornada
             </Boton>
           </div>

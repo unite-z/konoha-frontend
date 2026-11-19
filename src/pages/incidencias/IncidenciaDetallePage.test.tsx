@@ -7,12 +7,7 @@ import { ErrorApi } from '@/services/api/cliente'
 import { incidenciaSimulada } from '@/services/simulados/incidencias'
 import IncidenciaDetallePage from './IncidenciaDetallePage'
 
-const derivacion = vi.hoisted(() => ({ disponible: true }))
-
 vi.mock('@/services/api/incidencias', () => ({
-  get ENCARGO_DISPONIBLE() {
-    return derivacion.disponible
-  },
   obtenerIncidencia: async (id: number) => {
     const incidencia = incidenciaSimulada(id)
     if (!incidencia) throw new ErrorApi(404, 'no-encontrado', 'No se encontró el registro solicitado')
@@ -22,8 +17,14 @@ vi.mock('@/services/api/incidencias', () => ({
   listarActividadesEncargo: async () => [],
 }))
 vi.mock('@/hooks/usePaginaActual', () => ({ usePaginaActual: () => {} }))
+// Quien gestiona incidencias (jefatura): sin este permiso las tarjetas de acción no se pintan (AV-406).
+const sesion = vi.hoisted(() => ({ permisos: ['PLA.INCIDENCIA.CLASIFICAR'] as string[] }))
+vi.mock('@/sesion/ContextoSesion', () => ({ useSesionActiva: () => ({ permisos: sesion.permisos }) }))
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sesion.permisos = ['PLA.INCIDENCIA.CLASIFICAR']
+})
 
 function pintar(id: string) {
   render(
@@ -68,21 +69,24 @@ describe('IncidenciaDetallePage', () => {
     expect(screen.getByRole('heading', { name: 'Derivar de nuevo' })).toBeTruthy()
   })
 
-  it('sin el backend del encargo (AV-277), avisa en lugar de derivar a un capataz', async () => {
-    derivacion.disponible = false
-    pintar('32')
-    expect(await screen.findByText('Se canceló el encargo ENC-2026-118')).toBeTruthy()
-    await userEvent.setup().click(screen.getByRole('radio', { name: 'Encargo a un capataz' }))
-    expect(screen.getByText('El encargo a un capataz aún no está disponible')).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Encargo a un capataz' })).toBeNull()
-    derivacion.disponible = true
-  })
-
   it('cerrada muestra el tiempo de cierre, la evidencia, el aviso y el historial (Figma 390-7811)', async () => {
     pintar('34')
     expect(await screen.findByText('2 h 25 min')).toBeTruthy()
     expect(screen.getByText('Se avisó a Ana Q.')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Historial' })).toBeTruthy()
     expect(screen.getByText('Atendida · Sistema (encargo terminado)')).toBeTruthy()
+  })
+
+  it('sin permiso para clasificar muestra la ficha pero ninguna tarjeta de acción (AV-406)', async () => {
+    sesion.permisos = ['PLA.INCIDENCIA.REGISTRAR']
+    pintar('41')
+    expect(await screen.findByText('Rama grande caída sobre el paso peatonal.')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Clasificar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Clasificar y derivar' })).toBeNull()
+  })
+
+  it('con permiso para clasificar ofrece la tarjeta «Clasificar»', async () => {
+    pintar('41')
+    expect(await screen.findByRole('heading', { name: 'Clasificar' })).toBeTruthy()
   })
 })
