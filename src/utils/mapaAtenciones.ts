@@ -1,7 +1,7 @@
 /**
  * Lógica pura del mapa de atenciones (RF-REP-007 · CU-MOD06-003): validación de geometrías GeoJSON, filas de la
- * lista (A1: lo que no se dibuja se encuentra en la lista), encuadre, filtros de la URL y textos accesibles.
- * Sin dependencias de MapLibre ni de React, para poder probarla.
+ * lista (A1: lo que no se dibuja se encuentra en la lista), cruce con el mapa del campus de MOD-02 (polígonos de
+ * las áreas con atenciones y puntos de los ejemplares) y filtros de la URL. Sin React, para poder probarla.
  */
 import type {
   AtencionMapa,
@@ -11,7 +11,6 @@ import type {
   ResultadoMapaAtenciones,
   TipoAtencion,
 } from '../types/reportesGestion'
-import { formatearFecha } from './formato'
 import { aConsultaGestion, enteroPositivo, TIPOS_ATENCION } from './reportesGestion'
 
 type Posicion = [number, number]
@@ -87,10 +86,61 @@ export interface UsoColoreado {
   color: string
 }
 
-/** Tipos de uso de los espacios dibujados, en el orden del catálogo (para la leyenda). */
-export function usosDeElementos(elementos: { properties: AtencionMapa }[], usos: UsoColoreado[]): UsoColoreado[] {
-  const presentes = new Set(elementos.map((e) => e.properties.tipo_uso_id))
+/** Tipos de uso de los espacios con atenciones, en el orden del catálogo (para la leyenda). */
+export function usosDeFilas(filas: AtencionMapa[], usos: UsoColoreado[]): UsoColoreado[] {
+  const presentes = new Set(filas.map((f) => f.tipo_uso_id))
   return usos.filter((u) => presentes.has(u.id))
+}
+
+/** Vínculo de un polígono del mapa del campus (MOD-02) con su área del inventario. */
+export interface VinculoPoligono {
+  id_fuente: string
+  area_verde_id: number | null
+}
+
+/** Polígonos del mapa del campus (`id_fuente`) cuyas áreas de MOD-02 tienen atenciones. */
+export function poligonosConAtenciones(filas: AtencionMapa[], vinculos: VinculoPoligono[]): Set<string> {
+  const areas = new Set(filas.map((f) => f.area_inventario_id).filter((id): id is number => id !== null))
+  return new Set(vinculos.filter((v) => v.area_verde_id !== null && areas.has(v.area_verde_id)).map((v) => v.id_fuente))
+}
+
+/** Atenciones de un área de MOD-02 (las del espacio y las de sus ejemplares). */
+export function filasDeArea<F extends AtencionMapa>(filas: F[], areaInventarioId: number): F[] {
+  return filas.filter((f) => f.area_inventario_id === areaInventarioId)
+}
+
+/** Atenciones de un ejemplar. */
+export function filasDeEjemplar<F extends AtencionMapa>(filas: F[], ejemplarId: number): F[] {
+  return filas.filter((f) => f.ejemplar_id === ejemplarId)
+}
+
+/** Punto de un ejemplar con atenciones en el mapa del campus (la forma de `PuntoEjemplar` del mapa compartido). */
+export interface PuntoAtenciones {
+  id: number
+  codigo: string
+  /** Texto del punto: cuántas atenciones tiene. */
+  especie: string
+  latitud: number
+  longitud: number
+}
+
+/** Un punto por ejemplar con ubicación, con el número de atenciones del periodo. */
+export function puntosDeEjemplares(elementos: ElementoDibujable[]): PuntoAtenciones[] {
+  const puntos = new Map<number, PuntoAtenciones>()
+  const totales = new Map<number, number>()
+  for (const { geometry, properties } of elementos) {
+    if (geometry.type !== 'Point' || properties.ejemplar_id === null) continue
+    const total = (totales.get(properties.ejemplar_id) ?? 0) + 1
+    totales.set(properties.ejemplar_id, total)
+    puntos.set(properties.ejemplar_id, {
+      id: properties.ejemplar_id,
+      codigo: properties.ejemplar_codigo ?? `Ejemplar ${properties.ejemplar_id}`,
+      especie: `${total} ${total === 1 ? 'atención' : 'atenciones'}`,
+      longitud: geometry.coordinates[0],
+      latitud: geometry.coordinates[1],
+    })
+  }
+  return [...puntos.values()]
 }
 
 /**
@@ -112,66 +162,12 @@ export function prepararMapa(datos: ResultadoMapaAtenciones): { elementos: Eleme
   return { elementos, filas }
 }
 
-/** Todas las posiciones de una geometría. */
-function posiciones(g: GeometriaAtencion): Posicion[] {
-  switch (g.type) {
-    case 'Point':
-      return [g.coordinates]
-    case 'Polygon':
-      return g.coordinates.flat()
-    case 'MultiPolygon':
-      return g.coordinates.flat(2)
-  }
-}
-
-export type Limites = [[number, number], [number, number]]
-
-function caja(lista: Posicion[]): Limites | null {
-  if (lista.length === 0) return null
-  let [oeste, sur] = lista[0]
-  let [este, norte] = lista[0]
-  for (const [lon, lat] of lista) {
-    oeste = Math.min(oeste, lon)
-    este = Math.max(este, lon)
-    sur = Math.min(sur, lat)
-    norte = Math.max(norte, lat)
-  }
-  return [
-    [oeste, sur],
-    [este, norte],
-  ]
-}
-
-/** Límites [[oeste, sur], [este, norte]] de todos los elementos, o null si no hay. */
-export function limitesDeElementos(elementos: { geometry: GeometriaAtencion }[]): Limites | null {
-  return caja(elementos.flatMap((e) => posiciones(e.geometry)))
-}
-
-/**
- * Punto del marcador: el Point tal cual; en Polygon y MultiPolygon, el centro de su caja.
- * SUPUESTO (pendiente de confirmar): la guía no dice dónde va el marcador de una atención sobre un área.
- */
-export function puntoRepresentativo(g: GeometriaAtencion): [number, number] {
-  if (g.type === 'Point') return [g.coordinates[0], g.coordinates[1]]
-  const limites = caja(posiciones(g))
-  // Un polígono válido siempre tiene posiciones; la rama nula no ocurre tras `esGeometriaValida`.
-  if (!limites) return [0, 0]
-  const [[oeste, sur], [este, norte]] = limites
-  return [(oeste + este) / 2, (sur + norte) / 2]
-}
-
 /** Elementos o filas de los tipos visibles (casillas del panel de capas). */
 export function soloTiposVisibles<T extends { tipo_atencion: TipoAtencion }>(
   lista: T[],
   visibles: ReadonlySet<TipoAtencion>,
 ): T[] {
   return lista.filter((e) => visibles.has(e.tipo_atencion))
-}
-
-/** Texto accesible del marcador: «Atención AT-001, Poda, 10 oct. 2026, Plaza de Armas» («Actividad …» si es propia). */
-export function textoMarcador(a: AtencionMapa): string {
-  const quien = esAtencionTercerizada(a) ? 'Atención' : 'Actividad'
-  return `${quien} ${a.codigo}, ${a.tipo_atencion}, ${formatearFecha(a.fecha)}, ${a.espacio}`
 }
 
 export type ClaveFiltroMapa =

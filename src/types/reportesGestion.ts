@@ -251,6 +251,8 @@ export interface AtencionMapa {
   archivos_asociados: number
   /** Tipo de uso del espacio en MOD-02 (para colorearlo); null si no lo tiene o no hay espacio. */
   tipo_uso_id: number | null
+  /** Área de MOD-02 equivalente al espacio: la que vinculan los polígonos del mapa del campus. */
+  area_inventario_id: number | null
 }
 
 /** Geometrías GeoJSON admitidas (EPSG:4326, [longitud, latitud]). Otras se descartan con un guarda de tipo. */

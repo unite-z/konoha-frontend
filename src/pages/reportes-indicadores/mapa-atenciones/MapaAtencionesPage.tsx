@@ -1,75 +1,70 @@
 // RF-REP-007 · HU-MOD06-003 · CU-MOD06-003 (sin CP)
 /**
  * Mapa de atenciones de mantenimiento, poda y control fitosanitario del periodo (Guía Web 5.8 y 6.1, patrón
- * «Mapa con capas»; mockup, pantallas 2 y 3 solo como referencia de composición).
+ * «Mapa con capas»), sobre el mapa del campus de MOD-02.
  *
  * - Atenciones tercerizadas (MOD-05) y actividades del personal propio (MOD-04) de mantenimiento, poda y manejo
- *   fitosanitario; la modalidad se ve en la lista y en el resumen.
- * - Filtros (criterio 1 y v2): periodo, tipo de atención, tipo de uso (catálogo de MOD-02, en el panel de capas),
- *   espacio, tipo de servicio (actividad), estado (solo atenciones realizadas), modalidad y nivel de riesgo.
- * - Mapa con MapLibre (cargado aparte), con los espacios coloreados por su tipo de uso, panel de capas con totales y
- *   resumen de la selección, y lista.
- * - A1: lo que no tiene coordenadas no se dibuja, pero está en la lista (ordenable por espacio) y se puede filtrar
- *   por el nombre del espacio. Si nada tiene ubicación, no se carga MapLibre y se avisa.
+ *   fitosanitario; la modalidad se ve en la lista y en la ventana de cada espacio.
+ * - El mapa ocupa el ancho de la pantalla; los filtros (que se pueden ocultar) y las capas flotan encima. En móvil
+ *   van encima y debajo del mapa, sin taparlo.
+ * - Filtros (criterio 1 y v2): periodo, tipo de atención, tipo de uso (catálogo de MOD-02, en las capas), espacio,
+ *   tipo de servicio (actividad), estado (solo atenciones realizadas), modalidad y nivel de riesgo.
+ * - Al elegir un espacio o un ejemplar en el mapa, o una fila de la lista, se abre su ventana con sus atenciones y el
+ *   acceso al historial del espacio (pasos 6 y 7).
+ * - A1: lo que no tiene ubicación no se dibuja, pero está en la lista (ordenable por espacio).
  * - A2: sin atenciones, el mapa sigue visible y un aviso lo informa (por eso no se usa `PlantillaReporte`, que
  *   sustituye todo el contenido).
- * - E1: si el mapa falla, se avisa y se sigue con la lista, con «Reintentar mapa».
- * - Móvil: filtros a todo el ancho, mapa más bajo y la lista como fichas (ListaAtencionesMovil).
+ * - E1: si el mapa del campus falla, se avisa y se sigue con la lista.
  *
- * Supuestos (pendientes de confirmar): periodo predeterminado = semana actual; mismo símbolo para los tres tipos
- * de atención; marcador de un área en el centro de su caja.
+ * Supuesto (pendiente de confirmar): periodo predeterminado = semana actual.
  */
-import { lazy, Suspense, useMemo, useState } from 'react'
-import { Link } from 'react-router'
-import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
-import { nombreEjemplar } from '@/utils/nombreEjemplar'
-import { ChipsFiltrosActivos, type FiltroActivo } from '@/components/ui/ChipsFiltro'
-import EstadoCarga from '@/components/ui/EstadoCarga'
-import EstadoError from '@/components/ui/EstadoError'
-import FiltroPeriodo from '@/components/ui/FiltroPeriodo'
-import IndicadorActualizacion from '@/components/ui/IndicadorActualizacion'
-import Selector, { OPCION_TODOS, type OpcionSelector } from '@/components/ui/Selector'
-import TablaDatos, { type ColumnaTabla } from '@/components/ui/TablaDatos'
+import { useMemo, useState } from 'react'
 import AyudaEmergente from '@/components/reportes-indicadores/AyudaEmergente'
-import SelectoresFiltroGestion, {
-  type CampoFiltroGestion,
-} from '@/components/reportes-indicadores/SelectoresFiltroGestion'
+import SelectoresFiltroGestion, { type CampoFiltroGestion } from '@/components/reportes-indicadores/SelectoresFiltroGestion'
 import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
 import { useEsMovil } from '@/components/reportes-indicadores/useEsMovil'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
+import Boton from '@/design-system/Boton'
+import { ChipsFiltrosActivos, type FiltroActivo } from '@/design-system/ChipsFiltro'
+import EstadoCarga from '@/design-system/EstadoCarga'
+import EstadoError from '@/design-system/EstadoError'
+import FiltroPeriodo from '@/design-system/FiltroPeriodo'
+import IndicadorActualizacion from '@/design-system/IndicadorActualizacion'
+import Selector, { OPCION_TODOS, type OpcionSelector } from '@/design-system/Selector'
+import TablaDatos from '@/design-system/TablaDatos'
 import { useConsulta } from '@/hooks/useConsulta'
 import { useFiltrosUrl } from '@/hooks/useFiltrosUrl'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS, rutaDetalleAtencion } from '@/router/rutasApp'
+import { MIGAS } from '@/router/rutasApp'
 import { listarTiposUso } from '@/services/api/catalogosInventario'
 import { obtenerMapaAtenciones } from '@/services/api/reportesGestion'
 import type { ResultadoMapaAtenciones, TipoAtencion } from '@/types/reportesGestion'
 import { OPCIONES_MODALIDAD } from '@/utils/estados'
-import { formatearFecha, formatearFechaHora, semanaActual, SIN_VALOR } from '@/utils/formato'
+import { formatearFecha, formatearFechaHora, formatearNumero, semanaActual } from '@/utils/formato'
 import {
   aConsultaMapa,
-  esAtencionTercerizada,
-  limitesDeElementos,
+  filasDeArea,
+  filasDeEjemplar,
   prepararMapa,
   soloTiposVisibles,
+  usosDeFilas,
   type ClaveFiltroMapa,
   type FilaMapa,
-  type Limites,
 } from '@/utils/mapaAtenciones'
-import { ESTADOS_FILTRO_MAPA, insigniaEstadoAtencion, TIPOS_ATENCION } from '@/utils/reportesGestion'
+import { nombreEjemplar } from '@/utils/nombreEjemplar'
+import { ESTADOS_FILTRO_MAPA, TIPOS_ATENCION } from '@/utils/reportesGestion'
 import { erroresDePeriodo } from '../reportes/erroresPeriodo'
 import estilosReportes from '../reportes/Reportes.module.css'
+import { COLUMNAS_LISTA } from './columnasAtenciones'
 import ListaAtencionesMovil from './ListaAtencionesMovil'
-import PanelCapas from './PanelCapas'
+import MapaCampusAtenciones, { type AreaElegida } from './MapaCampusAtenciones'
 import estilos from './MapaAtenciones.module.css'
-import Estado from '@/components/ui/Estado'
-import { insigniaAEstado } from '@/components/ui/tonos'
-
-// MapLibre solo se descarga cuando hay algo que dibujar (Guía Web 8.3).
-const LienzoMapaAtenciones = lazy(() => import('./LienzoMapaAtenciones'))
+import PanelCapas from './PanelCapas'
+import VentanaAtencionesEspacio, { type EleccionMapa } from './VentanaAtencionesEspacio'
 
 const TITULO = 'Mapa de atenciones'
 
-const TITULO_ERROR_CARGA = 'No se pudo cargar el mapa de atenciones'
+const TITULO_ERROR_CARGA = 'No se pudieron cargar las atenciones'
 
 type CampoOpcionalMapa = Exclude<ClaveFiltroMapa, 'desde' | 'hasta'>
 
@@ -94,55 +89,15 @@ const OPCIONES_RIESGO: OpcionSelector[] = [
   { valor: 'false', texto: 'Sin riesgo' },
 ]
 
-const COLUMNAS: ColumnaTabla<FilaMapa>[] = [
-  { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
-  {
-    clave: 'codigo',
-    titulo: 'Atención',
-    // El clic en el enlace abre la atención sin seleccionar la fila. Una actividad propia no tiene ficha aquí.
-    render: (f) =>
-      esAtencionTercerizada(f) ? (
-        <Link to={rutaDetalleAtencion(f.atencion_id)} onClick={(e) => e.stopPropagation()}>
-          {f.codigo}
-        </Link>
-      ) : (
-        f.codigo
-      ),
-  },
-  { clave: 'tipo_atencion', titulo: 'Tipo de atención', ordenable: true },
-  {
-    clave: 'modalidad',
-    titulo: 'Modalidad',
-    ordenable: true,
-    render: (f) => (esAtencionTercerizada(f) ? 'Tercerizado' : 'Personal propio'),
-  },
-  { clave: 'tipo_servicio', titulo: 'Servicio o actividad' },
-  {
-    clave: 'estado',
-    titulo: 'Estado',
-    render: (f) =>
-      esAtencionTercerizada(f) ? (
-        <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />
-      ) : (
-        <Estado tono="neutro" texto={`Parte ${f.estado.toLocaleLowerCase('es')}`} />
-      ),
-  },
-  { clave: 'espacio', titulo: 'Espacio', ordenable: true },
-  {
-    clave: 'ejemplar_codigo',
-    titulo: 'Ejemplar',
-    render: (f) => (f.ejemplar_codigo ? nombreEjemplar(f.ejemplar_codigo, f.ejemplar_alias) : SIN_VALOR),
-  },
-  {
-    clave: 'con_ubicacion',
-    titulo: 'Ubicación',
-    render: (f) =>
-      f.con_ubicacion ? <Estado tono="info" texto="En el mapa" /> : <Estado tono="neutro" texto="Sin ubicación" />,
-  },
-]
-
 function textoOpcion(opciones: OpcionSelector[], valor: string): string {
   return opciones.find((o) => o.valor === valor)?.texto ?? `n.º ${valor}`
+}
+
+/** Lo elegido en el mapa o en la lista: qué marcar en el mapa y qué abrir en la ventana. */
+interface Eleccion {
+  idFuente: string | null
+  ejemplarId: number | null
+  ventana: EleccionMapa
 }
 
 export default function MapaAtencionesPage() {
@@ -187,6 +142,7 @@ export default function MapaAtencionesPage() {
     setOrigenBorrador(claveAplicados)
     setBorrador(aplicados)
   }
+  const [filtrosVisibles, setFiltrosVisibles] = useState(true)
 
   // Sin `esVacio`: con `sin_datos` el mapa sigue visible (A2).
   const consulta = useConsulta<ResultadoMapaAtenciones>(
@@ -202,25 +158,68 @@ export default function MapaAtencionesPage() {
 
   const { elementos, filas } = useMemo(() => (datos ? prepararMapa(datos) : { elementos: [], filas: [] }), [datos])
 
-  // Si alguna vez hubo algo que dibujar en esta visita, el mapa se mantiene (A2) con el último encuadre.
-  const limitesActuales = useMemo(() => limitesDeElementos(elementos), [elementos])
-  const [limitesConocidos, setLimitesConocidos] = useState<Limites | null>(null)
-  if (limitesActuales && !limitesConocidos) setLimitesConocidos(limitesActuales)
-
   const [tiposVisibles, setTiposVisibles] = useState<ReadonlySet<TipoAtencion>>(() => new Set(TIPOS_ATENCION))
   const elementosVisibles = useMemo(
     () => elementos.filter((e) => tiposVisibles.has(e.properties.tipo_atencion)),
     [elementos, tiposVisibles],
   )
   const filasVisibles = useMemo(() => soloTiposVisibles(filas, tiposVisibles), [filas, tiposVisibles])
+  const leyenda = useMemo(() => usosDeFilas(filasVisibles, usos), [filasVisibles, usos])
 
-  // Selección: se borra si la fila desaparece tras una consulta (ajuste durante el render).
-  const [seleccion, setSeleccion] = useState<string | null>(null)
-  const seleccionada = filas.find((f) => f.clave === seleccion) ?? null
-  if (seleccion && !seleccionada && estado !== 'cargando') setSeleccion(null)
+  const [eleccion, setEleccion] = useState<Eleccion | null>(null)
+  const nombreUso = (id: number | null) => usos.find((u) => u.id === id)?.nombre
 
-  const [falloMapa, setFalloMapa] = useState(false)
-  const [intentoMapa, setIntentoMapa] = useState(0)
+  function elegirArea(area: AreaElegida) {
+    const delArea = area.areaInventarioId === null ? [] : filasDeArea(filasVisibles, area.areaInventarioId)
+    setEleccion({
+      idFuente: area.idFuente,
+      ejemplarId: null,
+      ventana: {
+        titulo: area.nombre,
+        datos: [
+          { etiqueta: 'Tipo de uso', valor: area.tipoUso },
+          ...(area.superficie !== null
+            ? [{ etiqueta: 'Superficie', valor: `${formatearNumero(area.superficie, 2)} m²` }]
+            : []),
+          ...(area.areaInventarioId === null
+            ? [{ etiqueta: 'Inventario', valor: 'Polígono sin área del inventario vinculada' }]
+            : []),
+        ],
+        filas: delArea,
+      },
+    })
+  }
+
+  function elegirEjemplar(ejemplarId: number) {
+    const delEjemplar = filasDeEjemplar(filasVisibles, ejemplarId)
+    const primera = delEjemplar[0]
+    setEleccion({
+      idFuente: null,
+      ejemplarId,
+      ventana: {
+        titulo: primera?.ejemplar_codigo
+          ? `Ejemplar ${nombreEjemplar(primera.ejemplar_codigo, primera.ejemplar_alias)}`
+          : 'Ejemplar',
+        datos: primera ? [{ etiqueta: 'Espacio', valor: primera.espacio }] : [],
+        filas: delEjemplar,
+      },
+    })
+  }
+
+  /** Una fila de la lista abre su ejemplar o su espacio (o, sin ubicación, solo esa atención). */
+  function elegirFila(fila: FilaMapa) {
+    if (fila.ejemplar_id !== null) {
+      elegirEjemplar(fila.ejemplar_id)
+      return
+    }
+    const delArea = fila.area_inventario_id === null ? [fila] : filasDeArea(filasVisibles, fila.area_inventario_id)
+    const uso = nombreUso(fila.tipo_uso_id)
+    setEleccion({
+      idFuente: null,
+      ejemplarId: null,
+      ventana: { titulo: fila.espacio, datos: uso ? [{ etiqueta: 'Tipo de uso', valor: uso }] : [], filas: delArea },
+    })
+  }
 
   function cambiarVisible(tipo: TipoAtencion, visible: boolean) {
     setTiposVisibles((actuales) => {
@@ -315,75 +314,58 @@ export default function MapaAtencionesPage() {
     </div>
   )
 
-  // Estados de toda la página, como `PlantillaReporte`.
-  let contenido = null
-  if (estado === 'error' && error) {
-    if (erroresDePeriodo(error)) contenido = null // el mensaje va junto al campo del periodo
-    else if (error.estado === 403 || error.estado === 400)
-      contenido = <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
-    else contenido = <EstadoError titulo={TITULO_ERROR_CARGA} descripcion={error.detalle} onReintentar={reintentar} />
-  } else if (estado === 'cargando' && (cargaVisible || !datos)) {
-    contenido = cargaVisible ? <EstadoCarga forma="pagina" /> : null
-  } else if (datos) {
-    let mapa
-    if (falloMapa) {
-      mapa = (
-        <AvisoEnLinea
-          tono="error"
-          titulo="No se pudo cargar el mapa"
-          accion={{
-            texto: 'Reintentar mapa',
-            onClick: () => {
-              setFalloMapa(false)
-              setIntentoMapa((n) => n + 1)
-            },
-          }}
-        >
-          Continúa con la lista de atenciones o vuelve a intentarlo
-        </AvisoEnLinea>
+  // Estado de las atenciones (el mapa del campus se ve igualmente).
+  let avisoAtenciones = null
+  if (estado === 'error' && error && !erroresDePeriodo(error)) {
+    avisoAtenciones =
+      error.estado === 403 || error.estado === 400 ? (
+        <AvisoEnLinea tono="error">{error.detalle}</AvisoEnLinea>
+      ) : (
+        <EstadoError titulo={TITULO_ERROR_CARGA} descripcion={error.detalle} onReintentar={reintentar} />
       )
-    } else if (limitesConocidos) {
-      mapa = (
-        <Suspense fallback={<EstadoCarga forma="tarjetas" texto="Cargando el mapa…" retrasar />}>
-          <LienzoMapaAtenciones
-            key={intentoMapa}
-            elementos={elementosVisibles}
-            limitesIniciales={limitesConocidos}
-            usos={usos}
-            seleccion={seleccion}
-            onSeleccionar={setSeleccion}
-            onError={() => setFalloMapa(true)}
-          />
-        </Suspense>
-      )
-    } else {
-      // A1: nada que dibujar (los espacios no tienen polígono en MOD-02 ni los ejemplares, coordenadas): no se
-      // descarga MapLibre y las atenciones están en la lista.
-      mapa = (
-        <AvisoEnLinea tono="info" titulo="Sin ubicaciones en el mapa">
-          Las atenciones del periodo no tienen ubicación registrada en el inventario. Búscalas en la lista de abajo
-        </AvisoEnLinea>
-      )
-    }
+  } else if (datos?.sin_datos) {
+    avisoAtenciones = (
+      <AvisoEnLinea tono="info" titulo="Sin atenciones en el periodo">
+        {datos.mensaje_sin_datos}
+      </AvisoEnLinea>
+    )
+  }
+  const periodo = `Periodo del ${formatearFecha(filtros.desde)} al ${formatearFecha(filtros.hasta)}`
 
-    contenido = (
-      <div className={estilosReportes.pagina} aria-busy={estado === 'cargando' || undefined}>
-        <IndicadorActualizacion
-          actualizadoEl={formatearFechaHora(datos.generado_en)}
-          onActualizar={reintentar}
-          cargando={estado === 'cargando'}
-        />
-        <div className={estilos.composicion}>
-          <div className={estilos.columnaMapa}>
-            {datos.sin_datos && (
-              <AvisoEnLinea tono="info" titulo="Sin atenciones en el periodo">
-                {datos.mensaje_sin_datos}
-              </AvisoEnLinea>
+  return (
+    <div className={estilosReportes.pagina} aria-busy={estado === 'cargando' || undefined}>
+      <div className={estilos.escenario}>
+        <div className={estilos.lienzo}>
+          <MapaCampusAtenciones
+            filas={filasVisibles}
+            elementos={elementosVisibles}
+            usos={usos}
+            idFuenteElegido={eleccion?.idFuente ?? null}
+            ejemplarElegido={eleccion?.ejemplarId ?? null}
+            onElegirArea={elegirArea}
+            onElegirEjemplar={elegirEjemplar}
+          />
+        </div>
+
+        <section className={estilos.capaFiltros} aria-label="Filtros del mapa">
+          <div className={estilos.cabeceraCapa}>
+            <p className={estilos.subtitulo}>Filtros</p>
+            {!esMovil && (
+              <Boton
+                variante="fantasma"
+                aria-expanded={filtrosVisibles}
+                onClick={() => setFiltrosVisibles((v) => !v)}
+              >
+                {filtrosVisibles ? 'Ocultar filtros' : 'Mostrar filtros'}
+              </Boton>
             )}
-            {mapa}
           </div>
+          {(filtrosVisibles || esMovil) && barra}
+        </section>
+
+        <div className={estilos.capaCapas}>
           <PanelCapas
-            totales={datos.totales_por_tipo}
+            totales={datos?.totales_por_tipo ?? []}
             visibles={tiposVisibles}
             onCambiarVisible={cambiarVisible}
             tipoUso={{
@@ -395,52 +377,64 @@ export default function MapaAtencionesPage() {
                   : undefined,
               onCambiar: (valor) => establecer({ tipo_uso_id: valor || null }),
             }}
-            seleccionada={seleccionada}
-            onVerHistorial={(areaVerdeId) => establecer({ area_verde_id: String(areaVerdeId) })}
+            leyenda={leyenda}
           />
         </div>
-
-        <section className={estilosReportes.seccion} aria-labelledby="titulo-lista">
-          <h2 id="titulo-lista" className={estilosReportes.tituloSeccion}>
-            Lista de atenciones
-          </h2>
-          {esMovil && filasVisibles.length > 0 ? (
-            <ListaAtencionesMovil
-              // Al cambiar los datos o los tipos visibles, la lista vuelve a las primeras 25.
-              key={`${datos.generado_en}|${[...tiposVisibles].join(',')}`}
-              filas={filasVisibles}
-              seleccion={seleccion}
-              onSeleccionar={setSeleccion}
-            />
-          ) : (
-            <TablaDatos
-              titulo="Lista de atenciones"
-              columnas={COLUMNAS}
-              filas={filasVisibles}
-              claveFila={(f) => f.clave}
-              onFilaClick={(f) => setSeleccion(f.clave)}
-              estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
-              vacio={{
-                titulo:
-                  filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
-              }}
-            />
-          )}
-        </section>
-
-        {datos.notas.map((nota) => (
-          <AvisoEnLinea key={nota} tono="info">
-            {nota}
-          </AvisoEnLinea>
-        ))}
       </div>
-    )
-  }
 
-  return (
-    <div className={estilosReportes.pagina}>
-      {barra}
-      {contenido}
+      {datos && (
+        <IndicadorActualizacion
+          actualizadoEl={formatearFechaHora(datos.generado_en)}
+          onActualizar={reintentar}
+          cargando={estado === 'cargando'}
+        />
+      )}
+      {avisoAtenciones}
+
+      <section className={estilosReportes.seccion} aria-labelledby="titulo-lista">
+        <h2 id="titulo-lista" className={estilosReportes.tituloSeccion}>
+          Lista de atenciones
+        </h2>
+        {estado === 'cargando' && !datos ? (
+          cargaVisible && <EstadoCarga forma="tabla" />
+        ) : esMovil && filasVisibles.length > 0 ? (
+          <ListaAtencionesMovil
+            // Al cambiar los datos o los tipos visibles, la lista vuelve a las primeras 25.
+            key={`${datos?.generado_en}|${[...tiposVisibles].join(',')}`}
+            filas={filasVisibles}
+            seleccion={null}
+            onSeleccionar={(clave) => {
+              const fila = filasVisibles.find((f) => f.clave === clave)
+              if (fila) elegirFila(fila)
+            }}
+          />
+        ) : (
+          <TablaDatos
+            titulo="Lista de atenciones"
+            columnas={COLUMNAS_LISTA}
+            filas={filasVisibles}
+            claveFila={(f) => f.clave}
+            onFilaClick={elegirFila}
+            estado={filasVisibles.length === 0 ? 'vacio' : 'exito'}
+            vacio={{
+              titulo: filas.length === 0 ? 'Sin atenciones en el periodo' : 'Sin atenciones de los tipos seleccionados',
+            }}
+          />
+        )}
+      </section>
+
+      {datos?.notas.map((nota) => (
+        <AvisoEnLinea key={nota} tono="info">
+          {nota}
+        </AvisoEnLinea>
+      ))}
+
+      <VentanaAtencionesEspacio
+        eleccion={eleccion?.ventana ?? null}
+        periodo={periodo}
+        onCerrar={() => setEleccion(null)}
+        onVerHistorial={(areaVerdeId) => establecer({ area_verde_id: String(areaVerdeId) })}
+      />
     </div>
   )
 }

@@ -5,12 +5,13 @@ import {
   claveFilaMapa,
   esAtencionTercerizada,
   esGeometriaValida,
-  limitesDeElementos,
+  filasDeArea,
+  filasDeEjemplar,
+  poligonosConAtenciones,
   prepararMapa,
-  puntoRepresentativo,
+  puntosDeEjemplares,
   soloTiposVisibles,
-  textoMarcador,
-  usosDeElementos,
+  usosDeFilas,
 } from './mapaAtenciones'
 
 // Coordenadas claramente ficticias (cerca de 0,0): las pruebas no dependen de la ubicación real del campus.
@@ -45,6 +46,7 @@ function atencion(cambios: Partial<AtencionMapa> = {}): AtencionMapa {
     ejemplar_codigo: null,
     archivos_asociados: 0,
     tipo_uso_id: null,
+    area_inventario_id: null,
     ...cambios,
   }
 }
@@ -145,42 +147,67 @@ describe('esAtencionTercerizada', () => {
   })
 })
 
-describe('usosDeElementos', () => {
+describe('usosDeFilas', () => {
   const USOS = [
     { id: 1, nombre: 'Recreativo', color: 'verde' },
     { id: 2, nombre: 'Institucional', color: 'azul' },
     { id: 3, nombre: 'Ornamental', color: 'rojo' },
   ]
 
-  it('deja los tipos de uso de los espacios dibujados, en el orden del catálogo', () => {
-    const elementos = [{ properties: atencion({ tipo_uso_id: 3 }) }, { properties: atencion({ tipo_uso_id: 1 }) }]
-    expect(usosDeElementos(elementos, USOS).map((u) => u.nombre)).toEqual(['Recreativo', 'Ornamental'])
+  it('deja los tipos de uso de los espacios con atenciones, en el orden del catálogo', () => {
+    const filas = [atencion({ tipo_uso_id: 3 }), atencion({ tipo_uso_id: 1 })]
+    expect(usosDeFilas(filas, USOS).map((u) => u.nombre)).toEqual(['Recreativo', 'Ornamental'])
   })
 
   it('sin tipo de uso no hay leyenda de usos', () => {
-    expect(usosDeElementos([{ properties: atencion() }], USOS)).toEqual([])
+    expect(usosDeFilas([atencion()], USOS)).toEqual([])
   })
 })
 
-describe('limitesDeElementos', () => {
-  it('devuelve null sin elementos', () => {
-    expect(limitesDeElementos([])).toBeNull()
+describe('poligonosConAtenciones', () => {
+  it('resalta los polígonos vinculados a las áreas de MOD-02 que tienen atenciones', () => {
+    const vinculos = [
+      { id_fuente: 'p1', area_verde_id: 10 },
+      { id_fuente: 'p2', area_verde_id: 10 },
+      { id_fuente: 'p3', area_verde_id: 20 },
+      { id_fuente: 'p4', area_verde_id: null },
+    ]
+    const filas = [atencion({ area_inventario_id: 10 }), atencion({ area_inventario_id: null })]
+    expect([...poligonosConAtenciones(filas, vinculos)].sort()).toEqual(['p1', 'p2'])
+  })
+})
+
+describe('filasDeArea y filasDeEjemplar', () => {
+  const filas = [
+    atencion({ atencion_id: 1, area_inventario_id: 10 }),
+    atencion({ atencion_id: 2, area_inventario_id: 10, ejemplar_id: 5 }),
+    atencion({ atencion_id: 3, area_inventario_id: 20 }),
+  ]
+
+  it('un área reúne las atenciones del espacio y de sus ejemplares', () => {
+    expect(filasDeArea(filas, 10).map((f) => f.atencion_id)).toEqual([1, 2])
   })
 
-  it('combina puntos y polígonos', () => {
-    expect(limitesDeElementos([{ geometry: { type: 'Point', coordinates: [-1, 5] } }, { geometry: CUADRADO }])).toEqual(
-      [
-        [-1, 0],
-        [4, 5],
-      ],
+  it('un ejemplar, solo las suyas', () => {
+    expect(filasDeEjemplar(filas, 5).map((f) => f.atencion_id)).toEqual([2])
+  })
+})
+
+describe('puntosDeEjemplares', () => {
+  it('un punto por ejemplar con su número de atenciones; los polígonos no son puntos', () => {
+    const { elementos } = prepararMapa(
+      respuesta(
+        [
+          { geometry: PUNTO, properties: atencion({ atencion_id: 1, ejemplar_id: 7, ejemplar_codigo: 'EJ-7' }) },
+          { geometry: PUNTO, properties: atencion({ atencion_id: 2, ejemplar_id: 7, ejemplar_codigo: 'EJ-7' }) },
+          { geometry: CUADRADO, properties: atencion({ atencion_id: 3 }) },
+        ],
+        [],
+      ),
     )
-  })
-})
-
-describe('puntoRepresentativo', () => {
-  it('usa el Point tal cual y el centro de la caja de un polígono', () => {
-    expect(puntoRepresentativo(PUNTO)).toEqual([1, 2])
-    expect(puntoRepresentativo(CUADRADO)).toEqual([2, 2])
+    expect(puntosDeEjemplares(elementos)).toEqual([
+      { id: 7, codigo: 'EJ-7', especie: '2 atenciones', longitud: 1, latitud: 2 },
+    ])
   })
 })
 
@@ -189,21 +216,6 @@ describe('soloTiposVisibles', () => {
     const lista = [atencion({ tipo_atencion: 'Poda' }), atencion({ tipo_atencion: 'Mantenimiento' })]
     const visibles = new Set<TipoAtencion>(['Mantenimiento'])
     expect(soloTiposVisibles(lista, visibles).map((a) => a.tipo_atencion)).toEqual(['Mantenimiento'])
-  })
-})
-
-describe('textoMarcador', () => {
-  it('incluye código, tipo, fecha y espacio', () => {
-    expect(textoMarcador(atencion())).toBe('Atención AT-001, Poda, 10 oct. 2026, Jardín de ejemplo')
-    expect(textoMarcador(atencion({ area_verde_id: null, espacio: 'Sin espacio' }))).toBe(
-      'Atención AT-001, Poda, 10 oct. 2026, Sin espacio',
-    )
-  })
-
-  it('una actividad del personal propio se anuncia como actividad', () => {
-    expect(textoMarcador(atencion({ modalidad: 'PersonalPropio', codigo: 'ACT-7' }))).toBe(
-      'Actividad ACT-7, Poda, 10 oct. 2026, Jardín de ejemplo',
-    )
   })
 })
 

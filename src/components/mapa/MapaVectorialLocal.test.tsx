@@ -44,6 +44,27 @@ describe('MapaVectorialLocal', () => {
     expect(container.querySelectorAll('svg path[class]')).toHaveLength(1)
   })
 
+  it('resalta con su color los polígonos pedidos, atenúa el resto y los dos se pueden elegir', () => {
+    const elegir = vi.fn()
+    const { container } = render(
+      <MapaVectorialLocal
+        datos={datos}
+        usos={usos}
+        usoSeleccionado=""
+        poligonosResaltados={new Set(['poligono-1'])}
+        onSeleccionar={elegir}
+      />,
+    )
+    const [resaltado, atenuado] = container.querySelectorAll('svg path[class]')
+    expect(resaltado.getAttribute('fill')).toBe('#008000')
+    expect(Number(resaltado.getAttribute('fill-opacity'))).toBeGreaterThan(0.5)
+    expect(atenuado.getAttribute('fill')).toBe('var(--color-text-secondary)')
+    expect(Number(atenuado.getAttribute('fill-opacity'))).toBeLessThan(0.2)
+
+    fireEvent.click(atenuado)
+    expect(elegir).toHaveBeenCalledWith(datos.features[1])
+  })
+
   it('convierte el punto pulsado a coordenadas geográficas', () => {
     const elegir = vi.fn()
     render(<MapaVectorialLocal datos={datos} usos={usos} usoSeleccionado="" onElegirPunto={elegir} />)
