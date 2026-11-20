@@ -19,33 +19,40 @@ export interface LineaEstadosProps {
 export default function LineaEstados({ estado, historial }: LineaEstadosProps) {
   const actual = indiceEstado(estado)
   const fechas = fechasPorEstado(historial)
-  const pasos = pasosCiclo(estado)
+  const cerrada = estado === 'Conforme / cerrado'
   return (
-    <ol className={estilos.linea} aria-label="Ciclo de la atención" data-pasos={pasos.length}>
-      {pasos.map((paso, indice) => {
-        const situacion = indice < actual ? 'completado' : indice === actual ? 'actual' : 'pendiente'
-        const fecha = indice <= actual ? fechas[paso] : undefined
-        return (
-          <li
-            key={paso}
-            className={`${estilos.paso} ${estilos[situacion]}`}
-            aria-current={situacion === 'actual' ? 'step' : undefined}
-          >
-            <span className={estilos.marca} aria-hidden="true">
-              {situacion === 'completado' ? <Icono nombre="verificacion" tamano="sm" /> : indice + 1}
-            </span>
-            <span className={estilos.texto}>
-              <span className={estilos.nombre}>{paso}</span>
-              <span className={estilos.fecha}>
-                {fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}
+    <div className={estilos.contenedor}>
+      <ol className={estilos.linea} aria-label="Ciclo de la atención">
+        {pasosCiclo(estado).map((paso, indice) => {
+          const situacion =
+            indice < actual || (cerrada && indice === actual)
+              ? 'completado'
+              : indice === actual
+                ? 'actual'
+                : 'pendiente'
+          const fecha = indice <= actual ? fechas[paso] : undefined
+          return (
+            <li
+              key={paso}
+              className={`${estilos.paso} ${estilos[situacion]}`}
+              aria-current={situacion === 'actual' ? 'step' : undefined}
+            >
+              <span className={estilos.marca} aria-hidden="true">
+                {situacion === 'completado' ? <Icono nombre="verificacion" tamano="sm" /> : indice + 1}
               </span>
-              <span className="sr-only">
-                {situacion === 'completado' ? ' (completado)' : situacion === 'actual' ? ' (estado actual)' : ''}
+              <span className={estilos.texto}>
+                <span className={estilos.nombre}>{paso}</span>
+                <span className={estilos.fecha}>
+                  {fecha ? formatearFechaHora(fecha) : situacion === 'pendiente' ? 'Pendiente' : ''}
+                </span>
+                <span className="sr-only">
+                  {situacion === 'completado' ? ' (completado)' : situacion === 'actual' ? ' (estado actual)' : ''}
+                </span>
               </span>
-            </span>
-          </li>
-        )
-      })}
-    </ol>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }
