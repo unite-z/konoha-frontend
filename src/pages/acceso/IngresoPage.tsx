@@ -21,6 +21,7 @@ import Casilla from '@/components/ui/Casilla'
 import CampoFormulario from '@/components/ui/CampoFormulario'
 import Icono from '@/components/ui/Icono'
 import { RUTAS_CORE, destinoTrasIngresoCore } from '@/router/rutasApp'
+import { RUTAS_CAMPO } from '@/router/rutasCampo'
 import { aErrorApi } from '@/services/api/cliente'
 import { useSesion } from '@/sesion/ContextoSesion'
 import FondoNodos from './FondoNodos'
@@ -82,7 +83,8 @@ export default function IngresoPage() {
         canal: movil ? 'campo' : 'oficina',
         mantener_sesion: movil && mantener,
       })
-      navegar(sesion.debe_cambiar_contrasena ? RUTAS_CORE.cambiarContrasena : destino, { replace: true })
+      const destinoDelRol = sesion.rol.codigo === 'capataz' && destino === '/' ? RUTAS_CAMPO.encargos : destino
+      navegar(sesion.debe_cambiar_contrasena ? RUTAS_CORE.cambiarContrasena : destinoDelRol, { replace: true })
     } catch (causa) {
       setErrorServidor(aErrorApi(causa).detalle)
       setClave('')
@@ -96,7 +98,11 @@ export default function IngresoPage() {
   return (
     <main className={`${estilos.fondo} ${estilos.fondoIngreso}`}>
       <FondoNodos />
-      <Tarjeta relleno="amplio" etiquetadaPor="ingreso-titulo" className={`${estilos.tarjeta} ${estilos.tarjetaIngreso}`}>
+      <Tarjeta
+        relleno="amplio"
+        etiquetadaPor="ingreso-titulo"
+        className={`${estilos.tarjeta} ${estilos.tarjetaIngreso}`}
+      >
         <p className={estilos.marcaLogo}>
           <span className={estilos.simbolo}>
             <Icono nombre="leaf" tamano="base" />
