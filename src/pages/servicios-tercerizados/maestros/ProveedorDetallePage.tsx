@@ -5,7 +5,7 @@
  * atenciones nuevos y lo ya registrado se conserva.
  */
 import { useCallback, useState, type ReactNode } from 'react'
-import { useLocation, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import AvisoEnLinea from '@/components/ui/AvisoEnLinea'
 import AvisoTemporal from '@/components/ui/AvisoTemporal'
 import { BotonEnlace } from '@/components/ui/Boton'
@@ -18,11 +18,10 @@ import Tarjeta from '@/components/ui/Tarjeta'
 import { puedeCambiarEstadoProveedor, puedeRegistrarProveedoresYContratos } from '@/config/permisosMaestros'
 import { useConsulta } from '@/hooks/useConsulta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
-import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaEditarProveedor } from '@/router/rutasApp'
+import { MIGAS_TERCERIZADOS, RUTAS_TERCERIZADOS, rutaDetalleProveedor, rutaEditarProveedor } from '@/router/rutasApp'
 import { obtenerProveedor } from '@/services/api/maestrosTercerizados'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { ProveedorMaestro } from '@/types/maestrosTercerizados'
-import { formatearNumero } from '@/utils/formato'
 import { datosContacto, textoVinculo } from '@/utils/validacionMaestros'
 import AccionEstadoProveedor from './AccionEstadoProveedor'
 import ContratosDelProveedor from './ContratosDelProveedor'
@@ -30,16 +29,37 @@ import { avisoDeNavegacion, volverALista } from './filtrosMaestros'
 import type { EstadoNavegacionProveedor } from './ListaProveedores'
 import estilos from './Maestros.module.css'
 
+/**
+ * Vínculo con enlace a la ficha de la empresa relacionada («Subsidiaria de X»), para navegar entre ellas sin volver
+ * a la lista. Conserva los filtros de la lista a los que vuelve la ficha.
+ */
+function Vinculo({ proveedor, volverA }: { proveedor: ProveedorMaestro; volverA: string }) {
+  const texto = textoVinculo(proveedor)
+  const { proveedor_relacionado_id: id, proveedor_relacionado_nombre: nombre } = proveedor
+  if (!id || !nombre || !texto.endsWith(nombre)) return texto
+  return (
+    <>
+      {texto.slice(0, -nombre.length)}
+      <Link to={rutaDetalleProveedor(id)} state={{ volverA } satisfies EstadoNavegacionProveedor}>
+        {nombre}
+      </Link>
+    </>
+  )
+}
+
 function Ficha({
   proveedor,
   acciones,
   fallo,
+  volverA,
 }: {
   proveedor: ProveedorMaestro
   acciones: ReactNode
   fallo: string | null
+  volverA: string
 }) {
   const contacto = datosContacto(proveedor)
+  const sinContacto = !contacto.nombre && !contacto.telefono && !contacto.correo
   return (
     <>
       <Tarjeta relleno="amplio" etiquetadaPor="titulo-proveedor">
@@ -71,26 +91,40 @@ function Ficha({
         <ListaDescripcion
           elementos={[
             { etiqueta: 'RUC', valor: proveedor.ruc ? <span className="cifra">{proveedor.ruc}</span> : null },
-            { etiqueta: 'Contratos', valor: <span className="cifra">{formatearNumero(proveedor.contratos)}</span> },
-            { etiqueta: 'Vínculo con otras empresas', valor: textoVinculo(proveedor) },
+            // Sin «Contratos»: el número ya está en «Contratos asociados», junto a la tabla.
+            { etiqueta: 'Vínculo con otras empresas', valor: <Vinculo proveedor={proveedor} volverA={volverA} /> },
           ]}
         />
       </Tarjeta>
 
       <Tarjeta titulo="Persona de contacto" relleno="amplio">
-        <ListaDescripcion
-          elementos={[
-            { etiqueta: 'Nombre', valor: contacto.nombre },
-            { etiqueta: 'Teléfono', valor: contacto.telefono },
-            { etiqueta: 'Correo', valor: contacto.correo },
-          ]}
-        />
+        {/* Sin ningún dato, una frase en lugar de tres «—». */}
+        {sinContacto ? (
+          <p className={estilos.ayuda}>Sin persona de contacto registrada.</p>
+        ) : (
+          <ListaDescripcion
+            elementos={[
+              { etiqueta: 'Nombre', valor: contacto.nombre },
+              { etiqueta: 'Teléfono', valor: contacto.telefono },
+              { etiqueta: 'Correo', valor: contacto.correo },
+            ]}
+          />
+        )}
       </Tarjeta>
     </>
   )
 }
 
+/**
+ * Desde el vínculo se pasa de un proveedor a otro en la misma ruta: la clave remonta la ficha para que el aviso,
+ * el fallo y la versión actualizada del proveedor anterior no se arrastren.
+ */
 export default function ProveedorDetallePage() {
+  const { id } = useParams()
+  return <FichaProveedor key={id} />
+}
+
+function FichaProveedor() {
   const { id: parametro } = useParams()
   const { state } = useLocation()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
@@ -156,6 +190,7 @@ export default function ProveedorDetallePage() {
         <Ficha
           proveedor={proveedor}
           fallo={fallo}
+          volverA={volverAQuery}
           acciones={
             puedeCambiarEstadoProveedor(permisos) && (
               <div className={estilos.enLinea}>

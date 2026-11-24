@@ -69,7 +69,8 @@ export default function ContratosDelProveedor({ proveedor, volverA, puedeRegistr
           Contratos asociados
         </h2>
         <span className={estilos.enLinea}>
-          {(consulta.estado === 'exito' || consulta.estado === 'vacio') && (
+          {/* Sin resultados no se muestra «0 …»: el estado vacío de la tabla ya lo dice. */}
+          {consulta.estado === 'exito' && (
             <span className={estilos.ayuda}>
               {formatearNumero(total)} {total === 1 ? 'contrato' : 'contratos'}
             </span>
