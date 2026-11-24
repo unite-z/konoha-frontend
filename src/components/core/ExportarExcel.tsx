@@ -2,6 +2,9 @@
  * Botón «Exportar a Excel» de los listados (RF-T-011, HU-MOD01-013). Descarga el `.xlsx` que genera el backend, que
  * solo incluye datos autorizados y no modifica nada. Sin el permiso de consulta de la entidad no se muestra; el
  * servidor vuelve a comprobarlo y un rechazo se avisa sin salir de la pantalla.
+ *
+ * El backend aún no recibe los filtros del listado: la pantalla puede cambiar el texto («Exportar todo») para no
+ * dar a entender que se exporta lo filtrado, y deshabilitarlo cuando no hay nada que exportar.
  */
 import { useState } from 'react'
 import Boton from '@/design-system/Boton'
@@ -18,7 +21,17 @@ const PERMISO_DE_LISTADO: Record<ListadoExportable, string> = {
   ejemplares: PERMISOS.consultarInventario,
 }
 
-export default function ExportarExcel({ listado }: { listado: ListadoExportable }) {
+export interface ExportarExcelProps {
+  listado: ListadoExportable
+  /** Texto del botón. Por defecto, «Exportar a Excel». */
+  texto?: string
+  /** Sin datos que exportar: el botón se deshabilita. */
+  deshabilitado?: boolean
+  /** Aclaración que se muestra al pasar el cursor (por ejemplo, que no se aplican los filtros). */
+  ayuda?: string
+}
+
+export default function ExportarExcel({ listado, texto = 'Exportar a Excel', deshabilitado = false, ayuda }: ExportarExcelProps) {
   const sesion = useSesionActiva()
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,8 +52,15 @@ export default function ExportarExcel({ listado }: { listado: ListadoExportable 
 
   return (
     <>
-      <Boton variante="secundario" icono="download" cargando={cargando} onClick={() => void exportar()}>
-        Exportar a Excel
+      <Boton
+        variante="secundario"
+        icono="download"
+        cargando={cargando}
+        deshabilitado={deshabilitado}
+        title={ayuda}
+        onClick={() => void exportar()}
+      >
+        {texto}
       </Boton>
       <AvisoTemporal mensaje={error} tono="error" onCerrar={() => setError(null)} />
     </>

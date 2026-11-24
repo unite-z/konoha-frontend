@@ -50,4 +50,14 @@ describe('ExportarExcel', () => {
     expect(await screen.findByText('Tu rol no tiene acceso a esta función')).toBeTruthy()
     expect(dobles.guardarArchivo).not.toHaveBeenCalled()
   })
+
+  it('acepta otro texto y, deshabilitado, no descarga nada', async () => {
+    render(<ExportarExcel listado="ejemplares" texto="Exportar todo" deshabilitado />)
+
+    const boton = screen.getByRole('button', { name: 'Exportar todo' })
+    expect(boton.getAttribute('aria-disabled')).toBe('true')
+    await userEvent.click(boton)
+
+    expect(dobles.exportarListado).not.toHaveBeenCalled()
+  })
 })

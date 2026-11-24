@@ -6,6 +6,7 @@
  *   cargada. Los filtros y la página viven en la URL: se conservan al volver de la ficha.
  * - Paginación del servidor (25 por página).
  * - Estados: carga (> 300 ms), vacío (con o sin filtros), error con «Reintentar» y página inexistente.
+ * - «Exportar todo»: la exportación aún no aplica los filtros (backend); se deshabilita si no hay atenciones.
  *
  * Acción primaria «Registrar atención»: solo el jefe de sección.
  */
@@ -165,12 +166,20 @@ export default function AtencionesPage() {
   // Mientras carga sin superar el umbral, se mantienen los datos anteriores (sin parpadeo).
   const estadoTabla =
     consulta.estado === 'cargando' ? (consulta.cargaVisible || !consulta.datos ? 'cargando' : 'exito') : consulta.estado
+  const sinAtenciones = consulta.estado === 'vacio' && !conFiltros
   const paginaInexistente = consulta.estado === 'error' && consulta.error?.estado === 404 && pagina > 1
 
   return (
     <div className={estilos.pagina}>
       <AccionesPagina>
-        <ExportarExcel listado="atenciones" />
+        {/* La exportación aún no recibe los filtros: descarga todas las atenciones. Solo se deshabilita cuando
+            no hay ninguna (vacío sin filtros); con filtros puede haber atenciones fuera de la vista. */}
+        <ExportarExcel
+          listado="atenciones"
+          texto="Exportar todo"
+          ayuda="Descarga todas las atenciones; no aplica los filtros de la bandeja"
+          deshabilitado={sinAtenciones}
+        />
         {esJefe && (
           <BotonEnlace to={RUTAS_TERCERIZADOS.nuevaAtencion} variante="primario">
             Registrar atención
@@ -184,7 +193,7 @@ export default function AtencionesPage() {
               id={ID_BUSQUEDA}
               etiqueta="Buscar atenciones"
               type="search"
-              ayuda="Código, descripción, OC, contrato, proveedor, servicio o unidad"
+              ayuda="Texto libre: código, descripción, OC, contrato, proveedor, servicio o unidad"
               maxLength={LARGO_MAXIMO_BUSQUEDA}
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
@@ -209,7 +218,7 @@ export default function AtencionesPage() {
           <SelectorBuscable<Contrato>
             id="filtro-contrato"
             etiqueta="Contrato"
-            ayuda="Busca por número o proveedor"
+            ayuda="Elige un contrato concreto por su número o proveedor"
             valor={contratoAplicado}
             claveDe={(c) => c.id}
             textoDe={(c) => c.numero}
@@ -241,7 +250,8 @@ export default function AtencionesPage() {
           {/* Encabezado de la sección de resultados (orden de encabezados para lectores de pantalla). */}
           <h2 className="sr-only">Resultados</h2>
           <p className={`${estilos.resumenResultados} cifra`} aria-live="polite">
-            {consulta.estado === 'exito' || consulta.estado === 'vacio'
+            {/* Sin resultados no se muestra: el estado vacío ya lo dice (y lo anuncia con role="status"). */}
+            {consulta.estado === 'exito'
               ? `${formatearNumero(total)} ${total === 1 ? 'atención' : 'atenciones'}${conFiltros ? ' con estos filtros' : ''}`
               : ''}
           </p>
