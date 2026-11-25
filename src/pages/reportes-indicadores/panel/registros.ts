@@ -14,7 +14,7 @@ import type {
   FilaMovimientoMaterial,
   FilaParticipacionOperario,
 } from '@/types/reportesGestion'
-import { formatearFecha } from '@/utils/formato'
+import { formatearFecha, SIN_VALOR } from '@/utils/formato'
 import { numeroDeDecimal } from '@/utils/reportesGestion'
 import { TEXTO_SIN_ESPACIO } from './desglose'
 
@@ -71,7 +71,7 @@ export const AGRUPACIONES_ACTIVIDADES: Agrupacion<FilaActividadCampo>[] = [
 /** Cada registro es una participación: la barra cuenta participaciones (un operario puede repetirse). */
 export const AGRUPACIONES_OPERARIOS: Agrupacion<FilaParticipacionOperario>[] = [
   { valor: 'cuadrilla', texto: 'Cuadrilla', porFecha: false, clave: (f) => f.cuadrilla },
-  { valor: 'espacio', texto: 'Espacio', porFecha: false, clave: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { valor: 'espacio', texto: 'Espacio', porFecha: false, clave: (f) => f.espacio ?? SIN_VALOR },
   { valor: 'operario', texto: 'Operario', porFecha: false, clave: (f) => f.operario },
   porDia(),
 ]
@@ -80,7 +80,7 @@ export const AGRUPACIONES_ATENCIONES_ESPACIO: Agrupacion<FilaAtencionEspacio>[] 
   porDia(),
   { valor: 'tipo', texto: 'Tipo de servicio', porFecha: false, clave: (f) => f.tipo_servicio },
   { valor: 'estado', texto: 'Estado', porFecha: false, clave: (f) => f.estado },
-  { valor: 'espacio', texto: 'Espacio', porFecha: false, clave: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { valor: 'espacio', texto: 'Espacio', porFecha: false, clave: (f) => f.espacio },
 ]
 
 export const AGRUPACIONES_CUMPLIMIENTO: Agrupacion<FilaAtencionPeriodo>[] = [

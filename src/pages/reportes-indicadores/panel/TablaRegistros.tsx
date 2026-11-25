@@ -37,7 +37,7 @@ const COLUMNAS_ATENCIONES_ESPACIO: ColumnaTabla<FilaAtencionEspacio>[] = [
     ordenable: true,
     render: (f) => <Estado {...insigniaAEstado(insigniaEstadoAtencion(f.estado))} />,
   },
-  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio },
 ]
 
 const COLUMNAS_CUMPLIMIENTO: ColumnaTabla<FilaAtencionPeriodo>[] = [
@@ -58,16 +58,17 @@ const COLUMNAS_ACTIVIDADES: ColumnaTabla<FilaActividadCampo>[] = [
   { clave: 'tipo_actividad', titulo: 'Actividad', ordenable: true },
   { clave: 'estado', titulo: 'Parte diario', ordenable: true },
   { clave: 'cuadrilla', titulo: 'Cuadrilla', ordenable: true },
-  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? SIN_VALOR },
 ]
 
 const COLUMNAS_OPERARIOS: ColumnaTabla<FilaParticipacionOperario>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'operario', titulo: 'Operario', ordenable: true },
   { clave: 'cuadrilla', titulo: 'Cuadrilla', ordenable: true },
-  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },
+  { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? SIN_VALOR },
 ]
 
+/** El consumo sin espacio sí es válido (CU-MOD05-029, flujo 2a): se rotula «Sin espacio». */
 const COLUMNAS_CONSUMO: ColumnaTabla<FilaMovimientoMaterial>[] = [
   { clave: 'fecha', titulo: 'Fecha', ordenable: true, render: (f) => formatearFecha(f.fecha) },
   { clave: 'espacio', titulo: 'Espacio', ordenable: true, render: (f) => f.espacio ?? TEXTO_SIN_ESPACIO },

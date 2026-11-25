@@ -60,15 +60,15 @@ export interface ResultadoPanel extends ReporteBase<FiltrosPanelAplicados> {
   notas: string[]
 }
 
-/** Fila del detalle de «atenciones-por-espacio» (`ParAtencionEspacio.java`). */
+/** Fila del detalle de «atenciones-por-espacio» (`ParAtencionEspacio.java`). Siempre con espacio (AV-408). */
 export interface FilaAtencionEspacio {
   atencion_id: number
   codigo: string
   tipo_servicio: string
   estado: string
   fecha: FechaIso
-  area_verde_id: number | null
-  espacio: string | null
+  area_verde_id: number
+  espacio: string
 }
 
 /** Fila del detalle de «cumplimiento-tercerizados» (`AtencionDelPeriodo.java`). */
@@ -242,8 +242,8 @@ export interface AtencionMapa {
   modalidad: Modalidad
   es_riesgo: boolean
   proveedor: string
+  /** Las atenciones sin espacio no llegan al mapa (AV-408); el tipo admite null por compatibilidad. */
   area_verde_id: number | null
-  /** «Sin espacio» si `area_verde_id` es null. */
   espacio: string
   ejemplar_id: number | null
   ejemplar_codigo: string | null
