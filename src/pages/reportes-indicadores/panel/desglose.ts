@@ -3,7 +3,7 @@
  * registros de cada barra en el detalle. Lógica pura, sin interfaz.
  *
  * Etiquetas del back-end:
- * - atenciones-por-espacio: nombre del espacio, o «Sin espacio».
+ * - atenciones-por-espacio: nombre del espacio (las atenciones sin espacio no cuentan, AV-408).
  * - cumplimiento-tercerizados: estado de la atención (se muestra en el orden del flujo).
  * - consumo-materiales: «Material (unidad)»; se agrupa por unidad para no comparar unidades distintas.
  * - actividades-por-estado: «Estado: …» y «Tipo: …»; distribucion-operarios: «Cuadrilla: …» y «Espacio: …».
@@ -19,7 +19,7 @@ import type {
 } from '@/types/reportesGestion'
 import { ESTADOS_FILTRO_PANEL, numeroDeDecimal } from '@/utils/reportesGestion'
 
-/** Texto del espacio de los registros sin espacio (como «Sin espacio» del back-end). */
+/** Texto del espacio de los consumos de material sin espacio (como «Sin espacio» del back-end; CU-MOD05-029, 2a). */
 export const TEXTO_SIN_ESPACIO = 'Sin espacio'
 
 export interface BarraDesglose {
@@ -113,7 +113,7 @@ export function gruposDesglose(clave: ClaveIndicadorPanel, desglose: ElementoDes
 export function filtroDeBarra(clave: ClaveIndicadorPanel, etiqueta: string): (fila: unknown) => boolean {
   switch (clave) {
     case 'atenciones-por-espacio':
-      return (f) => ((f as FilaAtencionEspacio).espacio ?? TEXTO_SIN_ESPACIO) === etiqueta
+      return (f) => (f as FilaAtencionEspacio).espacio === etiqueta
     case 'cumplimiento-tercerizados':
       return (f) => (f as FilaAtencionPeriodo).estado === etiqueta
     case 'consumo-materiales':

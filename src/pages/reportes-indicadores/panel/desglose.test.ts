@@ -103,9 +103,9 @@ const participacion = (cambios: Partial<FilaParticipacionOperario>): FilaPartici
 
 describe('filtroDeBarra', () => {
   it('encuentra los registros de la barra', () => {
-    const sinEspacio = filtroDeBarra('atenciones-por-espacio', 'Sin espacio')
-    expect(sinEspacio(atencion({ espacio: null, area_verde_id: null }))).toBe(true)
-    expect(sinEspacio(atencion({}))).toBe(false)
+    const jardin = filtroDeBarra('atenciones-por-espacio', 'Jardín Central')
+    expect(jardin(atencion({ espacio: 'Jardín Central' }))).toBe(true)
+    expect(jardin(atencion({ espacio: 'Plaza de Armas' }))).toBe(false)
     expect(filtroDeBarra('consumo-materiales', 'Compost (kg)')(movimiento({}))).toBe(true)
   })
 
