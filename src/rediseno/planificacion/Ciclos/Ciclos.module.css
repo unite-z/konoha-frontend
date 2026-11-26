@@ -1,0 +1,197 @@
+/* Ciclos (AV-464, RD-29): fondo liso de LayoutRediseno, lista y panel de vidrio. Solo tokens semánticos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  color: var(--color-text-primary);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  letter-spacing: var(--type-titulo-pagina-tracking);
+}
+
+.encabezado h1:focus-visible {
+  outline: none;
+}
+
+.encabezado p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+}
+
+/* La lente de la pestaña de estado activa se desliza entre Todos, Programados, En curso y Completados. */
+.estados [role='tab'][aria-selected='true'] {
+  view-transition-name: lente-estado-ciclos;
+}
+
+.vidrio {
+  min-width: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemLista {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.itemLista:first-child {
+  border-top: 0;
+}
+
+.itemLista[data-abierto] {
+  background: var(--vidrio-relleno-lente);
+}
+
+@media (max-width: 767px) {
+  .itemLista {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.detalleFila {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.avanceFila {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nota {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.estadoCiclo {
+  margin: 0;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.seccion h3 {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.cifra {
+  margin: 0;
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+  letter-spacing: var(--type-cifra-tracking);
+}
+
+.indicadores {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--vidrio-relleno-lente);
+}
+
+.indicador[data-alerta] {
+  border: 1px solid var(--color-error);
+}
+
+.etiquetaIndicador {
+  color: var(--color-text-muted);
+  font-size: var(--type-etiqueta-size);
+  line-height: var(--type-etiqueta-line);
+  font-weight: var(--type-etiqueta-weight);
+}
+
+.valorIndicador {
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historial li {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Entrada de la lista: solo con movimiento permitido; con «reducir movimiento», aparece sin animar. */
+@media (prefers-reduced-motion: no-preference) {
+  .vidrio {
+    animation: entrar var(--movimiento-normal) var(--curva-salida);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
