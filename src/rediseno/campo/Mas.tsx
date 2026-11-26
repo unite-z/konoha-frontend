@@ -56,7 +56,13 @@ export default function Mas() {
       ruta: rutaCuenta(),
       visible: tiene(permisos, PERMISOS.consultarRepositorio),
     },
-    { clave: 'apariencia', etiqueta: 'Apariencia', icono: Palette, ruta: rutaCuenta(), visible: true },
+    {
+      clave: 'apariencia',
+      etiqueta: 'Apariencia',
+      icono: Palette,
+      ruta: rutaCuenta(),
+      visible: true,
+    },
     {
       clave: 'contrasena',
       etiqueta: 'Cambiar contraseña',
@@ -68,7 +74,10 @@ export default function Mas() {
 
   return (
     <div className={estilos.pagina}>
-      <header className={estilos.encabezado} style={estiloTransicion(nombresTransicion.encabezado)}>
+      <header
+        className={estilos.encabezado}
+        style={estiloTransicion(nombresTransicion.encabezado)} /* estilo-calculado */
+      >
         <h1 ref={encabezado} tabIndex={-1} className={estilos.titulo}>
           Más
         </h1>

@@ -34,7 +34,11 @@ export default function HojaJardin({ ruta, jardin, avance, onCerrar, onAnadida }
   if (!jardin) {
     return (
       <PanelLateral abierto onCerrar={onCerrar} titulo="Jardín">
-        <EstadoVacio nivel={3} titulo="Este jardín no está en tu ruta" descripcion="Vuelve a la ruta de hoy y elige otro." />
+        <EstadoVacio
+          nivel={3}
+          titulo="Este jardín no está en tu ruta"
+          descripcion="Vuelve a la ruta de hoy y elige otro."
+        />
       </PanelLateral>
     )
   }
@@ -63,18 +67,14 @@ export default function HojaJardin({ ruta, jardin, avance, onCerrar, onAnadida }
       editando={marcado && Boolean(texto.trim())}
       pie={
         marcado ? (
-          <Boton
-            cargando={enviando}
-            deshabilitado={!texto.trim()}
-            onClick={() => void anadir(jardin)}
-          >
+          <Boton cargando={enviando} deshabilitado={!texto.trim()} onClick={() => void anadir(jardin)}>
             Añadir observación
           </Boton>
         ) : undefined
       }
     >
       <div className={estilos.contenidoHoja}>
-        <p className={estilos.cifra} style={estiloTransicion(NOMBRE_CIFRA_AVANCE)}>
+        <p className={estilos.cifra} style={estiloTransicion(NOMBRE_CIFRA_AVANCE)} /* estilo-calculado */>
           <span className={estilos.numero}>
             {avance} de {ruta.jardines.length}
           </span>

@@ -55,7 +55,9 @@ function jardin(id: number, codigo: string, nombre: string, marcadoEn: string | 
 }
 
 function montar(ruta: string) {
-  const router = createMemoryRouter([{ path: '/n', children: rutasCampo }], { initialEntries: [ruta] })
+  const router = createMemoryRouter([{ path: '/n', children: rutasCampo }], {
+    initialEntries: [ruta],
+  })
   render(<RouterProvider router={router} />)
   return router
 }
@@ -98,10 +100,16 @@ describe('campo · sección', () => {
 
 describe('Ruta de hoy', () => {
   it('muestra el avance y marca con un toque, con hora real y clave de idempotencia', async () => {
-    marcarJardin.mockImplementation(async (_p: number, id: number, en: string) => jardin(id, 'J-016', 'Talud de Química', en))
+    marcarJardin.mockImplementation(async (_p: number, id: number, en: string) =>
+      jardin(id, 'J-016', 'Talud de Química', en),
+    )
     montar(rutaCampoRutaDeHoy())
     expect(await screen.findByText('1 de 2')).toBeTruthy()
-    await userEvent.setup().click(screen.getByRole('button', { name: /^J-016 · Talud de Química, pendiente/ }))
+    await userEvent.setup().click(
+      screen.getByRole('button', {
+        name: /^J-016 · Talud de Química, pendiente/,
+      }),
+    )
     expect(marcarJardin).toHaveBeenCalledWith(11, 2, expect.any(String), expect.any(String))
     expect(await screen.findByText('2 de 2')).toBeTruthy()
   })
@@ -119,6 +127,32 @@ describe('Ruta de hoy', () => {
     expect(await screen.findByText('Observación añadida a J-015')).toBeTruthy()
   })
 
+  it('si otro ya lo marcó (409) abre su hoja con quién y cuándo', async () => {
+    marcarJardin.mockImplementation(async () => {
+      respuesta = {
+        ruta: {
+          programacion_id: 11,
+          codigo: 'CC-2026-11',
+          servicio: 'Corte de césped',
+          jardines: [
+            jardin(1, 'J-015', 'Patio de Física', '2026-11-04T10:18:00-05:00'),
+            jardin(2, 'J-016', 'Talud de Química', '2026-11-04T10:20:00-05:00'),
+          ],
+        },
+      }
+      throw new ErrorApi(409, 'ya-marcado', 'Ya marcado')
+    })
+    montar(rutaCampoRutaDeHoy())
+    await screen.findByText('1 de 2')
+    await userEvent.setup().click(
+      screen.getByRole('button', {
+        name: /^J-016 · Talud de Química, pendiente/,
+      }),
+    )
+    expect(await screen.findByText('J-016 ya está marcado')).toBeTruthy()
+    expect(screen.getByText('Por J. Ramos a las 10:20.')).toBeTruthy()
+  })
+
   it('con ?jardin= en la URL abre la hoja', async () => {
     montar(rutaCampoJardin(1))
     expect(await screen.findByText('J-015 ya está marcado')).toBeTruthy()
@@ -128,10 +162,18 @@ describe('Ruta de hoy', () => {
     const enLinea = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     montar(rutaCampoRutaDeHoy())
     await screen.findByText('1 de 2')
-    await userEvent.setup().click(screen.getByRole('button', { name: /^J-016 · Talud de Química, pendiente/ }))
+    await userEvent.setup().click(
+      screen.getByRole('button', {
+        name: /^J-016 · Talud de Química, pendiente/,
+      }),
+    )
     expect(marcarJardin).not.toHaveBeenCalled()
     expect(await screen.findByText('Sin conexión · 1 marca pendiente de enviar')).toBeTruthy()
-    expect(screen.getByRole('button', { name: /^J-016 · Talud de Química, sin sincronizar/ })).toBeTruthy()
+    expect(
+      screen.getByRole('button', {
+        name: /^J-016 · Talud de Química, sin sincronizar/,
+      }),
+    ).toBeTruthy()
     enLinea.mockRestore()
   })
 
@@ -161,7 +203,11 @@ describe('Ruta de hoy', () => {
 
 describe('Semana', () => {
   it('muestra la cuadrilla en solo lectura', async () => {
-    calendario.mockResolvedValue({ cuadrilla: 'Cuadrilla B', restricciones: [], programaciones: [] })
+    calendario.mockResolvedValue({
+      cuadrilla: 'Cuadrilla B',
+      restricciones: [],
+      programaciones: [],
+    })
     montar(rutaCampoSemana())
     expect(await screen.findByText('Cuadrilla B · solo lectura')).toBeTruthy()
   })

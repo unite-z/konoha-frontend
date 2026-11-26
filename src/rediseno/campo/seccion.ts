@@ -18,7 +18,11 @@ export const seccionCampo: SeccionRediseno = {
     { etiqueta: 'Ruta de hoy', icono: Route, ruta: rutaCampoRutaDeHoy() },
     { etiqueta: 'Semana', icono: CalendarDays, ruta: rutaCampoSemana() },
     { etiqueta: 'Encargos', icono: ClipboardList, ruta: rutaCampoEncargos() },
-    { etiqueta: 'Incidencias', icono: TriangleAlert, ruta: rutaCampoIncidencias() },
+    {
+      etiqueta: 'Incidencias',
+      icono: TriangleAlert,
+      ruta: rutaCampoIncidencias(),
+    },
   ],
   enCabecera: false,
   inicioEnCampo: true,

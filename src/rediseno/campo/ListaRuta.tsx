@@ -55,7 +55,10 @@ export default function ListaRuta({
 
   function item(jardin: JardinRuta, contenido: React.ReactNode) {
     return (
-      <li key={jardin.id} style={abierto === jardin.id ? undefined : estiloTransicion(fila(jardin.id))}>
+      <li
+        key={jardin.id}
+        style={abierto === jardin.id ? undefined : estiloTransicion(fila(jardin.id))} // estilo-calculado
+      >
         {contenido}
       </li>
     )
@@ -68,7 +71,10 @@ export default function ListaRuta({
           <p className={estilos.ciclo}>
             {ruta.servicio} · {ruta.codigo}
           </p>
-          <p className={estilos.cifra} style={abierto === null ? estiloTransicion(NOMBRE_CIFRA_AVANCE) : undefined}>
+          <p
+            className={estilos.cifra}
+            style={abierto === null ? estiloTransicion(NOMBRE_CIFRA_AVANCE) : undefined} // estilo-calculado
+          >
             <span className={estilos.numero}>
               {avance} de {total}
             </span>
@@ -116,7 +122,11 @@ export default function ListaRuta({
           onCambiar={setPestana}
           ancho="completo"
           pestanas={[
-            { valor: 'por-cortar', texto: 'Por cortar', contador: pendientes.length },
+            {
+              valor: 'por-cortar',
+              texto: 'Por cortar',
+              contador: pendientes.length,
+            },
             { valor: 'marcados', texto: 'Marcados', contador: hechos.length },
           ]}
         >
@@ -146,7 +156,11 @@ export default function ListaRuta({
               </Boton>
             </>
           ) : hechos.length === 0 ? (
-            <EstadoVacio titulo="Sin marcas todavía" descripcion="Los jardines que marques aparecerán aquí." nivel={3} />
+            <EstadoVacio
+              titulo="Sin marcas todavía"
+              descripcion="Los jardines que marques aparecerán aquí."
+              nivel={3}
+            />
           ) : (
             <ul className={estilos.lista}>
               {hechos.map((jardin) =>

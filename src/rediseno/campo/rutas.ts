@@ -19,11 +19,23 @@ export const rutasCampo: RouteObject[] = [
   {
     path: SEGMENTO_CAMPO,
     children: [
-      { index: true, element: createElement(Navigate, { to: rutaCampoRutaDeHoy(), replace: true }) },
+      {
+        index: true,
+        element: createElement(Navigate, {
+          to: rutaCampoRutaDeHoy(),
+          replace: true,
+        }),
+      },
       { path: SEGMENTO_RUTA_DE_HOY, Component: RutaDeHoyPage },
       { path: SEGMENTO_SEMANA, Component: Semana },
-      { path: SEGMENTO_ENCARGOS, element: createElement(EnConstruccion, { seccion: 'Encargos' }) },
-      { path: SEGMENTO_INCIDENCIAS, element: createElement(EnConstruccion, { seccion: 'Incidencias' }) },
+      {
+        path: SEGMENTO_ENCARGOS,
+        element: createElement(EnConstruccion, { seccion: 'Encargos' }),
+      },
+      {
+        path: SEGMENTO_INCIDENCIAS,
+        element: createElement(EnConstruccion, { seccion: 'Incidencias' }),
+      },
       { path: SEGMENTO_MAS, Component: Mas },
     ],
   },

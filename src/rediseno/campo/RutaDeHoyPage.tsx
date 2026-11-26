@@ -51,18 +51,27 @@ export default function RutaDeHoyPage() {
   // Marcas hechas aquí, encima de la consulta hasta la siguiente.
   const [locales, setLocales] = useState<Record<number, JardinRuta>>({})
   const [enviando, setEnviando] = useState<number | null>(null)
-  const [aviso, setAviso] = useState<{ mensaje: string; tono: 'exito' | 'error' | 'info' } | null>(null)
+  const [aviso, setAviso] = useState<{
+    mensaje: string
+    tono: 'exito' | 'error' | 'info'
+  } | null>(null)
   // Clave de idempotencia de la marca fuera de ruta en curso (`null`: hoja cerrada).
   const [fueraDeRuta, setFueraDeRuta] = useState<string | null>(null)
 
   const servidor = consulta.datos?.ruta ?? null
-  const ruta = servidor && { ...servidor, jardines: servidor.jardines.map((j) => locales[j.id] ?? j) }
+  const ruta = servidor && {
+    ...servidor,
+    jardines: servidor.jardines.map((j) => locales[j.id] ?? j),
+  }
 
   // Marcas de esta ruta que siguen en la cola común (las rechazadas se revisan en «Datos sin conexión»).
   const sinSincronizar: Record<number, MarcaPendiente> = {}
   for (const p of porSincronizar(cola, 'corte.marca')) {
     if (p.estado === 'rechazada' || p.carga.programacion_id !== servidor?.programacion_id) continue
-    sinSincronizar[Number(p.carga.jardin_id)] = { marcado_en: String(p.carga.marcado_en), clave: p.id }
+    sinSincronizar[Number(p.carga.jardin_id)] = {
+      marcado_en: String(p.carga.marcado_en),
+      clave: p.id,
+    }
   }
   const enCola = Object.keys(sinSincronizar).length
 
@@ -95,13 +104,20 @@ export default function RutaDeHoyPage() {
       await encolar({
         id: marca.clave,
         tipo: 'corte.marca',
-        carga: { programacion_id: programacionId, jardin_id: jardin.id, marcado_en: marca.marcado_en },
+        carga: {
+          programacion_id: programacionId,
+          jardin_id: jardin.id,
+          marcado_en: marca.marcado_en,
+        },
         descripcion: `Marca de corte · ${tituloJardin(jardin)}`,
         usuario_id: usuarioId,
         creado_en: marca.marcado_en,
       })
     } catch {
-      setAviso({ mensaje: `No se pudo guardar la marca de ${jardin.codigo} en este dispositivo`, tono: 'error' })
+      setAviso({
+        mensaje: `No se pudo guardar la marca de ${jardin.codigo} en este dispositivo`,
+        tono: 'error',
+      })
     }
   }
 
@@ -128,16 +144,22 @@ export default function RutaDeHoyPage() {
         setLocales((previas) => ({ ...previas, [jardin.id]: actual }))
         abrirHoja(actual)
       } else if (causa instanceof ErrorApi && causa.estado === 403) {
-        setAviso({ mensaje: 'Tu cuenta no puede marcar jardines', tono: 'error' })
+        setAviso({
+          mensaje: 'Tu cuenta no puede marcar jardines',
+          tono: 'error',
+        })
       } else {
-        setAviso({ mensaje: `No se pudo marcar ${jardin.codigo}`, tono: 'error' })
+        setAviso({
+          mensaje: `No se pudo marcar ${jardin.codigo}`,
+          tono: 'error',
+        })
       }
     }
   }
 
   async function marcar(jardin: JardinRuta) {
     if (!ruta) return
-    const marca = { marcado_en: new Date().toISOString(), clave: nuevaClave() }
+    const marca = { marcado_en: new Date().toISOString(), clave: nuevaClave() } // fecha-lima-ok: instante absoluto (UTC), la hora real del toque
     if (!enLinea) {
       await aLaCola(ruta.programacion_id, jardin, marca)
       return
@@ -186,7 +208,9 @@ export default function RutaDeHoyPage() {
             <WifiOff size={16} aria-hidden="true" />
             <div>
               <p className={estilos.bandaTitulo}>{textoSinConexion(enCola, enLinea)}</p>
-              {descargada && <p className={estilos.bandaDetalle}>Ruta descargada el {formatearFechaHora(descargada)}</p>}
+              {descargada && (
+                <p className={estilos.bandaDetalle}>Ruta descargada el {formatearFechaHora(descargada)}</p>
+              )}
             </div>
           </div>
         )}
@@ -207,7 +231,10 @@ export default function RutaDeHoyPage() {
   const avance = ruta ? ruta.jardines.filter((j) => j.estado === 'Cortado' || sinSincronizar[j.id]).length : 0
   return (
     <div className={estilos.pagina}>
-      <header className={estilos.encabezado} style={estiloTransicion(nombresTransicion.encabezado)}>
+      <header
+        className={estilos.encabezado}
+        style={estiloTransicion(nombresTransicion.encabezado)} /* estilo-calculado */
+      >
         <h1 ref={encabezado} tabIndex={-1} className={estilos.titulo}>
           Ruta de hoy
         </h1>
@@ -218,12 +245,16 @@ export default function RutaDeHoyPage() {
       {contenido}
       {ruta && hoja.valor !== null && (
         <HojaJardin
+          key={hoja.valor}
           ruta={ruta}
           jardin={ruta.jardines.find((j) => String(j.id) === hoja.valor) ?? null}
           avance={avance}
-          onCerrar={hoja.cerrar}
+          onCerrar={() => transicionar(hoja.cerrar)}
           onAnadida={(jardin) => {
-            setAviso({ mensaje: `Observación añadida a ${jardin.codigo}`, tono: 'exito' })
+            setAviso({
+              mensaje: `Observación añadida a ${jardin.codigo}`,
+              tono: 'exito',
+            })
             hoja.cerrar()
           }}
         />
@@ -235,7 +266,10 @@ export default function RutaDeHoyPage() {
           onCerrar={() => setFueraDeRuta(null)}
           onMarcado={(jardin) => {
             setFueraDeRuta(null)
-            setAviso({ mensaje: `${jardin.codigo} marcado fuera de ruta`, tono: 'exito' })
+            setAviso({
+              mensaje: `${jardin.codigo} marcado fuera de ruta`,
+              tono: 'exito',
+            })
           }}
         />
       )}

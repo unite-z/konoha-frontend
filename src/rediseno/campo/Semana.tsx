@@ -56,7 +56,9 @@ export default function Semana() {
     contenido = (
       <>
         <p className={estilos.ciclo}>
-          {consulta.datos.cuadrilla ? `${consulta.datos.cuadrilla} · solo lectura` : 'Sin cuadrilla asignada · solo lectura'}
+          {consulta.datos.cuadrilla
+            ? `${consulta.datos.cuadrilla} · solo lectura`
+            : 'Sin cuadrilla asignada · solo lectura'}
         </p>
         <VistaMovil
           fecha={fecha}
@@ -70,7 +72,10 @@ export default function Semana() {
 
   return (
     <div className={estilos.pagina}>
-      <header className={estilos.encabezado} style={estiloTransicion(nombresTransicion.encabezado)}>
+      <header
+        className={estilos.encabezado}
+        style={estiloTransicion(nombresTransicion.encabezado)} /* estilo-calculado */
+      >
         <h1 ref={encabezado} tabIndex={-1} className={estilos.titulo}>
           Semana
         </h1>
