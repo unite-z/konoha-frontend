@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import { createElement, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ContextoSesion, type ValorSesion } from '@/sesion/ContextoSesion'
 import type { SesionCore } from '@/types/core'
@@ -38,9 +38,7 @@ function conSesion(apariencia: SesionCore['apariencia']) {
     apariencia,
   }
   const valor = { estado: { tipo: 'activa', sesion } } as ValorSesion
-  return ({ children }: { children: ReactNode }) => (
-    <ContextoSesion.Provider value={valor}>{children}</ContextoSesion.Provider>
-  )
+  return ({ children }: { children: ReactNode }) => createElement(ContextoSesion.Provider, { value: valor }, children)
 }
 
 describe('useDisenoNuevo (AV-420)', () => {

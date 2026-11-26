@@ -13,16 +13,16 @@ Todo lo del rediseño vive aquí. Las rutas cuelgan del prefijo temporal `/n` (`
 
 | Ruta                                                                  | Qué es                                                                                     |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `rutas.tsx`                                                           | Agregador: importa las 7 `rutas.tsx` de módulo. No se edita desde los módulos              |
+| `rutas.ts`                                                            | Agregador: importa las 7 `rutas.ts` de módulo. No se edita desde los módulos               |
 | `registro.ts`                                                         | Reúne los `seccion.ts`: etiqueta, icono, permisos por código, pestañas y entradas de móvil |
 | `base/`                                                               | Piezas compartidas, una carpeta por pieza (`base/<Pieza>/`). Congelada tras la Puerta 2    |
-| `{mapa,planificacion,incidencias,proveedores,reportes,cuenta,campo}/` | Un módulo cada una, con `rutas.tsx`, `enlaces.ts` y `seccion.ts`                           |
+| `{mapa,planificacion,incidencias,proveedores,reportes,cuenta,campo}/` | Un módulo cada una, con `rutas.ts`, `enlaces.ts` y `seccion.ts`                            |
 
 Cuenta y campo no son secciones de la cabecera (`enCabecera: false`).
 
 ## Reglas
 
-1. Un ticket de módulo edita solo su carpeta. No toca `base/`, `rutas.tsx`, `registro.ts` ni `src/pages/`.
+1. Un ticket de módulo edita solo su carpeta. No toca `base/`, `rutas.ts`, `registro.ts` ni `src/pages/`.
 2. `enlaces.ts` guarda constantes y funciones `ruta*()` y no importa pantallas. Ninguna URL se escribe a mano: se usa la función del módulo dueño.
 3. Los permisos van por código (`PERMISOS`), nunca por nombre de rol.
 4. Solo tokens semánticos (`--color-*`, `--vidrio-*`, `--mapa-*`); el tema amarillento lo pone `LayoutRediseno` mientras está montado.
