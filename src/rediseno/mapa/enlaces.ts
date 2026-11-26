@@ -14,6 +14,10 @@ export const PARAMETROS_MAPA = {
   poligono: 'poligono',
   /** Alta de área (`1`); la redirección de `/areas-verdes/nueva` (AV-425) lo pone. */
   registrar: 'registrar',
+  /** Ejemplar con la ficha flotante abierta sobre el área (`&ejemplar=<id>`, RD-21). */
+  ejemplar: 'ejemplar',
+  /** Área en edición (`&editar=1`); la edición la construye RD-19. */
+  editar: 'editar',
 } as const
 
 export function rutaMapa(): string {
@@ -33,4 +37,14 @@ export function rutaMapaPoligono(mapaId: string): string {
 /** Mapa con el alta de área abierta (`?registrar=1`). */
 export function rutaMapaRegistrar(): string {
   return `${RUTA_MAPA}?${PARAMETROS_MAPA.registrar}=1`
+}
+
+/** Mapa con el área abierta y la ficha flotante del ejemplar encima (`?area=<id>&ejemplar=<id>`). */
+export function rutaMapaEjemplar(areaId: number | string, ejemplarId: number | string): string {
+  return `${rutaMapaArea(areaId)}&${PARAMETROS_MAPA.ejemplar}=${encodeURIComponent(String(ejemplarId))}`
+}
+
+/** Mapa con el área abierta en edición (`?area=<id>&editar=1`, RD-19). */
+export function rutaMapaEditarArea(areaId: number | string): string {
+  return `${rutaMapaArea(areaId)}&${PARAMETROS_MAPA.editar}=1`
 }

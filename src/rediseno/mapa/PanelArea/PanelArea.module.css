@@ -1,0 +1,147 @@
+/* PanelArea (RD-18): contenido del panel de vidrio del área abierta. Solo tokens semánticos. */
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.subtitulo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--type-cuerpo-size);
+  font-weight: 600;
+}
+
+.nombre {
+  font-weight: 600;
+}
+
+.secundario {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+}
+
+.situaciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.situaciones li {
+  display: flex;
+  flex-direction: column;
+  min-width: 5rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+}
+
+.cifra {
+  font-size: var(--type-cifra-size);
+  font-weight: 600;
+}
+
+/* La nota son datos calculados, no un texto de IA: sin acento ni icono de asistente. */
+.nota {
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+}
+
+.datos {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.datos dd {
+  margin: 0;
+}
+
+.ejemplares {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filaEjemplar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.filaEjemplar:hover {
+  background: var(--color-bg-hover);
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.entrada {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+}
+
+.etiquetaTipo {
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.programar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu[hidden] {
+  display: none;
+}
