@@ -5,9 +5,15 @@ import EstadoError from '@/design-system/EstadoError'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
 import EstadoVacio from '@/design-system/EstadoVacio'
 import type { ResultadoConsulta } from '@/hooks/useConsulta'
-import { cajaFecha, EFECTO_RESTRICCION, ESTADO_PROGRAMACION, restriccionesAgrupadas } from '@/pages/planificacion/resumen/resumenPlanificacion'
+import {
+  cajaFecha,
+  EFECTO_RESTRICCION,
+  ESTADO_PROGRAMACION,
+  restriccionesAgrupadas,
+} from '@/pages/planificacion/resumen/resumenPlanificacion'
 import type { FechaIso } from '@/types/comun'
-import type { Programacion, Restriccion } from '@/types/planificacion'
+import type { Programacion, Restriccion, ServicioPeriodico } from '@/types/planificacion'
+import { textoHorario } from '@/utils/planificacion'
 import { transicionar } from '../base/movimiento'
 import { ciclosDeLaVentana, DIAS_AMPLIADOS, DIAS_SEMANA, restriccionesDeLaVentana } from './sectores'
 import estilos from './Sectores.module.css'
@@ -16,10 +22,21 @@ export interface EstaSemanaProps {
   hoy: FechaIso
   programaciones: ResultadoConsulta<Programacion[]>
   restricciones: ResultadoConsulta<Restriccion[]>
+  /** Para la franja horaria de cada ciclo; sin ellos, solo quién lo hace. */
+  servicios: ServicioPeriodico[]
+}
+
+/** «Fumigaciones Demo S.A. · 06:00 a 18:00»: quién lo hace y, si el servicio la tiene, su franja (como el Resumen actual). */
+function detalleCiclo(ciclo: Programacion, servicios: ServicioPeriodico[]): string {
+  const quien = ciclo.proveedor ?? 'Personal propio'
+  const duracion = servicios.find((s) => s.id === ciclo.tipo_servicio_id)?.duracion
+  return duracion?.hora_inicio || duracion?.hora_fin
+    ? `${quien} · ${textoHorario(duracion.hora_inicio, duracion.hora_fin)}`
+    : quien
 }
 
 /** «Esta semana» (7 días), ampliable a 14, con los ciclos que vienen y las restricciones próximas. */
-export default function EstaSemana({ hoy, programaciones, restricciones }: EstaSemanaProps) {
+export default function EstaSemana({ hoy, programaciones, restricciones, servicios }: EstaSemanaProps) {
   const [ampliada, setAmpliada] = useState(false)
   const dias = ampliada ? DIAS_AMPLIADOS : DIAS_SEMANA
   const fallida = [programaciones, restricciones].find((c) => c.estado === 'error' && !c.datos)
@@ -30,17 +47,27 @@ export default function EstaSemana({ hoy, programaciones, restricciones }: EstaS
       fallida.error?.estado === 403 ? (
         <EstadoSinAcceso nivel={3} titulo="No puedes ver el calendario" />
       ) : (
-        <EstadoError nivel={3} titulo="No pudimos cargar lo que viene" descripcion={fallida.error?.detalle ?? ''} onReintentar={fallida.reintentar} />
+        <EstadoError
+          nivel={3}
+          titulo="No pudimos cargar lo que viene"
+          descripcion={fallida.error?.detalle ?? ''}
+          onReintentar={fallida.reintentar}
+        />
       )
   } else if (!programaciones.datos || !restricciones.datos) {
-    cuerpo = programaciones.cargaVisible || restricciones.cargaVisible ? <p role="status">Cargando lo que viene…</p> : null
+    cuerpo =
+      programaciones.cargaVisible || restricciones.cargaVisible ? <p role="status">Cargando lo que viene…</p> : null
   } else {
     const ciclos = ciclosDeLaVentana(hoy, dias, programaciones.datos)
     const proximas = restriccionesAgrupadas(hoy, restriccionesDeLaVentana(hoy, dias, restricciones.datos))
     cuerpo = (
       <>
         {ciclos.length === 0 ? (
-          <EstadoVacio titulo="Sin ciclos en estos días" descripcion="Los ciclos programados aparecerán aquí." nivel={3} />
+          <EstadoVacio
+            titulo="Sin ciclos en estos días"
+            descripcion="Los ciclos programados aparecerán aquí."
+            nivel={3}
+          />
         ) : (
           <ul className={estilos.lista} aria-label="Ciclos">
             {ciclos.map((ciclo) => {
@@ -54,7 +81,7 @@ export default function EstaSemana({ hoy, programaciones, restricciones }: EstaS
                   </span>
                   <span className={estilos.textos}>
                     <span className={estilos.titulo}>{ciclo.servicio}</span>
-                    <span className={estilos.detalle}>{ciclo.proveedor ?? 'Personal propio'}</span>
+                    <span className={estilos.detalle}>{detalleCiclo(ciclo, servicios)}</span>
                   </span>
                   <Estado tono={estado.tono} texto={estado.texto} punto />
                 </li>
@@ -87,7 +114,12 @@ export default function EstaSemana({ hoy, programaciones, restricciones }: EstaS
     <section className={estilos.vidrio} aria-labelledby="titulo-semana">
       <div className={estilos.cabeceraPanel}>
         <h2 id="titulo-semana">{ampliada ? `Próximos ${DIAS_AMPLIADOS} días` : 'Esta semana'}</h2>
-        <Boton variante="secundario" compacto aria-pressed={ampliada} onClick={() => transicionar(() => setAmpliada((valor) => !valor))}>
+        <Boton
+          variante="secundario"
+          compacto
+          aria-pressed={ampliada}
+          onClick={() => transicionar(() => setAmpliada((valor) => !valor))}
+        >
           {ampliada ? `Ver ${DIAS_SEMANA} días` : `Ampliar a ${DIAS_AMPLIADOS} días`}
         </Boton>
       </div>

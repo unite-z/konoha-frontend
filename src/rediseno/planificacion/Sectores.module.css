@@ -9,6 +9,35 @@
   color: var(--color-text-primary);
 }
 
+.encabezado {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-4);
+}
+
+.encabezado > :not(.accionEncabezado) {
+  grid-column: 1;
+}
+
+.accionEncabezado {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+@media (max-width: 767px) {
+  .encabezado {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-2);
+  }
+
+  .accionEncabezado {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+  }
+}
+
 .encabezado h1 {
   margin: 0;
   font-size: var(--type-titulo-pagina-size);

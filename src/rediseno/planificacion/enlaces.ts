@@ -11,9 +11,16 @@ export function rutaPlanificacion(): string {
   return RUTA_PLANIFICACION
 }
 
-/** Programar un ciclo (panel de RD-31); con `servicioId`, con ese servicio elegido. */
-export function rutaPlanificacionProgramar(servicioId?: number): string {
-  return `${RUTA_PLANIFICACION}?programar=${servicioId ?? 1}`
+/**
+ * Programar un ciclo (panel de RD-31), con el contrato actual de `?programar=` (AV-267): el valor es el id del
+ * servicio elegido, o vacío para abrir el panel sin elegir. `atiende` (alerta de frecuencia) añade `&atiende=1`.
+ */
+export function rutaPlanificacionProgramar(opciones: { servicioId?: number; atiende?: boolean } = {}): string {
+  const parametros = new URLSearchParams({
+    programar: opciones.servicioId === undefined ? '' : String(opciones.servicioId),
+  })
+  if (opciones.atiende) parametros.set('atiende', '1')
+  return `${RUTA_PLANIFICACION}?${parametros.toString()}`
 }
 
 /** Lista de ciclos con el panel del ciclo abierto (RD-29). */

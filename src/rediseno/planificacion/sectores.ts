@@ -23,7 +23,9 @@ export function cicloInicial(ciclos: Programacion[], hoy: FechaIso, pedido: numb
   const validos = ciclos.filter((c) => c.estado !== 'Cancelada')
   const elegido = validos.find((c) => c.id === pedido)
   if (elegido) return elegido
-  const enCurso = validos.filter((c) => c.estado === 'EnCurso').sort((a, b) => a.fecha_inicio_prevista.localeCompare(b.fecha_inicio_prevista))
+  const enCurso = validos
+    .filter((c) => c.estado === 'EnCurso')
+    .sort((a, b) => a.fecha_inicio_prevista.localeCompare(b.fecha_inicio_prevista))
   if (enCurso[0]) return enCurso[0]
   const proximo = validos
     .filter((c) => c.estado === 'Programada' && c.fecha_fin_prevista >= hoy)
@@ -34,12 +36,33 @@ export function cicloInicial(ciclos: Programacion[], hoy: FechaIso, pedido: numb
 
 /** Ciclos que se pueden elegir: no cancelados, de los más recientes a los más antiguos. */
 export function ciclosElegibles(ciclos: Programacion[]): Programacion[] {
-  return ciclos.filter((c) => c.estado !== 'Cancelada').sort((a, b) => b.fecha_inicio_prevista.localeCompare(a.fecha_inicio_prevista) || b.id - a.id)
+  return ciclos
+    .filter((c) => c.estado !== 'Cancelada')
+    .sort((a, b) => b.fecha_inicio_prevista.localeCompare(a.fecha_inicio_prevista) || b.id - a.id)
 }
 
 /** «CC-2026-11 · Corte de césped», o solo el servicio si el ciclo no tiene código. */
 export function nombreCiclo(ciclo: Programacion): string {
   return ciclo.codigo ? `${ciclo.codigo} · ${ciclo.servicio}` : ciclo.servicio
+}
+
+/** El resumen solo vale si es del ciclo elegido (mientras llega el nuevo, `useConsulta` conserva el anterior). */
+export function resumenDelCiclo(resumen: ResumenSectores | null, ciclo: Programacion | null): ResumenSectores | null {
+  return resumen && ciclo && resumen.ciclo_id === ciclo.id ? resumen : null
+}
+
+/** Igual para el resumen del periodo del ciclo elegido. */
+export function resumenDelPeriodo(
+  resumen: ResumenSectores | null,
+  periodo: { desde: FechaIso; hasta: FechaIso } | null,
+): ResumenSectores | null {
+  return resumen &&
+    periodo &&
+    resumen.ciclo_id === null &&
+    resumen.desde === periodo.desde &&
+    resumen.hasta === periodo.hasta
+    ? resumen
+    : null
 }
 
 /** Servicios que trae el resumen, en el orden corte, riego y poda: sin RD-15 completo, solo corte. */
@@ -48,7 +71,10 @@ export function serviciosPresentes(resumen: ResumenSectores): { clave: ServicioS
   return SERVICIOS_SECTOR.filter((s) => presentes.has(s.clave))
 }
 
-export function servicioDeSector(servicios: AvanceServicioSector[], clave: ServicioSector): AvanceServicioSector | null {
+export function servicioDeSector(
+  servicios: AvanceServicioSector[],
+  clave: ServicioSector,
+): AvanceServicioSector | null {
   return servicios.find((s) => s.servicio === clave) ?? null
 }
 
@@ -74,8 +100,10 @@ export function avanceGlobal(resumen: ResumenSectores): AvanceGlobal {
 
 /** Instante de la última actualización: la más reciente de los servicios, o la hora en que se generó el resumen. */
 export function ultimaActualizacion(resumen: ResumenSectores): InstanteIso {
-  const instantes = resumen.sectores.flatMap((s) => s.servicios.map((v) => v.actualizado_en)).filter((i): i is InstanteIso => i !== null)
-  return instantes.reduce((a, b) => (new Date(a) > new Date(b) ? a : b), resumen.generado_en)
+  const instantes = resumen.sectores
+    .flatMap((s) => s.servicios.map((v) => v.actualizado_en))
+    .filter((i): i is InstanteIso => i !== null)
+  return instantes.reduce((a, b) => (Date.parse(a) > Date.parse(b) ? a : b), resumen.generado_en) // fecha-lima-ok: compara instantes absolutos, sin zona
 }
 
 /** «Actualizado a las 15:00» (hora de Lima), o `null` si el instante no es válido. */
@@ -93,7 +121,12 @@ export function textoPorcentaje(valor: number): string {
 export function ciclosDeLaVentana(hoy: FechaIso, dias: number, programaciones: Programacion[]): Programacion[] {
   const hasta = sumarDias(hoy, dias - 1)
   return programaciones
-    .filter((p) => (p.estado === 'Programada' || p.estado === 'EnCurso') && p.fecha_inicio_prevista <= hasta && p.fecha_fin_prevista >= hoy)
+    .filter(
+      (p) =>
+        (p.estado === 'Programada' || p.estado === 'EnCurso') &&
+        p.fecha_inicio_prevista <= hasta &&
+        p.fecha_fin_prevista >= hoy,
+    )
     .sort((a, b) => a.fecha_inicio_prevista.localeCompare(b.fecha_inicio_prevista) || a.id - b.id)
 }
 

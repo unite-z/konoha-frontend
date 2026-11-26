@@ -3,23 +3,29 @@ import EstadoError from '@/design-system/EstadoError'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
 import TablaDatos, { type ColumnaTabla } from '@/design-system/TablaDatos'
 import type { ResultadoConsulta } from '@/hooks/useConsulta'
+import { fechasCiclo } from '@/pages/planificacion/ciclos/ciclos'
+import type { FechaIso } from '@/types/comun'
 import type { AvanceSector, ResumenSectores } from '@/types/resumenSectores'
-import { estiloTransicion, fila, useNavegarConTransicion } from '../base/movimiento'
-import { rutaPlanificacionSector } from './enlaces'
+import { estiloTransicion, fila } from '../base/movimiento'
 import { servicioDeSector, serviciosPresentes, textoPorcentaje } from './sectores'
 import estilos from './Sectores.module.css'
 
 export interface TablaSectoresProps {
   consulta: ResultadoConsulta<ResumenSectores>
-  /** `true` si no hay ciclo que consultar. */
-  sinCiclo: boolean
+  /** Periodo del ciclo elegido, o `null` si no hay ciclo que consultar. */
+  periodo: { desde: FechaIso; hasta: FechaIso } | null
   /** El backend aún no tiene `resumen-sectores/` (404): la vista sigue con el avance del ciclo en días. */
   noDisponible: boolean
 }
 
-/** Tabla por sector con corte, riego y poda (RD-15); si el resumen solo trae corte, solo esa columna. */
-export default function TablaSectores({ consulta, sinCiclo, noDisponible }: TablaSectoresProps) {
-  const navegar = useNavegarConTransicion()
+const TITULO = 'Avance por sector'
+
+/**
+ * Tabla por sector con corte, riego y poda de los ciclos que coinciden con el elegido (RD-15); si el resumen solo
+ * trae corte, solo esa columna. Cada nombre de sector lleva su nombre de transición para crecer hasta el panel del
+ * sector cuando exista (RD-41); hasta entonces la fila no es clicable.
+ */
+export default function TablaSectores({ consulta, periodo, noDisponible }: TablaSectoresProps) {
   const datos = consulta.datos
   const columnas: ColumnaTabla<AvanceSector>[] = [
     {
@@ -27,7 +33,10 @@ export default function TablaSectores({ consulta, sinCiclo, noDisponible }: Tabl
       titulo: 'Sector',
       ordenable: true,
       render: (sector) => (
-        <span className={estilos.nombreSector} style={estiloTransicion(fila(`sector-${sector.sector_id}`))} /* estilo-calculado */>
+        <span
+          className={estilos.nombreSector}
+          style={estiloTransicion(fila(`sector-${sector.sector_id}`))} /* estilo-calculado */
+        >
           {sector.sector}
         </span>
       ),
@@ -44,38 +53,63 @@ export default function TablaSectores({ consulta, sinCiclo, noDisponible }: Tabl
             return (
               <span className={estilos.celdaAvance}>
                 <span>
-                  {textoPorcentaje(servicio.porcentaje)} <span className={estilos.leyenda}>({servicio.ejecutado} de {servicio.programado})</span>
+                  {textoPorcentaje(servicio.porcentaje)}{' '}
+                  <span className={estilos.leyenda}>
+                    ({servicio.ejecutado} de {servicio.programado})
+                  </span>
                 </span>
-                <BarraAvance valor={servicio.ejecutado} maximo={servicio.programado} etiqueta={`${texto} de ${sector.sector}`} textoValor={textoPorcentaje(servicio.porcentaje)} />
+                <BarraAvance
+                  valor={servicio.ejecutado}
+                  maximo={servicio.programado}
+                  etiqueta={`${texto} de ${sector.sector}`}
+                  textoValor={textoPorcentaje(servicio.porcentaje)}
+                />
               </span>
             )
           },
         }))
       : []),
   ]
+  const sinFilas = (titulo: string, descripcion: string) => (
+    <TablaDatos
+      titulo={TITULO}
+      columnas={columnas}
+      filas={[]}
+      claveFila={() => ''}
+      sinMarco
+      vacio={{ titulo, descripcion, nivel: 3 }}
+    />
+  )
 
   let cuerpo
-  if (sinCiclo) {
-    cuerpo = <TablaDatos titulo="Avance por sector" columnas={columnas} filas={[]} claveFila={() => ''} sinMarco vacio={{ titulo: 'Sin ciclo que mostrar', descripcion: 'Cuando haya un ciclo programado, aquí verás su avance por sector.', nivel: 3 }} />
+  if (!periodo) {
+    cuerpo = sinFilas('Sin ciclo que mostrar', 'Cuando haya un ciclo programado, aquí verás su avance por sector.')
   } else if (noDisponible) {
-    cuerpo = <TablaDatos titulo="Avance por sector" columnas={columnas} filas={[]} claveFila={() => ''} sinMarco vacio={{ titulo: 'Avance por sector aún no disponible', descripcion: 'El servidor todavía no entrega el avance por sector. Arriba ves el avance del ciclo en días.', nivel: 3 }} />
-  } else if (consulta.estado === 'error') {
+    cuerpo = sinFilas(
+      'Avance por sector aún no disponible',
+      'El servidor todavía no entrega el avance por sector. Arriba ves el avance del ciclo en días.',
+    )
+  } else if (consulta.estado === 'error' && !datos) {
     cuerpo =
       consulta.error?.estado === 403 ? (
         <EstadoSinAcceso nivel={3} titulo="No puedes ver el avance por sector" />
       ) : (
-        <EstadoError nivel={3} titulo="No pudimos cargar el avance por sector" descripcion={consulta.error?.detalle ?? ''} onReintentar={consulta.reintentar} />
+        <EstadoError
+          nivel={3}
+          titulo="No pudimos cargar el avance por sector"
+          descripcion={consulta.error?.detalle ?? ''}
+          onReintentar={consulta.reintentar}
+        />
       )
   } else {
     cuerpo = (
       <TablaDatos
-        titulo="Avance por sector"
+        titulo={TITULO}
         columnas={columnas}
         filas={datos?.sectores ?? []}
         claveFila={(sector) => String(sector.sector_id)}
         estado={datos ? 'exito' : 'cargando'}
         sinMarco
-        onFilaClick={(sector) => navegar(rutaPlanificacionSector(sector.sector_id))}
         vacio={{ titulo: 'Sin sectores', descripcion: 'No hay sectores activos con áreas verdes asignadas.', nivel: 3 }}
       />
     )
@@ -83,7 +117,10 @@ export default function TablaSectores({ consulta, sinCiclo, noDisponible }: Tabl
   return (
     <section className={estilos.vidrio} aria-labelledby="titulo-tabla-sectores">
       <div className={estilos.cabeceraPanel}>
-        <h2 id="titulo-tabla-sectores">Avance por sector</h2>
+        <h2 id="titulo-tabla-sectores">{TITULO}</h2>
+        {periodo && (
+          <span className={estilos.leyenda}>Ciclos del {fechasCiclo(periodo.desde, periodo.hasta)}, por áreas</span>
+        )}
       </div>
       {cuerpo}
     </section>

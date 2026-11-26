@@ -9,7 +9,12 @@ import type { ResultadoConsulta } from '@/hooks/useConsulta'
 import DialogoMotivoAlerta from '@/pages/planificacion/resumen/DialogoMotivoAlerta'
 import { elementosAtencion, type ElementoAtencion } from '@/pages/planificacion/resumen/resumenPlanificacion'
 import type { AlertaPlanificacion, Programacion, ServicioPeriodico } from '@/types/planificacion'
-import { rutaPlanificacionCiclo, rutaPlanificacionCiclos, rutaPlanificacionProgramar, rutaPlanificacionReglas } from './enlaces'
+import {
+  rutaPlanificacionCiclo,
+  rutaPlanificacionCiclos,
+  rutaPlanificacionProgramar,
+  rutaPlanificacionReglas,
+} from './enlaces'
 import estilos from './Sectores.module.css'
 
 export interface NecesitaAtencionProps {
@@ -22,11 +27,23 @@ export interface NecesitaAtencionProps {
 
 type Destino = { texto: string; ruta: string; primaria: boolean }
 
+/** Como en el Resumen actual: en solo lectura toda alerta abre su ciclo (o la lista de ciclos). */
 function destino(elemento: ElementoAtencion, puedeEditar: boolean): Destino | null {
+  const verCiclo = {
+    texto: 'Ver ciclo',
+    ruta: elemento.programacionId ? rutaPlanificacionCiclo(elemento.programacionId) : rutaPlanificacionCiclos(),
+    primaria: false,
+  }
+  if (!puedeEditar) return verCiclo
   if (elemento.accion === 'configurar') return { texto: 'Configurar', ruta: rutaPlanificacionReglas(), primaria: false }
-  if (elemento.accion === 'programar' && puedeEditar) return { texto: 'Programar', ruta: rutaPlanificacionProgramar(elemento.servicioId), primaria: true }
-  if (elemento.accion === 'registrarMotivo' && puedeEditar) return null
-  return { texto: 'Ver ciclo', ruta: elemento.programacionId ? rutaPlanificacionCiclo(elemento.programacionId) : rutaPlanificacionCiclos(), primaria: false }
+  if (elemento.accion === 'programar')
+    return {
+      texto: 'Programar',
+      ruta: rutaPlanificacionProgramar({ servicioId: elemento.servicioId, atiende: true }),
+      primaria: true,
+    }
+  if (elemento.accion === 'registrarMotivo') return null
+  return verCiclo
 }
 
 /** «Necesita atención»: frecuencia vencida, duración excedida y duración próxima. «Registrar motivo» solo para el jefe. */
@@ -37,7 +54,9 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones, p
   const fallida = [alertas, servicios].find((c) => c.estado === 'error' && !c.datos)
   const elementos =
     alertas.datos && servicios.datos
-      ? elementosAtencion(alertas.datos, servicios.datos, programaciones.datos ?? []).filter((e) => !atendidas.includes(e.clave))
+      ? elementosAtencion(alertas.datos, servicios.datos, programaciones.datos ?? []).filter(
+          (e) => !atendidas.includes(e.clave),
+        )
       : []
 
   let cuerpo
@@ -46,12 +65,23 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones, p
       fallida.error?.estado === 403 ? (
         <EstadoSinAcceso nivel={3} titulo="No puedes ver las alertas" />
       ) : (
-        <EstadoError nivel={3} titulo="No pudimos cargar las alertas" descripcion={fallida.error?.detalle ?? ''} onReintentar={fallida.reintentar} />
+        <EstadoError
+          nivel={3}
+          titulo="No pudimos cargar las alertas"
+          descripcion={fallida.error?.detalle ?? ''}
+          onReintentar={fallida.reintentar}
+        />
       )
   } else if (!alertas.datos || !servicios.datos) {
     cuerpo = alertas.cargaVisible || servicios.cargaVisible ? <p role="status">Cargando las alertas…</p> : null
   } else if (elementos.length === 0) {
-    cuerpo = <EstadoVacio titulo="Todo al día" descripcion="Ninguna frecuencia por vencer, duración excedida ni servicio sin configurar." nivel={3} />
+    cuerpo = (
+      <EstadoVacio
+        titulo="Todo al día"
+        descripcion="Ninguna frecuencia por vencer, duración excedida ni servicio sin configurar."
+        nivel={3}
+      />
+    )
   } else {
     cuerpo = (
       <ul className={estilos.lista}>
@@ -67,11 +97,19 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones, p
                 <span className={estilos.detalle}>{elemento.detalle}</span>
               </span>
               {accion ? (
-                <BotonEnlace to={accion.ruta} variante={accion.primaria ? 'primario' : 'secundario'} aria-label={`${accion.texto}: ${elemento.titulo}`}>
+                <BotonEnlace
+                  to={accion.ruta}
+                  variante={accion.primaria ? 'primario' : 'secundario'}
+                  aria-label={`${accion.texto}: ${elemento.titulo}`}
+                >
                   {accion.texto}
                 </BotonEnlace>
               ) : (
-                <Boton variante="secundario" aria-label={`Registrar motivo: ${elemento.titulo}`} onClick={() => setMotivo(elemento)}>
+                <Boton
+                  variante="secundario"
+                  aria-label={`Registrar motivo: ${elemento.titulo}`}
+                  onClick={() => setMotivo(elemento)}
+                >
                   Registrar motivo
                 </Boton>
               )}
@@ -86,7 +124,9 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones, p
     <section className={estilos.vidrio} aria-labelledby="titulo-atencion">
       <div className={estilos.cabeceraPanel}>
         <h2 id="titulo-atencion">Necesita atención</h2>
-        {elementos.length > 0 && <span className={estilos.leyenda}>{elementos.length === 1 ? '1 aviso' : `${elementos.length} avisos`}</span>}
+        {elementos.length > 0 && (
+          <span className={estilos.leyenda}>{elementos.length === 1 ? '1 aviso' : `${elementos.length} avisos`}</span>
+        )}
       </div>
       {cuerpo}
       {motivo?.alertaId != null && (
@@ -101,7 +141,11 @@ export default function NecesitaAtencion({ alertas, servicios, programaciones, p
           }}
         />
       )}
-      <AvisoTemporal mensaje={registrado ? 'Motivo registrado' : null} detalle={registrado ? `${registrado}: alerta atendida.` : undefined} onCerrar={() => setRegistrado(null)} />
+      <AvisoTemporal
+        mensaje={registrado ? 'Motivo registrado' : null}
+        detalle={registrado ? `${registrado}: alerta atendida.` : undefined}
+        onCerrar={() => setRegistrado(null)}
+      />
     </section>
   )
 }

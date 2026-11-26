@@ -34,7 +34,12 @@ export default function AvanceCiclo({ hoy, ciclos, elegido, resumen, onElegir }:
   const enDias = avanceCiclo(elegido, hoy)
   const porcentaje = global?.porcentaje ?? enDias
   const actualizado = resumen ? textoActualizacion(ultimaActualizacion(resumen)) : null
-  const leyenda = global && global.porcentaje !== null ? `${global.ejecutado} de ${global.programado} áreas` : enDias === null ? 'Aún sin avance' : 'Avance en días del ciclo'
+  const leyenda =
+    global && global.porcentaje !== null
+      ? `${global.ejecutado} de ${global.programado} áreas`
+      : enDias === null
+        ? 'Aún sin avance'
+        : 'Avance en días del ciclo'
 
   return (
     <section className={estilos.vidrio} aria-labelledby="titulo-avance">
@@ -46,7 +51,10 @@ export default function AvanceCiclo({ hoy, ciclos, elegido, resumen, onElegir }:
             etiqueta="Ciclo"
             compacto
             valor={String(elegido.id)}
-            opciones={ciclos.map((c) => ({ valor: String(c.id), texto: `${nombreCiclo(c)} · ${fechasCiclo(c.fecha_inicio_prevista, c.fecha_fin_prevista)}` }))}
+            opciones={ciclos.map((c) => ({
+              valor: String(c.id),
+              texto: `${nombreCiclo(c)} · ${fechasCiclo(c.fecha_inicio_prevista, c.fecha_fin_prevista)}`,
+            }))}
             onCambiar={(valor) => onElegir(Number(valor))}
           />
         </div>
@@ -62,7 +70,14 @@ export default function AvanceCiclo({ hoy, ciclos, elegido, resumen, onElegir }:
           <span className={estilos.leyenda}>{leyenda}</span>
         </EnlaceTransicion>
         <div className={estilos.detalleAvance}>
-          {porcentaje !== null && <BarraAvance valor={porcentaje} maximo={100} etiqueta={`Avance de ${nombreCiclo(elegido)}`} textoValor={textoPorcentaje(porcentaje)} />}
+          {porcentaje !== null && (
+            <BarraAvance
+              valor={porcentaje}
+              maximo={100}
+              etiqueta={`Avance de ${nombreCiclo(elegido)}`}
+              textoValor={textoPorcentaje(porcentaje)}
+            />
+          )}
           {actualizado && <span className={estilos.leyenda}>{actualizado}</span>}
         </div>
       </div>
