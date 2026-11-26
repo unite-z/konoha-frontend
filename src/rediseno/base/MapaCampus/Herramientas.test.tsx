@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { DatosCampus } from '@/types/campus3d'
 import type { useUbicacionEnMapa } from '@/pages/inventario/useUbicacionEnMapa'
@@ -94,6 +95,28 @@ describe('HerramientaPunto (AV-428)', () => {
     expect(mapa.oyentesSuelo.size).toBe(0)
   })
 
+  it('enseña la ubicación guardada y, tras marcar el centro, pasa el foco al punto', async () => {
+    const mapa = mapaFalso(datos)
+    mapa.escena.centro.mockReturnValue({ x: 100, y: 0 })
+    function Controlada() {
+      const [punto, setPunto] = useState<{ lon: number; lat: number } | null>(null)
+      return <HerramientaPunto punto={punto} onElegir={setPunto} puntoActual={{ lon: 0.0005, lat: 0.0002 }} />
+    }
+    render(
+      <ContextoMapa value={mapa}>
+        <Controlada />
+      </ContextoMapa>,
+    )
+    expect(mapa.anclajes).toEqual([expect.objectContaining({ x: 50, y: 20 })])
+    expect(screen.getByText(/Ubicación guardada: 0\.000200, 0\.000500/)).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Marcar el centro del mapa' }))
+    const marca = screen.getByRole('button', { name: /Punto elegido\. Flechas/ })
+    expect(document.activeElement).toBe(marca)
+    await userEvent.keyboard('{ArrowUp}')
+    expect(screen.getByText(/Punto elegido: 0\.000010, 0\.001000/)).toBeTruthy()
+    expect(mapa.anclajes.at(-1)).toEqual(expect.objectContaining({ x: 100, y: 1 }))
+  })
+
   it('sin mapa listo no falla y deshabilita el botón del centro', () => {
     render(<HerramientaPunto punto={null} onElegir={vi.fn()} />)
     expect(screen.getByRole('button', { name: 'Marcar el centro del mapa' }).getAttribute('aria-disabled')).toBe('true')
@@ -104,12 +127,13 @@ describe('HerramientaContorno (AV-428)', () => {
   const montar = () => {
     const mapa = mapaFalso(datos)
     const onCerrar = vi.fn()
+    const onReabrir = vi.fn()
     render(
       <ContextoMapa value={mapa}>
-        <HerramientaContorno onCerrar={onCerrar} />
+        <HerramientaContorno onCerrar={onCerrar} onReabrir={onReabrir} />
       </ContextoMapa>,
     )
-    return { mapa, onCerrar }
+    return { mapa, onCerrar, onReabrir }
   }
   const cerrarBoton = () => screen.getByRole('button', { name: 'Cerrar contorno' })
 
@@ -142,7 +166,7 @@ describe('HerramientaContorno (AV-428)', () => {
   })
 
   it('deshace la última acción, también el cierre', async () => {
-    const { mapa } = montar()
+    const { mapa, onReabrir } = montar()
     for (const [x, y] of [
       [0, 0],
       [10, 0],
@@ -153,6 +177,7 @@ describe('HerramientaContorno (AV-428)', () => {
     expect(screen.getByText(/Contorno cerrado/)).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
     expect(screen.queryByText(/Contorno cerrado/)).toBeNull()
+    expect(onReabrir).toHaveBeenCalledTimes(1)
     await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
     expect(screen.getAllByRole('button', { name: /^Vértice/ })).toHaveLength(2)
   })

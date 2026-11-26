@@ -41,5 +41,5 @@ Cuenta y campo no son secciones de la cabecera (`enCabecera: false`).
 
 Se montan dentro del escenario, como las capas, y leen la escena de `ContextoMapa`. Mientras una está montada, un toque en el suelo no elige áreas (`escena.alPulsarSuelo`).
 
-- `HerramientaPunto` (`punto`, `onElegir`, `validacion`): devuelve `{ lon, lat }`. El módulo calcula `validacion` con `useUbicacionEnMapa` y la herramienta enseña los avisos («fuera del área», «área detectada», «varias áreas»). Teclado: «Marcar el centro del mapa» y flechas con el foco en el punto.
-- `HerramientaContorno` (`onCerrar`, `inicial?`, `onCancelar?`): lleva la cámara a `planta`, dibuja, mueve vértices, deshace y cierra. `onCerrar` recibe `{ geojson, superficie_m2 }` (EPSG:4326). Rechaza contornos que se cruzan.
+- `HerramientaPunto` (`punto`, `onElegir`, `validacion`, `puntoActual?`): devuelve `{ lon, lat }`; `puntoActual` enseña la ubicación guardada como referencia. El módulo calcula `validacion` con `useUbicacionEnMapa` y la herramienta enseña los avisos («fuera del área», «área detectada», «varias áreas»). Teclado: «Marcar el centro del mapa» y flechas con el foco en el punto.
+- `HerramientaContorno` (`onCerrar`, `onReabrir?`, `inicial?`, `onCancelar?`): lleva la cámara a `planta`, dibuja, mueve vértices, deshace y cierra. `onCerrar` recibe `{ geojson, superficie_m2 }` (EPSG:4326); `onReabrir` avisa de que, al deshacer el cierre, ese resultado ya no vale. Rechaza contornos que se cruzan.

@@ -804,12 +804,16 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
         ),
       )
     }
+    // Se redibuja con cada arrastre de un vértice: lee solo su token, no toda la paleta.
+    const color = leerToken(token)
     for (const objeto of objetos) {
-      pintablesToken.push([(objeto.material as THREE.MeshBasicMaterial).color, token])
+      const material = objeto.material as THREE.MeshBasicMaterial
+      if (color) material.color.set(color)
+      pintablesToken.push([material.color, token])
       objeto.renderOrder = 10
       scene.add(objeto)
     }
-    repintar()
+    pedir()
     return () => {
       for (const objeto of objetos) {
         scene.remove(objeto)

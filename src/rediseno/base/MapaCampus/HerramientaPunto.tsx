@@ -29,11 +29,13 @@ export interface HerramientaPuntoProps {
   onElegir: (punto: PuntoLonLat | null) => void
   /** Resultado de validar `punto` (lo calcula el módulo con `useUbicacionEnMapa`). Sin él no se enseña ningún aviso. */
   validacion?: ReturnType<typeof useUbicacionEnMapa>
+  /** Ubicación guardada (editar la ubicación): se ve como referencia, sin moverse. */
+  puntoActual?: PuntoLonLat | null
 }
 
 const PASO_M = 1
 
-export default function HerramientaPunto({ punto, onElegir, validacion }: HerramientaPuntoProps) {
+export default function HerramientaPunto({ punto, onElegir, validacion, puntoActual }: HerramientaPuntoProps) {
   const mapa = useMapa()
   const escena = mapa?.escena
   const proyeccion = mapa?.datos.proyeccion
@@ -66,6 +68,28 @@ export default function HerramientaPunto({ punto, onElegir, validacion }: Herram
     if (x !== undefined && y !== undefined) anclaje.current?.mover(x, y)
   }, [escena, hayPunto, x, y])
 
+  // Ubicación guardada: un marcador fijo de referencia.
+  const actual = puntoActual && proyeccion ? lonLatAMetros(proyeccion, puntoActual.lon, puntoActual.lat) : null
+  const actualX = actual?.x ?? null
+  const actualY = actual?.y ?? null
+  useEffect(() => {
+    if (!escena || actualX === null || actualY === null) return
+    const elemento = document.createElement('div')
+    elemento.className = estilos.puntoActual
+    elemento.title = 'Ubicación guardada'
+    elemento.setAttribute('aria-hidden', 'true')
+    return escena.anclar(elemento, actualX, actualY, 0.4)
+  }, [escena, actualX, actualY])
+
+  // Con teclado, tras «Marcar el centro del mapa» el foco pasa al punto para ajustarlo con las flechas.
+  const boton = useRef<HTMLButtonElement>(null)
+  const enfocar = useRef(false)
+  useEffect(() => {
+    if (!enfocar.current || !boton.current) return
+    enfocar.current = false
+    boton.current.focus()
+  }, [punto])
+
   function mover(dx: number, dy: number) {
     if (!proyeccion || !metros) return
     alElegir.current(metrosALonLat(proyeccion, metros.x + dx, metros.y + dy))
@@ -88,6 +112,7 @@ export default function HerramientaPunto({ punto, onElegir, validacion }: Herram
   const marcarCentro = () => {
     if (!escena || !proyeccion) return
     const c = escena.centro()
+    enfocar.current = true
     alElegir.current(metrosALonLat(proyeccion, c.x, c.y))
   }
 
@@ -111,11 +136,17 @@ export default function HerramientaPunto({ punto, onElegir, validacion }: Herram
           Punto elegido: {punto.lat.toFixed(6)}, {punto.lon.toFixed(6)}
         </p>
       )}
+      {puntoActual && (
+        <p className={estilos.ayuda}>
+          Ubicación guardada: {puntoActual.lat.toFixed(6)}, {puntoActual.lon.toFixed(6)} (marcador hueco).
+        </p>
+      )}
       {punto && validacion && <ValidacionUbicacion ubicacion={validacion} />}
       {punto &&
         createPortal(
           // Excepción al sistema (AV-351): marcador del mapa colgado de CSS2DRenderer.
           <button
+            ref={boton}
             type="button"
             className={estilos.punto}
             data-herramienta="punto"

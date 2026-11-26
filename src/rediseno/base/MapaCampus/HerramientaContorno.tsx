@@ -16,6 +16,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } fr
 import { createPortal } from 'react-dom'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import Boton from '@/design-system/Boton'
+import { formatearNumero } from '@/utils/formato'
 import {
   deGeoJSON,
   distancia,
@@ -32,6 +33,8 @@ import estilos from './Herramientas.module.css'
 export interface HerramientaContornoProps {
   /** Se llama al cerrar el contorno (y con cada cambio posterior mientras siga cerrado). */
   onCerrar: (resultado: ResultadoContorno) => void
+  /** Se llama cuando un contorno cerrado vuelve a quedar abierto (al deshacer el cierre): el último resultado ya no vale. */
+  onReabrir?: () => void
   onCancelar?: () => void
   /** Contorno de partida (editar un área): arranca cerrado. */
   inicial?: PoligonoGeoJSON
@@ -68,6 +71,7 @@ const DISTANCIA_MINIMA_M = 0.3
 
 export default function HerramientaContorno({
   onCerrar,
+  onReabrir,
   onCancelar,
   inicial,
   token = '--color-action-primary',
@@ -80,11 +84,13 @@ export default function HerramientaContorno({
   const [historial, setHistorial] = useState<Estado[]>([])
   const [aviso, setAviso] = useState<string | null>(null)
   const alCerrar = useRef(onCerrar)
+  const alReabrir = useRef(onReabrir)
   const anclajes = useRef(new Map<number, Ancla>())
   const arrastre = useRef<{ id: number; registrado: boolean } | null>(null)
 
   useEffect(() => {
     alCerrar.current = onCerrar
+    alReabrir.current = onReabrir
     estadoActual.current = estado
   })
 
@@ -208,10 +214,12 @@ export default function HerramientaContorno({
     const anterior = historial[historial.length - 1]
     if (!anterior) return
     setHistorial(historial.slice(0, -1))
+    const estabaCerrado = estadoActual.current.cerrado
     estadoActual.current = anterior
     setEstado(anterior)
     setAviso(null)
     if (anterior.cerrado && proyeccion) alCerrar.current(resultadoDe(proyeccion, anterior.vertices))
+    else if (estabaCerrado) alReabrir.current?.()
   }
 
   function cerrar() {
@@ -237,7 +245,7 @@ export default function HerramientaContorno({
         {vertices.length === 0
           ? 'Sin vértices todavía.'
           : `${vertices.length} ${vertices.length === 1 ? 'vértice' : 'vértices'}` +
-            (superficie === null ? '' : ` · Superficie aproximada: ${Math.round(superficie).toLocaleString('es')} m²`)}
+            (superficie === null ? '' : ` · Superficie aproximada: ${formatearNumero(superficie, 0)} m²`)}
       </p>
       {aviso && (
         <AvisoEnLinea compacto tono="error">
