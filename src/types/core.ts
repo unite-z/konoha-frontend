@@ -25,6 +25,8 @@ export interface SesionCore {
 export interface AparienciaCuenta {
   tema: 'claro' | 'calido' | 'oscuro' | 'sistema'
   acento: 'institucional' | 'azul' | 'verde' | 'morado' | 'magenta'
+  /** «Diseño nuevo» (AV-414): `null` si nunca eligió; ausente si el backend aún no lo admite. */
+  diseno_nuevo?: boolean | null
 }
 
 export interface Credenciales {

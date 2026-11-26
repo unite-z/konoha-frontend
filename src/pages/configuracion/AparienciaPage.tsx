@@ -10,6 +10,8 @@ import Estado from '@/design-system/Estado'
 import GrupoOpciones, { type OpcionGrupo } from '@/design-system/GrupoOpciones'
 import Tarjeta from '@/design-system/Tarjeta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
+import InterruptorDisenoNuevo from '@/rediseno/base/InterruptorDisenoNuevo'
+import { useDisenoNuevo } from '@/rediseno/useDisenoNuevo'
 import { MIGA_CONFIGURACION } from './ConfiguracionPage'
 import { guardarAparienciaCuenta } from '@/services/api/core'
 import { cambiarApariencia, leerApariencia, type Acento, type Apariencia, type Tema } from '@/utils/apariencia'
@@ -40,12 +42,13 @@ export default function AparienciaPage() {
   usePaginaActual(TITULO, [MIGA_CONFIGURACION, { texto: TITULO }])
   const [apariencia, setApariencia] = useState<Apariencia>(() => leerApariencia())
   const [sinGuardar, setSinGuardar] = useState(false)
+  const { camposCuenta } = useDisenoNuevo() // AV-420: el PUT reemplaza la apariencia y no debe borrar el diseño nuevo
 
   function cambiar(parcial: Partial<Apariencia>) {
     const nueva = { ...apariencia, ...parcial }
     setApariencia(nueva)
     cambiarApariencia(nueva)
-    guardarAparienciaCuenta(nueva).then(
+    guardarAparienciaCuenta({ ...nueva, ...camposCuenta }).then(
       () => setSinGuardar(false),
       () => setSinGuardar(true),
     )
@@ -71,6 +74,7 @@ export default function AparienciaPage() {
             valor={apariencia.acento}
             onCambiar={(acento) => cambiar({ acento })}
           />
+          <InterruptorDisenoNuevo />
           {sinGuardar && (
             <AvisoEnLinea tono="advertencia">
               No pudimos guardarla en tu cuenta: se aplicó solo en este navegador. Se guardará la próxima vez que la
