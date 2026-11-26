@@ -35,7 +35,7 @@ export function rutaNuevoContrato(): string {
   return `${RUTA_PROVEEDORES}?${PARAM_CONTRATO}=${VALOR_CONTRATO_NUEVO}`
 }
 
-/** Ficha de una atención (la construye RD-53; hasta entonces lleva a «En construcción»). */
+/** Ficha de la atención abierta (RD-53). También es el destino de `?atencion_id=<id>` en la pestaña Atenciones. */
 export function rutaAtencion(id: number): string {
   return `${RUTA_PROVEEDORES}/${SEGMENTO_ATENCIONES}/${id}`
 }

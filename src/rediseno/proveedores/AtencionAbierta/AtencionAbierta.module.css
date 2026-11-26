@@ -1,0 +1,90 @@
+/* Proveedores · atención abierta (RD-53): fondo liso, ficha y paneles de vidrio, solo tokens semánticos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.titulo {
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  color: var(--color-text-primary);
+}
+
+.titulo:focus-visible {
+  outline: none;
+}
+
+.subtitulo {
+  font-size: var(--type-pequeno-size);
+  color: var(--color-text-secondary);
+}
+
+/* La ficha reutilizada pinta sus tarjetas con el fondo de panel: aquí, cada bloque es de vidrio. */
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.cuerpo > :is(div, section) {
+  border: 0;
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: var(--vidrio-borde);
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.motivos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .encabezado {
+    padding: var(--space-4);
+  }
+}
