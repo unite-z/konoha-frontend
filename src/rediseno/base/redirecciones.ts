@@ -15,7 +15,7 @@ import {
   PREFIJO_USUARIOS,
 } from '@/router/rutasApp'
 import { BASE_CAMPO, RUTAS_CAMPO } from '@/router/rutasCampo'
-import { rutaCampo } from '../campo/enlaces'
+import { rutaCampo, rutaCampoRutaDeHoy, rutaCampoSemana } from '../campo/enlaces'
 import { rutaCuenta } from '../cuenta/enlaces'
 import { rutaIncidencias } from '../incidencias/enlaces'
 import { rutaMapa } from '../mapa/enlaces'
@@ -127,8 +127,8 @@ const REGLAS: readonly Regla[] = [
   r(RUTAS_PLANIFICACION_ANTIGUAS.servicios, REGLAS_CICLO),
   r(RUTAS_PLANIFICACION_ANTIGUAS.restricciones, REGLAS_CICLO),
   r(PREFIJO_CORTE, rutaCampo()),
-  r(RUTAS_CORTE.rutaDeHoy, rutaCampo()),
-  r(RUTAS_CORTE.calendario, rutaCampo()),
+  r(RUTAS_CORTE.rutaDeHoy, rutaCampoRutaDeHoy()),
+  r(RUTAS_CORTE.calendario, rutaCampoSemana()),
 
   // MOD-03 · incidencias → Incidencias
   r(PREFIJO_INCIDENCIAS, rutaIncidencias()),

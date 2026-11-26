@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { Ellipsis } from 'lucide-react'
-import { rutaCuenta } from '@/rediseno/cuenta/enlaces'
+import { rutaCampoMas } from '@/rediseno/campo/enlaces'
 import type { SeccionRediseno } from '@/rediseno/tipos'
 
 export interface EntradaBarra {
@@ -19,7 +19,7 @@ const VERIFICAR_PARTE = 'CAM.PARTE.VERIFICAR'
 
 /**
  * Entradas de la única barra inferior móvil. Quien tiene el inicio en campo ve las entradas `movil` de la sección
- * marcada `inicioEnCampo` y «Más» (hacia Cuenta); el resto, sus secciones de cabecera permitidas (como mucho 5).
+ * marcada `inicioEnCampo` y «Más» (hacia su menú «Más»); el resto, sus secciones de cabecera permitidas (como mucho 5).
  * `visibles` son las secciones que los permisos dejan ver (`seccionesVisibles`). Mientras campo no declare entradas
  * (RD-69), quien tiene el inicio en campo ve también sus secciones de cabecera: nunca se queda solo con «Más».
  */
@@ -30,7 +30,7 @@ export function entradasBarraInferior(
   const campo = visibles.find((s) => s.inicioEnCampo)
   if (campo && campo.movil.length > 0 && permisos.includes(REGISTRAR_PARTE) && !permisos.includes(VERIFICAR_PARTE)) {
     const propias = campo.movil.map((e) => ({ clave: e.ruta, ...e }))
-    return [...propias, { clave: 'mas', etiqueta: 'Más', icono: Ellipsis, ruta: rutaCuenta() }]
+    return [...propias, { clave: 'mas', etiqueta: 'Más', icono: Ellipsis, ruta: rutaCampoMas() }]
   }
   return visibles
     .filter((s) => s.enCabecera)
