@@ -3,9 +3,6 @@ import type { ReactNode } from 'react'
 import type { InstanteIso } from '@/types/comun'
 import type { AccionDecision, EstadoSugerencia, MetadatosIA } from '@/types/ia'
 
-export const PERMISO_ENTRADA = 'REP.INDICADOR.CONSULTAR'
-export const PERMISO_PROPONER = 'IA.PROPUESTA.PROPONER'
-export const PERMISO_VALIDAR = 'IA.PROPUESTA.VALIDAR'
 export const MAX_MOTIVO_RECHAZO = 1000
 
 /** Decisión de la persona sobre un elemento (`decisionElemento`). `valorFinal` es `null` al descartar. */
@@ -51,10 +48,13 @@ export interface ContextoHueco<V> {
 }
 
 export interface AdaptadorRevision<V> {
+  /** Clave de la consulta: identifica la propuesta que se revisa (por ejemplo, `priorizacion|12`). */
+  clave: string
   /** Título del aviso de faltantes («Faltan datos para una priorización confiable»). */
   tituloFaltantes: string
   motivoRechazo: 'obligatorio' | 'opcional'
-  cargar: () => Promise<PropuestaRevision<V>>
+  /** `null` si aún no hay propuesta: se ve el estado vacío y, con permiso, «Pedir análisis». */
+  cargar: (signal: AbortSignal) => Promise<PropuestaRevision<V> | null>
   validar: (decisiones: Record<string, DecisionElemento<V>>) => Promise<void>
   rechazar: (motivo: string) => Promise<void>
   solicitar?: () => Promise<void>

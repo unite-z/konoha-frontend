@@ -3,7 +3,7 @@
  * (aceptar, corregir o descartar), «Aceptar pendientes», validar o rechazar la propuesta, la trazabilidad de quién
  * decidió y cuándo, y los permisos. No conoce ningún asistente: todo lo propio llega por el adaptador.
  */
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import BloqueContextoIA from '@/components/reportes-indicadores/BloqueContextoIA'
 import FichaDecisionIA from '@/components/reportes-indicadores/FichaDecisionIA'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
@@ -13,19 +13,15 @@ import { AreaTexto, ResumenErrores } from '@/design-system/CampoFormulario'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoError from '@/design-system/EstadoError'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
+import EstadoVacio from '@/design-system/EstadoVacio'
+import { PERMISO_CONSULTA_REPORTES, PERMISO_SOLICITAR_IA, PERMISO_VALIDAR_IA } from '@/config/permisos'
+import { useConsulta } from '@/hooks/useConsulta'
+import { aErrorApi } from '@/services/api/cliente'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AccionDecision } from '@/types/ia'
 import { formatearFechaHora } from '@/utils/formato'
-import {
-  MAX_MOTIVO_RECHAZO,
-  PERMISO_ENTRADA,
-  PERMISO_PROPONER,
-  PERMISO_VALIDAR,
-  type AdaptadorRevision,
-  type DecisionElemento,
-  type ElementoRevision,
-  type PropuestaRevision,
-} from './contrato'
+import { MAX_MOTIVO_RECHAZO, type AdaptadorRevision, type DecisionElemento, type ElementoRevision } from './contrato'
+import type { PropuestaRevision } from './contrato'
 import estilos from './RevisionIa.module.css'
 
 export interface RevisionIaProps<V> {
@@ -35,56 +31,95 @@ export interface RevisionIaProps<V> {
 }
 
 type Borrador<V> = Record<string, DecisionElemento<V>>
+type Enviar = (accion: () => Promise<void>) => void
+/** El foco va con la vista: a las decisiones al pulsar «Corregir» y al motivo al pulsar «Rechazar con motivo». */
+const enfocar = (elemento: HTMLElement | null) => elemento?.focus()
 
-function Traza({ por, en }: { por: string; en: string }) {
-  return (
-    <p className={estilos.traza}>
-      Decidido por {por} · {formatearFechaHora(en)}
-    </p>
-  )
+const traza = (texto: string, por: string, en: string | null) => (
+  <p className={estilos.traza}>{`${texto} por ${por} · ${formatearFechaHora(en)}`}</p>
+)
+
+export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_CONSULTA_REPORTES }: RevisionIaProps<V>) {
+  const permisos = usePermisos() ?? []
+  const entra = permisos.includes(permisoEntrada)
+  const consulta = useConsulta(entra ? adaptador.clave : null, adaptador.cargar, (p) => p === null)
+  const [enviando, setEnviando] = useState(false)
+  const [aviso, setAviso] = useState<string | null>(null)
+
+  const enviar: Enviar = (accion) => {
+    if (enviando) return
+    setEnviando(true)
+    setAviso(null)
+    accion()
+      // Tras un fallo también se recarga: si otra persona ya decidió (409), se ve su decisión; si no, nada cambia.
+      .then(consulta.reintentar, (causa: unknown) => {
+        setAviso(aErrorApi(causa).detalle)
+        consulta.reintentar()
+      })
+      .finally(() => setEnviando(false))
+  }
+
+  const { error, reintentar } = consulta
+  if (!entra || error?.estado === 403) return <EstadoSinAcceso />
+  const avisoEnvio = aviso && <AvisoEnLinea tono="error" titulo={aviso} />
+  const { solicitar } = adaptador
+  const pedir = (texto: string) =>
+    permisos.includes(PERMISO_SOLICITAR_IA) &&
+    solicitar && (
+      <Boton variante="secundario" cargando={enviando} onClick={() => enviar(solicitar)}>
+        {texto}
+      </Boton>
+    )
+  if (consulta.estado === 'vacio' || error?.estado === 404)
+    return <EstadoVacio titulo="Aún no hay propuesta" descripcion={avisoEnvio} accion={pedir('Pedir análisis')} />
+  if (error) return <EstadoError titulo="No se pudo cargar" descripcion={error.detalle} onReintentar={reintentar} />
+  if (!consulta.datos) return consulta.cargaVisible ? <EstadoCarga forma="tarjetas" /> : null
+
+  const { id, estado } = consulta.datos
+  const comun = { adaptador, permisos, enviar, enviando, avisoEnvio, pedir: pedir('Pedir otro análisis') }
+  return <Propuesta key={`${id}|${estado}`} propuesta={consulta.datos} {...comun} />
 }
 
-export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_ENTRADA }: RevisionIaProps<V>) {
-  const permisos = usePermisos()
-  const [propuesta, setPropuesta] = useState<PropuestaRevision<V> | null>(null)
-  const [fallo, setFallo] = useState(false)
+interface PropuestaProps<V> {
+  propuesta: PropuestaRevision<V>
+  adaptador: AdaptadorRevision<V>
+  permisos: readonly string[]
+  enviar: Enviar
+  enviando: boolean
+  avisoEnvio: ReactNode
+  pedir: ReactNode
+}
+
+/** Estado de la decisión de una propuesta concreta: se reinicia (por `key`) cuando cambia su id o su estado. */
+function Propuesta<V>({ propuesta, adaptador, permisos, enviar, enviando, avisoEnvio, pedir }: PropuestaProps<V>) {
+  const id = useId()
   const [borrador, setBorrador] = useState<Borrador<V>>({})
   const [revisando, setRevisando] = useState(false)
   const [rechazando, setRechazando] = useState(false)
   const [motivo, setMotivo] = useState('')
   const [intentado, setIntentado] = useState(false)
-  const [enviando, setEnviando] = useState(false)
-  const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
 
-  const cargar = useCallback(() => {
-    setFallo(false)
-    setPropuesta(null)
-    setBorrador({})
-    adaptador.cargar().then(setPropuesta, () => setFallo(true))
-  }, [adaptador])
-  useEffect(() => {
-    if (permisos?.includes(permisoEntrada)) cargar()
-  }, [permisos, permisoEntrada, cargar])
-
-  if (!permisos?.includes(permisoEntrada)) return <EstadoSinAcceso />
-  if (fallo) return <EstadoError titulo="No pudimos cargar la propuesta" descripcion="Vuelve a intentarlo." onReintentar={cargar} />
-  if (!propuesta) return <EstadoCarga forma="tarjetas" />
-
-  const puedeValidar = permisos.includes(PERMISO_VALIDAR) && propuesta.estado === 'Propuesta'
+  const enPropuesta = propuesta.estado === 'Propuesta'
+  const puedeValidar = permisos.includes(PERMISO_VALIDAR_IA) && enPropuesta
+  const idElemento = (e: ElementoRevision<V>) => `${id}-elemento-${e.id}`
   const pendientes = propuesta.elementos.filter((e) => !borrador[e.id])
-  const decididos = propuesta.elementos.length - pendientes.length
-  const errores = intentado ? pendientes.map((e) => ({ idCampo: `elemento-${e.id}`, mensaje: `Falta decidir «${e.titulo}»` })) : []
+  const total = propuesta.elementos.length
+  const decididos = total - pendientes.length
+  const errores = (intentado ? pendientes : []).map((e) => ({
+    idCampo: idElemento(e),
+    mensaje: `Falta decidir «${e.titulo}»`,
+  }))
   const motivoVacio = adaptador.motivoRechazo === 'obligatorio' && motivo.trim() === ''
 
   const decidir = (elemento: ElementoRevision<V>, accion: AccionDecision) =>
-    setBorrador((previo) => ({
-      ...previo,
-      [elemento.id]: {
-        ...previo[elemento.id],
-        accion,
-        valorFinal: accion === 'descartar' ? null : accion === 'corregir' ? (previo[elemento.id]?.valorFinal ?? elemento.valorSugerido) : elemento.valorSugerido,
-      },
-    }))
+    setBorrador((previo) => {
+      const anterior = previo[elemento.id]
+      const corregido = anterior?.valorFinal ?? elemento.valorSugerido
+      const valorFinal = accion === 'descartar' ? null : accion === 'corregir' ? corregido : elemento.valorSugerido
+      return { ...previo, [elemento.id]: { ...anterior, accion, valorFinal } }
+    })
+  const cambiar = (elemento: ElementoRevision<V>, parcial: Partial<DecisionElemento<V>>) =>
+    setBorrador((previo) => ({ ...previo, [elemento.id]: { ...previo[elemento.id], ...parcial } }))
 
   const aceptarPendientes = (): Borrador<V> => {
     const completo = { ...borrador }
@@ -92,81 +127,69 @@ export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_ENTR
     setBorrador(completo)
     return completo
   }
-
-  const enviar = async (accion: () => Promise<void>) => {
-    setEnviando(true)
-    setErrorEnvio(null)
-    try {
-      await accion()
-      cargar()
-    } catch {
-      setErrorEnvio('No pudimos guardar tu decisión. Vuelve a intentarlo.')
-    } finally {
-      setEnviando(false)
-    }
-  }
-
-  const validar = (decisiones: Borrador<V>) => enviar(() => adaptador.validar(decisiones))
+  const aplicar = () => enviar(() => adaptador.validar(aceptarPendientes()))
   const validarRevisadas = () => {
     setIntentado(true)
-    if (pendientes.length === 0) void validar(borrador)
+    if (pendientes.length > 0) document.getElementById(idElemento(pendientes[0]))?.focus()
+    else enviar(() => adaptador.validar(borrador))
   }
   const rechazar = () => {
     setIntentado(true)
-    if (!motivoVacio) void enviar(() => adaptador.rechazar(motivo.trim()))
+    if (!motivoVacio) enviar(() => adaptador.rechazar(motivo.trim()))
   }
 
-  const mostrar = (valor: V | null): ReactNode => (valor === null ? 'Descartado' : adaptador.mostrarValor ? adaptador.mostrarValor(valor) : String(valor))
-  const { ia, contexto } = propuesta
-  const solicitar = adaptador.solicitar
+  const mostrar = (valor: V | null): ReactNode =>
+    valor === null ? 'Descartado' : adaptador.mostrarValor ? adaptador.mostrarValor(valor) : String(valor)
+  const { ia, contexto, validadaPor } = propuesta
 
   return (
     <div className={estilos.revision}>
-      <section className={estilos.vidrio} aria-labelledby="titulo-konoha-propone">
-        <h2 id="titulo-konoha-propone" className={estilos.encabezado}>
+      <section className={estilos.vidrio} aria-labelledby={`${id}-titulo`}>
+        <h2 id={`${id}-titulo`} className={estilos.encabezado}>
           Konoha propone
         </h2>
-        <div className={estilos.texto}>{propuesta.resumen}</div>
+        <div>{propuesta.resumen}</div>
         <p className={estilos.linea}>Generado por IA · revisa antes de aplicar</p>
         <p className={estilos.traza}>
           {ia.proveedor} · {ia.modelo} · {formatearFechaHora(ia.solicitado_en)}
         </p>
-        {propuesta.estado === 'Validada' && propuesta.validadaPor && <Traza por={propuesta.validadaPor} en={propuesta.validadaEn ?? ''} />}
+        {!enPropuesta && validadaPor && traza(propuesta.estado, validadaPor, propuesta.validadaEn)}
         {propuesta.estado === 'Rechazada' && (
           <AvisoEnLinea tono="info" titulo="Propuesta rechazada">
-            {propuesta.motivoRechazo ?? 'Sin motivo indicado.'}
+            {propuesta.motivoRechazo || 'Sin motivo indicado.'}
           </AvisoEnLinea>
         )}
         {puedeValidar && (
           <div className={estilos.acciones}>
-            <Boton variante="primario" cargando={enviando} onClick={() => void validar(aceptarPendientes())}>
+            <Boton variante="primario" cargando={enviando} onClick={aplicar}>
               Aplicar
             </Boton>
-            <Boton variante="secundario" className={estilos.botonVidrio} onClick={() => setRevisando(true)}>
+            <Boton
+              variante="secundario"
+              className={estilos.botonVidrio}
+              aria-expanded={revisando}
+              onClick={() => setRevisando(true)}
+            >
               Corregir
             </Boton>
-            <Boton variante="enlace" onClick={() => setRechazando(true)}>
+            <Boton variante="enlace" aria-expanded={rechazando} onClick={() => setRechazando(true)}>
               Rechazar con motivo
             </Boton>
           </div>
         )}
-        {permisos.includes(PERMISO_PROPONER) && solicitar && propuesta.estado !== 'Propuesta' && (
-          <Boton variante="secundario" onClick={() => void enviar(solicitar)}>
-            Pedir otro análisis
-          </Boton>
-        )}
+        {!enPropuesta && pedir}
         {puedeValidar && adaptador.alternativaManual && (
           <Boton variante="fantasma" onClick={adaptador.alternativaManual.alElegir}>
             {adaptador.alternativaManual.texto}
           </Boton>
         )}
-        {errorEnvio && <AvisoEnLinea tono="error" titulo={errorEnvio} />}
+        {avisoEnvio}
       </section>
 
       {rechazando && puedeValidar && (
-        <section className={estilos.vidrio} aria-label="Rechazar la propuesta">
+        <section className={estilos.vidrio} aria-label="Rechazar la propuesta" ref={enfocar} tabIndex={-1}>
           <AreaTexto
-            id="motivo-rechazo"
+            id={`${id}-motivo`}
             etiqueta="Motivo del rechazo"
             obligatorio={adaptador.motivoRechazo === 'obligatorio'}
             maxLength={MAX_MOTIVO_RECHAZO}
@@ -189,10 +212,23 @@ export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_ENTR
       <BloqueContextoIA contexto={contexto} tituloFaltantes={adaptador.tituloFaltantes} />
 
       {(revisando || !puedeValidar) && (
-        <section className={estilos.elementos} aria-label="Decisiones por elemento">
+        <section className={estilos.elementos} aria-labelledby={`${id}-decisiones`}>
+          <h2
+            id={`${id}-decisiones`}
+            ref={revisando ? enfocar : undefined}
+            tabIndex={-1}
+            className={estilos.encabezado}
+          >
+            Decisiones por elemento
+          </h2>
           {puedeValidar && (
             <div className={estilos.progreso}>
-              <BarraAvance valor={decididos} maximo={propuesta.elementos.length} etiqueta="Elementos decididos" textoValor={`${decididos} de ${propuesta.elementos.length}`} />
+              <BarraAvance
+                valor={decididos}
+                maximo={total}
+                etiqueta="Decididos"
+                textoValor={`${decididos} de ${total}`}
+              />
               <Boton variante="secundario" compacto onClick={aceptarPendientes} deshabilitado={pendientes.length === 0}>
                 Aceptar pendientes
               </Boton>
@@ -202,9 +238,9 @@ export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_ENTR
           {propuesta.elementos.map((e) => {
             const decision = borrador[e.id]
             const registro = e.decision
-            const modo = propuesta.estado !== 'Propuesta' ? (registro ? 'final' : 'consulta') : puedeValidar ? 'editar' : 'consulta'
+            const modo = !enPropuesta ? (registro ? 'final' : 'consulta') : puedeValidar ? 'editar' : 'consulta'
             return (
-              <div key={e.id} id={`elemento-${e.id}`} tabIndex={-1}>
+              <div key={e.id} id={idElemento(e)} tabIndex={-1}>
                 <FichaDecisionIA
                   titulo={e.titulo}
                   sugerencia={e.sugerencia}
@@ -214,12 +250,14 @@ export default function RevisionIa<V>({ adaptador, permisoEntrada = PERMISO_ENTR
                   final={registro && mostrar(registro.valorFinal)}
                   error={intentado && modo === 'editar' && !decision ? 'Decide este elemento' : undefined}
                 />
-                {modo === 'editar' && decision && adaptador.renderHueco?.({ elemento: e, decision, cambiar: (parcial) => setBorrador((p) => ({ ...p, [e.id]: { ...p[e.id], ...parcial } })) })}
+                {modo === 'editar' &&
+                  decision &&
+                  adaptador.renderHueco?.({ elemento: e, decision, cambiar: (parcial) => cambiar(e, parcial) })}
                 {modo === 'final' && registro && (
                   <>
                     {registro.comentario && <p className={estilos.traza}>Comentario: {registro.comentario}</p>}
                     {registro.motivo && <p className={estilos.traza}>Motivo: {registro.motivo}</p>}
-                    <Traza por={registro.decididoPor} en={registro.decididoEn} />
+                    {traza('Decidido', registro.decididoPor, registro.decididoEn)}
                   </>
                 )}
               </div>
