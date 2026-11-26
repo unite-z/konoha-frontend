@@ -154,3 +154,21 @@
     background-color: var(--color-neutral-bg);
   }
 }
+
+.criterios {
+  color: var(--color-text-secondary);
+}
+
+.criterios > * + * {
+  margin-top: var(--space-3);
+}
+
+.criterios summary {
+  color: var(--color-text-primary);
+  font-weight: var(--type-cuerpo-medio-weight);
+  cursor: pointer;
+}
+
+.criterios ul {
+  padding-left: var(--space-6);
+}

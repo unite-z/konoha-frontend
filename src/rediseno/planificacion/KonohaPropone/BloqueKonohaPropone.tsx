@@ -34,6 +34,7 @@ export default function BloqueKonohaPropone() {
   const panel = useParametroPanel(PARAMETRO_PROPUESTA)
   const [generando, setGenerando] = useState(false)
   const [conHistorial, setConHistorial] = useState(false)
+  const [version, setVersion] = useState(0)
   const ultima = useConsulta(
     puedeVer ? 'rd-konoha-ultima' : null,
     (signal) => listarCronogramas({}, signal),
@@ -42,6 +43,10 @@ export default function BloqueKonohaPropone() {
   if (!puedeVer) return null
 
   const abrir = (id: number) => transicionar(() => panel.abrir(String(id)))
+  const releer = () => {
+    ultima.reintentar()
+    setVersion((v) => v + 1)
+  }
   const idPanel = Number(panel.valor) || null
   const propuesta = ultima.datos?.results[0]
 
@@ -107,7 +112,9 @@ export default function BloqueKonohaPropone() {
             </Boton>
           )}
         </div>
-        <p className={estilos.detalle}>Konoha sugiere un cronograma de ciclos. Nada se programa hasta que lo confirmes.</p>
+        <p className={estilos.detalle}>
+          Konoha sugiere un cronograma de ciclos. Nada se programa hasta que lo confirmes.
+        </p>
         {cuerpo}
         <Boton
           variante="fantasma"
@@ -117,17 +124,15 @@ export default function BloqueKonohaPropone() {
         >
           {conHistorial ? 'Ocultar el historial' : 'Ver el historial de propuestas'}
         </Boton>
-        {conHistorial && <HistorialPropuestas onAbrir={abrir} />}
+        {conHistorial && <HistorialPropuestas onAbrir={abrir} version={version} />}
       </section>
-      {idPanel !== null && (
-        <PanelRevisionCronograma id={idPanel} onCerrar={panel.cerrar} onCambio={ultima.reintentar} />
-      )}
+      {idPanel !== null && <PanelRevisionCronograma id={idPanel} onCerrar={panel.cerrar} onCambio={releer} />}
       <DialogoGenerarCronograma
         abierto={generando}
         onCerrar={() => setGenerando(false)}
         onCreada={(s) => {
           setGenerando(false)
-          ultima.reintentar()
+          releer()
           abrir(s.id)
         }}
       />

@@ -93,7 +93,7 @@ function sugerencia(sobre: Partial<SugerenciaCronograma> = {}): SugerenciaCronog
       explicacion: 'Por frecuencia',
       version_contenido: 1,
       entrada: { desde: '2026-12-01', hasta: '2026-12-31', actividades_pendientes: 3 },
-      criterios: [],
+      criterios: ['Priorizar los espacios más atrasados'],
       restricciones: [],
       propuestas: [
         propuesta('a', 'Corte de césped'),
@@ -197,7 +197,9 @@ describe('bloque «Konoha propone»', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Ver el historial de propuestas' }))
     expect(await screen.findByLabelText('Propuestas anteriores')).toBeTruthy()
     await userEvent.selectOptions(screen.getByLabelText('Estado'), 'Validada')
-    await waitFor(() => expect(api.listarCronogramas).toHaveBeenCalledWith({ estado: 'Validada', page: 1 }, expect.anything()))
+    await waitFor(() =>
+      expect(api.listarCronogramas).toHaveBeenCalledWith({ estado: 'Validada', page: 1 }, expect.anything()),
+    )
     await userEvent.type(screen.getByLabelText('Desde'), '2027-02-01')
     expect(await screen.findByText('Sin propuestas con estos filtros')).toBeTruthy()
   })
@@ -221,25 +223,71 @@ describe('panel de revisión', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Lista' }))
     expect(screen.getAllByText('Poda de setos').length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Coincide con una prohibición/).length).toBeGreaterThan(0)
+    expect(screen.getByText('Propuesta: no es una programación confirmada')).toBeTruthy()
+    expect(screen.getByText('Criterios y restricciones consideradas')).toBeTruthy()
+    expect(screen.getByText('Priorizar los espacios más atrasados')).toBeTruthy()
   })
+
+  /** Confirma en el diálogo «Confirmar planificación» y devuelve su texto. */
+  async function confirmarEnDialogo() {
+    const dialogo = await screen.findByRole('dialog', { name: 'Confirmar planificación' })
+    const texto = dialogo.textContent ?? ''
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Confirmar planificación' }))
+    return texto
+  }
 
   it('aceptar, modificar y descartar cada sugerencia y confirmar solo lo decidido', async () => {
     montar(JEFE, abierto)
     await userEvent.click(await screen.findByRole('button', { name: 'Corregir' }))
     await userEvent.click(screen.getAllByRole('radio', { name: 'Aceptar' })[0])
-    await userEvent.click(screen.getAllByRole('radio', { name: 'Corregir' })[1])
     await userEvent.click(screen.getAllByRole('radio', { name: 'Descartar' })[2])
+    // Al corregir, el diálogo de cambios se abre solo.
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Corregir' })[1])
+    const modificar = await screen.findByRole('dialog', { name: 'Modificar propuesta' })
+    const operarios = within(modificar).getByLabelText(/Operarios/)
+    await userEvent.clear(operarios)
+    await userEvent.type(operarios, '5')
+    await userEvent.click(within(modificar).getByRole('button', { name: 'Guardar cambios' }))
     expect(screen.getByText('Aceptada: se programará')).toBeTruthy()
-    expect(screen.getByText(/^Modificada:/)).toBeTruthy()
+    expect(screen.getByText('Modificada: 3 → 5 operarios')).toBeTruthy()
     expect(screen.getByText('Descartada: no se programa')).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'Validar decisiones' }))
+    expect(await confirmarEnDialogo()).toMatch(
+      /Se programarán 2 actividades: 1 aceptadas y 1 modificadas\. 1 descartadas\./,
+    )
     await waitFor(() => expect(api.confirmarCronograma).toHaveBeenCalledTimes(1))
     const [id, cuerpo] = api.confirmarCronograma.mock.calls[0]
     expect(id).toBe(1)
     expect(cuerpo.por_propuesta.a).toEqual({ accion: 'aceptar', valores_finales: null, confirma_restriccion: false })
     expect(cuerpo.por_propuesta.b.accion).toBe('corregir')
-    expect(cuerpo.por_propuesta.b.valores_finales.fecha_inicio).toBe('2026-12-01')
+    expect(cuerpo.por_propuesta.b.valores_finales).toMatchObject({ fecha_inicio: '2026-12-01', operarios: 5 })
     expect(cuerpo.por_propuesta.c).toEqual({ accion: 'descartar', valores_finales: null, confirma_restriccion: false })
+  })
+
+  it('volver atrás en «Confirmar planificación» no envía nada', async () => {
+    montar(JEFE, abierto)
+    await userEvent.click(await screen.findByRole('button', { name: 'Corregir' }))
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Descartar' })[2])
+    await userEvent.click(screen.getByRole('button', { name: 'Aceptar pendientes' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Validar decisiones' }))
+    const dialogo = await screen.findByRole('dialog', { name: 'Confirmar planificación' })
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Volver' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Confirmar planificación' })).toBeNull())
+    expect(api.confirmarCronograma).not.toHaveBeenCalled()
+  })
+
+  it('una modificación sin cambios no se confirma', async () => {
+    montar(JEFE, abierto)
+    await userEvent.click(await screen.findByRole('button', { name: 'Corregir' }))
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Descartar' })[2])
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Corregir' })[0])
+    const modificar = await screen.findByRole('dialog', { name: 'Modificar propuesta' })
+    await userEvent.click(within(modificar).getByRole('button', { name: 'Cancelar' }))
+    expect(screen.getByText('Aún no has indicado los cambios')).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Aceptar pendientes' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Validar decisiones' }))
+    expect(await screen.findByText(/Indica los cambios de «Corte de césped · Jardín central»/)).toBeTruthy()
+    expect(api.confirmarCronograma).not.toHaveBeenCalled()
   })
 
   it('una sugerencia bloqueada no se puede aceptar: avisa y no confirma', async () => {
@@ -250,6 +298,7 @@ describe('panel de revisión', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Aceptar pendientes' }))
     await userEvent.click(screen.getByRole('button', { name: 'Validar decisiones' }))
     expect(await screen.findByText(/1 sugerencia está bloqueada por una prohibición/)).toBeTruthy()
+    expect(screen.queryByRole('dialog', { name: 'Confirmar planificación' })).toBeNull()
     expect(api.confirmarCronograma).not.toHaveBeenCalled()
   })
 
@@ -265,6 +314,7 @@ describe('panel de revisión', () => {
     montar(CONSULTA, abierto)
     expect(await screen.findByRole('tab', { name: 'Calendario' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Aplicar' })).toBeNull()
+    expect(screen.getByText(/Solo la jefatura de sección puede confirmar/)).toBeTruthy()
     cleanup()
     api.obtenerCronograma.mockResolvedValue(
       sugerencia({
@@ -288,6 +338,7 @@ describe('panel de revisión', () => {
     )
     montar(CONSULTA, abierto)
     expect(await screen.findAllByText(/Decidido por la persona n\.º 7/)).toHaveLength(3)
+    expect(screen.getByText(/Programaciones creadas: 1/)).toBeTruthy()
   })
 
   it('con error al cargar la propuesta ofrece reintentar', async () => {

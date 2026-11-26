@@ -1,7 +1,8 @@
 /**
  * Adaptador del cronograma de IA para `RevisionIa` (RD-33): traduce la propuesta del backend al contrato del núcleo
  * y las decisiones al cuerpo de `validar/`. Una sugerencia que coincide con una prohibición sale bloqueada (v6): solo
- * se puede descartar, así que nunca se envía `confirma_restriccion`.
+ * se puede descartar, así que nunca se envía `confirma_restriccion`. Antes de enviar, «Confirmar planificación» pide
+ * conformidad con el recuento de lo que se programará, como la revisión actual.
  */
 import { createElement } from 'react'
 import { ErrorApi } from '@/services/api/cliente'
@@ -12,7 +13,12 @@ import type {
   SugerenciaCronograma,
   ValoresCronograma,
 } from '@/types/cronogramaIa'
-import { coincideConProhibicion, recursosDisponibles, valoresDePropuesta } from '@/utils/cronogramaIa'
+import {
+  coincideConProhibicion,
+  resumenConfirmacion,
+  textoResumenConfirmacion,
+  valoresDePropuesta,
+} from '@/utils/cronogramaIa'
 import type {
   AdaptadorRevision,
   DecisionElemento,
@@ -21,11 +27,13 @@ import type {
   RegistroDecision,
 } from '@/rediseno/base/RevisionIa/contrato'
 import { HuecoDecision, SugerenciaElemento } from './ElementoCronograma'
-import { textoValores } from './textoValores'
+import { nombresCronograma, sinCambios, textoValores } from './textoValores'
 import VistasPropuesta from './VistasPropuesta'
 
 export interface OpcionesAdaptadorCronograma {
   id: number
+  /** Pide conformidad con el recuento («Se programarán…»); `false` si la persona vuelve atrás sin confirmar. */
+  confirmar: (resumen: string) => Promise<boolean>
   /** Tras confirmar la planificación (el panel se cierra con un fundido). */
   alConfirmar: () => void
   /** Tras descartar la propuesta completa. */
@@ -49,8 +57,16 @@ export function cuerpoValidacion(
 ): CuerpoValidacionCronograma {
   const bloqueadas = propuestas.filter((p) => coincideConProhibicion(p) && decisiones[p.clave]?.accion !== 'descartar')
   if (bloqueadas.length > 0) {
-    const cuantas = bloqueadas.length === 1 ? '1 sugerencia está bloqueada' : `${bloqueadas.length} sugerencias están bloqueadas`
+    const cuantas =
+      bloqueadas.length === 1 ? '1 sugerencia está bloqueada' : `${bloqueadas.length} sugerencias están bloqueadas`
     throw new ErrorApi(422, 'sugerencia-bloqueada', `${cuantas} por una prohibición: descártala para confirmar.`)
+  }
+  const sinIndicar = propuestas.filter(
+    (p) => decisiones[p.clave]?.accion === 'corregir' && sinCambios(p, decisiones[p.clave].valorFinal),
+  )
+  if (sinIndicar.length > 0) {
+    const nombres = sinIndicar.map((p) => `«${p.actividad} · ${p.ubicacion}»`).join(', ')
+    throw new ErrorApi(422, 'modificacion-sin-cambios', `Indica los cambios de ${nombres} o acéptala tal cual.`)
   }
   const por_propuesta: CuerpoValidacionCronograma['por_propuesta'] = {}
   for (const p of propuestas) {
@@ -67,6 +83,7 @@ export function cuerpoValidacion(
 
 export function crearAdaptadorCronograma({
   id,
+  confirmar,
   alConfirmar,
   alRechazar,
 }: OpcionesAdaptadorCronograma): AdaptadorRevision<ValoresCronograma> {
@@ -101,7 +118,10 @@ export function crearAdaptadorCronograma({
     motivoRechazo: 'opcional',
     cargar: async (signal) => aRevision(await obtenerCronograma(id, signal)),
     validar: async (decisiones) => {
-      await confirmarCronograma(id, cuerpoValidacion(propuestas, decisiones))
+      const cuerpo = cuerpoValidacion(propuestas, decisiones)
+      const resumen = textoResumenConfirmacion(resumenConfirmacion(Object.values(cuerpo.por_propuesta)))
+      if (!(await confirmar(resumen))) return
+      await confirmarCronograma(id, cuerpo)
       alConfirmar()
     },
     rechazar: async (motivo) => {
@@ -111,12 +131,8 @@ export function crearAdaptadorCronograma({
     renderHueco: ({ elemento, decision, cambiar }) => {
       const propuesta = propuestas.find((p) => p.clave === elemento.id)
       if (!propuesta) return null
-      return createElement(HuecoDecision, {
-        propuesta,
-        contexto: { elemento, decision, cambiar },
-        recursos: recursosDisponibles(propuestas),
-      })
+      return createElement(HuecoDecision, { propuesta, propuestas, contexto: { elemento, decision, cambiar } })
     },
-    mostrarValor: textoValores,
+    mostrarValor: (valor) => textoValores(valor, nombresCronograma(propuestas)),
   }
 }
