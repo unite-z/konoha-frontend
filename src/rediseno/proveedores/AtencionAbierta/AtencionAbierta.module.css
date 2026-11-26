@@ -46,7 +46,8 @@
   gap: var(--space-6);
 }
 
-.cuerpo > :is(div, section) {
+.cuerpo > :is(div, section),
+.cuerpo > div:has(> section) > section {
   border: 0;
   border-top: var(--vidrio-borde);
   border-left: var(--vidrio-borde);
@@ -54,6 +55,17 @@
   background: var(--vidrio-relleno);
   backdrop-filter: var(--vidrio-desenfoque);
   box-shadow: var(--vidrio-sombra);
+}
+
+/* Contenedores que no son tarjeta: el par de columnas (ejecución y acuerdo) y la sección de conformidad, que lleva
+   su título suelto sobre la tabla. El vidrio va en sus tarjetas, no en el contenedor. */
+.cuerpo > div:has(> section),
+.cuerpo > section[aria-labelledby='titulo-conformidad'] {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  box-shadow: none;
 }
 
 .acciones {

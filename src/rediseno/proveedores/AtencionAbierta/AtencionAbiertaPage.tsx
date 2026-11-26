@@ -53,7 +53,7 @@ export default function AtencionAbiertaPage() {
   const [local, setLocal] = useState<Atencion | null>(null)
   const atencion = masReciente(consulta.datos, local)
   const [aviso, setAviso] = useState<string | null>(() => (state as { aviso?: string } | null)?.aviso ?? null)
-  const cerrarAviso = useCallback(() => setAviso(null), [])
+  const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
   const alActualizar = useCallback((nueva: Atencion) => transicionar(() => setLocal(nueva)), [])
 
   const titulo = atencion ? `Atención ${codigoCorto(atencion.codigo)}` : 'Atención'
@@ -103,7 +103,9 @@ export default function AtencionAbiertaPage() {
           atencion={atencion}
           versionDocumentos={0}
           enfocarTitulo={false}
-          acciones={<Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />}
+          acciones={
+            <Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />
+          }
         />
       </div>
     )

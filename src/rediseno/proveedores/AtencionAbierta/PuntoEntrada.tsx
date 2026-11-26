@@ -4,9 +4,7 @@
  */
 import type { ReactNode } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
-import { rutaAtencion } from '../enlaces'
-
-export const PARAM_ATENCION = 'atencion_id'
+import { PARAM_ATENCION, rutaAtencion } from '../enlaces'
 
 export default function PuntoEntradaAtencion({ children }: { children: ReactNode }) {
   const [consulta] = useSearchParams()

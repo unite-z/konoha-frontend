@@ -4,6 +4,7 @@
  * del back-end que el diálogo de conformidad actual (`POST atenciones/{id}/conformidad/`), con la decisión ya elegida.
  */
 import { useState } from 'react'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { AreaTexto } from '@/design-system/CampoFormulario'
 import CampoFormulario from '@/design-system/CampoFormulario'
 import DialogoFormulario from '@/design-system/DialogoFormulario'
@@ -79,6 +80,11 @@ function Formulario({ modo, atencion, onCerrar, onActualizada, onExito }: Omit<D
       onEnviar={registrar}
       onCerrar={onCerrar}
     >
+      {atencion.origen === 'SolicitudUnidad' && (
+        <AvisoEnLinea tono="info">
+          El acuerdo de la unidad solicitante se registra aparte; no reemplaza esta decisión.
+        </AvisoEnLinea>
+      )}
       <CampoFormulario
         id={ID_FECHA}
         etiqueta="Fecha de la decisión"

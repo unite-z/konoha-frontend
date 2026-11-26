@@ -127,7 +127,20 @@ describe('Proveedores · atención abierta (RD-53)', () => {
     const grupo = await screen.findByRole('group', { name: 'Acciones de la atención' })
     const aprobar = within(grupo).getByRole('button', { name: 'Aprobar' })
     expect(aprobar.getAttribute('aria-disabled')).toBe('true')
-    expect(screen.getAllByText(/No hay conformidad sin informe previo/).length).toBeGreaterThan(0)
+    const motivo = screen.getByText(/No hay conformidad sin informe previo/)
+    const observar = within(grupo).getByRole('button', { name: 'Pedir foto u observar' })
+    // Un solo motivo, citado por las dos decisiones.
+    expect(aprobar.getAttribute('aria-describedby')).toBe(motivo.closest('li')?.id)
+    expect(observar.getAttribute('aria-describedby')).toBe(motivo.closest('li')?.id)
+  })
+
+  it('con el informe adjunto la acción principal es «Aprobar» y va primero', async () => {
+    api.obtenerAtencion.mockResolvedValue(atencion('Reporte adjunto'))
+    montar(rutaAtencion(7))
+    const grupo = await screen.findByRole('group', { name: 'Acciones de la atención' })
+    const [primera] = within(grupo).getAllByRole('button')
+    expect(primera.textContent).toBe('Aprobar')
+    expect(primera.getAttribute('aria-disabled')).not.toBe('true')
   })
 
   it('«Pedir foto u observar» registra una observación y la atención queda «Observado»', async () => {

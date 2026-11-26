@@ -10,6 +10,8 @@ export const VALOR_CONTRATO_NUEVO = 'nuevo'
 export const PARAM_EDITAR = 'editar'
 
 export const SEGMENTO_ATENCIONES = 'atenciones'
+/** Punto de entrada `?atencion_id=<id>` (en la pestaña Atenciones lleva a la ficha; en subir informe, la atención). */
+export const PARAM_ATENCION = 'atencion_id'
 
 export function rutaProveedores(): string {
   return RUTA_PROVEEDORES
@@ -67,5 +69,5 @@ export const SEGMENTO_SUBIR_INFORME = 'subir'
 /** Subir un informe (lo construye RD-56; hasta entonces lleva a «En construcción»), con o sin atención de origen. */
 export function rutaSubirInforme(atencionId?: number): string {
   const base = `${RUTA_PROVEEDORES}/${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`
-  return atencionId === undefined ? base : `${base}?atencion_id=${atencionId}`
+  return atencionId === undefined ? base : `${base}?${PARAM_ATENCION}=${atencionId}`
 }

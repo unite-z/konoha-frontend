@@ -95,7 +95,15 @@ export default function Acciones({ atencion, permisos, onActualizada, onExito }:
     onExito(mensaje)
   }
   const comunes = { atencion, onCerrar: cerrar, onActualizada, onExito: exito }
-  const conMotivo = botones.filter((b) => !b.d.habilitada && b.d.motivo)
+  // Un motivo por texto: «Aprobar» y «Pedir foto u observar» comparten el suyo y lo citan ambos.
+  const motivos = new Map<string, { id: string; acciones: string[] }>()
+  for (const b of botones) {
+    if (b.d.habilitada || !b.d.motivo) continue
+    const previo = motivos.get(b.d.motivo)
+    if (previo) previo.acciones.push(b.texto)
+    else motivos.set(b.d.motivo, { id: `${idMotivos}-${b.clave}`, acciones: [b.texto] })
+  }
+  const idMotivo = (b: BotonAccion) => (!b.d.habilitada && b.d.motivo ? motivos.get(b.d.motivo)?.id : undefined)
 
   return (
     <div className={estilos.acciones}>
@@ -106,17 +114,17 @@ export default function Acciones({ atencion, permisos, onActualizada, onExito }:
             variante={b.primaria ? 'primario' : 'secundario'}
             onClick={() => setAbierto(b.dialogo)}
             deshabilitado={!b.d.habilitada}
-            aria-describedby={!b.d.habilitada && b.d.motivo ? `${idMotivos}-${b.clave}` : undefined}
+            aria-describedby={idMotivo(b)}
           >
             {b.texto}
           </Boton>
         ))}
       </div>
-      {conMotivo.length > 0 && (
+      {motivos.size > 0 && (
         <ul className={estilos.motivos}>
-          {conMotivo.map((b) => (
-            <li key={b.clave} id={`${idMotivos}-${b.clave}`}>
-              <strong>{b.texto}:</strong> {b.d.motivo}
+          {[...motivos].map(([motivo, { id, acciones }]) => (
+            <li key={id} id={id}>
+              <strong>{acciones.join(' y ')}:</strong> {motivo}
             </li>
           ))}
         </ul>
