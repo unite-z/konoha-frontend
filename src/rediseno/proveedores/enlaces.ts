@@ -66,7 +66,7 @@ export function rutaAtenciones(filtros: Partial<Record<ParametroAtenciones, stri
 export const SEGMENTO_INFORMES = 'informes'
 export const SEGMENTO_SUBIR_INFORME = 'subir'
 
-/** Subir un informe (lo construye RD-56; hasta entonces lleva a «En construcción»), con o sin atención de origen. */
+/** Subir un informe y extraer sus datos con IA (RD-56), con o sin atención de origen. */
 export function rutaSubirInforme(atencionId?: number): string {
   const base = `${RUTA_PROVEEDORES}/${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`
   return atencionId === undefined ? base : `${base}?${PARAM_ATENCION}=${atencionId}`

@@ -5,6 +5,7 @@ import AtencionAbiertaPage from './AtencionAbierta/AtencionAbiertaPage'
 import PuntoEntradaAtencion from './AtencionAbierta/PuntoEntrada'
 import PuntoEntradaEvidencia from './AtencionAbierta/PuntoEntradaEvidencia'
 import ProveedoresPage from './ProveedoresPage'
+import SubirInformePage from './SubirInforme/SubirInformePage'
 import AtencionesPage from './Atenciones/AtencionesPage'
 import {
   SEGMENTO_ATENCIONES,
@@ -33,11 +34,8 @@ export const rutasProveedores: RouteObject[] = [
           createElement(EnConstruccion, { seccion: 'Control fitosanitario' }),
         ),
       },
-      // Subir informe lo construye RD-56; hasta entonces, «En construcción».
-      {
-        path: `${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`,
-        element: createElement(EnConstruccion, { seccion: 'Subir informe' }),
-      },
+      // Subir informe y extraer con IA (RD-56); entrada `?atencion_id=<id>`.
+      { path: `${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`, element: createElement(SubirInformePage) },
     ],
   },
 ]
