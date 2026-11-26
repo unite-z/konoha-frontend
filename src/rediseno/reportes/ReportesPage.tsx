@@ -12,7 +12,7 @@ import { usePaginaActual } from '@/hooks/usePaginaActual'
 import BarraFiltrosPanel from '@/pages/reportes-indicadores/panel/BarraFiltrosPanel'
 import GraficoDesglose from '@/pages/reportes-indicadores/panel/GraficoDesglose'
 import RegistrosDeBarra from '@/pages/reportes-indicadores/panel/RegistrosDeBarra'
-import { useFiltrosPanel } from '@/pages/reportes-indicadores/panel/useFiltrosPanel'
+import { useFiltrosPanel, type FiltrosPanel } from '@/pages/reportes-indicadores/panel/useFiltrosPanel'
 import PlantillaReporte from '@/pages/reportes-indicadores/reportes/PlantillaReporte'
 import { obtenerPanel } from '@/services/api/reportesGestion'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
@@ -24,6 +24,7 @@ import { useParametroPanel } from '../base/PanelLateral/useParametroPanel'
 import { rutaMapa } from '../mapa/enlaces'
 import Cifras from './Cifras'
 import SeccionExportaciones from './Exportar/SeccionExportaciones'
+import { INFORMES } from './catalogoInformes'
 import { PARAMETRO_INDICADOR, PARAMETRO_INFORME } from './enlaces'
 import Informes from './Informes/Informes'
 import { esInformeEnLinea } from './Informes/informesEnLinea'
@@ -56,27 +57,9 @@ function Encabezado({ periodo }: { periodo?: string }) {
   )
 }
 
-/** Nombre del contenido que hace fundido cruzado al cambiar de informe; cabecera y selector no se mueven. */
-const CONTENIDO_INFORME = 'contenido-informe'
-
-/** Informe elegido con `?informe=` (RD-60): selector arriba y el informe debajo, con sus filtros en la URL. */
-function ReportesInforme({ clave }: { clave: string }) {
+/** Panel de cifras (RF-REP-001): sin `?informe=` en línea. */
+function ContenidoPanel({ filtrosPanel, periodo }: { filtrosPanel: FiltrosPanel; periodo: string }) {
   const { search } = useLocation()
-  return (
-    <div className={estilos.pagina}>
-      <Encabezado />
-      <SelectorInformes busqueda={search} elegido={clave} />
-      <div style={estiloTransicion(CONTENIDO_INFORME)} /* estilo-calculado */>
-        <Informes clave={clave} />
-      </div>
-      <SeccionExportaciones />
-    </div>
-  )
-}
-
-function ReportesContenido() {
-  const { search } = useLocation()
-  const filtrosPanel = useFiltrosPanel()
   const { filtros, claveAplicados, hayFiltros, consulta: parametros, limpiar } = filtrosPanel
   const catalogos = useCatalogosFiltros()
   const indicador = useParametroPanel(PARAMETRO_INDICADOR)
@@ -96,7 +79,6 @@ function ReportesContenido() {
       catalogos.reintentar()
     },
   }
-  const periodo = `Del ${formatearFecha(filtros.desde)} al ${formatearFecha(filtros.hasta)}`
   const nombreAbierto = consulta.datos?.indicadores.find((r) => r.clave === indicador.valor)?.indicador.nombre
   // Con los cinco indicadores vacíos, `PlantillaReporte` solo pinta el vacío: las notas que explican el motivo van
   // debajo (como en el panel actual). Misma condición que su estado vacío.
@@ -107,9 +89,7 @@ function ReportesContenido() {
   const mapa = `${rutaMapa()}?${new URLSearchParams({ capa: 'atenciones', desde: filtros.desde, hasta: filtros.hasta })}`
 
   return (
-    <div className={estilos.pagina}>
-      <Encabezado periodo={periodo} />
-      <SelectorInformes busqueda={search} elegido={informe.valor} />
+    <>
       <PlantillaReporte
         consulta={consultaConCatalogos}
         filtros={
@@ -197,6 +177,32 @@ function ReportesContenido() {
         onCerrar={indicador.cerrar}
       />
       {indicador.valor === null && <PanelInforme clave={informe.valor} onCerrar={informe.cerrar} />}
+    </>
+  )
+}
+
+/**
+ * Encabezado y selector se montan una sola vez: al pasar del panel a un informe solo cambia el contenido, así que el foco
+ * sigue en el enlace elegido y la lente se desliza sin que se mueva el resto.
+ */
+function ReportesContenido({ enLinea }: { enLinea: string | null }) {
+  const { search } = useLocation()
+  const filtrosPanel = useFiltrosPanel()
+  const { filtros } = filtrosPanel
+  const periodo = `Del ${formatearFecha(filtros.desde)} al ${formatearFecha(filtros.hasta)}`
+  return (
+    <div className={estilos.pagina}>
+      {/* Cada informe tiene su propio periodo: el del panel solo se enseña con el panel. */}
+      <Encabezado periodo={enLinea ? undefined : periodo} />
+      <SelectorInformes busqueda={search} elegido={new URLSearchParams(search).get(PARAMETRO_INFORME)} />
+      {enLinea ? (
+        <>
+          <Informes clave={enLinea} />
+          <SeccionExportaciones />
+        </>
+      ) : (
+        <ContenidoPanel filtrosPanel={filtrosPanel} periodo={periodo} />
+      )}
     </div>
   )
 }
@@ -205,7 +211,10 @@ export default function ReportesPage() {
   const sesion = useSesionActiva()
   const [parametros] = useSearchParams()
   const informe = parametros.get(PARAMETRO_INFORME)
-  usePaginaActual(TITULO, [{ texto: TITULO }])
+  // Con un indicador abierto manda su panel; si no, los informes de RD-60 se pintan dentro de la vista.
+  const enLinea = esInformeEnLinea(informe) && !parametros.has(PARAMETRO_INDICADOR) ? informe : null
+  // El informe incrustado pone su título en la pestaña del navegador; al volver al panel se restablece.
+  usePaginaActual(enLinea ? (INFORMES.find((i) => i.clave === enLinea)?.titulo ?? TITULO) : TITULO, [{ texto: TITULO }])
   if (!puede(sesion, PERMISOS.consultarIndicadores)) {
     return (
       <div className={estilos.pagina}>
@@ -217,7 +226,5 @@ export default function ReportesPage() {
       </div>
     )
   }
-  // Con un indicador abierto manda su panel; si no, los informes de este ticket se pintan dentro de la vista.
-  if (esInformeEnLinea(informe) && !parametros.has(PARAMETRO_INDICADOR)) return <ReportesInforme clave={informe} />
-  return <ReportesContenido />
+  return <ReportesContenido enLinea={enLinea} />
 }

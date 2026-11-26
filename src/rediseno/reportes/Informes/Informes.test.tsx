@@ -187,10 +187,28 @@ describe('Reportes · informes de corte, personal y atenciones (RD-60)', () => {
     expect(url).toContain('desde=2026-11-01')
     expect(vi.mocked(obtenerDistribucionPersonal).mock.calls[0][0]).toMatchObject({ desde: '2026-11-01' })
 
+    // La lente pasa al informe elegido y el foco sigue en su enlace.
+    const distribucion = screen.getByRole('link', {
+      name: 'Distribución del personal',
+    })
+    expect(distribucion.getAttribute('aria-current')).toBe('page')
+    expect(distribucion.querySelector<HTMLElement>('[aria-hidden="true"]')?.style.viewTransitionName).toBe(
+      'lente-informes',
+    )
+    expect(document.activeElement).toBe(distribucion)
+
     vi.mocked(obtenerPanel).mockReturnValue(new Promise(() => undefined))
-    await usuario.click(screen.getByRole('link', { name: 'Panel' }))
+    const panel = screen.getByRole('link', { name: 'Panel' })
+    await usuario.click(panel)
     await waitFor(() => expect(screen.getByLabelText('url').textContent).not.toContain('informe'))
     expect(screen.getByLabelText('url').textContent).toContain('desde=2026-11-01')
+    // El selector no se vuelve a montar al pasar al panel: el foco no se pierde.
+    expect(screen.getByRole('link', { name: 'Panel' })).toBe(panel)
+    expect(document.activeElement).toBe(panel)
+    expect(panel.getAttribute('aria-current')).toBe('page')
+    expect(obtenerPanel).toHaveBeenCalled()
+    // El informe incrustado cambia el título de la pestaña; el panel lo restablece.
+    expect(document.title.startsWith('Reportes ·')).toBe(true)
   })
 
   it('los filtros del informe viven en la URL y mandan sobre los predeterminados', async () => {

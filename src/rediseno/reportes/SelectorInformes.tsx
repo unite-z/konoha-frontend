@@ -9,14 +9,21 @@ import estilos from './ReportesPage.module.css'
 
 /** Nombre de la lente que se desliza hasta el informe elegido (los nombres de la base no la incluyen). */
 export const LENTE_INFORMES = 'lente-informes'
+/** Fila del selector: se queda quieta mientras la lente se desliza (`ReportesPage.module.css`). */
+export const SELECTOR_INFORMES = 'selector-informes'
 
 /**
  * Selector de informe (M6-01, RD-60): una fila de enlaces con `?informe=` que conserva los filtros. «Panel» vuelve a
- * las cifras. La lente es el fondo del enlace elegido: con View Transitions se desliza de uno a otro.
+ * las cifras. La lente es una píldora bajo el texto del enlace elegido: con View Transitions se desliza de uno a otro sin
+ * deformar el texto.
  */
 export function SelectorInformes({ busqueda, elegido }: { busqueda: string; elegido: string | null }) {
   return (
-    <nav className={estilos.selector} aria-label="Informes">
+    <nav
+      className={estilos.selector}
+      aria-label="Informes"
+      style={estiloTransicion(SELECTOR_INFORMES)} /* estilo-calculado */
+    >
       <ul className={estilos.informes}>
         <li>
           <EnlaceInforme to={rutaReportes({ filtros: busqueda })} activo={elegido === null} replace={elegido !== null}>
@@ -45,15 +52,17 @@ function EnlaceInforme({
   activo,
   children,
   ...props
-}: { activo: boolean } & Omit<ComponentProps<typeof EnlaceTransicion>, 'className' | 'style' | 'aria-current'>) {
+}: { activo: boolean } & Omit<ComponentProps<typeof EnlaceTransicion>, 'className' | 'aria-current'>) {
   return (
-    <EnlaceTransicion
-      {...props}
-      className={estilos.informe}
-      aria-current={activo ? 'page' : undefined}
-      style={activo ? estiloTransicion(LENTE_INFORMES) : undefined} /* estilo-calculado */
-    >
-      {children}
+    <EnlaceTransicion {...props} className={estilos.informe} aria-current={activo ? 'page' : undefined}>
+      {activo && (
+        <span
+          className={estilos.lente}
+          aria-hidden="true"
+          style={estiloTransicion(LENTE_INFORMES)} /* estilo-calculado */
+        />
+      )}
+      <span className={estilos.textoInforme}>{children}</span>
     </EnlaceTransicion>
   )
 }

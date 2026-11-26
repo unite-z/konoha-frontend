@@ -2,6 +2,7 @@
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoVacio from '@/design-system/EstadoVacio'
+import { estiloTransicion } from '@/rediseno/base/movimiento'
 import { INFORMES } from '../catalogoInformes'
 import estilos from './Informes.module.css'
 
@@ -20,6 +21,9 @@ const COMPONENTES: Readonly<Record<string, LazyExoticComponent<ComponentType>>> 
   'atenciones-espacio-sector': AtencionesEspacioSector,
 }
 
+/** Nombre de la tarjeta del informe: al cambiar de informe hace fundido cruzado; cabecera y selector no se mueven. */
+export const CONTENIDO_INFORME = 'contenido-informe'
+
 /** Informe elegido con `?informe=`, en una tarjeta de vidrio bajo el selector. */
 export default function Informes({ clave }: { clave: string }) {
   const Informe = COMPONENTES[clave]
@@ -28,7 +32,11 @@ export default function Informes({ clave }: { clave: string }) {
     return <EstadoVacio nivel={2} titulo="No existe ese informe" descripcion="Elige uno de la lista." />
   }
   return (
-    <section className={estilos.informe} aria-labelledby="titulo-informe">
+    <section
+      className={estilos.informe}
+      aria-labelledby="titulo-informe"
+      style={estiloTransicion(CONTENIDO_INFORME)} /* estilo-calculado */
+    >
       <header className={estilos.cabecera}>
         <h2 id="titulo-informe" className={estilos.titulo}>
           {datos.titulo}

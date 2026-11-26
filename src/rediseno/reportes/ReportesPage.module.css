@@ -97,6 +97,7 @@
 }
 
 .informe {
+  position: relative;
   display: block;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
@@ -109,10 +110,32 @@
   background: var(--vidrio-relleno);
 }
 
-/* La lente: el fondo del enlace elegido, que se desliza al cambiar de informe. */
-.informe[aria-current] {
+.informe:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 1px;
+}
+
+/* La lente: píldora bajo el texto del enlace elegido, que se desliza al cambiar de informe. */
+.lente {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: var(--vidrio-relleno-denso);
   box-shadow: var(--vidrio-sombra);
+}
+
+.textoInforme {
+  position: relative;
+}
+
+/* El selector no se mueve al cambiar de informe: se muestra ya el nuevo y solo se desliza la lente. */
+::view-transition-group(selector-informes),
+::view-transition-new(selector-informes) {
+  animation: none;
+}
+
+::view-transition-old(selector-informes) {
+  display: none;
 }
 
 /* Los gráficos entran con fundido; con «reducir movimiento» aparecen directamente. */
