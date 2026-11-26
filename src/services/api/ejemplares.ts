@@ -133,6 +133,20 @@ export function listarHistorialEjemplar(id: number, fuente: FuenteHistorialEjemp
     base: BASE,
   })
 }
+/** Actividad de campo vinculada al ejemplar (`GET ejemplares/{id}/historial-actividades`, `EjemplaresService.Intervencion`). */
+export interface ActividadEjemplar {
+  actividad_id: number
+  fecha_hora_actividad: InstanteIso
+  tipo_actividad: string
+  observaciones: string | null
+  pendiente_vinculacion: boolean
+  estado_actividad: string | null
+}
+
+export function listarHistorialActividadesEjemplar(id: number, signal?: AbortSignal) {
+  return solicitarTercerizados<ActividadEjemplar[]>(`ejemplares/${id}/historial-actividades`, { signal, base: BASE })
+}
+
 export function quitarPlacaAntigua(id: number): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}/placa-antigua`, { metodo: 'DELETE', base: BASE })
 }

@@ -47,6 +47,20 @@ vi.mock('@/services/api/catalogosInventario', () => ({
   listarCuarteles: api.listarCuarteles,
 }))
 vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => api.permisos }))
+// La ficha se prueba en `FichaEjemplar.test.tsx`; aquí solo importa cuándo se abre y con qué.
+vi.mock('./FichaEjemplar/FichaEjemplar', () => ({
+  default: (props: {
+    ejemplarId: number
+    inicial: { codigo: string } | null
+    propuestaMuerto?: boolean
+    onCerrar: () => void
+  }) => (
+    <div role="dialog" aria-label={`Ficha ${props.inicial?.codigo ?? props.ejemplarId}`}>
+      {props.propuestaMuerto && <p>Propuesta de planta muerta</p>}
+      <button onClick={props.onCerrar}>Cerrar ficha</button>
+    </div>
+  ),
+}))
 vi.mock('../base/Escenario', () => ({
   useVistaDeMapa: (opciones: { areaSeleccionada?: string; onSeleccionarArea: (a: unknown) => void }) => {
     api.vista(opciones.areaSeleccionada)
@@ -246,6 +260,20 @@ describe('Mapa (RD-17)', () => {
     await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12&ejemplar=9'))
     expect(await screen.findByRole('dialog', { name: /ARB-009/ })).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Bosque Húmedo', level: 2 })).toBeTruthy()
+  })
+
+  it('`?area=&ejemplar=&propuesta=muerto` abre la ficha con el ejemplar de la lista; cerrarla limpia la URL', async () => {
+    pagina(`${RUTA_MAPA}?area=12&ejemplar=9&propuesta=muerto`)
+    expect(await screen.findByRole('dialog', { name: `Ficha ${ejemplar.codigo}` })).toBeTruthy()
+    expect(screen.getByText('Propuesta de planta muerta')).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar ficha' }))
+    await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12'))
+  })
+
+  it('`?ejemplar=` sin área no abre la ficha: vive sobre el área', async () => {
+    pagina(`${RUTA_MAPA}?ejemplar=9`)
+    expect(await screen.findByRole('heading', { name: 'Mapa del campus' })).toBeTruthy()
+    expect(screen.queryByRole('dialog', { name: /Ficha/ })).toBeNull()
   })
 
   it('un área sin contorno pide sus ejemplares por área', async () => {

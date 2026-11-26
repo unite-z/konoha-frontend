@@ -16,6 +16,8 @@ export const PARAMETROS_MAPA = {
   registrar: 'registrar',
   /** Ejemplar con la ficha flotante abierta sobre el área (`&ejemplar=<id>`, RD-21). */
   ejemplar: 'ejemplar',
+  /** `muerto`: la ficha abre en Situación con la propuesta de «planta muerta» lista para confirmar (RD-21, desde una intervención). */
+  propuesta: 'propuesta',
   /** Área en edición (`&editar=1`); la edición la construye RD-19. */
   editar: 'editar',
 } as const
@@ -47,4 +49,12 @@ export function rutaMapaEjemplar(areaId: number | string, ejemplarId: number | s
 /** Mapa con el área abierta en edición (`?area=<id>&editar=1`, RD-19). */
 export function rutaMapaEditarArea(areaId: number | string): string {
   return `${rutaMapaArea(areaId)}&${PARAMETROS_MAPA.editar}=1`
+}
+
+/** Valor de `propuesta` que abre la confirmación de «planta muerta» en la ficha del ejemplar. */
+export const PROPUESTA_PLANTA_MUERTA = 'muerto'
+
+/** Mapa con la ficha del ejemplar abierta sobre su área y la propuesta de «planta muerta» por confirmar. */
+export function rutaMapaEjemplarMuerto(areaId: number | string, ejemplarId: number | string): string {
+  return `${rutaMapaEjemplar(areaId, ejemplarId)}&${PARAMETROS_MAPA.propuesta}=${PROPUESTA_PLANTA_MUERTA}`
 }

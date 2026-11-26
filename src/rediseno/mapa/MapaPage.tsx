@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { PERMISOS } from '@/config/permisosCore'
 import { tiene } from '@/config/permisosSesion'
@@ -24,15 +24,15 @@ import CapaMarcadores from '../base/MapaCampus/CapaMarcadores'
 import type { MarcadorMapa } from '../base/MapaCampus/marcadores'
 import PanelLateral from '../base/PanelLateral/PanelLateral'
 import { useEsMovil } from '../base/PanelLateral/useEsMovil'
-import { useFocoConLaVista } from '../base/movimiento'
+import { panel, useFocoConLaVista } from '../base/movimiento'
 import BuscadorMapa, { MINIMO_BUSQUEDA } from './BuscadorMapa'
 import FiltrosMapaCampos, { type OpcionesFiltros } from './FiltrosMapa'
 import LeyendaUsos from './LeyendaUsos'
 import ListaAreas from './ListaAreas'
 import RegistroAreaInterino from './RegistroAreaInterino'
 import { AREAS_POR_PAGINA, clavesDeFiltros, filtrosDeUrl, hayFiltros, listarAreasDelMapa } from './areasMapa'
-import { PARAMETROS_MAPA } from './enlaces'
-import FichaEjemplarFlotante from './PanelArea/FichaEjemplarFlotante'
+import { PARAMETROS_MAPA, PROPUESTA_PLANTA_MUERTA } from './enlaces'
+import FichaEjemplar from './FichaEjemplar/FichaEjemplar'
 import PanelArea from './PanelArea/PanelArea'
 import { useLlegadaCamara } from './PanelArea/useLlegadaCamara'
 import { coloresPorUso, indicarPoligonos, paginaDe } from './seleccion'
@@ -175,7 +175,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
     },
     [cambiar, hayAbierta, indice, quitarSeleccion, seleccionarArea],
   )
-  useVistaDeMapa({
+  const mapaVivo = useVistaDeMapa({
     areaSeleccionada: mapaId,
     onSeleccionarArea: alSeleccionarEnMapa,
   })
@@ -189,8 +189,18 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
         : listarEjemplaresDeArea(areaAbierta ?? 0, signal),
   )
   const llegoLaCamara = useLlegadaCamara(areaAbierta === null ? null : String(areaAbierta))
-  const ejemplarParam = Number(parametros.get(PARAMETROS_MAPA.ejemplar)) || null
-  const ejemplarAbierto = ejemplaresArea.datos?.find((e) => e.id === ejemplarParam) ?? null
+  // La ficha vive sobre un área abierta (`?area=<id>&ejemplar=<id>`): el ejemplar sale de su lista.
+  const ejemplarParam = areaAbierta === null ? null : Number(parametros.get(PARAMETROS_MAPA.ejemplar)) || null
+  const ejemplarAbierto =
+    ejemplaresArea.datos?.find((e) => e.id === ejemplarParam) ??
+    ejemplares.datos?.find((e) => e.id === ejemplarParam) ??
+    null
+  // «Atrás» o cerrar la ficha deshace el acercamiento al árbol: la cámara vuelve al área que sigue abierta.
+  const ejemplarPrevio = useRef(ejemplarParam)
+  useEffect(() => {
+    if (ejemplarPrevio.current !== null && ejemplarParam === null && mapaId !== undefined) mapaVivo.volarA(mapaId)
+    ejemplarPrevio.current = ejemplarParam
+  }, [ejemplarParam, mapaId, mapaVivo])
 
   const marcadores = useMemo<MarcadorMapa[]>(() => {
     // Con un área abierta, los marcadores son sus ejemplares con coordenadas; si no, los de la búsqueda.
@@ -206,13 +216,22 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
       }))
   }, [areaAbierta, llegoLaCamara, ejemplaresArea.datos, ejemplares.datos])
   const abrirFichaEjemplar = useCallback(
-    (ejemplarId: number) => cambiar({ [PARAMETROS_MAPA.ejemplar]: String(ejemplarId) }, ejemplarParam !== null),
+    (ejemplarId: number, viewTransition = false) =>
+      cambiar({ [PARAMETROS_MAPA.ejemplar]: String(ejemplarId) }, ejemplarParam !== null, viewTransition),
     [cambiar, ejemplarParam],
   )
   const alActivarMarcador = useCallback(
     (marcador: MarcadorMapa) => {
       const propio = ejemplaresArea.datos?.find((e) => `ejemplar-${e.id}` === marcador.id)
-      if (areaAbierta !== null && propio) return abrirFichaEjemplar(propio.id)
+      if (areaAbierta !== null && propio) {
+        // El marcador tocado es el elemento compartido que se convierte en la ficha.
+        const boton = document.activeElement
+        if (boton instanceof HTMLElement && boton.tagName === 'BUTTON') {
+          boton.style.viewTransitionName = panel(`ejemplar-${propio.id}`)
+          setTimeout(() => boton.style.removeProperty('view-transition-name'), 1000)
+        }
+        return abrirFichaEjemplar(propio.id, true)
+      }
       const ejemplar = ejemplares.datos?.find((e) => `ejemplar-${e.id}` === marcador.id)
       if (ejemplar?.area_verde_id != null) seleccionarArea(ejemplar.area_verde_id)
     },
@@ -275,7 +294,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
   }
 
   return (
-    <div className={estilos.escena} data-mapa-libre>
+    <div className={estilos.escena} data-mapa-libre data-ficha-abierta={ejemplarParam !== null || undefined}>
       <h1 ref={foco} tabIndex={-1} className="sr-only">
         Mapa del campus
       </h1>
@@ -417,10 +436,24 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           onCerrar={quitarSeleccion}
         />
       )}
-      <FichaEjemplarFlotante
-        ejemplar={areaAbierta === null ? null : ejemplarAbierto}
-        onCerrar={() => cambiar({ [PARAMETROS_MAPA.ejemplar]: null })}
-      />
+      {ejemplarParam !== null && !registrando && (
+        <FichaEjemplar
+          key={ejemplarParam}
+          ejemplarId={ejemplarParam}
+          inicial={ejemplarAbierto}
+          lista={{
+            cargando: ejemplaresArea.estado === 'cargando' || ejemplaresArea.estado === 'inactivo',
+            error: ejemplaresArea.error,
+            reintentar: ejemplaresArea.reintentar,
+          }}
+          propuestaMuerto={parametros.get(PARAMETROS_MAPA.propuesta) === PROPUESTA_PLANTA_MUERTA}
+          onCerrar={() => cambiar({ [PARAMETROS_MAPA.ejemplar]: null, [PARAMETROS_MAPA.propuesta]: null }, true, true)}
+          onActualizado={() => {
+            ejemplaresArea.reintentar()
+            ejemplares.reintentar()
+          }}
+        />
+      )}
     </div>
   )
 }
