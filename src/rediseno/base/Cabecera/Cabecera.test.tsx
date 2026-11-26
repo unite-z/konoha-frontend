@@ -6,6 +6,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PERMISOS } from '@/config/permisosCore'
 import type { SesionCore } from '@/types/core'
+import { seccionCampo } from '@/rediseno/campo/seccion'
+import { seccionIncidencias } from '@/rediseno/incidencias/seccion'
 import type { SeccionRediseno } from '@/rediseno/tipos'
 import BarraInferior from '../BarraInferior/BarraInferior'
 import Cabecera from './Cabecera'
@@ -224,12 +226,12 @@ describe('Barra inferior única (RD-04)', () => {
     montarBarra('/n/campo/hoy', [campo])
     const barra = within(screen.getByRole('navigation', { name: 'Navegación principal' }))
     expect(barra.getAllByRole('link').map((a) => a.textContent)).toEqual(['Ruta de hoy', 'Encargos', 'Más'])
-    expect(barra.getByRole('link', { name: 'Más' }).getAttribute('href')).toBe('/n/cuenta')
+    expect(barra.getByRole('link', { name: 'Más' }).getAttribute('href')).toBe('/n/campo/mas')
   })
 
   it('mientras campo no declara entradas, quien es de campo ve sus secciones y no se queda solo con «Más»', () => {
     estado.permisos = C
-    montarBarra('/n/incidencias')
+    montarBarra('/n/incidencias', [{ ...seccionCampo, movil: [] }, seccionIncidencias])
     const barra = within(screen.getByRole('navigation', { name: 'Navegación principal' }))
     expect(barra.getAllByRole('link').map((a) => a.textContent)).toEqual(['Incidencias'])
   })
