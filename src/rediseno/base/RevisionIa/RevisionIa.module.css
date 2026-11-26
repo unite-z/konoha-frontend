@@ -1,0 +1,49 @@
+/* Núcleo de RevisionIa: tarjeta de vidrio «Konoha propone» (Liquid Glass, AV-413). */
+.revision,
+.elementos,
+.vidrio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.vidrio {
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.encabezado {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+}
+
+.linea,
+.traza {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.botonVidrio {
+  background: var(--vidrio-relleno-lente);
+  backdrop-filter: var(--vidrio-desenfoque);
+}
+
+.progreso {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+}
