@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PERMISOS } from '@/config/permisosCore'
 import type { SesionCore } from '@/types/core'
-import type { SeccionRediseno } from '../../tipos'
+import type { SeccionRediseno } from '@/rediseno/tipos'
 import BarraInferior from '../BarraInferior/BarraInferior'
 import Cabecera from './Cabecera'
 

@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { Ellipsis } from 'lucide-react'
-import { rutaCuenta } from '../../cuenta/enlaces'
-import type { SeccionRediseno } from '../../tipos'
+import { rutaCuenta } from '@/rediseno/cuenta/enlaces'
+import type { SeccionRediseno } from '@/rediseno/tipos'
 
 export interface EntradaBarra {
   clave: string

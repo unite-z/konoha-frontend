@@ -4,6 +4,8 @@
 
 @media (max-width: 767px) {
   .barra {
+    --radius-barra: calc(var(--radius-lg) * 2);
+
     position: fixed;
     inset-inline: var(--space-2);
     inset-block-end: calc(var(--space-2) + env(safe-area-inset-bottom));
@@ -11,7 +13,7 @@
     display: flex;
     justify-content: space-around;
     padding: var(--space-1);
-    border-radius: calc(var(--radius-lg) * 2);
+    border-radius: var(--radius-barra);
     border-top: var(--vidrio-borde);
     border-left: var(--vidrio-borde);
     background: var(--vidrio-relleno-denso);

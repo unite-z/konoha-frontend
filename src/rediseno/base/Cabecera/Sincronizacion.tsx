@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCola, porSincronizar } from '@/sincronizacion/cola'
-import { rutaCuenta } from '../../cuenta/enlaces'
+import { rutaCuenta } from '@/rediseno/cuenta/enlaces'
 import { EnlaceTransicion } from '../movimiento'
 import estilos from './Cabecera.module.css'
 
