@@ -1,0 +1,150 @@
+/* PanelLateral (RD-09): vidrio denso, radio grande y sin bordes de color (guía Liquid Glass). */
+.panel {
+  /* TODO(AV-429): sustituir por --movimiento-normal y --curva-salida cuando los tokens de movimiento estén en main. */
+  --panel-duracion: 280ms;
+  --panel-curva: cubic-bezier(0.22, 1, 0.36, 1);
+  --radius-panel: calc(var(--radius-lg) * 2);
+
+  position: fixed;
+  inset-block: var(--space-6);
+  inset-inline-end: var(--space-6);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(28rem, calc(100vw - 2 * var(--space-6)));
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno-denso);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+  color: var(--color-text-primary);
+}
+
+.panel:focus-visible {
+  outline: none;
+}
+
+/* Hoja inferior a pantalla completa en móvil. */
+.panel[data-presentacion='hoja'] {
+  inset: 0;
+  width: 100%;
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel[data-presentacion='lateral'] {
+    animation: entrar-lateral var(--panel-duracion) var(--panel-curva);
+  }
+
+  .panel[data-presentacion='hoja'] {
+    animation: entrar-hoja var(--panel-duracion) var(--panel-curva);
+  }
+}
+
+@keyframes entrar-lateral {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + var(--space-6)));
+  }
+}
+
+@keyframes entrar-hoja {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-6) var(--space-3);
+}
+
+.titulos {
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  overflow-wrap: anywhere;
+}
+
+.subtitulo {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+}
+
+.etiquetaEdicion {
+  font-size: var(--type-etiqueta-size);
+  font-weight: var(--type-etiqueta-weight);
+  color: var(--color-text-primary);
+}
+
+/* Pestañas: cápsula de vidrio con la activa como lente. */
+.pestanas {
+  display: flex;
+  gap: var(--space-1);
+  margin: 0 var(--space-6) var(--space-3);
+  padding: var(--space-1);
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--space-6));
+  overflow-x: auto;
+  border-radius: var(--radius-full);
+  background: var(--vidrio-relleno);
+}
+
+.pestana {
+  min-height: var(--web-control-compact);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--type-cuerpo-size);
+  font-weight: var(--type-cuerpo-medio-weight);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lente {
+  background: var(--vidrio-relleno-lente);
+  box-shadow: var(--vidrio-sombra-lente);
+  color: var(--color-text-primary);
+}
+
+.cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-3) var(--space-6) var(--space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.cuerpo > * {
+  flex-shrink: 0;
+}
+
+.pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* En la hoja móvil, el pie no queda bajo la barra del sistema (iOS). */
+.panel[data-presentacion='hoja'] .pie {
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+}
