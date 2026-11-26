@@ -10,6 +10,7 @@ import Estado from '@/design-system/Estado'
 import GrupoOpciones, { type OpcionGrupo } from '@/design-system/GrupoOpciones'
 import Tarjeta from '@/design-system/Tarjeta'
 import { usePaginaActual } from '@/hooks/usePaginaActual'
+import InterruptorDisenoNuevo from '@/rediseno/base/InterruptorDisenoNuevo'
 import { MIGA_CONFIGURACION } from './ConfiguracionPage'
 import { guardarAparienciaCuenta } from '@/services/api/core'
 import { cambiarApariencia, leerApariencia, type Acento, type Apariencia, type Tema } from '@/utils/apariencia'
@@ -71,6 +72,7 @@ export default function AparienciaPage() {
             valor={apariencia.acento}
             onCambiar={(acento) => cambiar({ acento })}
           />
+          <InterruptorDisenoNuevo />
           {sinGuardar && (
             <AvisoEnLinea tono="advertencia">
               No pudimos guardarla en tu cuenta: se aplicó solo en este navegador. Se guardará la próxima vez que la

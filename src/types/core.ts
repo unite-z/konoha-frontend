@@ -19,12 +19,16 @@ export interface SesionCore {
   expira: InstanteIso | null
   /** Apariencia guardada en la cuenta (AV-391); `null` o ausente si nunca la eligió. */
   apariencia?: AparienciaCuenta | null
+  /** Preferencia «Diseño nuevo» de la cuenta (AV-414): `null` si nunca eligió. Ausente si el backend aún no la envía. */
+  diseno_nuevo?: boolean | null
 }
 
 /** Tema y color de acento elegidos en Configuración → Apariencia (`PUT auth/apariencia/`, AV-391). */
 export interface AparienciaCuenta {
   tema: 'claro' | 'calido' | 'oscuro' | 'sistema'
   acento: 'institucional' | 'azul' | 'verde' | 'morado' | 'magenta'
+  /** Solo en el `PUT` y solo si la sesión trajo el campo (AV-414). */
+  diseno_nuevo?: boolean
 }
 
 export interface Credenciales {

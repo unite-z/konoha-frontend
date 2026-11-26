@@ -7,6 +7,7 @@
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
+import { PuertaRediseno, rutaRediseno } from '../rediseno/rutas'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
 import AparienciaPage from '../pages/configuracion/AparienciaPage'
@@ -135,10 +136,11 @@ export const router = createBrowserRouter([
     element: <RutaProtegida />,
     errorElement: <ErrorCargaPantalla />, // AV-367
     children: [
+      rutaRediseno, // AV-420: rutas del diseño nuevo, bajo /n
       {
         element: <LayoutOficina />,
         children: [
-          { path: '/', element: <InicioRol /> },
+          { path: '/', element: <PuertaRediseno><InicioRol /></PuertaRediseno> },
           { path: RUTAS_CORE.pendientes, element: <PendientesPage /> }, // RF-T-012: cualquier sesión
           { path: RUTAS_CORE.configuracion, element: <ConfiguracionUsuarioPage /> }, // AV-397: panel de módulos
           { path: RUTAS_CORE.configuracionApariencia, element: <AparienciaPage /> }, // AV-389: cualquier sesión
