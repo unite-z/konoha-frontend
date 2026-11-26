@@ -117,6 +117,12 @@ function Detalle({
         <dd>{encargo.periodicidad}</dd>
         {encargo.periodicidad !== 'Directo' && (
           <>
+            {encargo.fecha_reunion && (
+              <>
+                <dt>Reunión</dt>
+                <dd>{formatearFecha(encargo.fecha_reunion)}</dd>
+              </>
+            )}
             <dt>Periodo</dt>
             <dd>
               {formatearFecha(encargo.fecha_inicio)} — {formatearFecha(encargo.fecha_fin)}
@@ -149,21 +155,23 @@ function Detalle({
 export default function PanelEncargo(props: PanelEncargoProps) {
   const { id, cargados, cuadrillas, puedeMover, puedeVerIncidencia, onCerrar, onMover, onCambio } = props
   const permisos = usePermisos()
-  const [actualizado, setActualizado] = useState<EncargoCampo | null>(null)
+  // Encargo recién guardado y la copia que tenía la vista entonces: manda hasta que la vista traiga otra más nueva.
+  const [actualizado, setActualizado] = useState<{ antes: EncargoCampo | null; despues: EncargoCampo } | null>(null)
   const [editando, setEditando] = useState(false)
   const local = cargados?.find((e) => e.id === id) ?? null
   // Solo se pide aparte el encargo que no está en la semana cargada (enlace directo a otro periodo o desde la lista).
   const remoto = useConsulta(local || cargados === null ? null : `rd-encargo:${id}`, (signal) =>
     obtenerEncargo(id, signal),
   )
-  const reciente = actualizado?.id === id ? actualizado : null
-  const encargo = reciente ?? local ?? remoto.datos
+  const cargado = local ?? remoto.datos
+  const vigente = actualizado?.despues.id === id && (cargado === null || cargado === actualizado.antes)
+  const encargo = vigente ? actualizado.despues : cargado
 
   /** Tras guardar, se pide el encargo ya cambiado y su etiqueta de estado se anima al aparecer. */
   async function refrescar(mensaje: string) {
     try {
       const nuevo = await obtenerEncargo(id)
-      transicionar(() => setActualizado(nuevo))
+      transicionar(() => setActualizado({ antes: cargado, despues: nuevo }))
     } catch {
       // Sin el encargo nuevo se queda el anterior; la vista recarga la semana y lo corrige.
     }

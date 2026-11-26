@@ -342,6 +342,37 @@ describe('panel del encargo', () => {
     expect(await screen.findByText('El estado del encargo se guardó correctamente.')).toBeTruthy()
   })
 
+  it('tras cambiar el estado, la semana recargada manda sobre la copia guardada', async () => {
+    api.permisos = CAPATAZ
+    let guardado = false
+    api.todosCampo.mockImplementation((ruta: string) =>
+      ruta.startsWith('catalogos') || ruta === 'cuadrillas/'
+        ? listados(ruta)
+        : Promise.resolve([guardado ? { ...podar, estado: 'En curso', descripcion: 'Podar el seto norte' } : podar]),
+    )
+    api.campoApi.mockImplementation((ruta: string, opciones?: { metodo?: string }) => {
+      if (ruta === 'encargos/5/estado/' && opciones?.metodo === 'POST') {
+        guardado = true
+        return Promise.resolve({})
+      }
+      if (ruta === 'encargos/5/') return Promise.resolve(guardado ? { ...completo, estado: 'En curso' } : completo)
+      return Promise.resolve({})
+    })
+    const usuario = userEvent.setup()
+    montar(`/n/planificacion/cuadrillas${SEMANA}&encargo_id=5`)
+    await abrirPestana('Seguimiento')
+    await usuario.click(await screen.findByRole('button', { name: 'Cambiar estado' }))
+    const dialogo = await screen.findByRole('dialog', { name: 'Seguimiento del encargo' })
+    await usuario.selectOptions(await within(dialogo).findByLabelText(/Nuevo estado/), 'En curso')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar estado' }))
+    const etiqueta = () => document.querySelector<HTMLElement>('[style*="estado-encargo"]')
+    await waitFor(() => expect(etiqueta()?.textContent).toBe('En curso'))
+    await usuario.click(screen.getByRole('tab', { name: 'Detalle' }))
+    const panel = screen.getByRole('heading', { name: 'Encargo 5' }).closest('aside') as HTMLElement
+    expect(await within(panel).findByText('Podar el seto norte')).toBeTruthy()
+    expect(etiqueta()?.textContent).toBe('En curso')
+  })
+
   it('sin permiso de cambiar estado no hay «Cambiar estado»', async () => {
     api.permisos = LECTOR
     montar(`/n/planificacion/cuadrillas${SEMANA}&encargo_id=5`)
