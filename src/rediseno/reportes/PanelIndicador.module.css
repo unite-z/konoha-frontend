@@ -1,0 +1,36 @@
+.contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.titulo {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.ayuda {
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+/* Los gráficos y la tabla entran con fundido; con «reducir movimiento» aparecen directamente. */
+@media (prefers-reduced-motion: no-preference) {
+  .entra {
+    animation: entra var(--movimiento-normal) var(--curva-salida);
+  }
+}
+
+@keyframes entra {
+  from {
+    opacity: 0;
+  }
+}

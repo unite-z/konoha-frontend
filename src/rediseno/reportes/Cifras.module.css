@@ -1,0 +1,62 @@
+/* Cifras de Reportes: tarjetas de vidrio sobre el fondo liso. */
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-4);
+  --radius-vidrio: calc(var(--radius-lg) * 2);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-vidrio);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.cifra:hover,
+.cifra[aria-current] {
+  background: var(--vidrio-relleno-denso);
+}
+
+.etiqueta {
+  color: var(--color-text-secondary);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.valor {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.unidad {
+  color: var(--color-text-secondary);
+  font-size: var(--type-cuerpo-size);
+  font-weight: var(--type-cuerpo-weight);
+}
+
+.sinDatos {
+  color: var(--color-text-secondary);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+}
+
+.nota {
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
