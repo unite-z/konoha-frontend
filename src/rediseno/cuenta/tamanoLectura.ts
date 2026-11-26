@@ -1,8 +1,8 @@
 /**
  * Preferencia «Lectura» (P-16): tamaño del texto, guardado solo en este navegador. Se aplica como atributo de
- * `<html>` (`data-lectura-tamano`), que `tamanoLectura.css` traduce a escala. Sin almacenamiento, vale hasta recargar.
+ * `<html>` (`data-lectura-tamano`), que `tamano-lectura.css` traduce a escala. Sin almacenamiento, vale hasta recargar.
  */
-import './tamanoLectura.css'
+import './tamano-lectura.css'
 
 export type TamanoLectura = 'normal' | 'grande' | 'muy-grande'
 
