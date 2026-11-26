@@ -27,7 +27,7 @@ export const CLAVES_FILTRO: readonly Exclude<ParametroAtenciones, 'pagina'>[] = 
 /** `AAAA-MM-DD` que existe en el calendario; si no, `undefined`. */
 function fechaValida(texto: string): string | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return undefined
-  const fecha = new Date(`${texto}T00:00:00Z`)
+  const fecha = new Date(`${texto}T00:00:00Z`) // fecha-lima-ok: solo valida el calendario, en UTC y sin zona
   return !Number.isNaN(fecha.getTime()) && fecha.toISOString().startsWith(texto) ? texto : undefined
 }
 
