@@ -163,24 +163,18 @@ describe('IngresoPage del diseño nuevo (AV-439)', () => {
     expect((await screen.findByTestId('destino')).textContent).toBe('/n')
   })
 
-  it('lleva al capataz a Operaciones de campo', async () => {
-    pintar()
-    await completarIngreso('capataz')
-    expect((await screen.findByTestId('destino')).textContent).toBe('/operacion-campo/encargos')
-  })
-
   it('mientras la transición aplica la navegación, la sesión ya activa no la pisa con otro destino', async () => {
     transicion.diferir = true
-    pintar()
+    pintar('/n/ingreso?volver=%2Fn%2Fmapa')
     sesionMock.ingresar.mockImplementation(() => {
-      sesionMock.estado = { tipo: 'activa', sesion: sesion('capataz') }
-      return Promise.resolve(sesion('capataz'))
+      sesionMock.estado = { tipo: 'activa', sesion: sesion('jefe-seccion', true) }
+      return Promise.resolve(sesion('jefe-seccion', true))
     })
     const usuario = userEvent.setup()
     await usuario.type(screen.getByLabelText('Correo institucional'), 'usuario@pucp.edu.pe')
     await usuario.type(screen.getByLabelText('Contraseña'), 'secreto')
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }))
-    expect(transicion.destinos).toEqual(['/operacion-campo/encargos'])
+    expect(transicion.destinos).toEqual(['/n/cambiar-contrasena'])
     expect(screen.queryByTestId('destino')).toBeNull()
   })
 

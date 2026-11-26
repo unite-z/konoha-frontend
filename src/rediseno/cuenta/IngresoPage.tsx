@@ -17,7 +17,6 @@ import Boton from '@/design-system/Boton'
 import CampoFormulario from '@/design-system/CampoFormulario'
 import Casilla from '@/design-system/Casilla'
 import Icono from '@/design-system/Icono'
-import { RUTAS_CAMPO } from '@/router/rutasCampo'
 import { aErrorApi } from '@/services/api/cliente'
 import { useSesion } from '@/sesion/ContextoSesion'
 import { ATRIBUTO_MAPA_LIBRE, useVistaDeMapa } from '../base/Escenario'
@@ -85,11 +84,10 @@ export default function IngresoPage() {
         canal: movil ? 'campo' : 'oficina',
         mantener_sesion: movil && mantener,
       })
-      const destinoDelRol =
-        sesion.rol.codigo === 'capataz' && destino === PREFIJO_REDISENO ? RUTAS_CAMPO.encargos : destino
       // `enviando` sigue en true: la transición de vista aplica la navegación un fotograma después, y con la sesión
-      // ya activa el `<Navigate>` de arriba la pisaría (sin fundido y sin el destino del rol).
-      navegar(sesion.debe_cambiar_contrasena ? RUTA_CAMBIAR_CONTRASENA : destinoDelRol, { replace: true })
+      // ya activa el `<Navigate>` de arriba la pisaría (sin fundido). Sin `?volver=`, `/n` elige el inicio según los
+      // permisos (`InicioRediseno`: el capataz, a Campo).
+      navegar(sesion.debe_cambiar_contrasena ? RUTA_CAMBIAR_CONTRASENA : destino, { replace: true })
     } catch (causa) {
       setErrorServidor(aErrorApi(causa).detalle)
       setClave('')

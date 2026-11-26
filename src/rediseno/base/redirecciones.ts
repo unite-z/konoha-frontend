@@ -56,8 +56,9 @@ export interface DestinoRediseno {
 }
 
 /**
- * Rutas antiguas que no se redirigen: el ingreso y el cambio de contraseña no cuelgan de `/n` (hoy `/n` exige sesión;
- * V01 los traerá bajo el prefijo). El test las exige en esta lista o en la tabla: ninguna ruta se queda sin decidir.
+ * Rutas antiguas que no se redirigen desde aquí: el ingreso y el cambio de contraseña no cuelgan del layout actual;
+ * los lleva a `/n` `cuenta/RedirigirAlDisenoNuevo` (AV-439). El test las exige en esta lista o en la tabla: ninguna
+ * ruta se queda sin decidir.
  */
 export const RUTAS_QUE_SE_CONSERVAN: readonly string[] = [RUTAS_CORE.ingreso, RUTAS_CORE.cambiarContrasena]
 
