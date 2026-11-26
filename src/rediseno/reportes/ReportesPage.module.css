@@ -78,34 +78,64 @@
   box-shadow: var(--vidrio-sombra);
 }
 
+.selector {
+  padding: var(--space-1);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-vidrio);
+  background: var(--vidrio-relleno-lente);
+  backdrop-filter: var(--vidrio-desenfoque);
+}
+
 .informes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .informe {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  height: 100%;
-  padding: var(--space-3) var(--space-4);
+  position: relative;
+  display: block;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
-  background: var(--vidrio-relleno-lente);
   color: var(--color-text-primary);
+  font-weight: var(--type-cuerpo-medio-weight);
   text-decoration: none;
 }
 
-.informe:hover,
-.informe[aria-current] {
-  background: var(--vidrio-relleno-denso);
+.informe:hover {
+  background: var(--vidrio-relleno);
 }
 
-.tituloInforme {
-  font-weight: var(--type-cuerpo-medio-weight);
+.informe:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 1px;
+}
+
+/* La lente: píldora bajo el texto del enlace elegido, que se desliza al cambiar de informe. */
+.lente {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--vidrio-relleno-denso);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.textoInforme {
+  position: relative;
+}
+
+/* El selector no se mueve al cambiar de informe: se muestra ya el nuevo y solo se desliza la lente. */
+::view-transition-group(selector-informes),
+::view-transition-new(selector-informes) {
+  animation: none;
+}
+
+::view-transition-old(selector-informes) {
+  display: none;
 }
 
 /* Los gráficos entran con fundido; con «reducir movimiento» aparecen directamente. */
