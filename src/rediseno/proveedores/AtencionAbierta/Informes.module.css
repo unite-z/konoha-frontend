@@ -37,6 +37,10 @@
   margin-left: auto;
 }
 
+.enlace {
+  align-self: flex-start;
+}
+
 .lista {
   display: flex;
   flex-direction: column;

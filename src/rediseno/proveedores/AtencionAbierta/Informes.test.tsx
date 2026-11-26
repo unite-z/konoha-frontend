@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ErrorApi } from '@/services/api/cliente'
 import type { Atencion, ReporteProveedor } from '@/types/tercerizados'
+import { rutaSubirInforme } from '../enlaces'
 import Informes from './Informes'
 import { textoAdjuntar } from './textoInformes'
 
@@ -51,7 +53,11 @@ function pagina(...results: ReporteProveedor[]) {
 
 function montar(estado: string, permisos: string[] | null = [REGISTRAR]) {
   const props = { onActualizada: vi.fn(), onReporteAdjunto: vi.fn(), onExito: vi.fn() }
-  render(<Informes atencion={atencion(estado)} permisos={permisos} version={0} {...props} />)
+  render(
+    <MemoryRouter>
+      <Informes atencion={atencion(estado)} permisos={permisos} version={0} {...props} />
+    </MemoryRouter>,
+  )
   return props
 }
 
@@ -98,9 +104,25 @@ describe('Proveedores · informes (RD-54)', () => {
     expect(await screen.findByRole('button', { name: 'Adjuntar reporte' })).toBeTruthy()
   })
 
+  it('con la observación pendiente la acción es «Subsanar informe» y enlaza a subir con la atención elegida', async () => {
+    api.listarReportes.mockResolvedValue(pagina(reporte(1)))
+    montar('Observado')
+    expect(await screen.findByRole('button', { name: 'Subsanar informe' })).toBeTruthy()
+    const enlace = screen.getByRole('link', { name: /Subir informe/ })
+    expect(enlace.getAttribute('href')).toBe(rutaSubirInforme(9))
+  })
+
   it('sin permiso no ofrece adjuntar pero sí enseña las revisiones', async () => {
     api.listarReportes.mockResolvedValue(pagina(reporte(1)))
     montar('Reporte adjunto', [])
+    expect(await screen.findByText('Revisión 1')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Adjuntar|Subsanar/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Subir informe/ })).toBeNull()
+  })
+
+  it('con la atención conforme ya no admite revisiones nuevas', async () => {
+    api.listarReportes.mockResolvedValue(pagina(reporte(1)))
+    montar('Conforme / cerrado')
     expect(await screen.findByText('Revisión 1')).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Adjuntar|Subsanar/ })).toBeNull()
   })

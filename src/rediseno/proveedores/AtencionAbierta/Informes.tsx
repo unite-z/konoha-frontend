@@ -1,14 +1,15 @@
 /**
  * Informes del proveedor en la atención abierta (RD-54): «Adjuntar reporte», «Subsanar informe» y «Adjuntar nueva
  * revisión» (según el estado) abren `DialogoReporte` tal cual (varios archivos, envío idempotente y datos del formato
- * estándar del informe final, `DatosInformeFinal`). Debajo, las revisiones registradas y cuál es la vigente.
+ * estándar del informe final, `DatosInformeFinal`). Debajo, las revisiones registradas y cuál es la vigente. Con
+ * permiso de adjuntar, enlaza también a «Subir informe» con la atención ya elegida (punto de entrada de RD-56).
  *
  * Movimiento: el botón se transforma en el diálogo (mismo `view-transition-name`, que pasa del botón al diálogo
  * mientras está abierto) y vuelve al botón al cerrar; la revisión nueva entra en la lista con un fundido corto. Con
  * «reducir movimiento», cambio directo.
  */
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import Boton from '@/design-system/Boton'
+import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react'
+import Boton, { BotonEnlace } from '@/design-system/Boton'
 import Estado from '@/design-system/Estado'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoError from '@/design-system/EstadoError'
@@ -21,6 +22,7 @@ import { estiloTransicion, transicionar } from '@/rediseno/base/movimiento'
 import { listarReportes } from '@/services/api/tercerizados'
 import type { Atencion, ReporteProveedor } from '@/types/tercerizados'
 import { formatearFecha, formatearNumero } from '@/utils/formato'
+import { rutaSubirInforme } from '../enlaces'
 import estilos from './Informes.module.css'
 import { textoAdjuntar } from './textoInformes'
 
@@ -46,7 +48,8 @@ export default function Informes({
   onExito,
 }: InformesProps) {
   const [abierto, setAbierto] = useState(false)
-  const contenedor = useRef<HTMLDivElement>(null)
+  const contenedor = useRef<HTMLElement>(null)
+  const idTitulo = useId()
   const adjuntar = disponibilidad('adjuntarReporte', permisos, atencion)
   const primera = atencion.estado === 'Ejecutado pendiente de reporte'
 
@@ -130,9 +133,9 @@ export default function Informes({
   }
 
   return (
-    <section className={estilos.bloque} aria-labelledby="titulo-informes" ref={contenedor}>
+    <section className={estilos.bloque} aria-labelledby={idTitulo} ref={contenedor}>
       <div className={estilos.cabecera}>
-        <h3 id="titulo-informes" className={estilos.titulo}>
+        <h3 id={idTitulo} className={estilos.titulo}>
           Informes del proveedor
         </h3>
         {consulta.datos && consulta.datos.count > 0 && (
@@ -152,6 +155,11 @@ export default function Informes({
         )}
       </div>
       {lista}
+      {adjuntar.visible && (
+        <BotonEnlace to={rutaSubirInforme(atencion.id)} variante="enlace" className={estilos.enlace} viewTransition>
+          Subir informe y extraer sus datos con Konoha
+        </BotonEnlace>
+      )}
       <DialogoReporte
         abierto={abierto}
         atencion={atencion}
