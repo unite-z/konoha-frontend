@@ -1,0 +1,72 @@
+/* «Historial de Konoha»: filas de vidrio (Liquid Glass, AV-413). */
+.historial,
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.encabezado {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.fila {
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.titulo {
+  flex: 1 1 12rem;
+  font-weight: 600;
+}
+
+.cabecera:hover {
+  background: var(--vidrio-relleno-lente);
+}
+
+.resumen,
+.traza {
+  color: var(--color-text-secondary);
+}
+
+.resumen {
+  flex-basis: 100%;
+}
+
+.detalle {
+  padding: 0 var(--space-6) var(--space-6);
+}
