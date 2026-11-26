@@ -98,24 +98,30 @@
   margin-top: var(--space-3);
 }
 
+.comentario {
+  display: block;
+  margin-top: var(--space-2);
+}
+
 /* La revisión se despliega con un fundido; las hipótesis entran una tras otra (cascada corta). */
 .despliegue {
   animation: evidencia-despliega var(--movimiento-normal) var(--curva-salida);
 }
 
-.cascada li {
+/* Solo las tarjetas, no las evidencias que llevan dentro. */
+.cascada li:not(li li) {
   animation: evidencia-despliega var(--movimiento-normal) var(--curva-salida) backwards;
 }
 
-.cascada li:nth-child(2) {
+.cascada li:not(li li):nth-child(2) {
   animation-delay: var(--movimiento-rapido);
 }
 
-.cascada li:nth-child(3) {
+.cascada li:not(li li):nth-child(3) {
   animation-delay: calc(var(--movimiento-rapido) * 2);
 }
 
-.cascada li:nth-child(n + 4) {
+.cascada li:not(li li):nth-child(n + 4) {
   animation-delay: calc(var(--movimiento-rapido) * 3);
 }
 
@@ -127,7 +133,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .despliegue,
-  .cascada li {
+  .cascada li:not(li li) {
     animation: none;
   }
 }

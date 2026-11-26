@@ -24,9 +24,9 @@ import DialogoNuevoAnalisis, {
   type InicialNuevoAnalisis,
 } from '@/pages/reportes-indicadores/asistencia-ia/evidencia/DialogoNuevoAnalisis'
 import { transicionar } from '@/rediseno/base/movimiento'
-import { buscarAtencionesEvidencia, buscarEjemplaresEvidencia } from '@/services/api/evidenciaFitosanitariaIa'
+import { buscarEjemplaresEvidencia } from '@/services/api/evidenciaFitosanitariaIa'
 import { usePermisos } from '@/sesion/ContextoSesion'
-import type { SugerenciaEvidencia } from '@/types/evidenciaFitosanitariaIa'
+import type { AtencionBuscable, SugerenciaEvidencia } from '@/types/evidenciaFitosanitariaIa'
 import { estadoEvidencia, hipotesisPrincipal, tituloEvidencia } from '@/utils/evidenciaFitosanitariaIa'
 import { formatearFechaHora, formatearNumero } from '@/utils/formato'
 import estilos from './EvidenciaKonoha.module.css'
@@ -36,6 +36,11 @@ import { ultimoAnalisis, type ObjetivoEvidencia } from './ultimoAnalisis'
 
 export interface EvidenciaKonohaProps {
   objetivo: ObjetivoEvidencia
+  /**
+   * Planta de la atención para «Nuevo análisis» (la del alcance de la ficha). `null`: la atención no tiene ejemplar
+   * en su alcance y no se ofrece. Sin ella (vista del ejemplar), se usa la del último análisis.
+   */
+  plantaAtencion?: AtencionBuscable | null
   /** Abre la revisión del último análisis al montar (`?evidencia=1`). */
   abiertoInicial?: boolean
   /** Sin permiso de entrada: `false` no pinta nada (la ficha); `true` muestra el estado «sin acceso» (la vista propia). */
@@ -65,14 +70,10 @@ function manualDe(s: SugerenciaEvidencia): ContextoManual {
   }
 }
 
-/** Busca la planta del objetivo para abrir «Nuevo análisis» directamente en las fotos; sin ella, el diálogo parte del paso 1. */
-async function inicialDelObjetivo(objetivo: ObjetivoEvidencia): Promise<InicialNuevoAnalisis | null> {
+/** Busca el ejemplar por su id para abrir «Nuevo análisis» en las fotos; si no aparece, el diálogo parte de la planta. */
+async function inicialDelEjemplar(id: number): Promise<InicialNuevoAnalisis | null> {
   try {
-    if (objetivo.tipo === 'atencion') {
-      const atencion = (await buscarAtencionesEvidencia(String(objetivo.id))).results.find((a) => a.id === objetivo.id)
-      return atencion ? { atencion, paso: 1 } : null
-    }
-    const ejemplar = (await buscarEjemplaresEvidencia(String(objetivo.id))).results.find((e) => e.id === objetivo.id)
+    const ejemplar = (await buscarEjemplaresEvidencia(String(id))).results.find((e) => e.id === id)
     return ejemplar ? { ejemplar, paso: 1 } : null
   } catch {
     return null
@@ -81,6 +82,7 @@ async function inicialDelObjetivo(objetivo: ObjetivoEvidencia): Promise<InicialN
 
 export default function EvidenciaKonoha({
   objetivo,
+  plantaAtencion,
   abiertoInicial = false,
   mostrarSinAcceso = false,
 }: EvidenciaKonohaProps) {
@@ -89,7 +91,6 @@ export default function EvidenciaKonoha({
   const puedeSolicitar = tiene(permisos, PERMISO_SOLICITAR_IA)
   const puedeValidar = tiene(permisos, PERMISO_VALIDAR_IA)
   const idTitulo = useId()
-  const [version, setVersion] = useState(0)
   const [abierto, setAbierto] = useState(abiertoInicial)
   // Análisis elegido por la persona (el recién creado); sin él, el último de la lista.
   const [elegido, setElegido] = useState<number | null>(null)
@@ -99,7 +100,7 @@ export default function EvidenciaKonoha({
   const cerrarAviso = useCallback(() => setAviso(null), [])
 
   const ultima = useConsulta(
-    puedeVer ? `evidencia-ultima|${objetivo.tipo}|${objetivo.id}|${version}` : null,
+    puedeVer ? `evidencia-ultima|${objetivo.tipo}|${objetivo.id}` : null,
     (signal) => ultimoAnalisis(objetivo, signal),
     (datos) => datos === null,
   )
@@ -110,7 +111,7 @@ export default function EvidenciaKonoha({
     setAperturas((n) => n + 1)
     setDialogo(siguiente)
   }, [])
-  const releer = useCallback(() => setVersion((v) => v + 1), [])
+  const releer = ultima.reintentar
   const alRegistrar = (s: SugerenciaEvidencia, mensaje: string) => {
     setDialogo(null)
     setAviso(mensaje)
@@ -129,8 +130,13 @@ export default function EvidenciaKonoha({
     [puedeSolicitar, puedeValidar, abrirDialogo],
   )
 
+  // En la atención, la planta es la de su alcance; en el ejemplar, la del último análisis o la que se encuentre.
+  const sinPlanta = objetivo.tipo === 'atencion' && plantaAtencion === null
   const nuevoAnalisis = async () => {
-    const inicial = await inicialDelObjetivo(objetivo)
+    let inicial: InicialNuevoAnalisis | null
+    if (objetivo.tipo === 'atencion') inicial = plantaAtencion ? { atencion: plantaAtencion, paso: 1 } : null
+    else if (analisis?.contenido.ejemplar) inicial = { ejemplar: analisis.contenido.ejemplar, paso: 1 }
+    else inicial = await inicialDelEjemplar(objetivo.id)
     abrirDialogo({ tipo: 'nuevo', inicial })
   }
 
@@ -169,7 +175,11 @@ export default function EvidenciaKonoha({
       <EstadoVacio
         nivel={3}
         titulo="Aún no se ha analizado la evidencia"
-        descripcion={puedeSolicitar ? 'Sube de 1 a 5 fotos con «Nuevo análisis».' : 'Aparecerá aquí cuando se analice.'}
+        descripcion={
+          puedeSolicitar && !sinPlanta
+            ? 'Sube de 1 a 5 fotos con «Nuevo análisis».'
+            : 'Aparecerá aquí cuando se analice.'
+        }
       />
     )
   else
@@ -198,7 +208,7 @@ export default function EvidenciaKonoha({
     <section className={estilos.bloque} aria-labelledby={idTitulo}>
       <div className={estilos.cabecera}>
         <h2 id={idTitulo}>Konoha revisó la evidencia</h2>
-        {puedeSolicitar && (
+        {puedeSolicitar && !sinPlanta && (
           <Boton variante="secundario" compacto icono="camera" onClick={() => void nuevoAnalisis()}>
             Nuevo análisis
           </Boton>
@@ -208,6 +218,11 @@ export default function EvidenciaKonoha({
         Konoha sugiere posibles afectaciones a partir de las fotos. Son hipótesis: solo se registra la categoría que
         valides y nunca se indica un tratamiento.
       </p>
+      {puedeSolicitar && sinPlanta && (
+        <p className={estilos.detalle}>
+          Esta atención no tiene un ejemplar en su alcance: analiza las fotos desde la ficha del ejemplar en el Mapa.
+        </p>
+      )}
       {cuerpo}
       {abierto && idRevision !== null && (
         <div className={estilos.despliegue}>

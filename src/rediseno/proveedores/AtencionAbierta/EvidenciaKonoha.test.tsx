@@ -95,6 +95,12 @@ function analisis(
   } satisfies SugerenciaEvidencia
 }
 
+const PLANTA = {
+  id: 7,
+  plaga: 'Queresa',
+  ejemplar: { id: 412, codigo: 'EJ-00412', especie: null, espacio: 'Jardín Central' },
+}
+
 const pagina = (...resultados: SugerenciaEvidencia[]): Paginado<SugerenciaEvidencia> => ({
   count: resultados.length,
   next: null,
@@ -256,11 +262,78 @@ describe('EvidenciaKonoha · revisión', () => {
     expect(screen.getAllByRole('button', { name: 'Registrar evaluación manual' }).length).toBeGreaterThan(0)
   })
 
-  it('«Nuevo análisis» abre el diálogo de fotos', async () => {
+  it('«Nuevo análisis» abre en las fotos con la planta de la atención y admite de 1 a 5', async () => {
     permisosSesion.valor = SOLICITA
-    montar(<EvidenciaKonoha objetivo={objetivo} />)
+    montar(<EvidenciaKonoha objetivo={objetivo} plantaAtencion={PLANTA} />)
     await userEvent.click(await screen.findByRole('button', { name: 'Nuevo análisis' }))
-    expect(await screen.findByRole('dialog', { name: /nuevo análisis/i })).toBeTruthy()
+    const dialogo = await screen.findByRole('dialog', { name: /nuevo análisis/i })
+    expect(within(dialogo).getByText('EJ-00412 · especie no identificada')).toBeTruthy()
+    const entrada = dialogo.querySelector<HTMLInputElement>('input[type="file"]')
+    if (!entrada) throw new Error('sin entrada de fotos')
+    const fotos = Array.from({ length: 6 }, (_, i) => new File(['x'], `foto-${i + 1}.jpg`, { type: 'image/jpeg' }))
+    await userEvent.upload(entrada, fotos)
+    expect(within(dialogo).getAllByRole('button', { name: 'Quitar' })).toHaveLength(5)
+    expect(within(dialogo).getByText('foto-6.jpg: solo se admiten 5 fotografías')).toBeTruthy()
+    expect(api.buscarAtencionesEvidencia).not.toHaveBeenCalled()
+  })
+
+  it('una atención sin ejemplar en su alcance no ofrece «Nuevo análisis» y lo explica', async () => {
+    permisosSesion.valor = SOLICITA
+    montar(<EvidenciaKonoha objetivo={objetivo} plantaAtencion={null} />)
+    expect(await screen.findByText(/no tiene un ejemplar en su alcance/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Nuevo análisis' })).toBeNull()
+  })
+
+  it('sin permiso de validar avisa de que solo la jefatura valida', async () => {
+    permisosSesion.valor = SOLICITA
+    montar(<EvidenciaKonoha objetivo={objetivo} abiertoInicial />)
+    expect(await screen.findByText(/Solo la jefatura de sección puede validar/)).toBeTruthy()
+  })
+
+  it('«Aplicar» no elige por la persona: con varias opciones no registra nada', async () => {
+    montar(<EvidenciaKonoha objetivo={objetivo} abiertoInicial />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Aplicar' }))
+    expect(await screen.findByText(/Elige una sola opción/)).toBeTruthy()
+    expect(api.validarEvidencia).not.toHaveBeenCalled()
+  })
+
+  it('corregir a Plaga ofrece la plaga del catálogo y exige elegir la otra categoría', async () => {
+    montar(<EvidenciaKonoha objetivo={objetivo} abiertoInicial />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Corregir' }))
+    const decisiones = await screen.findByRole('region', { name: /decisiones por elemento/i })
+    await userEvent.click(within(decisiones).getAllByRole('radio', { name: 'Corregir' })[0])
+    await userEvent.click(within(decisiones).getAllByRole('radio', { name: 'Descartar' })[1])
+    await userEvent.click(within(decisiones).getAllByRole('radio', { name: 'Descartar' })[2])
+    const categoria = within(decisiones).getByRole('combobox', { name: /otra categoría de afectación/i })
+    // Al corregir no queda elegida la categoría de la hipótesis.
+    expect((categoria as HTMLSelectElement).value).toBe('')
+    await userEvent.click(screen.getByRole('button', { name: 'Validar decisiones' }))
+    expect(await screen.findByText('Elige la otra categoría de afectación.')).toBeTruthy()
+    expect(api.validarEvidencia).not.toHaveBeenCalled()
+    await userEvent.selectOptions(categoria, 'Plaga')
+    expect(within(decisiones).getByRole('combobox', { name: /^plaga/i })).toBeTruthy()
+  })
+
+  it('validado a otra categoría: muestra el resultado y el comentario técnico', async () => {
+    const validado = analisis(
+      {
+        validacion: {
+          resultado: 'OtraCategoria',
+          hipotesis_clave: null,
+          categoria: 'DanoMecanico',
+          plaga_id: null,
+          nombre: 'Rama desgajada',
+          comentario: 'Golpe de la podadora',
+        },
+        validada_por: 'Óscar Ramos',
+      },
+      'Validada',
+    )
+    api.listarAnalisisEvidencia.mockResolvedValue(pagina(validado))
+    api.obtenerAnalisisEvidencia.mockResolvedValue(validado)
+    montar(<EvidenciaKonoha objetivo={objetivo} abiertoInicial />)
+    expect(await screen.findByText(/Otra categoría: Daño mecánico · Rama desgajada/)).toBeTruthy()
+    expect(screen.getByText('Comentario técnico: Golpe de la podadora')).toBeTruthy()
   })
 })
 

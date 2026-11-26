@@ -27,6 +27,7 @@ import type { EstadoNavegacionBandeja } from '../Atenciones/FilaAtencion'
 import Acciones from './Acciones'
 import EvidenciaKonoha from './EvidenciaKonoha'
 import Informes from './Informes'
+import { plantaDeAtencion } from './plantaAtencion'
 import estilos from './AtencionAbierta.module.css'
 
 /** La versión más reciente entre la consultada y la recibida de una operación (misma atención). */
@@ -122,6 +123,7 @@ export default function AtencionAbiertaPage() {
               />
               <EvidenciaKonoha
                 objetivo={{ tipo: 'atencion', id: atencion.id }}
+                plantaAtencion={plantaDeAtencion(atencion)}
                 abiertoInicial={consultaUrl.get(PARAM_EVIDENCIA) === '1'}
               />
               <Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />

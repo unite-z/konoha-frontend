@@ -57,7 +57,10 @@ export function cuerpoDesdeDecisiones(
     throw rechazo('Elige una hipótesis, otra categoría o «No es posible concluir».')
   }
   if (elegidas.length > 1) {
-    throw rechazo('Elige una sola opción: acepta una hipótesis, corrige una a otra categoría o no concluyas.')
+    // «Aplicar» y «Aceptar pendientes» del núcleo aceptan todo: aquí no vale, Konoha no elige por la persona.
+    throw rechazo(
+      'Elige una sola opción: en «Corregir», acepta una hipótesis, corrígela a otra categoría o elige «No es posible concluir», y descarta las demás.',
+    )
   }
   const [id, decision] = elegidas[0]
   const comentario = decision.comentario ?? ''
@@ -66,12 +69,14 @@ export function cuerpoDesdeDecisiones(
     formulario = { ...FORMULARIO_VACIO, opcion: 'no-concluyente', comentario }
   } else if (decision.accion === 'corregir') {
     const final = decision.valorFinal
+    // Sin tocar el hueco, el valor sigue siendo la hipótesis (con su `clave`): aún no hay otra categoría.
+    if (!final || final.clave !== null) throw rechazo('Elige la otra categoría de afectación.')
     formulario = {
       ...FORMULARIO_VACIO,
       opcion: 'otra',
-      categoria: final?.categoria ?? null,
-      plaga_id: final?.plaga_id ?? null,
-      nombre: final?.nombre ?? '',
+      categoria: final.categoria,
+      plaga_id: final.plaga_id,
+      nombre: final.nombre ?? '',
       comentario,
     }
   } else {

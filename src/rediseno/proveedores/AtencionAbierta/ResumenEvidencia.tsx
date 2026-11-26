@@ -34,6 +34,7 @@ export default function ResumenEvidencia({
   const pendiente = estado === 'Propuesta'
   const { validacion } = contenido
   const insuficientes = contenido.fotografias.filter((f) => f.calidad === 'Insuficiente')
+  const sinElemento = contenido.origen === 'manual' || validacion?.resultado === 'OtraCategoria'
 
   return (
     <div className={estilos.resumen}>
@@ -78,6 +79,9 @@ export default function ResumenEvidencia({
           La especie no está identificada: las hipótesis se basan en menos contexto.
         </AvisoEnLinea>
       )}
+      {pendiente && !acciones.puedeValidar && (
+        <AvisoEnLinea tono="info">Solo la jefatura de sección puede validar o descartar este análisis.</AvisoEnLinea>
+      )}
       {estado === 'Validada' && validacion && (
         <AvisoEnLinea
           tono={validacion.resultado === 'NoConcluyente' ? 'info' : 'exito'}
@@ -87,6 +91,10 @@ export default function ResumenEvidencia({
             ? 'Evaluación registrada sin IA. '
             : 'Las hipótesis originales de la IA se conservan abajo. '}
           No se indicó ningún tratamiento.
+          {/* Una confirmación o «No es posible concluir» llevan el comentario en su elemento; esto no tiene elemento. */}
+          {sinElemento && validacion.comentario && (
+            <span className={estilos.comentario}>{`Comentario técnico: ${validacion.comentario}`}</span>
+          )}
         </AvisoEnLinea>
       )}
       {estado === 'Rechazada' && (
