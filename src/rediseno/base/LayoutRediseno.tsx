@@ -36,12 +36,7 @@ function Contenido() {
         Saltar al contenido
       </a>
       <Cabecera />
-      <main
-        id="contenido-rediseno"
-        tabIndex={-1}
-        className={estilos.raiz}
-        data-mapa={conMapa ? 'visible' : 'oculto'}
-      >
+      <main id="contenido-rediseno" tabIndex={-1} className={estilos.raiz} data-mapa={conMapa ? 'visible' : 'oculto'}>
         <AvisoNuevaVersion />
         <Outlet />
       </main>

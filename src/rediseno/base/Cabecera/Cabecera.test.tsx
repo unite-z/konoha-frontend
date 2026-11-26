@@ -10,17 +10,28 @@ import type { SeccionRediseno } from '../../tipos'
 import BarraInferior from '../BarraInferior/BarraInferior'
 import Cabecera from './Cabecera'
 
-const estado = vi.hoisted(() => ({ permisos: [] as string[], conSesion: true, pendientes: 0 }))
+const estado = vi.hoisted(() => ({
+  permisos: [] as string[],
+  conSesion: true,
+  pendientes: 0,
+}))
 
 vi.mock('@/sesion/ContextoSesion', () => ({
   usePermisos: () => (estado.conSesion ? estado.permisos : null),
   useSesionActiva: () =>
     estado.conSesion
-      ? ({ usuario: { id: 1, nombre: 'Robert G.', nombre_usuario: 'rg' }, permisos: estado.permisos } as SesionCore)
+      ? ({
+          usuario: { id: 1, nombre: 'Robert G.', nombre_usuario: 'rg' },
+          permisos: estado.permisos,
+        } as SesionCore)
       : null,
 }))
 vi.mock('@/sincronizacion/cola', () => ({
-  useCola: () => ({ pendientes: Array.from({ length: estado.pendientes }, () => ({ estado: 'pendiente' })) }),
+  useCola: () => ({
+    pendientes: Array.from({ length: estado.pendientes }, () => ({
+      estado: 'pendiente',
+    })),
+  }),
   porSincronizar: (cola: { pendientes: unknown[] }) => cola.pendientes,
 }))
 
@@ -31,7 +42,14 @@ afterEach(() => {
   estado.pendientes = 0
 })
 
-const J = [PERMISOS.consultarInventario, PERMISOS.consultarPlanificacion, PERMISOS.registrarIncidencia, PERMISOS.consultarIndicadores, PERMISOS.registrarAtencion, PERMISOS.consultarContratos]
+const J = [
+  PERMISOS.consultarInventario,
+  PERMISOS.consultarPlanificacion,
+  PERMISOS.registrarIncidencia,
+  PERMISOS.consultarIndicadores,
+  PERMISOS.registrarAtencion,
+  PERMISOS.consultarContratos,
+]
 const I = [PERMISOS.consultarInventario, PERMISOS.registrarIncidencia, PERMISOS.registrarPoda]
 const P = [PERMISOS.registrarIncidencia]
 const C = [PERMISOS.consultarCuadrillas, PERMISOS.registrarCorte, PERMISOS.registrarIncidencia, 'CAM.PARTE.REGISTRAR']
@@ -132,6 +150,36 @@ describe('Cabecera por permisos (RD-04)', () => {
     const { container } = montar('/n/mapa')
     expect(container.querySelectorAll('[aria-hidden="true"][style*="lente-pestanas"]').length).toBe(1)
   })
+
+  it('la lente pasa a la pestaña activa y la cápsula y las pestañas quedan quietas con nombre propio', () => {
+    estado.permisos = SA
+    const { container } = montar('/n/planificacion/ciclos')
+    const pestanas = screen.getByRole('navigation', {
+      name: 'Pestañas de Planificación',
+    })
+    const lentes = container.querySelectorAll('[style*="lente-pestanas"]')
+    expect(lentes.length).toBe(1)
+    expect(within(pestanas).getByRole('link', { name: 'Ciclos' }).contains(lentes[0])).toBe(true)
+    expect(pestanas.getAttribute('style')).toContain('view-transition-name: pestanas')
+    // El nombre no va en <header>: un antecesor con nombre anularía el desenfoque del vidrio.
+    const cabecera = container.querySelector('header')
+    expect(cabecera?.getAttribute('style')).toBeNull()
+    expect(cabecera?.querySelector('[style*="view-transition-name: cabecera"]')).not.toBeNull()
+  })
+
+  it('el título del móvil nombra también Cuenta, que no es sección de la cabecera', () => {
+    estado.permisos = SA
+    const { container } = montar('/n/cuenta')
+    expect(container.querySelector('header span')?.textContent).toBe('Cuenta')
+  })
+
+  it('publica el borde inferior de la cabecera y lo retira al desmontarse', () => {
+    estado.permisos = SA
+    const { unmount } = montar('/n/mapa')
+    expect(document.documentElement.style.getPropertyValue('--rediseno-alto-cabecera')).toBe('0px')
+    unmount()
+    expect(document.documentElement.style.getPropertyValue('--rediseno-alto-cabecera')).toBe('')
+  })
 })
 
 function montarBarra(entrada: string, secciones?: readonly SeccionRediseno[]) {
@@ -179,6 +227,21 @@ describe('Barra inferior única (RD-04)', () => {
     expect(barra.getByRole('link', { name: 'Más' }).getAttribute('href')).toBe('/n/cuenta')
   })
 
+  it('mientras campo no declara entradas, quien es de campo ve sus secciones y no se queda solo con «Más»', () => {
+    estado.permisos = C
+    montarBarra('/n/incidencias')
+    const barra = within(screen.getByRole('navigation', { name: 'Navegación principal' }))
+    expect(barra.getAllByRole('link').map((a) => a.textContent)).toEqual(['Incidencias'])
+  })
+
+  it('la barra queda quieta en las transiciones', () => {
+    estado.permisos = J
+    montarBarra('/n/mapa')
+    expect(screen.getByRole('navigation', { name: 'Navegación principal' }).getAttribute('style')).toContain(
+      'view-transition-name: barra-inferior',
+    )
+  })
+
   it('quien también verifica partes no cuenta como de campo', () => {
     estado.permisos = [...C, 'CAM.PARTE.VERIFICAR']
     montarBarra('/n/incidencias')
@@ -186,8 +249,9 @@ describe('Barra inferior única (RD-04)', () => {
     expect(screen.getByRole('link', { name: 'Incidencias' })).toBeTruthy()
   })
 
-  it('sin secciones no pinta barra', () => {
+  it('sin secciones no pinta barra ni reserva sitio para ella', () => {
     montarBarra('/n/cuenta')
     expect(screen.queryByRole('navigation')).toBeNull()
+    expect(document.documentElement.style.getPropertyValue('--rediseno-alto-barra')).toBe('0px')
   })
 })

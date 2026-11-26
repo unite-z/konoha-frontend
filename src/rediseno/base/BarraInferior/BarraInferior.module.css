@@ -6,7 +6,7 @@
   .barra {
     position: fixed;
     inset-inline: var(--space-2);
-    inset-block-end: var(--space-2);
+    inset-block-end: calc(var(--space-2) + env(safe-area-inset-bottom));
     z-index: 30;
     display: flex;
     justify-content: space-around;

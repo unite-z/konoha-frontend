@@ -5,7 +5,8 @@
   --radius-panel: calc(var(--radius-lg) * 2);
 
   position: fixed;
-  inset-block: var(--space-6);
+  /* Por debajo de la cabecera fija (RD-04), que publica su borde inferior en --rediseno-alto-cabecera. */
+  inset-block: max(var(--space-6), calc(var(--rediseno-alto-cabecera, 0px) + var(--space-2))) var(--space-6);
   inset-inline-end: var(--space-6);
   z-index: 20;
   display: flex;
@@ -25,9 +26,10 @@
   outline: none;
 }
 
-/* Hoja inferior a pantalla completa en móvil. */
+/* Hoja inferior a pantalla completa en móvil, entre la barra superior y la barra inferior (RD-04). */
 .panel[data-presentacion='hoja'] {
   inset: 0;
+  inset-block: var(--rediseno-alto-cabecera, 0px) var(--rediseno-alto-barra, 0px);
   width: 100%;
   border-radius: 0;
 }

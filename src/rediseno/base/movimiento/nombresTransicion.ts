@@ -4,10 +4,15 @@
  * iguales el navegador salta la transición.
  */
 export const nombresTransicion = {
+  /** Barra inferior del móvil (RD-04): quieta, como la cabecera. */
+  barraInferior: 'barra-inferior',
+  /** Cápsula de la cabecera (RD-04). */
   cabecera: 'cabecera',
   encabezado: 'encabezado',
   lentePestanas: 'lente-pestanas',
   panel: 'panel',
+  /** Fila de pestañas de la sección activa (RD-04): quieta; solo se mueve la lente. */
+  pestanas: 'pestanas',
 } as const
 
 /** Fila de lista o tarjeta que crece hasta ser su panel o ficha (que usa `panel` con el mismo id). */

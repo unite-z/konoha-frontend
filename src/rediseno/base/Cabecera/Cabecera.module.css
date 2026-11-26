@@ -78,6 +78,12 @@
   outline-offset: 1px;
 }
 
+/* La sección activa con pestañas no lleva la lente (va en su pestaña), pero se sigue viendo cuál es. */
+.enlace[aria-current='page'],
+.usuario[aria-current='page'] {
+  background: var(--vidrio-relleno);
+}
+
 /* Lente: la píldora que se desliza hasta la entrada activa (view-transition-name lente-pestanas). */
 .lente {
   position: absolute;
@@ -114,6 +120,24 @@
   display: none;
 }
 
+/* Entre tablet y escritorio estrecho las cinco secciones no caben con texto: quedan los iconos y el nombre accesible. */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .enlace .texto,
+  .nombre {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .enlace,
+  .usuario {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
 @media (max-width: 767px) {
   .cabecera {
     inset-block-start: 0;
@@ -125,7 +149,7 @@
   .capsula {
     justify-content: space-between;
     border-radius: 0;
-    padding: var(--space-2) var(--space-4);
+    padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4) var(--space-2);
   }
 
   .secciones {
