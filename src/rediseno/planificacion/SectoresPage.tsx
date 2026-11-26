@@ -20,6 +20,7 @@ import { hoyLima } from '@/utils/instanteLima'
 import { estiloTransicion, nombresTransicion, transicionar, useFocoConLaVista } from '../base/movimiento'
 import AvanceCiclo from './AvanceCiclo'
 import EstaSemana from './EstaSemana'
+import BloqueKonohaPropone from './KonohaPropone/BloqueKonohaPropone'
 import NecesitaAtencion from './NecesitaAtencion'
 import TablaSectores from './TablaSectores'
 import { rutaPlanificacionProgramar } from './enlaces'
@@ -131,6 +132,7 @@ export default function SectoresPage() {
       </header>
       <AvanceCiclo hoy={hoy} ciclos={elegibles} elegido={elegido} resumen={datosResumen} onElegir={elegir} />
       <TablaSectores consulta={{ ...porSector, datos: datosPorSector }} periodo={periodo} noDisponible={noDisponible} />
+      <BloqueKonohaPropone />
       <div className={estilos.columnas}>
         <NecesitaAtencion
           alertas={alertas}

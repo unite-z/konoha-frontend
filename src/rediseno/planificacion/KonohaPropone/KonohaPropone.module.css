@@ -1,0 +1,156 @@
+/* «Konoha propone» (RD-33): bloque de vidrio en Sectores y piezas de la revisión. Solo tokens semánticos. */
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+@media (max-width: 767px) {
+  .bloque {
+    padding: var(--space-4);
+  }
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cabecera h2 {
+  margin: 0;
+  font-size: var(--type-titulo-tarjeta-size);
+  line-height: var(--type-titulo-tarjeta-line);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.ultima,
+.filaHistorial {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .ultima,
+  .filaHistorial {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.detalle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.historialContenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.filaHistorial {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.filaHistorial:first-child {
+  border-top: 0;
+}
+
+.paginas {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.vistas,
+.sugerencia,
+.hueco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.sugerencia p,
+.periodo {
+  margin: 0;
+}
+
+.motivo {
+  color: var(--color-text-secondary);
+}
+
+.decision {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  background: var(--color-neutral-bg);
+}
+
+.decision[data-accion='aceptar'] {
+  background: var(--color-success-bg);
+}
+
+.decision[data-accion='corregir'] {
+  background: var(--color-info-bg);
+}
+
+.decision[data-accion='descartar'] {
+  background: var(--color-error-bg);
+}
+
+/* Al decidir, la fila pasa a su estado con un cambio corto de color y opacidad. */
+@media (prefers-reduced-motion: no-preference) {
+  .decision {
+    animation: decision-entra var(--movimiento-rapido) var(--curva-salida);
+  }
+}
+
+@keyframes decision-entra {
+  from {
+    opacity: 0.4;
+    background-color: var(--color-neutral-bg);
+  }
+}
