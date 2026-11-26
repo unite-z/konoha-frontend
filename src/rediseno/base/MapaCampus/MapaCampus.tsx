@@ -9,14 +9,15 @@
  *   `onSeleccionarArea` (con `null` si se pulsa fuera de las áreas o Esc).
  * - Construcción inicial una vez por sesión (`sessionStorage`), sin ella con `prefers-reduced-motion` (y vuelos = cortes).
  * - Colores de `--mapa-*` en tiempo de ejecución; un cambio de `data-tema` repinta el mapa.
- * - El escenario persistente del layout (AV-426) lo monta una sola vez; `activo={false}` pausa el dibujo.
+ * - El escenario persistente del layout (AV-426) lo monta una sola vez; `activo={false}` pausa el dibujo. Las capas
+ *   públicas (`CapaColores`, `CapaMarcadores`, `CapaGeometrias`) leen la escena de `onEscena` vía `ContextoMapa`.
  */
 import { useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent, type Ref } from 'react'
 import Boton from '@/design-system/Boton'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoError from '@/design-system/EstadoError'
 import EstadoVacio from '@/design-system/EstadoVacio'
-import type { AreaCampus } from '@/types/campus3d'
+import type { AreaCampus, DatosCampus } from '@/types/campus3d'
 import type { Escena, VistaMapa } from './escena'
 import estilos from './MapaCampus.module.css'
 import { agruparAreas, CLAVE_CONSTRUCCION, indiceDeArea, nombreDeArea } from './areas'
@@ -39,6 +40,8 @@ export interface MapaCampusProps {
   vista?: VistaMapa
   /** Con `false` el mapa deja de dibujar pero sigue en memoria. */
   activo?: boolean
+  /** Se llama con la escena y los datos cuando están listos (para las capas) y con `null` al destruirse la escena. */
+  onEscena?: (listo: { escena: Escena; datos: DatosCampus } | null) => void
   ref?: Ref<MapaCampusRef>
 }
 
@@ -66,6 +69,7 @@ export default function MapaCampus({
   onSeleccionarArea,
   vista = 'iso',
   activo = true,
+  onEscena,
   ref,
 }: MapaCampusProps) {
   const campus = useCampus()
@@ -76,6 +80,7 @@ export default function MapaCampus({
   const [foco, setFoco] = useState<number | null>(null)
   const contenedor = useRef<HTMLDivElement>(null)
   const alSeleccionar = useRef(onSeleccionarArea)
+  const alTenerEscena = useRef(onEscena)
   const vistaAplicada = useRef(vista)
   const vistaInicial = useRef(vista)
   const idAyuda = useId()
@@ -83,7 +88,14 @@ export default function MapaCampus({
 
   useEffect(() => {
     alSeleccionar.current = onSeleccionarArea
+    alTenerEscena.current = onEscena
   })
+
+  useEffect(() => {
+    if (!escena || !datos) return
+    alTenerEscena.current?.({ escena, datos })
+    return () => alTenerEscena.current?.(null)
+  }, [escena, datos])
 
   const grupos = useMemo(() => (datos ? agruparAreas(datos) : null), [datos])
   // Una entrada por área (las de varios polígonos, una vez) en orden alfabético: es el orden de la lista y del foco.

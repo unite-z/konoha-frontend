@@ -1,4 +1,30 @@
 .raiz {
+  position: relative;
+  z-index: 1;
   min-height: 100dvh;
   background: var(--color-bg-page);
+  transition: background-color var(--movimiento-normal) var(--curva-salida);
+}
+
+/*
+ * Con el mapa detrás, el fondo es transparente y el contenido deja pasar el ratón al mapa: solo reciben eventos los
+ * elementos de la vista. Un contenedor que ocupe la pantalla entera se marca con `data-mapa-libre` para no taparlo.
+ */
+.raiz[data-mapa='visible'] {
+  background: transparent;
+  pointer-events: none;
+}
+
+.raiz[data-mapa='visible'] * {
+  pointer-events: auto;
+}
+
+.raiz[data-mapa='visible'] [data-mapa-libre] {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raiz {
+    transition: none;
+  }
 }

@@ -18,3 +18,8 @@ export function observarTema(alCambiar: () => void): () => void {
   observador.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema', 'data-acento'] })
   return () => observador.disconnect()
 }
+
+/** Valor de un token CSS cualquiera (`--color-success`…) aplicado ahora mismo. Vacío si no existe. */
+export function leerToken(token: string, elemento: Element = document.documentElement): string {
+  return getComputedStyle(elemento).getPropertyValue(token).trim()
+}

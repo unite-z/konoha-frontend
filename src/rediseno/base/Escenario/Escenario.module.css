@@ -1,0 +1,32 @@
+/* El mapa 3D del layout: una sola vez, detrás del contenido. Sin vista de mapa se difumina y deja de recibir el ratón. */
+.escenario {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--mapa-fondo);
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--movimiento-normal) var(--curva-salida),
+    filter var(--movimiento-normal) var(--curva-salida),
+    visibility 0s linear 0s;
+}
+
+.escenario[data-visible='false'] {
+  visibility: hidden;
+  opacity: 0;
+  filter: blur(var(--space-4));
+  pointer-events: none;
+  transition:
+    opacity var(--movimiento-normal) var(--curva-salida),
+    filter var(--movimiento-normal) var(--curva-salida),
+    visibility 0s linear var(--movimiento-normal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escenario,
+  .escenario[data-visible='false'] {
+    filter: none;
+    transition: opacity var(--movimiento-rapido) linear;
+  }
+}

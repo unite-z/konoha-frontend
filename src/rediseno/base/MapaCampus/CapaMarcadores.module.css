@@ -1,0 +1,62 @@
+/* Los marcadores cuelgan de la capa de etiquetas (pointer-events: none): cada botón se vuelve a activar. */
+.marcador {
+  display: inline-grid;
+  min-width: var(--space-6);
+  height: var(--space-6);
+  place-items: center;
+  padding: 0 var(--space-1);
+  border: var(--vidrio-borde);
+  border-radius: var(--radius-full);
+  background: var(--vidrio-relleno-denso);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra-lente);
+  color: var(--color-text-primary);
+  font-size: var(--type-leyenda-size);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform var(--movimiento-rapido) var(--curva-salida);
+}
+
+.marcador:hover {
+  transform: scale(1.12);
+}
+
+.marcador:focus-visible {
+  outline: 2px solid var(--web-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.punto {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  background: var(--color-neutral);
+}
+
+.punto[data-tono='info'] {
+  background: var(--color-info);
+}
+
+.punto[data-tono='exito'] {
+  background: var(--color-success);
+}
+
+.punto[data-tono='aviso'] {
+  background: var(--color-warning);
+}
+
+.punto[data-tono='error'] {
+  background: var(--color-error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marcador {
+    transition: none;
+  }
+
+  .marcador:hover {
+    transform: none;
+  }
+}

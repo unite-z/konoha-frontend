@@ -14,7 +14,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js'
 import type { DatosCampus } from '@/types/campus3d'
 import type { GruposAreas } from './areas'
-import { leerPaleta, type ClavePaleta } from './paleta'
+import { leerPaleta, leerToken, type ClavePaleta } from './paleta'
 
 export type VistaMapa = 'iso' | 'planta' | 'baja'
 
@@ -32,8 +32,40 @@ export interface OpcionesEscena {
   grupos: GruposAreas
 }
 
+/** Áreas (posiciones en `datos.areas`, cualquier parte) que se colorean con un token CSS (`--color-success`…). */
+export interface GrupoColor {
+  indices: readonly number[]
+  token: string
+}
+
+/** Huella dibujada encima del campus base: un anillo por polígono, en metros (listas planas [x0, y0, x1, y1, …]). */
+export interface GeometriaViva {
+  id: string
+  anillos: readonly number[][]
+}
+
+export interface GeometriasDibujadas {
+  /** Resalta la geometría con ese id (o ninguna) como las áreas del campus base. */
+  seleccionar: (id: string | null) => void
+  quitar: () => void
+}
+
 export interface Escena {
   repintar: () => void
+  /** Colorea áreas por token CSS sin regenerar el campus. Devuelve la función que quita la capa. */
+  pintarAreas: (grupos: readonly GrupoColor[]) => () => void
+  /** Oculta el borde de las áreas del campus base (posiciones en `datos.areas`). Devuelve la función que las restituye. */
+  ocultarAreas: (indices: readonly number[]) => () => void
+  /** Dibuja huellas nuevas o cambiadas; se eligen con clic como las del campus base (`alPulsar` recibe su id). */
+  dibujarGeometrias: (geometrias: readonly GeometriaViva[], alPulsar: (id: string) => void) => GeometriasDibujadas
+  /** Cuelga un elemento HTML de un punto (metros) sobre el suelo. Devuelve la función que lo retira. */
+  anclar: (elemento: HTMLElement, x: number, y: number, alto?: number) => () => void
+  /** Metros de escena por píxel de pantalla con el zoom actual. */
+  metrosPorPixel: () => number
+  /** Avisa cuando el zoom o el tamaño cambian de forma apreciable. Devuelve la función que deja de avisar. */
+  alCambiarCamara: (oyente: () => void) => () => void
+  /** Vuela a un punto (metros), acercando por `factor`. */
+  enfocar: (x: number, y: number, factor?: number) => void
   irAVista: (vista: VistaMapa) => void
   /** Vuela al área; con `null` deshace el vuelo y vuelve a donde estaba la cámara. */
   irAArea: (indice: number | null) => void
@@ -186,9 +218,20 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     pintables.push([material.color, clave])
     return material
   }
+  /** Colores de las capas externas: se leen de un token CSS y se repintan igual que la paleta. */
+  const pintablesToken: Array<[THREE.Color, string]> = []
+  const despintar = (material: { color: THREE.Color }) => {
+    for (const lista of [pintables, pintablesToken] as Array<Array<[THREE.Color, unknown]>>) {
+      for (let i = lista.length - 1; i >= 0; i--) if (lista[i][0] === material.color) lista.splice(i, 1)
+    }
+  }
   function repintar() {
     const paleta = leerPaleta()
     for (const [color, clave] of pintables) if (paleta[clave]) color.set(paleta[clave])
+    for (const [color, token] of pintablesToken) {
+      const valor = leerToken(token)
+      if (valor) color.set(valor)
+    }
     if (paleta.fondo) renderer.setClearColor(paleta.fondo)
     pedir()
   }
@@ -278,10 +321,21 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     new THREE.MeshBasicMaterial({ visible: false }),
   )
   scene.add(mallaAreas)
-  const bordes = unir(
-    datos.areas.map((a) => conAtributo(segmentos([a.p], 0.15, true), 'retardo', retardoDe(a.p[0], a.p[1], 0.25, 1.0))),
+  const ocultaciones = new Set<ReadonlySet<number>>()
+  const estaOculta = (indice: number) => [...ocultaciones].some((c) => c.has(indice))
+  const construirBordes = () =>
+    unir(
+      datos.areas.flatMap((a, i) =>
+        estaOculta(i)
+          ? []
+          : [conAtributo(segmentos([a.p], 0.15, true), 'retardo', retardoDe(a.p[0], a.p[1], 0.25, 1.0))],
+      ),
+    )
+  const mallaBordes = new THREE.LineSegments(
+    construirBordes(),
+    aparecer(pintar(new THREE.LineBasicMaterial(), 'verde'), 'areas'),
   )
-  scene.add(new THREE.LineSegments(bordes, aparecer(pintar(new THREE.LineBasicMaterial(), 'verde'), 'areas')))
+  scene.add(mallaBordes)
   const marcaMaterial = (opacidad: number) =>
     pintar(
       new THREE.MeshBasicMaterial({
@@ -483,9 +537,16 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     if (controles.update()) sigue = true
     renderer.render(scene, camera)
     capaEtiquetas.render(scene, camera)
+    if (Math.abs(camera.zoom / zoomAvisado - 1) > 0.02) avisarCamara()
     if (sigue) pedir()
   }
   controles.addEventListener('change', pedir)
+  const oyentesCamara = new Set<() => void>()
+  let zoomAvisado = camera.zoom
+  function avisarCamara() {
+    zoomAvisado = camera.zoom
+    for (const oyente of oyentesCamara) oyente()
+  }
 
   function ajustarTamano() {
     const alto = altoVisible()
@@ -497,6 +558,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     controles.maxZoom = 12 * escala()
     renderer.setSize(tamano().ancho, tamano().alto)
     capaEtiquetas.setSize(tamano().ancho, tamano().alto)
+    avisarCamara()
     pedir()
   }
   const observadorTamano = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(ajustarTamano)
@@ -506,6 +568,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   // --- clic en un área
   const rayo = new THREE.Raycaster()
   const puntero = new THREE.Vector2()
+  const mallasVivas = new Set<THREE.Mesh>()
   let abajo: [number, number] | null = null
   let clicDeSalto = false
   const alBajar = (e: PointerEvent) => {
@@ -518,7 +581,17 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     const r = renderer.domElement.getBoundingClientRect()
     puntero.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
     rayo.setFromCamera(puntero, camera)
-    const cara = rayo.intersectObject(mallaAreas)[0]?.face
+    const viva = rayo.intersectObjects([...mallasVivas])[0]
+    if (viva?.face) {
+      const malla = viva.object as THREE.Mesh
+      const alPulsar = malla.userData.alPulsar as (id: string) => void
+      const ids = malla.userData.ids as string[]
+      alPulsar(ids[malla.geometry.attributes.area.getX(viva.face.a)])
+      return
+    }
+    const cara = rayo
+      .intersectObject(mallaAreas)
+      .find((impacto) => impacto.face && !estaOculta(mallaAreas.geometry.attributes.area.getX(impacto.face.a)))?.face
     opciones.alSeleccionar(cara ? grupos.principal[mallaAreas.geometry.attributes.area.getX(cara.a)] : null)
   }
   renderer.domElement.addEventListener('pointerdown', alBajar)
@@ -529,7 +602,9 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   const marcar = (malla: THREE.Mesh, indice: number | null) => {
     malla.geometry.dispose()
     malla.geometry =
-      indice === null ? new THREE.BufferGeometry() : unir(partesDe(indice).map((i) => plano(datos.areas[i].p, 0.2)))
+      indice === null || estaOculta(indice)
+        ? new THREE.BufferGeometry()
+        : unir(partesDe(indice).map((i) => plano(datos.areas[i].p, 0.2)))
   }
   function irAArea(indice: number | null) {
     const valido = indice !== null && indice >= 0 && indice < datos.areas.length
@@ -554,6 +629,112 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
       },
       900,
     )
+  }
+
+  // --- capas públicas (AV-426): colores, geometrías vivas y marcadores. Reciben los datos del módulo.
+  function pintarAreas(grupoColores: readonly GrupoColor[]) {
+    const mallas = grupoColores
+      .filter((g) => g.indices.length > 0)
+      .map(({ indices, token }) => {
+        const material = new THREE.MeshBasicMaterial({
+          transparent: true,
+          opacity: 0.72,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -2,
+          polygonOffsetUnits: -2,
+        })
+        pintablesToken.push([material.color, token])
+        const malla = new THREE.Mesh(unir(indices.map((i) => plano(datos.areas[i].p, 0.16))), material)
+        scene.add(malla)
+        return malla
+      })
+    repintar()
+    return () => {
+      for (const malla of mallas) {
+        scene.remove(malla)
+        malla.geometry.dispose()
+        despintar(malla.material as THREE.MeshBasicMaterial)
+        ;(malla.material as THREE.MeshBasicMaterial).dispose()
+      }
+      pedir()
+    }
+  }
+
+  function ocultarAreas(indices: readonly number[]) {
+    const conjunto = new Set(indices)
+    ocultaciones.add(conjunto)
+    const reconstruir = () => {
+      mallaBordes.geometry.dispose()
+      mallaBordes.geometry = construirBordes()
+      pedir()
+    }
+    reconstruir()
+    return () => {
+      ocultaciones.delete(conjunto)
+      reconstruir()
+    }
+  }
+
+  function dibujarGeometrias(
+    geometrias: readonly GeometriaViva[],
+    alPulsar: (id: string) => void,
+  ): GeometriasDibujadas {
+    const anillos = geometrias.flatMap((g, i) => g.anillos.map((p) => ({ p, i })))
+    const relleno = new THREE.Mesh(
+      unir(anillos.map(({ p }) => plano(p, 0.13))),
+      pintar(
+        new THREE.MeshBasicMaterial({ polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
+        'cesped',
+      ),
+    )
+    const lineas = new THREE.LineSegments(
+      segmentos(
+        anillos.map(({ p }) => p),
+        0.17,
+        true,
+      ),
+      pintar(new THREE.LineBasicMaterial(), 'verde'),
+    )
+    const eleccion = new THREE.Mesh(
+      unir(anillos.map(({ p, i }) => conAtributo(plano(p, 0.14), 'area', i))),
+      new THREE.MeshBasicMaterial({ visible: false }),
+    )
+    eleccion.userData = { alPulsar, ids: geometrias.map((g) => g.id) }
+    const marca = new THREE.Mesh(new THREE.BufferGeometry(), marcaMaterial(0.85))
+    scene.add(relleno, lineas, eleccion, marca)
+    mallasVivas.add(eleccion)
+    repintar()
+    return {
+      seleccionar: (id) => {
+        marca.geometry.dispose()
+        const destino = geometrias.find((g) => g.id === id)
+        marca.geometry = destino ? unir(destino.anillos.map((p) => plano(p, 0.2))) : new THREE.BufferGeometry()
+        pedir()
+      },
+      quitar: () => {
+        mallasVivas.delete(eleccion)
+        for (const objeto of [relleno, lineas, eleccion, marca]) {
+          scene.remove(objeto)
+          objeto.geometry.dispose()
+          despintar(objeto.material as THREE.MeshBasicMaterial)
+          ;(objeto.material as THREE.Material).dispose()
+        }
+        pedir()
+      },
+    }
+  }
+
+  function anclar(elemento: HTMLElement, x: number, y: number, alto = 3) {
+    const objeto = new CSS2DObject(elemento)
+    objeto.position.set(x, alto, -y)
+    scene.add(objeto)
+    pedir()
+    return () => {
+      scene.remove(objeto)
+      elemento.remove()
+      pedir()
+    }
   }
 
   repintar()
@@ -589,6 +770,19 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   const v2 = new THREE.Vector3()
   return {
     repintar,
+    pintarAreas,
+    ocultarAreas,
+    dibujarGeometrias,
+    anclar,
+    metrosPorPixel: () => (camera.top - camera.bottom) / camera.zoom / tamano().alto,
+    alCambiarCamara: (oyente) => {
+      oyentesCamara.add(oyente)
+      return () => oyentesCamara.delete(oyente)
+    },
+    enfocar: (x, y, factor = 2) => {
+      const ahora = estadoCamara()
+      volar({ ...ahora, cx: x, cz: -y, z: Math.min(controles.maxZoom, ahora.z * factor) }, 600)
+    },
     irAVista: (vista) => volar(vistaDe(vista)),
     irAArea,
     resaltar: (indice) => {

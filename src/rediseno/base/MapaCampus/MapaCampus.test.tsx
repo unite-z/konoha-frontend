@@ -66,6 +66,14 @@ describe('MapaCampus (AV-424)', () => {
     expect(screen.getByText(/OpenStreetMap contributors/)).toBeTruthy()
   })
 
+  it('publica la escena y los datos para las capas y avisa con null al destruirse', async () => {
+    const alTenerEscena = vi.fn()
+    const { unmount } = render(<MapaCampus onSeleccionarArea={() => {}} onEscena={alTenerEscena} />)
+    await waitFor(() => expect(alTenerEscena).toHaveBeenCalledWith({ escena, datos }))
+    unmount()
+    expect(alTenerEscena).toHaveBeenLastCalledWith(null)
+  })
+
   it('la construcción no se repite en la misma sesión ni con reducir movimiento', async () => {
     sessionStorage.setItem(CLAVE_CONSTRUCCION, '1')
     render(<MapaCampus onSeleccionarArea={() => {}} />)
