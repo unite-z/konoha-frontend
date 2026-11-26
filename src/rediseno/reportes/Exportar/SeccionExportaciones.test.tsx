@@ -70,6 +70,16 @@ const tipos: TipoExportable[] = [
     limite_filas: null,
   },
   {
+    tipo: 'DistribucionPersonal',
+    nombre: 'Distribución del personal',
+    descripcion: 'Horas por cuadrilla',
+    formatos: ['PDF', 'Excel'],
+    filtros: ['periodo'],
+    disponible: true,
+    motivo_no_disponible: null,
+    limite_filas: null,
+  },
+  {
     tipo: 'MatrizIncidencias',
     nombre: 'Matriz de incidencias',
     descripcion: 'Incidencias por espacio',
@@ -180,6 +190,30 @@ describe('Reportes · Exportar (RD-62)', () => {
     })) as HTMLInputElement
     expect(elegido.checked).toBe(true)
     expect((within(panel).getByLabelText(/Mes/) as HTMLInputElement).value).toBe('2026-09')
+  })
+
+  it('la URL precarga también el formato y el periodo', async () => {
+    montar('/n/reportes?tipo=DistribucionPersonal&desde=2026-10-01&hasta=2026-10-31&formato=Excel')
+    const panel = await screen.findByRole('complementary', { name: 'Exportar reporte' })
+    const elegido = (await within(panel).findByRole('radio', { name: /Distribución del personal/ })) as HTMLInputElement
+    expect(elegido.checked).toBe(true)
+    expect((within(panel).getByLabelText(/Desde/) as HTMLInputElement).value).toBe('2026-10-01')
+    expect((within(panel).getByLabelText(/Hasta/) as HTMLInputElement).value).toBe('2026-10-31')
+    expect((within(panel).getByRole('radio', { name: /Excel/ }) as HTMLInputElement).checked).toBe(true)
+  })
+
+  it('?mes= solo (filtro de un informe) no abre el panel', async () => {
+    montar('/n/reportes?mes=2026-10')
+    expect(await screen.findByText('Octubre de 2026')).toBeTruthy()
+    expect(screen.queryByRole('complementary')).toBeNull()
+  })
+
+  it('con el panel de un indicador abierto no se superpone; «Exportar» lo sustituye', async () => {
+    const usuario = userEvent.setup()
+    montar('/n/reportes?indicador=actividades-por-estado&tipo=MaterialVegetal')
+    await usuario.click(await screen.findByRole('button', { name: 'Exportar' }))
+    expect(await screen.findByRole('complementary', { name: 'Exportar reporte' })).toBeTruthy()
+    expect(screen.getByLabelText('url').textContent).not.toContain('indicador')
   })
 
   it('generar crea el reporte, refresca el historial y cierra el panel', async () => {

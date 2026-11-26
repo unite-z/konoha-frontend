@@ -15,6 +15,16 @@ describe('rutaReportes', () => {
       `${RUTA_REPORTES}?desde=2026-11-01&informe=material-vegetal`,
     )
   })
+
+  it('abre el panel «Exportar», precargado con ?tipo=&mes=, y lo cierra al elegir otro panel', () => {
+    expect(rutaReportes({ exportar: {} })).toBe(`${RUTA_REPORTES}?exportar=1`)
+    expect(rutaReportes({ exportar: { tipo: 'MaterialVegetal', mes: '2026-10' } })).toBe(
+      `${RUTA_REPORTES}?tipo=MaterialVegetal&mes=2026-10`,
+    )
+    expect(rutaReportes({ indicador: 'a', filtros: 'desde=2026-11-01&exportar=1&tipo=GestionOSG&formato=Excel' })).toBe(
+      `${RUTA_REPORTES}?desde=2026-11-01&indicador=a`,
+    )
+  })
 })
 
 describe('frasesResumen', () => {

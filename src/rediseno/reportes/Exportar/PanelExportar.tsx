@@ -7,18 +7,18 @@ import EstadoVacio from '@/design-system/EstadoVacio'
 import type { ResultadoConsulta } from '@/hooks/useConsulta'
 import FormularioExportacion from '@/pages/reportes-indicadores/exportaciones/FormularioExportacion'
 import type { ReporteGenerado, TipoExportable } from '@/types/exportaciones'
+import type { FiltrosExportacion } from '@/utils/exportaciones'
 import { mesActualLima } from '@/utils/reportesGestion'
 import { mesEnCursoHastaHoy } from '@/utils/reporteServicio'
-import { nombresTransicion } from '../../base/movimiento'
-import PanelLateral from '../../base/PanelLateral/PanelLateral'
+import PanelLateral from '@/rediseno/base/PanelLateral/PanelLateral'
 import { TRANSICION_EXPORTAR } from './transicionExportar'
 
 export interface PanelExportarProps {
   abierto: boolean
   onCerrar: () => void
   tipos: ResultadoConsulta<TipoExportable[]>
-  /** Valores de la URL (`?tipo=&mes=&formato=`); vacíos si no vienen. */
-  precarga: { tipo: string; mes: string; formato: string }
+  /** Valores de la URL (`?tipo=&formato=` y los filtros, como `&mes=`); lo que no venga toma el predeterminado. */
+  precarga: { tipo: string; formato: string; filtros: Partial<FiltrosExportacion> }
   onGenerado: (reporte: ReporteGenerado) => void
 }
 
@@ -56,11 +56,12 @@ function Contenido({ tipos, precarga, onGenerado }: Omit<PanelExportarProps, 'ab
       filtrosIniciales={{
         desde: predeterminado.desde,
         hasta: predeterminado.hasta,
-        mes: precarga.mes || predeterminado.mes,
+        mes: predeterminado.mes,
         tipo_servicio_id: '',
         proveedor_id: '',
         area_verde_id: '',
         modalidad: '',
+        ...precarga.filtros,
       }}
       onGenerado={onGenerado}
     />
@@ -75,7 +76,7 @@ export default function PanelExportar({ abierto, onCerrar, ...resto }: PanelExpo
       onCerrar={onCerrar}
       titulo="Exportar reporte"
       subtitulo="PDF o Excel"
-      viewTransitionName={abierto ? TRANSICION_EXPORTAR : nombresTransicion.panel}
+      viewTransitionName={TRANSICION_EXPORTAR}
     >
       <Contenido {...resto} />
     </PanelLateral>

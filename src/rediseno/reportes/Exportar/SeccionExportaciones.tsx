@@ -9,7 +9,7 @@ import HistorialExportaciones from '@/pages/reportes-indicadores/exportaciones/H
 import { listarExportaciones, listarTiposExportables } from '@/services/api/exportaciones'
 import { useSesionActiva } from '@/sesion/ContextoSesion'
 import type { ReporteGenerado, TipoReporte } from '@/types/exportaciones'
-import { estiloTransicion, transicionar } from '../../base/movimiento'
+import { estiloTransicion, transicionar } from '@/rediseno/base/movimiento'
 import PanelExportar from './PanelExportar'
 import { TRANSICION_EXPORTAR } from './transicionExportar'
 import estilos from './Exportar.module.css'
@@ -98,7 +98,7 @@ export default function SeccionExportaciones() {
             ...tipos,
             datos: tipos.datos ? conMatrizDeshabilitada(tipos.datos) : null,
           }}
-          precarga={{ tipo: url.tipo, mes: url.mes, formato: url.formato }}
+          precarga={{ tipo: url.tipo, formato: url.formato, filtros: url.filtros }}
           onGenerado={alGenerado}
         />
       )}
