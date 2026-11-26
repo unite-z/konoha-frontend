@@ -23,7 +23,7 @@ export interface SesionCore {
 
 /** Tema y color de acento elegidos en Configuración → Apariencia (`PUT auth/apariencia/`, AV-391). */
 export interface AparienciaCuenta {
-  tema: 'claro' | 'calido' | 'oscuro' | 'sistema'
+  tema: 'claro' | 'calido' | 'amarillento' | 'oscuro' | 'sistema'
   acento: 'institucional' | 'azul' | 'verde' | 'morado' | 'magenta'
   /** «Diseño nuevo» (AV-414): `null` si nunca eligió; ausente si el backend aún no lo admite. */
   diseno_nuevo?: boolean | null
