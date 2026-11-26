@@ -39,6 +39,10 @@ export interface IncidenciaResumen {
   fecha_cierre: InstanteIso | null
   /** Capataz o proveedor a cargo, si ya se derivó. */
   responsable: string | null
+  /** Área verde de MOD-02 (AV-436): sitúa la incidencia en el mapa; ausente o nula si el servidor no la envía. */
+  area_verde_id?: number | null
+  /** Ejemplar de MOD-02 (AV-436), si la incidencia es de un árbol. */
+  ejemplar_id?: number | null
 }
 
 /**

@@ -66,7 +66,8 @@ describe('PuertaRediseno y rutas /n (AV-420)', () => {
     montar('/n/incidencias')
     expect(screen.getByRole('heading', { name: 'El diseño nuevo está desactivado' })).toBeTruthy()
     await userEvent.setup().click(screen.getByRole('button', { name: 'Activar diseño nuevo' }))
-    expect(screen.getByRole('heading', { name: 'Incidencias: en construcción' })).toBeTruthy()
+    // Ya es la vista real de Incidencias (AV-432): la sesión de prueba no tiene permisos y enseña «sin acceso».
+    expect(screen.getByRole('heading', { name: 'No puedes ver las incidencias' })).toBeTruthy()
     expect(datos.get(CLAVE_DISENO_NUEVO)).toBe('1')
     expect(document.documentElement.dataset.tema).toBe('amarillento')
   })
