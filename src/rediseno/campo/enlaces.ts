@@ -11,6 +11,11 @@ export const SEGMENTO_MAS = 'mas'
 /** Parámetro de la URL con el jardín cuya hoja «ya está marcado» está abierta. */
 export const PARAM_JARDIN = 'jardin'
 
+/** Parámetro con la hoja «Reportar incidencia» abierta (RD-70). */
+export const PARAM_REPORTAR = 'reportar'
+/** Parámetro con el id de la incidencia propia cuya hoja de seguimiento está abierta (RD-70). */
+export const PARAM_INCIDENCIA = 'incidencia'
+
 /** Entrada de campo: lleva a la ruta de hoy. */
 export function rutaCampo(): string {
   return RUTA_CAMPO
@@ -39,6 +44,16 @@ export function rutaCampoEncargos(): string {
 /** Reportar y seguir incidencias en el móvil (RD-70, V14). */
 export function rutaCampoIncidencias(): string {
   return `${RUTA_CAMPO}/${SEGMENTO_INCIDENCIAS}`
+}
+
+/** Incidencias con la hoja «Reportar incidencia» abierta. */
+export function rutaCampoReportarIncidencia(): string {
+  return `${rutaCampoIncidencias()}?${PARAM_REPORTAR}=1`
+}
+
+/** Incidencias con la hoja de seguimiento de una incidencia propia abierta. */
+export function rutaCampoIncidencia(id: number): string {
+  return `${rutaCampoIncidencias()}?${PARAM_INCIDENCIA}=${id}`
 }
 
 /** Menú «Más» del capataz: lo que la barra inferior no enseña. */

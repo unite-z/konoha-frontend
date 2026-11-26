@@ -1,0 +1,258 @@
+/* Incidencias del capataz en el móvil (RD-70): fondo liso, una columna; vidrio en el encabezado, la banda y las filas. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+}
+
+.encabezado,
+.banda,
+.fila {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+  color: var(--color-text-primary);
+}
+
+.encabezado {
+  justify-content: space-between;
+}
+
+.tituloPagina {
+  margin: 0;
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.tituloPagina:focus-visible {
+  outline: none;
+}
+
+.banda p {
+  margin: 0;
+}
+
+.bandaTitulo {
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.filaPulsable {
+  width: 100%;
+  border: 0;
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.filaPulsable:hover {
+  background: var(--vidrio-relleno-lente);
+}
+
+.textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+  font-weight: var(--type-cuerpo-medio-weight);
+}
+
+.detalle {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.miniatura,
+.fotoElegida,
+.evidencia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.miniatura {
+  flex-shrink: 0;
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-md);
+}
+
+.miniatura img,
+.fotoElegida img,
+.evidencia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hoja «Reportar incidencia». */
+.formulario,
+.seguimiento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rotulo {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.asterisco {
+  color: var(--color-error);
+}
+
+.errorCampo {
+  margin: var(--space-1) 0 0;
+  color: var(--color-error);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.fotos {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.fotoElegida {
+  width: 6.875rem;
+  height: 5.125rem;
+  border-radius: var(--radius-lg);
+}
+
+/* Hoja de seguimiento. */
+.cabeceraSeguimiento {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tipoSeguimiento {
+  flex: 1;
+  margin: 0;
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.tiempoCierre {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.cifraCierre {
+  color: var(--color-text-primary);
+  font-size: var(--type-cifra-size);
+  line-height: var(--type-cifra-line);
+  font-weight: var(--type-cifra-weight);
+}
+
+.pasos {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-8);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+/* La línea entre puntos, salvo en el último paso. */
+.paso:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  bottom: -50%;
+  left: calc(var(--space-3) / 2 - var(--space-1) / 4);
+  width: calc(var(--space-1) / 2);
+  background: var(--color-border-default);
+  content: '';
+}
+
+.puntoPaso {
+  z-index: 1;
+  flex-shrink: 0;
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+}
+
+.nombrePaso {
+  flex: 1;
+  color: var(--color-text-primary);
+}
+
+.fechaPaso {
+  color: var(--color-text-muted);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.pasoHecho .puntoPaso {
+  background: var(--color-success);
+}
+
+.pasoEnCurso .puntoPaso {
+  background: var(--color-action-primary);
+}
+
+.pasoHecho .nombrePaso,
+.pasoEnCurso .nombrePaso {
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.evidencia {
+  height: 8.75rem;
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .filaPulsable {
+    transition: background-color var(--movimiento-rapido) var(--curva-salida);
+  }
+}
