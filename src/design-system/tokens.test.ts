@@ -60,6 +60,14 @@ describe('tema amarillento', () => {
     expect(contraste(t['--color-border-strong'], t['--color-bg-field'])).toBeGreaterThanOrEqual(3)
   })
 
+  it('texto sobre la selección del menú cumple 4,5:1', () => {
+    expect(contraste(t['--color-text-muted'], t['--color-sidebar-active-bg'])).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('el anillo de foco cumple 3:1 sobre el fondo', () => {
+    expect(contraste(variables(':root')['--web-focus-ring-color'], t['--color-bg-page'])).toBeGreaterThanOrEqual(3)
+  })
+
   it('define las variables del mapa', () => {
     for (const n of ['fondo', 'isla', 'cesped', 'tinta', 'verde', 'pared', 'arbol', 'sel']) {
       expect(t[`--mapa-${n}`]).toMatch(/^#[0-9a-f]{6}$/)
@@ -67,34 +75,74 @@ describe('tema amarillento', () => {
   })
 })
 
-describe('mapa y vidrio en todos los temas', () => {
-  it.each([':root', ":root[data-tema='calido']", ":root[data-tema='oscuro']"])(
-    '%s define --mapa-* y tokens nuevos',
-    (selector) => {
-      // el primer bloque :root es el de color claro; el de mapa está en otro bloque :root
-      const bloque = selector === ':root' ? css : variables(selector)
-      const texto = typeof bloque === 'string' ? bloque : JSON.stringify(bloque)
-      for (const n of ['fondo', 'isla', 'cesped', 'tinta', 'verde', 'pared', 'arbol', 'sel']) {
-        expect(texto).toContain(`--mapa-${n}`)
-      }
-    },
-  )
+const MAPA = ['fondo', 'isla', 'cesped', 'tinta', 'verde', 'pared', 'arbol', 'sel']
+const TOKENS_NUEVOS = [
+  '--color-bg-field',
+  '--color-bg-done',
+  '--color-neutral',
+  '--color-chart',
+  '--color-text-on-dark',
+]
 
-  it('define las tres variantes de vidrio en claro y oscuro', () => {
-    const claro = css.slice(css.indexOf('--vidrio-relleno:'))
-    expect(claro).toContain('--vidrio-relleno-denso')
-    expect(claro).toContain('--vidrio-relleno-lente')
+/** Cuerpos de todos los bloques cuyo selector es exactamente `selector` (inicio de línea). */
+function cuerpos(selector: string): string[] {
+  const salida: string[] = []
+  const re = new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`, 'gm')
+  for (const m of css.matchAll(re)) salida.push(m[1])
+  return salida
+}
+
+describe('mapa y vidrio en todos los temas', () => {
+  it('claro (:root) define --mapa-*', () => {
+    const texto = cuerpos(':root').join('\n')
+    for (const n of MAPA) expect(texto).toContain(`--mapa-${n}:`)
+  })
+
+  it.each(['calido', 'amarillento', 'oscuro'])('el tema %s define --mapa-*', (tema) => {
+    const t = variables(`:root[data-tema='${tema}']`)
+    for (const n of MAPA) expect(t[`--mapa-${n}`]).toMatch(/^#[0-9a-f]{6}$/)
+  })
+
+  it.each(['claro', 'calido', 'amarillento', 'oscuro'])('el tema %s define los tokens nuevos', (tema) => {
+    const t =
+      tema === 'claro'
+        ? Object.fromEntries(
+            cuerpos(':root').flatMap((c) => [...c.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()])),
+          )
+        : variables(`:root[data-tema='${tema}']`)
+    for (const n of TOKENS_NUEVOS) expect(t[n], `${tema} ${n}`).toBeDefined()
+  })
+
+  it('amarillento define todos los tokens que define cálido', () => {
+    const amarillento = variables(":root[data-tema='amarillento']")
+    for (const n of Object.keys(variables(":root[data-tema='calido']"))) {
+      expect(amarillento[n], n).toBeDefined()
+    }
+  })
+
+  it('define las tres variantes de vidrio en :root y en oscuro', () => {
+    const claro = cuerpos(':root').find((c) => c.includes('--vidrio-relleno:')) ?? ''
+    expect(claro).toContain('--vidrio-relleno-denso:')
+    expect(claro).toContain('--vidrio-relleno-lente:')
     const oscuro = variables(":root[data-tema='oscuro']")
     expect(oscuro['--vidrio-relleno']).toBeDefined()
     expect(oscuro['--vidrio-relleno-denso']).toBeDefined()
     expect(oscuro['--vidrio-relleno-lente']).toBeDefined()
   })
 
-  it('tiene alternativa opaca sin backdrop-filter y con transparencia reducida', () => {
-    expect(css).toContain('@supports not (backdrop-filter: blur(1px))')
-    expect(css).toContain('@media (prefers-reduced-transparency: reduce)')
-    const opaco = css.slice(css.indexOf('@supports not'))
-    expect(opaco).toContain('--vidrio-relleno: var(--color-bg-surface)')
-    expect(opaco).toContain('--vidrio-desenfoque: none')
+  it('la alternativa opaca existe con @supports y con transparencia reducida, cada una con sus variables', () => {
+    for (const regla of [
+      '@supports not (backdrop-filter: blur(1px))',
+      '@media (prefers-reduced-transparency: reduce)',
+    ]) {
+      const inicio = css.indexOf(regla)
+      expect(inicio, regla).toBeGreaterThan(-1)
+      const bloque = css.slice(inicio, css.indexOf('}\n}', inicio))
+      expect(bloque).toContain(':root:root:root')
+      expect(bloque).toContain('--vidrio-relleno: var(--color-bg-surface)')
+      expect(bloque).toContain('--vidrio-relleno-denso: var(--color-bg-surface)')
+      expect(bloque).toContain('--vidrio-relleno-lente: var(--color-bg-surface)')
+      expect(bloque).toContain('--vidrio-desenfoque: none')
+    }
   })
 })

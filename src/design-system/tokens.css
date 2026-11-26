@@ -70,7 +70,9 @@
 
 /*
  * Vidrio (Liquid Glass, AV-413). Valores de los estilos de Figma. Con --vidrio-desenfoque va backdrop-filter.
- * La alternativa opaca está al final del fichero.
+ * La alternativa opaca está al final del fichero. Claro y cálido heredan estos valores de :root (relleno crema).
+ * --vidrio-borde es un atajo de los cuatro lados; Figma solo pone el borde claro arriba e izquierda, así que quien
+ * lo use debe aplicar --vidrio-borde-claro con border-top y border-left.
  */
 :root {
   --vidrio-relleno: rgba(255, 251, 237, 0.42);
@@ -432,6 +434,7 @@
 /*
  * Alternativa opaca del vidrio (AV-413): sin backdrop-filter o con prefers-reduced-transparency el relleno es la
  * tarjeta sin transparencia y no hay desenfoque. Va al final con más especificidad que los temas.
+ * Degradación aceptada: Safari/iOS anteriores a 18 solo admiten -webkit-backdrop-filter y también reciben la opaca.
  */
 @supports not (backdrop-filter: blur(1px)) {
   :root:root:root {
