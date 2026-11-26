@@ -19,20 +19,35 @@ import { rutaCampo } from '../campo/enlaces'
 import { rutaCuenta } from '../cuenta/enlaces'
 import { rutaIncidencias } from '../incidencias/enlaces'
 import { rutaMapa } from '../mapa/enlaces'
-import { rutaPlanificacion } from '../planificacion/enlaces'
+import {
+  rutaPlanificacion,
+  rutaPlanificacionCiclos,
+  rutaPlanificacionCuadrillas,
+  rutaPlanificacionReglas,
+} from '../planificacion/enlaces'
 import { PREFIJO_REDISENO } from '../prefijo'
-import { rutaProveedores } from '../proveedores/enlaces'
-import { rutaReportes } from '../reportes/enlaces'
+import {
+  PARAM_CONTRATO,
+  PARAM_EDITAR,
+  rutaAtenciones,
+  rutaProveedores,
+  VALOR_CONTRATO_NUEVO,
+} from '../proveedores/enlaces'
+import { INFORMES } from '../reportes/catalogoInformes'
+import { PARAMETRO_EXPORTAR, PARAMETRO_INDICADOR, PARAMETRO_INFORME, rutaReportes } from '../reportes/enlaces'
 
 type Parametros = Record<string, string>
 
 interface Regla {
   /** Ruta antigua; un segmento `:nombre` admite cualquier valor. */
   origen: string
-  /** Ruta nueva, siempre con el prefijo del diseño nuevo. */
-  destino: string
-  /** Parámetros de consulta que se añaden (la consulta de la URL antigua manda si ya los trae). */
-  consulta?: (parametros: Parametros) => Parametros
+  /** Ruta nueva, siempre con el prefijo del diseño nuevo; puede usar los segmentos `:nombre` del origen. */
+  destino: string | ((parametros: Parametros) => string)
+  /**
+   * Parámetros de consulta que se añaden. La consulta de la URL antigua manda: si ya trae la clave, no se pisa.
+   * Recibe la consulta antigua para no añadir lo que la vista nueva no necesita (p. ej. `?exportar=1` con `?tipo=`).
+   */
+  consulta?: (parametros: Parametros, antigua: URLSearchParams) => Parametros
 }
 
 export interface DestinoRediseno {
@@ -47,16 +62,34 @@ export interface DestinoRediseno {
 export const RUTAS_QUE_SE_CONSERVAN: readonly string[] = [RUTAS_CORE.ingreso, RUTAS_CORE.cambiarContrasena]
 
 const INICIO = PREFIJO_REDISENO
-const r = (origen: string, destino: string, consulta?: Regla['consulta']): Regla => ({ origen, destino, consulta })
+const r = (origen: string, destino: Regla['destino'], consulta?: Regla['consulta']): Regla => ({
+  origen,
+  destino,
+  consulta,
+})
 
 const PODA = RUTAS_INVENTARIO.campanasPoda
 const FITO = RUTAS_TERCERIZADOS.controlFitosanitario
 const PROVEEDORES_CONTRATOS = RUTAS_TERCERIZADOS.proveedoresContratos
 
+const CICLOS = rutaPlanificacionCiclos()
+const CUADRILLAS = rutaPlanificacionCuadrillas()
+const REGLAS_CICLO = rutaPlanificacionReglas()
+const ATENCIONES = rutaAtenciones()
+
+/** Vista «Actividades» de cuadrillas (M4-08 a M4-10): `?vista=actividades`, con el `?encargo_id=` que traiga. */
+const VISTA_ACTIVIDADES = () => ({ vista: 'actividades' })
+
+/** Informe del selector de Reportes (`?informe=<clave>`, M6-01), sacado del catálogo para no repetir las claves. */
+const reglasInformes = INFORMES.map(({ rutaActual, clave }) =>
+  r(rutaActual, rutaReportes(), () => ({ [PARAMETRO_INFORME]: clave })),
+)
+
 /**
- * Tabla ruta antigua → vista nueva (matriz de cobertura: N-06 a N-11, M2 a M6). Hasta que cada módulo construya sus
- * subrutas, el destino es la raíz de su sección; los parámetros del plan (`?area=`, `?incidencia=`, `?atencion_id=`…)
- * viajan en la consulta.
+ * Tabla ruta antigua → vista nueva (matriz de cobertura: N-06 a N-11, M3-01, M4-01, M5-01, M6-12 y las filas de cada
+ * pantalla). El destino es la vista nueva que ya existe bajo `/n` (o la raíz de su sección mientras su ticket no la
+ * construya) y los parámetros de «Puntos de entrada entre módulos» (`?area=`, `?incidencia=`, `?contrato=`,
+ * `?indicador=`…) viajan en la consulta.
  */
 const REGLAS: readonly Regla[] = [
   r('/', INICIO),
@@ -70,7 +103,7 @@ const REGLAS: readonly Regla[] = [
   r(RUTAS_INVENTARIO.catalogos, rutaMapa()),
   r(RUTAS_INVENTARIO.ejemplares, rutaMapa()),
   r(RUTAS_INVENTARIO.fichaTecnica, rutaMapa()),
-  r(`${RUTAS_INVENTARIO.ejemplares}/:id/ficha-tecnica`, rutaMapa()),
+  r(`${RUTAS_INVENTARIO.ejemplares}/:id/ficha-tecnica`, rutaMapa(), ({ id }) => ({ ejemplar: id })),
   r(PODA, rutaMapa()),
   r(RUTAS_INVENTARIO.nuevaCampanaPoda, rutaMapa()),
   r(`${PODA}/:id`, rutaMapa()),
@@ -80,17 +113,18 @@ const REGLAS: readonly Regla[] = [
   r(`${PODA}/:id/especies`, rutaMapa()),
   r(RUTAS_INVENTARIO.podaAltura, rutaMapa()),
   r(`${RUTAS_INVENTARIO.areasVerdes}/intervenciones-poda/:id`, rutaMapa()),
-  r(RUTAS_INVENTARIO.rutaCorte, rutaPlanificacion(), () => ({ seccion: 'ruta' })),
+  // M2-19: la ruta de corte pasa a Reglas del ciclo · «Ruta de corte».
+  r(RUTAS_INVENTARIO.rutaCorte, REGLAS_CICLO, () => ({ seccion: 'ruta' })),
 
-  // MOD-03 · planificación → Planificación; ruta de hoy del capataz → Campo
+  // MOD-03 · planificación → Planificación (M3-01); ruta de hoy del capataz → Campo (M3-22, M3-23)
   r(PREFIJO_PLANIFICACION, rutaPlanificacion()),
   r(RUTAS_PLANIFICACION.resumen, rutaPlanificacion()),
   r(RUTAS_PLANIFICACION.calendario, rutaPlanificacion()),
-  r(RUTAS_PLANIFICACION.ciclos, rutaPlanificacion()),
-  r(`${RUTAS_PLANIFICACION.ciclos}/:id`, rutaPlanificacion(), ({ id }) => ({ ciclo: id })),
-  r(RUTAS_PLANIFICACION.configuracion, rutaPlanificacion()),
-  r(RUTAS_PLANIFICACION_ANTIGUAS.servicios, rutaPlanificacion()),
-  r(RUTAS_PLANIFICACION_ANTIGUAS.restricciones, rutaPlanificacion()),
+  r(RUTAS_PLANIFICACION.ciclos, CICLOS),
+  r(`${RUTAS_PLANIFICACION.ciclos}/:id`, CICLOS, ({ id }) => ({ ciclo: id })),
+  r(RUTAS_PLANIFICACION.configuracion, REGLAS_CICLO),
+  r(RUTAS_PLANIFICACION_ANTIGUAS.servicios, REGLAS_CICLO),
+  r(RUTAS_PLANIFICACION_ANTIGUAS.restricciones, REGLAS_CICLO),
   r(PREFIJO_CORTE, rutaCampo()),
   r(RUTAS_CORTE.rutaDeHoy, rutaCampo()),
   r(RUTAS_CORTE.calendario, rutaCampo()),
@@ -101,28 +135,31 @@ const REGLAS: readonly Regla[] = [
   r(RUTAS_MIS_INCIDENCIAS.lista, rutaIncidencias()),
   r(`${RUTAS_MIS_INCIDENCIAS.lista}/:id`, rutaIncidencias(), ({ id }) => ({ incidencia: id })),
 
-  // MOD-04 · operación de campo → Planificación (cuadrillas)
-  r(BASE_CAMPO, rutaPlanificacion()),
-  r(RUTAS_CAMPO.ingreso, rutaPlanificacion()),
-  r(RUTAS_CAMPO.cuadrillas, rutaPlanificacion()),
-  r(RUTAS_CAMPO.encargos, rutaPlanificacion()),
-  r(RUTAS_CAMPO.actividades, rutaPlanificacion()),
-  r(RUTAS_CAMPO.participantes, rutaPlanificacion()),
-  r(RUTAS_CAMPO.catalogoActividades, rutaPlanificacion()),
+  // MOD-04 · operación de campo → Planificación · Cuadrillas (M4-01)
+  r(BASE_CAMPO, CUADRILLAS),
+  r(RUTAS_CAMPO.ingreso, CUADRILLAS),
+  r(RUTAS_CAMPO.cuadrillas, CUADRILLAS),
+  r(RUTAS_CAMPO.encargos, CUADRILLAS),
+  r(RUTAS_CAMPO.actividades, CUADRILLAS, VISTA_ACTIVIDADES),
+  r(RUTAS_CAMPO.participantes, CUADRILLAS, VISTA_ACTIVIDADES),
+  r(RUTAS_CAMPO.catalogoActividades, CUADRILLAS),
 
-  // MOD-05 · servicios tercerizados → Proveedores
+  // MOD-05 · servicios tercerizados → Proveedores (M5-01: contratos; atenciones en su pestaña)
   r(PREFIJO_TERCERIZADOS, rutaProveedores()),
   r(`${PREFIJO_TERCERIZADOS}/ingreso`, INICIO),
-  r(RUTAS_TERCERIZADOS.atenciones, rutaProveedores()),
-  r(RUTAS_TERCERIZADOS.nuevaAtencion, rutaProveedores()),
-  r(`${RUTAS_TERCERIZADOS.atenciones}/:id`, rutaProveedores(), ({ id }) => ({ atencion_id: id })),
+  r(RUTAS_TERCERIZADOS.atenciones, ATENCIONES),
+  r(RUTAS_TERCERIZADOS.nuevaAtencion, ATENCIONES),
+  r(`${RUTAS_TERCERIZADOS.atenciones}/:id`, ({ id }) => `${ATENCIONES}/${encodeURIComponent(id ?? '')}`),
   r(PROVEEDORES_CONTRATOS, rutaProveedores()),
   r(RUTAS_TERCERIZADOS.nuevoProveedor, rutaProveedores()),
   r(`${PROVEEDORES_CONTRATOS}/proveedores/:id`, rutaProveedores()),
   r(`${PROVEEDORES_CONTRATOS}/proveedores/:id/editar`, rutaProveedores()),
-  r(RUTAS_TERCERIZADOS.nuevoContrato, rutaProveedores()),
-  r(`${PROVEEDORES_CONTRATOS}/contratos/:id`, rutaProveedores()),
-  r(`${PROVEEDORES_CONTRATOS}/contratos/:id/editar`, rutaProveedores()),
+  r(RUTAS_TERCERIZADOS.nuevoContrato, rutaProveedores(), () => ({ [PARAM_CONTRATO]: VALOR_CONTRATO_NUEVO })),
+  r(`${PROVEEDORES_CONTRATOS}/contratos/:id`, rutaProveedores(), ({ id }) => ({ [PARAM_CONTRATO]: id })),
+  r(`${PROVEEDORES_CONTRATOS}/contratos/:id/editar`, rutaProveedores(), ({ id }) => ({
+    [PARAM_CONTRATO]: id,
+    [PARAM_EDITAR]: '1',
+  })),
   r(FITO, rutaProveedores()),
   r(RUTAS_TERCERIZADOS.marcarEjemplar, rutaProveedores()),
   r(RUTAS_TERCERIZADOS.planFitosanitario, rutaProveedores()),
@@ -139,15 +176,12 @@ const REGLAS: readonly Regla[] = [
   // MOD-06 · reportes e indicadores → Reportes; cada asistente de IA vive en su módulo (M6-12)
   r(PREFIJO_MODULO, rutaReportes()),
   r(RUTAS.reportes, rutaReportes()),
-  r(RUTAS.cumplimientoCorte, rutaReportes()),
-  r(RUTAS.distribucionPersonal, rutaReportes()),
-  r(RUTAS.atencionesEspacioSector, rutaReportes()),
-  r(RUTAS.materialVegetal, rutaReportes()),
-  r(RUTAS.reporteServicioTercerizado, rutaReportes()),
-  r(RUTAS.programadoEjecutado, rutaReportes()),
+  ...reglasInformes,
   r(RUTAS.panel, rutaReportes()),
-  r(`${RUTAS.panel}/:indicador`, rutaReportes(), ({ indicador }) => ({ informe: indicador })),
-  r(RUTAS.exportaciones, rutaReportes()),
+  r(`${RUTAS.panel}/:indicador`, rutaReportes(), ({ indicador }) => ({ [PARAMETRO_INDICADOR]: indicador })),
+  r(RUTAS.exportaciones, rutaReportes(), (_, antigua): Parametros =>
+    antigua.has('tipo') ? {} : { [PARAMETRO_EXPORTAR]: '1' },
+  ),
   r(RUTAS.mapaAtenciones, rutaMapa(), () => ({ capa: 'atenciones' })),
   r(RUTAS.asistenciaIa, rutaReportes()),
   r(RUTAS.extraccionReportes, rutaProveedores()),
@@ -158,8 +192,8 @@ const REGLAS: readonly Regla[] = [
   r(`${RUTAS.inconsistenciasIa}/:id`, rutaCuenta()),
   r(RUTAS.cronogramaIa, rutaPlanificacion()),
   r(`${RUTAS.cronogramaIa}/:id`, rutaPlanificacion()),
-  r(RUTAS.estimacionRecursos, rutaPlanificacion()),
-  r(`${RUTAS.estimacionRecursos}/:id`, rutaPlanificacion()),
+  r(RUTAS.estimacionRecursos, CUADRILLAS),
+  r(`${RUTAS.estimacionRecursos}/:id`, CUADRILLAS),
   r(RUTAS.clasificacionIncidencias, rutaIncidencias()),
   r(`${RUTAS.clasificacionIncidencias}/:id`, rutaIncidencias()),
   r(RUTAS.evidenciaFitosanitaria, rutaProveedores()),
@@ -218,11 +252,12 @@ export function destinoRediseno(ruta: string, search = ''): DestinoRediseno | nu
     const parametros = parametrosDe(regla.origen, ruta)
     if (!parametros) continue
     const consulta = new URLSearchParams(search)
-    for (const [clave, valor] of Object.entries(regla.consulta?.(parametros) ?? {})) {
+    for (const [clave, valor] of Object.entries(regla.consulta?.(parametros, new URLSearchParams(search)) ?? {})) {
       if (!consulta.has(clave)) consulta.set(clave, valor)
     }
     const texto = consulta.toString()
-    return { pathname: regla.destino, search: texto ? `?${texto}` : '' }
+    const pathname = typeof regla.destino === 'string' ? regla.destino : regla.destino(parametros)
+    return { pathname, search: texto ? `?${texto}` : '' }
   }
   return null
 }
