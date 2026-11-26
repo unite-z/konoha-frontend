@@ -1,0 +1,65 @@
+/* VentanaFlotante (RD-09): ventana de vidrio denso sobre el mapa. La entrada es la de AnimacionDialogo. */
+.ventana {
+  --radius-panel: calc(var(--radius-lg) * 2);
+
+  width: min(40rem, calc(100vw - 2 * var(--space-6)));
+  max-height: calc(100vh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  padding: 0;
+  /* El cuerpo se desplaza; la ventana no (su borde de 1 px sacaría una segunda barra) y recorta el radio. */
+  overflow: hidden;
+  border: 0;
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-panel);
+  background: var(--vidrio-relleno-denso);
+  -webkit-backdrop-filter: var(--vidrio-desenfoque);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+  color: var(--color-text-primary);
+}
+
+/* Sin velo oscuro: el mapa y el panel siguen a la vista. */
+.ventana::backdrop {
+  background: transparent;
+}
+
+.marco {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2 * var(--space-6) - 1px);
+  max-height: calc(100dvh - 2 * var(--space-6) - 1px);
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-6) var(--space-3);
+}
+
+.titulo {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  overflow-wrap: anywhere;
+}
+
+.descripcion {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-3) var(--space-6) var(--space-6);
+  overflow-y: auto;
+}
+
+.cuerpo > * {
+  flex-shrink: 0;
+}

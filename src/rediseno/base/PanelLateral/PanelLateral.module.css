@@ -1,8 +1,7 @@
 /* PanelLateral (RD-09): vidrio denso, radio grande y sin bordes de color (guía Liquid Glass). */
 .panel {
-  /* TODO(AV-429): sustituir por --movimiento-normal y --curva-salida cuando los tokens de movimiento estén en main. */
-  --panel-duracion: 280ms;
-  --panel-curva: cubic-bezier(0.22, 1, 0.36, 1);
+  --panel-duracion: var(--movimiento-normal);
+  --panel-curva: var(--curva-salida);
   --radius-panel: calc(var(--radius-lg) * 2);
 
   position: fixed;
