@@ -20,6 +20,7 @@ const api = vi.hoisted(() => ({
   listarAtenciones: vi.fn(),
   listarContratos: vi.fn(),
   listarAreasVerdes: vi.fn(),
+  listarReportes: vi.fn(),
 }))
 vi.mock('@/services/api/tercerizados', async (original) => ({
   ...(await original<typeof import('@/services/api/tercerizados')>()),
@@ -28,6 +29,7 @@ vi.mock('@/services/api/tercerizados', async (original) => ({
   listarAtenciones: api.listarAtenciones,
   listarContratos: api.listarContratos,
   listarAreasVerdes: api.listarAreasVerdes,
+  listarReportes: api.listarReportes,
 }))
 vi.mock('@/components/core/HistorialCambios', () => ({ default: () => null }))
 vi.mock('@/components/core/Adjuntos', () => ({ default: () => null }))
@@ -83,6 +85,7 @@ beforeEach(() => {
   permisosSesion.valor = [REGISTRAR, GESTIONAR, CONFORMIDAD]
   api.listarAtenciones.mockResolvedValue({ count: 0, next: null, previous: null, results: [] })
   api.listarContratos.mockResolvedValue({ count: 0, next: null, previous: null, results: [] })
+  api.listarReportes.mockResolvedValue({ count: 0, next: null, previous: null, results: [] })
 })
 
 afterEach(() => {
