@@ -260,35 +260,6 @@
   }
 }
 
-/* Panel del encargo */
-.datos {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-}
-
-.datos dt {
-  color: var(--color-text-muted);
-}
-
-.datos dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.mover {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.mover h3 {
-  margin: 0;
-  font-size: var(--type-cuerpo-size);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tarjeta {
     transition: none;

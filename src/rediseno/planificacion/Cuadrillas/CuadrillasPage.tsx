@@ -1,7 +1,8 @@
 /**
  * Cuadrillas (RD-34): calendario semanal por cuadrilla con encargos arrastrables y vista «Lista». Fondo liso, sin mapa.
  * Mover un encargo de día abre `DialogoReprogramar` (justificación obligatoria); de cuadrilla, pide confirmación y usa
- * `PUT`. Solo quien gestiona cuadrillas mueve; el capataz ve la suya en lectura. El encargo abierto vive en `?encargo_id=`.
+ * `PUT`. Solo quien gestiona cuadrillas mueve y registra encargos; el capataz ve la suya en lectura y cambia el estado de
+ * los suyos desde el panel. El encargo abierto vive en `?encargo_id=` y el alta en `?encargo=nuevo&area=` (RD-35).
  */
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
@@ -27,14 +28,15 @@ import { hoyLima } from '@/utils/instanteLima'
 import { esJefeCampo, puedeReprogramarEncargo } from '@/utils/operacionCampo'
 import { estiloTransicion, nombresTransicion, transicionar, useFocoConLaVista } from '@/rediseno/base/movimiento'
 import { useParametroPanel } from '@/rediseno/base/PanelLateral/useParametroPanel'
+import FormularioEncargo from '../Encargo/FormularioEncargo'
+import PanelEncargo from '../Encargo/PanelEncargo'
+import { PARAMETRO_AREA_ENCARGO, PARAMETRO_ENCARGO, PARAMETRO_ENCARGO_NUEVO, VALOR_ENCARGO_NUEVO } from '../enlaces'
 import { cambiarDeCuadrilla, listarCuadrillas, listarEncargosDeSemana } from './api'
 import CalendarioSemanal from './CalendarioSemanal'
 import estilos from './Cuadrillas.module.css'
 import ListaEncargos from './ListaEncargos'
-import PanelEncargo from './PanelEncargo'
 import { DIAS_SEMANA, fechasDesplazadas, hayMovimiento, semanaPedida, type MovimientoEncargo } from './semana'
 
-export const PARAMETRO_ENCARGO = 'encargo_id'
 const PARAMETRO_VISTA = 'vista'
 const PARAMETRO_SEMANA = 'semana'
 
@@ -58,15 +60,21 @@ export default function CuadrillasPage() {
   const [cancelados, setCancelados] = useState(0)
   const [aviso, setAviso] = useState<string | null>(null)
   const [confirmando, setConfirmando] = useState<CambioDeCuadrilla | null>(null)
-  const [reprogramando, setReprogramando] = useState<{ encargo: EncargoCampo; dias: number; pedido: number } | null>(
-    null,
-  )
+  const [reprogramando, setReprogramando] = useState<{
+    encargo: EncargoCampo
+    dias: number
+    pedido: number
+  } | null>(null)
 
   const hoy = hoyLima()
   const lunes = semanaPedida(parametros.get(PARAMETRO_SEMANA), hoy)
   const domingo = sumarDias(lunes, DIAS_SEMANA - 1)
   const vista = parametros.get(PARAMETRO_VISTA) === 'lista' ? 'lista' : 'semana'
   const idAbierto = /^\d{1,9}$/.test(panel.valor ?? '') ? Number(panel.valor) : null
+  const altaAbierta = jefe && parametros.get(PARAMETRO_ENCARGO_NUEVO) === VALOR_ENCARGO_NUEVO
+  const areaPedida = /^\d{1,9}$/.test(parametros.get(PARAMETRO_AREA_ENCARGO) ?? '')
+    ? Number(parametros.get(PARAMETRO_AREA_ENCARGO))
+    : null
 
   const cuadrillas = useConsulta(puedeVer ? 'rd-cuadrillas' : null, listarCuadrillas)
   const encargos = useConsulta(
@@ -85,6 +93,26 @@ export default function CuadrillasPage() {
   const irASemana = (fecha: string) => transicionar(() => cambiarParametros({ [PARAMETRO_SEMANA]: fecha }))
   const abrir = (id: number) => transicionar(() => panel.abrir(String(id)))
   const cancelarMovimiento = () => setCancelados((n) => n + 1)
+  const abrirAlta = () => transicionar(() => cambiarParametros({ [PARAMETRO_ENCARGO_NUEVO]: VALOR_ENCARGO_NUEVO }))
+  const cerrarAlta = () =>
+    cambiarParametros({
+      [PARAMETRO_ENCARGO_NUEVO]: null,
+      [PARAMETRO_AREA_ENCARGO]: null,
+    })
+  function encargoGuardado(guardado: Partial<EncargoCampo>) {
+    setVersion((v) => v + 1)
+    setAviso('El encargo se registró correctamente.')
+    // Con el encargo nuevo a mano, su panel se abre solo; si el servidor no devuelve el id, se cierra el alta.
+    cambiarParametros({
+      [PARAMETRO_ENCARGO_NUEVO]: null,
+      [PARAMETRO_AREA_ENCARGO]: null,
+      ...(guardado.id ? { [PARAMETRO_ENCARGO]: String(guardado.id) } : {}),
+    })
+  }
+  function encargoCambiado(mensaje: string) {
+    setVersion((v) => v + 1)
+    setAviso(mensaje)
+  }
 
   function pedirMovimiento(encargo: EncargoCampo, movimiento: MovimientoEncargo) {
     if (!jefe || !puedeReprogramarEncargo(encargo.estado)) return
@@ -109,7 +137,11 @@ export default function CuadrillasPage() {
         // Si además cambió de día, la reprogramación sigue pidiendo su justificación.
         if (movimiento.dias !== 0) {
           setReprogramando({
-            encargo: { ...encargo, cuadrilla_id: movimiento.cuadrillaId, cuadrilla_nombre: nombre },
+            encargo: {
+              ...encargo,
+              cuadrilla_id: movimiento.cuadrillaId,
+              cuadrilla_nombre: nombre,
+            },
             dias: movimiento.dias,
             pedido: Date.now(),
           })
@@ -216,9 +248,16 @@ export default function CuadrillasPage() {
         className={estilos.encabezado}
         style={estiloTransicion(nombresTransicion.encabezado)} /* estilo-calculado */
       >
-        <h1 ref={foco} tabIndex={-1}>
-          Cuadrillas
-        </h1>
+        <div className={estilos.barra}>
+          <h1 ref={foco} tabIndex={-1}>
+            Cuadrillas
+          </h1>
+          {jefe && (
+            <Boton icono="plus" onClick={abrirAlta}>
+              Encargo
+            </Boton>
+          )}
+        </div>
         <p>
           {jefe
             ? 'Encargos de la semana por cuadrilla. Arrástralos a otro día o cuadrilla, o muévelos con Alt y las flechas.'
@@ -235,7 +274,11 @@ export default function CuadrillasPage() {
           ]}
           valor={vista}
           onCambiar={(v) =>
-            transicionar(() => cambiarParametros({ [PARAMETRO_VISTA]: v === 'lista' ? 'lista' : null }))
+            transicionar(() =>
+              cambiarParametros({
+                [PARAMETRO_VISTA]: v === 'lista' ? 'lista' : null,
+              }),
+            )
           }
           barra={vista === 'semana' ? navegacion : undefined}
         >
@@ -255,7 +298,11 @@ export default function CuadrillasPage() {
           puedeVerIncidencia={puedeVerIncidencia}
           onCerrar={panel.cerrar}
           onMover={pedirMovimiento}
+          onCambio={encargoCambiado}
         />
+      )}
+      {altaAbierta && (
+        <FormularioEncargo actual={null} areaInicial={areaPedida} onCerrar={cerrarAlta} onGuardado={encargoGuardado} />
       )}
       <DialogoConfirmacion
         abierto={confirmando !== null}
