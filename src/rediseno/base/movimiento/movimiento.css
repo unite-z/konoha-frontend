@@ -33,16 +33,22 @@
   animation-timing-function: var(--curva-salida);
 }
 
-/* Cabecera y encabezado se quedan quietos: se muestra ya la imagen nueva y se oculta la vieja
-   (son de vidrio translúcido: superponer las dos dejaría ver el texto de ambas). */
+/* Cabecera, pestañas, barra inferior y encabezado se quedan quietos: se muestra ya la imagen nueva y se oculta la
+   vieja (son de vidrio translúcido: superponer las dos dejaría ver el texto de ambas). Solo se mueve la lente. */
 ::view-transition-group(cabecera),
+::view-transition-group(pestanas),
+::view-transition-group(barra-inferior),
 ::view-transition-group(encabezado),
 ::view-transition-new(cabecera),
+::view-transition-new(pestanas),
+::view-transition-new(barra-inferior),
 ::view-transition-new(encabezado) {
   animation: none;
 }
 
 ::view-transition-old(cabecera),
+::view-transition-old(pestanas),
+::view-transition-old(barra-inferior),
 ::view-transition-old(encabezado) {
   display: none;
 }

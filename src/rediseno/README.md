@@ -20,6 +20,8 @@ Todo lo del rediseño vive aquí. Las rutas cuelgan del prefijo temporal `/n` (`
 
 Cuenta y campo no son secciones de la cabecera (`enCabecera: false`).
 
+La cabecera (`base/Cabecera/`) y la única barra inferior del móvil (`base/BarraInferior/`) leen `registro.ts`. Las dos son fijas y publican en `<html>` lo que tapan (`--rediseno-alto-cabecera` y `--rediseno-alto-barra`): el layout y `PanelLateral` las usan para no quedar debajo. Ninguna vista pinta otra barra inferior.
+
 ## Reglas
 
 1. Un ticket de módulo edita solo su carpeta. No toca `base/`, `rutas.ts`, `registro.ts` ni `src/pages/`.

@@ -12,4 +12,5 @@ export const seccionCampo: SeccionRediseno = {
   pestanas: [],
   movil: [],
   enCabecera: false,
+  inicioEnCampo: true,
 }

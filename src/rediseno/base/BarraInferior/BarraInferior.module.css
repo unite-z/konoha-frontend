@@ -1,0 +1,49 @@
+.barra {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .barra {
+    --radius-barra: calc(var(--radius-lg) * 2);
+
+    position: fixed;
+    inset-inline: var(--space-2);
+    inset-block-end: calc(var(--space-2) + env(safe-area-inset-bottom));
+    z-index: 30;
+    display: flex;
+    justify-content: space-around;
+    padding: var(--space-1);
+    border-radius: var(--radius-barra);
+    border-top: var(--vidrio-borde);
+    border-left: var(--vidrio-borde);
+    background: var(--vidrio-relleno-denso);
+    backdrop-filter: var(--vidrio-desenfoque);
+    box-shadow: var(--vidrio-sombra);
+  }
+}
+
+.entrada {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+  font-weight: var(--type-etiqueta-weight);
+  text-decoration: none;
+}
+
+.entrada[aria-current='page'] {
+  background: var(--vidrio-relleno-lente);
+  box-shadow: var(--vidrio-sombra-lente);
+}
+
+.entrada:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 1px;
+}

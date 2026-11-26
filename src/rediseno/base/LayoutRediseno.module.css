@@ -1,7 +1,24 @@
+/*
+ * La cabecera es fija: el contenido deja sitio arriba, y en móvil también abajo para la barra inferior. Las medidas
+ * las publican la cabecera y la barra en el estilo de <html> (`useEspacioReservado`); estos son los valores de reserva
+ * hasta la primera medida: la cápsula sin pestañas y, en móvil, la barra inferior.
+ */
+:global(:root) {
+  --rediseno-alto-cabecera: calc(var(--space-12) + var(--space-8));
+  --rediseno-alto-barra: 0px;
+}
+
+@media (max-width: 767px) {
+  :global(:root) {
+    --rediseno-alto-barra: calc(var(--space-12) + var(--space-8));
+  }
+}
+
 .raiz {
   position: relative;
   z-index: 1;
   min-height: 100dvh;
+  padding-block-start: var(--rediseno-alto-cabecera);
   background: var(--color-bg-page);
   transition: background-color var(--movimiento-normal) var(--curva-salida);
 }
@@ -27,4 +44,30 @@
   .raiz {
     transition: none;
   }
+}
+
+.raiz:focus-visible {
+  outline: none;
+}
+
+@media (max-width: 767px) {
+  .raiz {
+    padding-block-end: var(--rediseno-alto-barra);
+  }
+}
+
+.saltar {
+  position: fixed;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  z-index: 40;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  transform: translateY(-200%);
+}
+
+.saltar:focus {
+  transform: none;
 }
