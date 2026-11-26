@@ -49,11 +49,11 @@ function montar(ruta: string) {
 }
 
 describe('PuertaRediseno y rutas /n (AV-420)', () => {
-  it('apagado, /n/mapa avisa y «Activar diseño nuevo» lo enciende', async () => {
-    montar('/n/mapa')
+  it('apagado, /n/incidencias avisa y «Activar diseño nuevo» lo enciende', async () => {
+    montar('/n/incidencias')
     expect(screen.getByRole('heading', { name: 'El diseño nuevo está desactivado' })).toBeTruthy()
     await userEvent.setup().click(screen.getByRole('button', { name: 'Activar diseño nuevo' }))
-    expect(screen.getByRole('heading', { name: 'Mapa: en construcción' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Incidencias: en construcción' })).toBeTruthy()
     expect(datos.get(CLAVE_DISENO_NUEVO)).toBe('1')
     expect(document.documentElement.dataset.tema).toBe('amarillento')
   })
