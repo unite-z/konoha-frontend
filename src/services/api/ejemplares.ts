@@ -18,6 +18,10 @@ export function listarEjemplares(
   })
 }
 
+export function obtenerEjemplar(id: number, signal?: AbortSignal): Promise<EjemplarInventario> {
+  return solicitarTercerizados(`ejemplares/${id}`, { signal, base: BASE })
+}
+
 export function listarEjemplarPorCodigo(codigo: string, signal?: AbortSignal): Promise<EjemplarInventario[]> {
   return solicitarTercerizados('ejemplares', { parametros: { codigo }, signal, base: BASE })
 }
@@ -133,6 +137,20 @@ export function listarHistorialEjemplar(id: number, fuente: FuenteHistorialEjemp
     base: BASE,
   })
 }
+/** Actividad programada o ejecutada sobre el ejemplar (`GET ejemplares/{id}/historial-actividades`). */
+export interface ActividadEjemplar {
+  id: number
+  fecha: FechaIso
+  tipo: string
+  estado?: string | null
+  detalle?: string | null
+  ejecutor?: string | null
+}
+
+export function listarHistorialActividadesEjemplar(id: number, signal?: AbortSignal) {
+  return solicitarTercerizados<ActividadEjemplar[]>(`ejemplares/${id}/historial-actividades`, { signal, base: BASE })
+}
+
 export function quitarPlacaAntigua(id: number): Promise<EjemplarInventario> {
   return solicitarTercerizados(`ejemplares/${id}/placa-antigua`, { metodo: 'DELETE', base: BASE })
 }

@@ -47,6 +47,22 @@ vi.mock('@/services/api/catalogosInventario', () => ({
   listarCuarteles: api.listarCuarteles,
 }))
 vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => api.permisos }))
+// La ficha se prueba en `FichaEjemplar.test.tsx`; aquí solo importa cuándo se abre y con qué.
+vi.mock('./FichaEjemplar/FichaEjemplar', () => ({
+  default: (props: {
+    ejemplarId: number
+    inicial: { codigo: string } | null
+    propuestaMuerto?: boolean
+    onCargado?: (e: { area_verde_id: number | null }) => void
+    onCerrar: () => void
+  }) => (
+    <div role="dialog" aria-label={`Ficha ${props.inicial?.codigo ?? props.ejemplarId}`}>
+      {props.propuestaMuerto && <p>Propuesta de planta muerta</p>}
+      <button onClick={() => props.onCargado?.({ area_verde_id: 12 })}>Cargar</button>
+      <button onClick={props.onCerrar}>Cerrar ficha</button>
+    </div>
+  ),
+}))
 vi.mock('../base/Escenario', () => ({
   useVistaDeMapa: (opciones: { areaSeleccionada?: string; onSeleccionarArea: (a: unknown) => void }) => {
     api.vista(opciones.areaSeleccionada)
@@ -246,6 +262,16 @@ describe('Mapa (RD-17)', () => {
     await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12&ejemplar=9'))
     expect(await screen.findByRole('dialog', { name: /ARB-009/ })).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Bosque Húmedo', level: 2 })).toBeTruthy()
+  })
+
+  it('`?ejemplar=` sin área abre la ficha y, al llegar el ejemplar, abre su área; cerrar la ficha la quita de la URL', async () => {
+    pagina(`${RUTA_MAPA}?ejemplar=9&propuesta=muerto`)
+    expect(await screen.findByRole('dialog', { name: 'Ficha 9' })).toBeTruthy()
+    expect(screen.getByText('Propuesta de planta muerta')).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Cargar' }))
+    await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toContain('area=12'))
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar ficha' }))
+    await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12'))
   })
 
   it('un área sin contorno pide sus ejemplares por área', async () => {

@@ -171,3 +171,8 @@
     max-height: 50dvh;
   }
 }
+
+/* Con la ficha del ejemplar abierta el panel del área queda atenuado, sin cerrarse (RD-21). */
+.escena[data-ficha-abierta] > aside {
+  opacity: 0.6;
+}
