@@ -2,7 +2,7 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PERMISOS } from '@/config/permisosCore'
 import { ErrorApi } from '@/services/api/cliente'
 import type { AreaVerde } from '@/types/areasVerdes'
@@ -16,6 +16,11 @@ const api = vi.hoisted(() => ({
   obtenerAreaVerde: vi.fn(),
   listarPoligonosMapa: vi.fn(),
   listarEjemplares: vi.fn(),
+  listarEjemplaresDeArea: vi.fn(),
+  listarEjemplaresDePoligono: vi.fn(),
+  cargarResumenArea: vi.fn(),
+  marcadores: [] as { id: string }[],
+  activarMarcador: null as null | ((m: { id: string }) => void),
   listarSectores: vi.fn(),
   listarTiposUso: vi.fn(),
   listarCuarteles: vi.fn(),
@@ -29,9 +34,12 @@ vi.mock('@/services/api/areasVerdes', () => ({
 }))
 vi.mock('@/services/api/mapaAsignaciones', () => ({
   listarPoligonosMapa: api.listarPoligonosMapa,
+  listarEjemplaresDePoligono: api.listarEjemplaresDePoligono,
 }))
+vi.mock('@/services/api/resumenArea', () => ({ cargarResumenArea: api.cargarResumenArea }))
 vi.mock('@/services/api/ejemplares', () => ({
   listarEjemplares: api.listarEjemplares,
+  listarEjemplaresDeArea: api.listarEjemplaresDeArea,
 }))
 vi.mock('@/services/api/catalogosInventario', () => ({
   listarSectores: api.listarSectores,
@@ -57,7 +65,13 @@ vi.mock('@/pages/inventario/AreaVerdeForm', () => ({
 }))
 vi.mock('../base/MapaCampus/CapaColores', () => ({ default: () => null }))
 vi.mock('../base/MapaCampus/CapaGeometrias', () => ({ default: () => null }))
-vi.mock('../base/MapaCampus/CapaMarcadores', () => ({ default: () => null }))
+vi.mock('../base/MapaCampus/CapaMarcadores', () => ({
+  default: (props: { marcadores: { id: string }[]; onActivar: (m: { id: string }) => void }) => {
+    api.marcadores = props.marcadores
+    api.activarMarcador = props.onActivar
+    return null
+  },
+}))
 
 const area = (id: number, nombre: string, extra: Partial<AreaVerde> = {}): AreaVerde => ({
   id,
@@ -95,6 +109,28 @@ const ejemplar = {
   latitud: -12,
   longitud: -77,
 } as EjemplarInventario
+
+const resumen = (areaId: number, nombre: string) => ({
+  area: area(areaId, nombre),
+  ejemplares_por_situacion: { activo: 3 },
+  incidencias_abiertas: 2,
+  ultima_atencion: null,
+  proxima_actividad: null,
+  prioridad_validada: null,
+  fuentes_visibles: [],
+  historial: { count: 0, next: null, previous: null, results: [] },
+})
+
+// jsdom no implementa showModal ni close de <dialog>.
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
+    this.setAttribute('open', '')
+  }
+  HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+    this.removeAttribute('open')
+    this.dispatchEvent(new Event('close'))
+  }
+})
 
 const LECTURA = [PERMISOS.consultarInventario]
 const JEFE = [PERMISOS.consultarInventario, PERMISOS.registrarInventario]
@@ -138,6 +174,12 @@ beforeEach(() => {
   api.listarTiposUso.mockResolvedValue([{ id: 1, nombre: 'Jardín', activo: true, color: '' }])
   api.listarCuarteles.mockResolvedValue([{ id: 2, numero: '2', nombre: 'Letras', estado: 'vigente' }])
   api.obtenerAreaVerde.mockResolvedValue(area(40, 'Área suelta'))
+  api.cargarResumenArea.mockImplementation((id: number) =>
+    Promise.resolve(resumen(id, id === 12 ? 'Bosque Húmedo' : `Área ${id}`)),
+  )
+  api.listarEjemplaresDePoligono.mockResolvedValue([ejemplar])
+  api.listarEjemplaresDeArea.mockResolvedValue([ejemplar])
+  api.marcadores = []
 })
 afterEach(() => {
   cleanup()
@@ -179,7 +221,38 @@ describe('Mapa (RD-17)', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Bosque Húmedo/ }))
     expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12')
     await waitFor(() => expect(api.vista).toHaveBeenLastCalledWith('m12'))
-    expect(screen.getByRole('button', { name: /Bosque Húmedo/ }).getAttribute('aria-current')).toBe('true')
+    // La fila se transforma en el panel del área: la lista cede su sitio.
+    expect(await screen.findByRole('heading', { name: 'Bosque Húmedo', level: 2 })).toBeTruthy()
+    expect(screen.queryByRole('list', { name: 'Áreas del resultado' })).toBeNull()
+  })
+
+  it('con el área abierta, cerrar el panel quita la selección y devuelve la lista', async () => {
+    pagina(`${RUTA_MAPA}?area=12`)
+    await screen.findByRole('heading', { name: 'Bosque Húmedo', level: 2 })
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar panel' }))
+    expect(screen.getByTestId('ubicacion').textContent).toBe('')
+    expect(await screen.findByRole('list', { name: 'Áreas del resultado' })).toBeTruthy()
+    await waitFor(() => expect(api.vista).toHaveBeenLastCalledWith(undefined))
+  })
+
+  it('los ejemplares del área brotan como marcadores al llegar la cámara y tocar uno abre su ficha sin cerrar el panel', async () => {
+    pagina(`${RUTA_MAPA}?area=12`)
+    await screen.findByRole('heading', { name: 'Bosque Húmedo', level: 2 })
+    // Se piden por el contorno del área, no por nombre.
+    await waitFor(() => expect(api.listarEjemplaresDePoligono).toHaveBeenCalledWith('m12', expect.anything()))
+    expect(api.marcadores).toHaveLength(0)
+    await waitFor(() => expect(api.marcadores.map((m) => m.id)).toEqual(['ejemplar-9']), { timeout: 3000 })
+    api.activarMarcador?.({ id: 'ejemplar-9' })
+    await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12&ejemplar=9'))
+    expect(await screen.findByRole('dialog', { name: /ARB-009/ })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Bosque Húmedo', level: 2 })).toBeTruthy()
+  })
+
+  it('un área sin contorno pide sus ejemplares por área', async () => {
+    api.listarPoligonosMapa.mockResolvedValue([])
+    pagina(`${RUTA_MAPA}?area=12`)
+    await waitFor(() => expect(api.listarEjemplaresDeArea).toHaveBeenCalledWith(12, expect.anything()))
+    expect(api.listarEjemplaresDePoligono).not.toHaveBeenCalled()
   })
 
   it('?area= y ?poligono= abren el área directamente', async () => {

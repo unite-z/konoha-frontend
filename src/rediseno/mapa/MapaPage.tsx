@@ -11,8 +11,8 @@ import EstadoVacio from '@/design-system/EstadoVacio'
 import { useConsulta } from '@/hooks/useConsulta'
 import { obtenerAreaVerde } from '@/services/api/areasVerdes'
 import { listarCuarteles, listarSectores, listarTiposUso } from '@/services/api/catalogosInventario'
-import { listarEjemplares } from '@/services/api/ejemplares'
-import { listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
+import { listarEjemplares, listarEjemplaresDeArea } from '@/services/api/ejemplares'
+import { listarEjemplaresDePoligono, listarPoligonosMapa } from '@/services/api/mapaAsignaciones'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { AreaCampus } from '@/types/campus3d'
 import type { AreaVerde } from '@/types/areasVerdes'
@@ -32,6 +32,9 @@ import ListaAreas from './ListaAreas'
 import RegistroAreaInterino from './RegistroAreaInterino'
 import { AREAS_POR_PAGINA, clavesDeFiltros, filtrosDeUrl, hayFiltros, listarAreasDelMapa } from './areasMapa'
 import { PARAMETROS_MAPA } from './enlaces'
+import FichaEjemplarFlotante from './PanelArea/FichaEjemplarFlotante'
+import PanelArea from './PanelArea/PanelArea'
+import { useLlegadaCamara } from './PanelArea/useLlegadaCamara'
 import { coloresPorUso, indicarPoligonos, paginaDe } from './seleccion'
 import estilos from './Mapa.module.css'
 
@@ -108,7 +111,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
     ((poligonoParam !== null && !poligonoExiste) || (areaParam !== null && areaPedida.error?.estado === 404))
 
   const cambiar = useCallback(
-    (cambios: Record<string, string | null>, reemplazar = true) =>
+    (cambios: Record<string, string | null>, reemplazar = true, viewTransition = false) =>
       setParametros(
         (previos) => {
           const nuevos = new URLSearchParams(previos)
@@ -118,30 +121,38 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           }
           return nuevos
         },
-        { replace: reemplazar },
+        { replace: reemplazar, viewTransition },
       ),
     [setParametros],
   )
 
   // Abrir un área desde nada añade una entrada al historial para que «Atrás» deshaga el vuelo; cambiar de área la reemplaza.
   const hayAbierta = areaParam !== null || poligonoParam !== null
+  // `viewTransition`: la fila de la lista crece hasta ser el panel del área (y al cerrarlo, el panel vuelve a su fila).
   const seleccionarArea = useCallback(
-    (areaId: number) =>
+    (areaId: number, viewTransition = false) =>
       cambiar(
         {
           [PARAMETROS_MAPA.area]: String(areaId),
           [PARAMETROS_MAPA.poligono]: null,
+          [PARAMETROS_MAPA.ejemplar]: null,
         },
         hayAbierta,
+        viewTransition,
       ),
     [cambiar, hayAbierta],
   )
   const quitarSeleccion = useCallback(
     () =>
-      cambiar({
-        [PARAMETROS_MAPA.area]: null,
-        [PARAMETROS_MAPA.poligono]: null,
-      }),
+      cambiar(
+        {
+          [PARAMETROS_MAPA.area]: null,
+          [PARAMETROS_MAPA.poligono]: null,
+          [PARAMETROS_MAPA.ejemplar]: null,
+        },
+        true,
+        true,
+      ),
     [cambiar],
   )
 
@@ -155,6 +166,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
         {
           [PARAMETROS_MAPA.poligono]: area.id,
           [PARAMETROS_MAPA.area]: null,
+          [PARAMETROS_MAPA.ejemplar]: null,
         },
         hayAbierta,
       )
@@ -166,34 +178,52 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
     onSeleccionarArea: alSeleccionarEnMapa,
   })
 
-  const marcadores = useMemo<MarcadorMapa[]>(
-    () =>
-      (ejemplares.datos ?? [])
-        .filter((e) => e.latitud !== null && e.longitud !== null)
-        .map((e) => ({
-          id: `ejemplar-${e.id}`,
-          etiqueta: `Ejemplar ${e.codigo}`,
-          lat: e.latitud ?? undefined,
-          lon: e.longitud ?? undefined,
-          tono: 'info' as const,
-        })),
-    [ejemplares.datos],
+  // Ejemplares del área abierta: sus marcadores brotan cuando la cámara llega y la pestaña Ejemplares los lista.
+  const ejemplaresArea = useConsulta(
+    areaAbierta !== null && !cargandoBase ? `rd-mapa-ejemplares-area:${areaAbierta}:${mapaId ?? ''}` : null,
+    (signal) =>
+      mapaId !== undefined
+        ? listarEjemplaresDePoligono(mapaId, signal)
+        : listarEjemplaresDeArea(areaAbierta ?? 0, signal),
+  )
+  const llegoLaCamara = useLlegadaCamara(areaAbierta === null ? null : String(areaAbierta))
+  const ejemplarParam = Number(parametros.get(PARAMETROS_MAPA.ejemplar)) || null
+  const ejemplarAbierto = ejemplaresArea.datos?.find((e) => e.id === ejemplarParam) ?? null
+
+  const marcadores = useMemo<MarcadorMapa[]>(() => {
+    // Con un área abierta, los marcadores son sus ejemplares con coordenadas; si no, los de la búsqueda.
+    const origen = areaAbierta !== null ? (llegoLaCamara ? ejemplaresArea.datos : null) : ejemplares.datos
+    return (origen ?? [])
+      .filter((e) => e.latitud !== null && e.longitud !== null)
+      .map((e) => ({
+        id: `ejemplar-${e.id}`,
+        etiqueta: `Ejemplar ${e.codigo}`,
+        lat: e.latitud ?? undefined,
+        lon: e.longitud ?? undefined,
+        tono: 'info' as const,
+      }))
+  }, [areaAbierta, llegoLaCamara, ejemplaresArea.datos, ejemplares.datos])
+  const abrirFichaEjemplar = useCallback(
+    (ejemplarId: number) => cambiar({ [PARAMETROS_MAPA.ejemplar]: String(ejemplarId) }, ejemplarParam !== null),
+    [cambiar, ejemplarParam],
   )
   const alActivarMarcador = useCallback(
     (marcador: MarcadorMapa) => {
+      const propio = ejemplaresArea.datos?.find((e) => `ejemplar-${e.id}` === marcador.id)
+      if (areaAbierta !== null && propio) return abrirFichaEjemplar(propio.id)
       const ejemplar = ejemplares.datos?.find((e) => `ejemplar-${e.id}` === marcador.id)
       if (ejemplar?.area_verde_id != null) seleccionarArea(ejemplar.area_verde_id)
     },
-    [ejemplares.datos, seleccionarArea],
+    [abrirFichaEjemplar, areaAbierta, ejemplaresArea.datos, ejemplares.datos, seleccionarArea],
   )
 
   function elegirArea(area: AreaVerde) {
-    seleccionarArea(area.id)
+    seleccionarArea(area.id, true)
     if (esMovil) setListaAbierta(false)
   }
   function elegirEjemplar(ejemplar: EjemplarInventario) {
     if (ejemplar.area_verde_id === null) return
-    seleccionarArea(ejemplar.area_verde_id)
+    seleccionarArea(ejemplar.area_verde_id, true)
     if (esMovil) setListaAbierta(false)
   }
   const cambiarFiltro = (filtro: string, valor: string) =>
@@ -323,26 +353,13 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
         />
       )}
       <PanelLateral
-        abierto={listaAbierta && !registrando}
+        abierto={listaAbierta && !registrando && areaAbierta === null}
         onCerrar={() => setListaAbierta(false)}
         titulo="Lista de áreas"
         subtitulo={
           areas.datos ? `${resultado.length} ${resultado.length === 1 ? 'resultado' : 'resultados'}` : undefined
         }
       >
-        {areaAbierta !== null && (
-          <div className={estilos.seleccion}>
-            <p>
-              Seleccionada: <strong>{nombreAbierta ?? `Área ${areaAbierta}`}</strong>
-              {areaParam !== null && !mapaId && !cargandoBase && (
-                <span className={estilos.secundario}> · sin contorno en el mapa</span>
-              )}
-            </p>
-            <Boton variante="fantasma" compacto onClick={quitarSeleccion}>
-              Quitar selección
-            </Boton>
-          </div>
-        )}
         {fallo ? (
           <EstadoError
             nivel={3}
@@ -385,6 +402,21 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           />
         )}
       </PanelLateral>
+      {areaAbierta !== null && !registrando && (
+        <PanelArea
+          key={areaAbierta}
+          areaId={areaAbierta}
+          nombreProvisional={nombreAbierta}
+          tieneContorno={indice.mapaIdDeArea.has(areaAbierta)}
+          ejemplares={ejemplaresArea}
+          onElegirEjemplar={(e) => abrirFichaEjemplar(e.id)}
+          onCerrar={quitarSeleccion}
+        />
+      )}
+      <FichaEjemplarFlotante
+        ejemplar={areaAbierta === null ? null : ejemplarAbierto}
+        onCerrar={() => cambiar({ [PARAMETROS_MAPA.ejemplar]: null })}
+      />
     </div>
   )
 }
