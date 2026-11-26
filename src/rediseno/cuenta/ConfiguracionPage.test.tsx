@@ -128,7 +128,8 @@ describe('Configuración del diseño nuevo (RD-64)', () => {
   it('cambiar de sección con el teclado va a la sección elegida', async () => {
     const usuario = userEvent.setup()
     pintar()
-    await usuario.click(screen.getByRole('link', { name: 'Lectura' }))
+    screen.getByRole('link', { name: 'Lectura' }).focus()
+    await usuario.keyboard('{Enter}')
     expect(screen.getByRole('heading', { level: 2, name: 'Lectura' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Lectura' }).getAttribute('aria-current')).toBe('page')
   })
@@ -156,12 +157,33 @@ describe('Apariencia (M1-05)', () => {
     })
   })
 
-  it('marca el tema que se está viendo, aunque lo guardado sea otro', () => {
+  it('marca el tema guardado, avisa de que ahora se ve el Amarillento y deja guardarlo', async () => {
     datos.set('av:apariencia', '{"tema":"claro","acento":"verde"}')
     document.documentElement.dataset.tema = 'amarillento'
+    const usuario = userEvent.setup()
     pintar()
-    expect((screen.getByRole('radio', { name: 'Amarillento' }) as HTMLInputElement).checked).toBe(true)
-    expect((screen.getByRole('radio', { name: /Verde PUCP/ }) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('radio', { name: 'Claro' }) as HTMLInputElement).checked).toBe(true)
+    expect(screen.getByText(/Ahora ves el tema Amarillento del diseño nuevo/).textContent).toContain('«Claro»')
+    await usuario.click(screen.getByRole('radio', { name: 'Amarillento' }))
+    expect(mock.guardarAparienciaCuenta).toHaveBeenLastCalledWith({
+      tema: 'amarillento',
+      acento: 'verde',
+    })
+    expect(screen.queryByText(/Ahora ves el tema Amarillento/)).toBeNull()
+  })
+
+  it('cambiar el acento dentro del diseño nuevo no pisa el tema guardado ni quita el amarillento', async () => {
+    datos.set('av:apariencia', '{"tema":"claro","acento":"institucional"}')
+    document.documentElement.dataset.tema = 'amarillento'
+    const usuario = userEvent.setup()
+    pintar()
+    await usuario.click(screen.getByRole('radio', { name: /Verde PUCP/ }))
+    expect(mock.guardarAparienciaCuenta).toHaveBeenLastCalledWith({
+      tema: 'claro',
+      acento: 'verde',
+    })
+    expect(document.documentElement.dataset.tema).toBe('amarillento')
+    expect(document.documentElement.dataset.acento).toBe('verde')
   })
 
   it('enseña el interruptor «Diseño nuevo» y la vista previa', () => {

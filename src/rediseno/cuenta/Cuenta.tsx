@@ -1,6 +1,7 @@
 /**
  * Configuración › Cuenta (RD-64, N-02): quién eres, «Cambiar contraseña» (la pantalla de AV-439) y «Cerrar sesión».
- * Cerrar sesión pasa por la sesión común (`POST core/auth/logout`); si falla, avisa y deja la sesión como estaba.
+ * Cerrar sesión pasa por la sesión común (`POST core/auth/logout`), que la cierra en este dispositivo aunque el servidor
+ * falle; si el error llega hasta aquí, se avisa y se puede volver a intentar.
  */
 import { useState } from 'react'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'

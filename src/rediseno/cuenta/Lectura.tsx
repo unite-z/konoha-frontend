@@ -22,10 +22,12 @@ export default function Lectura() {
         etiqueta="Tamaño del texto"
         opciones={OPCIONES}
         valor={tamano}
-        onCambiar={(nuevo) => {
-          setTamano(nuevo)
-          transicionar(() => guardarTamanoLectura(nuevo))
-        }}
+        onCambiar={(nuevo) =>
+          transicionar(() => {
+            setTamano(nuevo)
+            guardarTamanoLectura(nuevo)
+          })
+        }
         segmentado
       />
       <p className={estilos.ayuda}>Solo se guarda en este navegador.</p>

@@ -4,7 +4,7 @@
  * recuerda en este navegador y se guarda en la cuenta (`PUT auth/apariencia/`, AV-414). El `PUT` reemplaza la
  * apariencia entera: se le añaden los campos de «Diseño nuevo» para no borrarlos.
  */
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import Boton from '@/design-system/Boton'
 import Estado from '@/design-system/Estado'
@@ -54,29 +54,35 @@ const OPCIONES_ACENTO: OpcionGrupo<Acento>[] = [
   },
 ]
 
-/**
- * Lo que se ve ahora: dentro del diseño nuevo el marco pone el tema amarillento aunque lo guardado sea otro, así que
- * el control marca el que hay en `<html>` y no un tema que no se está viendo.
- */
-function aparienciaInicial(): PreferenciaApariencia {
-  const guardada = leerApariencia()
-  return document.documentElement.dataset.tema === 'amarillento' ? { ...guardada, tema: 'amarillento' } : guardada
-}
+const raiz = () => document.documentElement
 
 export default function Apariencia() {
-  const [apariencia, setApariencia] = useState<PreferenciaApariencia>(aparienciaInicial)
+  // El control marca lo guardado en la cuenta, no lo que se ve: dentro del diseño nuevo el marco pone el amarillento
+  // aunque lo guardado sea otro. Mientras no se elija otro tema, cambiar el acento no quita ese amarillento.
+  const [apariencia, setApariencia] = useState<PreferenciaApariencia>(leerApariencia)
+  const [marcoAmarillento, setMarcoAmarillento] = useState(
+    () => raiz().dataset.tema === 'amarillento' && apariencia.tema !== 'amarillento',
+  )
   const [sinGuardar, setSinGuardar] = useState(false)
   const { camposCuenta } = useDisenoNuevo()
 
   function cambiar(parcial: Partial<PreferenciaApariencia>) {
     const nueva = { ...apariencia, ...parcial }
-    setApariencia(nueva)
-    transicionar(() => cambiarApariencia(nueva))
+    const sigueElMarco = marcoAmarillento && parcial.tema === undefined
+    transicionar(() => {
+      setApariencia(nueva)
+      setMarcoAmarillento(sigueElMarco)
+      cambiarApariencia(nueva)
+      if (sigueElMarco) raiz().dataset.tema = 'amarillento'
+    })
     guardarAparienciaCuenta({ ...nueva, ...camposCuenta }).then(
       () => setSinGuardar(false),
       () => setSinGuardar(true),
     )
   }
+
+  const idAvisoMarco = useId()
+  const temaGuardado = OPCIONES_TEMA.find((o) => o.valor === apariencia.tema)?.texto ?? apariencia.tema
 
   return (
     <div className={estilos.campos}>
@@ -85,8 +91,14 @@ export default function Apariencia() {
         opciones={OPCIONES_TEMA}
         valor={apariencia.tema}
         onCambiar={(tema) => cambiar({ tema })}
-        segmentado
+        descritoPor={marcoAmarillento ? idAvisoMarco : undefined}
+        chips
       />
+      {marcoAmarillento && (
+        <p id={idAvisoMarco} className={estilos.ayuda}>
+          Ahora ves el tema Amarillento del diseño nuevo. El guardado en tu cuenta es «{temaGuardado}».
+        </p>
+      )}
       <GrupoOpciones
         etiqueta="Color de acento"
         opciones={OPCIONES_ACENTO}
