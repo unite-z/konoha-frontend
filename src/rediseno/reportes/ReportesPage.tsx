@@ -23,6 +23,7 @@ import { estiloTransicion, nombresTransicion, useFocoConLaVista } from '../base/
 import { useParametroPanel } from '../base/PanelLateral/useParametroPanel'
 import { rutaMapa } from '../mapa/enlaces'
 import Cifras from './Cifras'
+import SeccionExportaciones from './Exportar/SeccionExportaciones'
 import { PARAMETRO_INDICADOR, PARAMETRO_INFORME } from './enlaces'
 import { PanelInforme, SelectorInformes } from './SelectorInformes'
 import PanelIndicador from './PanelIndicador'
@@ -168,6 +169,7 @@ function ReportesContenido() {
         </AvisoEnLinea>
       ))}
       <SelectorInformes busqueda={search} elegido={informe.valor} />
+      <SeccionExportaciones />
       <PanelIndicador
         clave={indicador.valor}
         nombre={nombreAbierto}
