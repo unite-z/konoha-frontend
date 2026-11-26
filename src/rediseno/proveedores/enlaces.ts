@@ -39,3 +39,33 @@ export function rutaNuevoContrato(): string {
 export function rutaAtencion(id: number): string {
   return `${RUTA_PROVEEDORES}/${SEGMENTO_ATENCIONES}/${id}`
 }
+
+/** Claves de la bandeja de atenciones en la URL (las de RD-85: `desde`, `hasta` y `area_verde_id`). */
+export type ParametroAtenciones =
+  | 'q'
+  | 'estado'
+  | 'origen'
+  | 'clase'
+  | 'contrato_id'
+  | 'desde'
+  | 'hasta'
+  | 'area_verde_id'
+  | 'pagina'
+
+/** Pestaña «Atenciones»: la bandeja con sus filtros en la URL. */
+export function rutaAtenciones(filtros: Partial<Record<ParametroAtenciones, string>> = {}): string {
+  const consulta = new URLSearchParams()
+  for (const [clave, valor] of Object.entries(filtros)) if (valor) consulta.set(clave, valor)
+  const texto = consulta.toString()
+  const base = `${RUTA_PROVEEDORES}/${SEGMENTO_ATENCIONES}`
+  return texto ? `${base}?${texto}` : base
+}
+
+export const SEGMENTO_INFORMES = 'informes'
+export const SEGMENTO_SUBIR_INFORME = 'subir'
+
+/** Subir un informe (lo construye RD-56; hasta entonces lleva a «En construcción»), con o sin atención de origen. */
+export function rutaSubirInforme(atencionId?: number): string {
+  const base = `${RUTA_PROVEEDORES}/${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`
+  return atencionId === undefined ? base : `${base}?atencion_id=${atencionId}`
+}

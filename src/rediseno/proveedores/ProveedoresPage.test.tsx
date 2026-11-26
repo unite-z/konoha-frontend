@@ -255,7 +255,7 @@ describe('Proveedores · contratos (RD-49)', () => {
   })
 
   it('la pestaña Contratos de la sección lleva a la lista', () => {
-    expect(seccionProveedores.pestanas).toEqual([{ etiqueta: 'Contratos', ruta: RUTA_PROVEEDORES }])
+    expect(seccionProveedores.pestanas[0]).toEqual({ etiqueta: 'Contratos', ruta: RUTA_PROVEEDORES })
   })
 
   it('con permiso de gestión el panel ofrece «Editar contrato»', async () => {

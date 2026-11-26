@@ -310,6 +310,11 @@ export interface FiltrosAtenciones {
   origen?: OrigenAtencion
   clase?: ClaseAtencion
   contrato_id?: number
+  /** RD-85: fecha de inicio (o de registro, si aún no empezó) desde y hasta, en AAAA-MM-DD (Lima). */
+  desde?: string
+  hasta?: string
+  /** RD-85: atenciones con algún alcance en el área (o en un ejemplar del área). */
+  area_verde_id?: number
 }
 
 // --- Catálogos ------------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
  * página no se mueve en las transiciones; la fila del contrato crece hasta ser su panel (`?contrato=<id>`).
  */
 import { useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router'
+import { Navigate, useLocation, useSearchParams } from 'react-router'
 import AvisoTemporal from '@/design-system/AvisoTemporal'
 import Boton from '@/design-system/Boton'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
@@ -13,12 +13,14 @@ import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { estiloTransicion, nombresTransicion, transicionar, useFocoConLaVista } from '../base/movimiento'
 import PanelLateral from '../base/PanelLateral/PanelLateral'
 import { useParametroPanel } from '../base/PanelLateral/useParametroPanel'
+import Bandeja from './Atenciones/Bandeja'
+import { puedeConsultarAtenciones } from './Atenciones/permisos'
 import { conCambios } from './Contratos/filtros'
 import ListaContratos from './Contratos/ListaContratos'
 import PanelContrato from './Contratos/PanelContrato'
 import PanelFormulario from './Contratos/PanelFormulario'
 import estilos from './Contratos/Contratos.module.css'
-import { PARAM_CONTRATO, PARAM_EDITAR, VALOR_CONTRATO_NUEVO } from './enlaces'
+import { PARAM_CONTRATO, PARAM_EDITAR, rutaAtenciones, VALOR_CONTRATO_NUEVO } from './enlaces'
 import { puedeConsultarContratos, puedeGestionarContratos, puedeVerMontos } from './permisos'
 
 function PanelAviso({
@@ -52,6 +54,8 @@ export default function ProveedoresPage() {
   const id = valor !== null && /^\d{1,9}$/.test(valor) ? Number(valor) : null
 
   if (!puedeConsultarContratos(permisos)) {
+    // Quien solo ve atenciones entra a Proveedores por su bandeja (como hoy en Servicios tercerizados).
+    if (puedeConsultarAtenciones(permisos)) return <Navigate to={rutaAtenciones()} replace />
     return (
       <div className={estilos.pagina}>
         <EstadoSinAcceso
@@ -171,6 +175,7 @@ export default function ProveedoresPage() {
         puedeCrear={puedeGestionar}
         onCrear={crear}
       />
+      {puedeConsultarAtenciones(permisos) && <Bandeja modo="recientes" />}
       {panelAbierto}
       <AvisoTemporal mensaje={aviso} onCerrar={() => setAviso(null)} />
     </div>
