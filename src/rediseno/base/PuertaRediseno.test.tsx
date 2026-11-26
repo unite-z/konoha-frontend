@@ -6,6 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { conPuertaRediseno, rutaRediseno } from '../rutas'
 import { CLAVE_DISENO_NUEVO } from '../useDisenoNuevo'
 
+// El layout lleva la cabecera, que lee la sesión; aquí no hay proveedor.
+vi.mock('@/sesion/ContextoSesion', async (original) => ({
+  ...(await original<typeof import('@/sesion/ContextoSesion')>()),
+  usePermisos: () => [],
+  useSesionActiva: () => null,
+}))
+
 const datos = new Map<string, string>()
 
 beforeEach(() => {

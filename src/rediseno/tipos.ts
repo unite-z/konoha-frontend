@@ -26,4 +26,6 @@ export interface SeccionRediseno {
   movil: readonly EntradaMovilRediseno[]
   /** `false` en cuenta y campo: no son secciones de la cabecera. */
   enCabecera: boolean
+  /** `true` en la sección de campo: quien tiene el inicio en campo ve sus entradas `movil` y «Más» en la barra inferior. */
+  inicioEnCampo?: boolean
 }
