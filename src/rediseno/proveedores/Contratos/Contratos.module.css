@@ -1,0 +1,204 @@
+/* Proveedores · contratos (RD-49): fondo liso, tarjetas y panel de vidrio, solo tokens semánticos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.titulo {
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  color: var(--color-text-primary);
+}
+
+.titulo:focus-visible {
+  outline: none;
+}
+
+.subtitulo,
+.secundario,
+.resumen {
+  font-size: var(--type-pequeno-size);
+  color: var(--color-text-secondary);
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+}
+
+.accionesFiltro {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.lista,
+.atenciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.fila[data-abierto] {
+  background: var(--vidrio-relleno-denso);
+}
+
+.enlaceFila {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.enlaceFila:hover {
+  background: var(--vidrio-relleno-lente);
+}
+
+.principal,
+.vigencia,
+.avance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.numero {
+  font-weight: var(--type-titulo-tarjeta-weight);
+  font-size: var(--type-titulo-tarjeta-size);
+}
+
+.proveedor {
+  overflow-wrap: anywhere;
+}
+
+.cifraAvance {
+  font-size: var(--type-cuerpo-size);
+  font-weight: var(--type-titulo-tarjeta-weight);
+}
+
+.contenidoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.resumenAvance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cifraGrande {
+  font-size: var(--type-titulo-seccion-size);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.verificacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atencion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+}
+
+.enlaceAtencion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.enlaceAtencion:hover {
+  text-decoration: underline;
+}
+
+.cabeceraAtenciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.estadoAtencion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .filtros,
+  .enlaceFila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pagina {
+    padding-inline: var(--space-4);
+  }
+}
