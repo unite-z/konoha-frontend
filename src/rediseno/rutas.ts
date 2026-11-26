@@ -9,8 +9,10 @@ import InicioRediseno from './base/InicioRediseno'
 import NoEncontradoRediseno from './base/NoEncontradoRediseno'
 import LayoutRediseno from './base/LayoutRediseno'
 import PuertaRediseno, { PuertaPrefijo } from './base/PuertaRediseno'
+import ErrorCargaPantalla from '../pages/ErrorCargaPantalla'
+import RutaProtegida from '../sesion/RutaProtegida'
 import { rutasCampo } from './campo/rutas'
-import { rutasCuenta } from './cuenta/rutas'
+import { rutasCuenta, rutasCuentaContrasenaTemporal, rutasCuentaPublicas } from './cuenta/rutas'
 import { rutasIncidencias } from './incidencias/rutas'
 import { rutasMapa } from './mapa/rutas'
 import { PREFIJO_REDISENO } from './prefijo'
@@ -30,15 +32,27 @@ export const rutaRediseno: RouteObject = {
     {
       Component: LayoutRediseno,
       children: [
-        { index: true, Component: InicioRediseno },
-        ...rutasMapa,
-        ...rutasPlanificacion,
-        ...rutasIncidencias,
-        ...rutasProveedores,
-        ...rutasReportes,
-        ...rutasCuenta,
-        ...rutasCampo,
-        { path: '*', Component: NoEncontradoRediseno },
+        // Sin sesión: el ingreso comparte el layout (y el mapa vivo) con el resto, que pasa por `RutaProtegida`.
+        ...rutasCuentaPublicas,
+        {
+          element: createElement(RutaProtegida, { permitirContrasenaTemporal: true }),
+          children: rutasCuentaContrasenaTemporal,
+        },
+        {
+          element: createElement(RutaProtegida),
+          errorElement: createElement(ErrorCargaPantalla),
+          children: [
+            { index: true, Component: InicioRediseno },
+            ...rutasMapa,
+            ...rutasPlanificacion,
+            ...rutasIncidencias,
+            ...rutasProveedores,
+            ...rutasReportes,
+            ...rutasCuenta,
+            ...rutasCampo,
+            { path: '*', Component: NoEncontradoRediseno },
+          ],
+        },
       ],
     },
   ],

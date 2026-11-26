@@ -6,14 +6,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { conPuertaRediseno, rutaRediseno } from '../rutas'
 import { CLAVE_DISENO_NUEVO } from '../useDisenoNuevo'
 
-// El layout lleva la cabecera, que lee la sesión; aquí no hay proveedor.
+const datos = new Map<string, string>()
+
+// Aquí no hay proveedor de sesión. Las rutas de /n (salvo el ingreso) pasan por RutaProtegida y el layout solo
+// lleva la cabecera con sesión (AV-439): una sesión activa sin permisos deja pasar.
+const sesionActiva = vi.hoisted(() => ({
+  usuario: { id: 1, nombre: 'Usuario', nombre_usuario: 'usuario' },
+  permisos: [],
+  debe_cambiar_contrasena: false,
+}))
 vi.mock('@/sesion/ContextoSesion', async (original) => ({
   ...(await original<typeof import('@/sesion/ContextoSesion')>()),
+  useSesion: () => ({
+    estado: { tipo: 'activa', sesion: sesionActiva },
+    recargar: () => Promise.resolve(),
+  }),
   usePermisos: () => [],
-  useSesionActiva: () => null,
+  useSesionActiva: () => sesionActiva,
 }))
-
-const datos = new Map<string, string>()
 
 beforeEach(() => {
   datos.clear()
@@ -38,7 +48,10 @@ function montar(ruta: string) {
         element: conPuertaRediseno(<Outlet />),
         children: [
           { path: '/', element: <p>Inicio actual</p> },
-          { path: '/configuracion/apariencia', element: <p>Apariencia actual</p> },
+          {
+            path: '/configuracion/apariencia',
+            element: <p>Apariencia actual</p>,
+          },
         ],
       },
     ],
