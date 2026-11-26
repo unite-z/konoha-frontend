@@ -44,6 +44,9 @@ export interface GeometriaViva {
   anillos: readonly number[][]
 }
 
+/** Función que retira un elemento anclado; `mover` lo lleva a otro punto (metros) sin quitarlo del DOM. */
+export type Ancla = (() => void) & { mover: (x: number, y: number) => void }
+
 export interface Escena {
   repintar: () => void
   /** Colorea áreas por token CSS sin regenerar el campus. Devuelve la función que quita la capa. */
@@ -59,11 +62,19 @@ export interface Escena {
    */
   dibujarGeometrias: (geometrias: readonly GeometriaViva[], alPulsar: (id: string) => void) => () => void
   /** Cuelga un elemento HTML de un punto (metros) sobre el suelo. Devuelve la función que lo retira. */
-  anclar: (elemento: HTMLElement, x: number, y: number, alto?: number) => () => void
+  anclar: (elemento: HTMLElement, x: number, y: number, alto?: number) => Ancla
   /** Metros de escena por píxel de pantalla con el zoom actual. */
   metrosPorPixel: () => number
   /** Avisa cuando el zoom o el tamaño cambian de forma apreciable. Devuelve la función que deja de avisar. */
   alCambiarCamara: (oyente: () => void) => () => void
+  /** Punto del suelo (metros) bajo una posición de pantalla, o `null` si ahí no hay suelo. */
+  suelo: (clientX: number, clientY: number) => { x: number; y: number } | null
+  /** Punto del suelo (metros) que hay en el centro de la vista. */
+  centro: () => { x: number; y: number }
+  /** Mientras haya algún oyente, un toque en el suelo lo llama (en metros) y no elige áreas. Devuelve la baja. */
+  alPulsarSuelo: (oyente: (punto: { x: number; y: number }) => void) => () => void
+  /** Dibuja una polilínea (lista plana en metros) sobre el suelo, con relleno si va cerrada. Devuelve la función que la quita. */
+  dibujarTrazo: (puntos: readonly number[], cerrado: boolean, token: string) => () => void
   /** Vuela a un punto (metros), acercando por `factor`. */
   enfocar: (x: number, y: number, factor?: number) => void
   irAVista: (vista: VistaMapa) => void
@@ -582,6 +593,21 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   const mallasVivas = new Set<THREE.Mesh>()
   let abajo: [number, number] | null = null
   let clicDeSalto = false
+  const oyentesSuelo = new Set<(punto: { x: number; y: number }) => void>()
+  const planoSuelo = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+  const impactoSuelo = new THREE.Vector3()
+  /** Metros del suelo bajo el rayo ya apuntado (x = este, y = norte). */
+  function sueloBajoRayo() {
+    return rayo.ray.intersectPlane(planoSuelo, impactoSuelo) ? { x: impactoSuelo.x, y: -impactoSuelo.z } : null
+  }
+  function sueloEnPantalla(clientX: number, clientY: number) {
+    const r = renderer.domElement.getBoundingClientRect()
+    if (r.width === 0 || r.height === 0) return null
+    puntero.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1)
+    camera.updateMatrixWorld()
+    rayo.setFromCamera(puntero, camera)
+    return sueloBajoRayo()
+  }
   const alBajar = (e: PointerEvent) => {
     // El clic que salta la construcción no elige un área.
     abajo = clicDeSalto ? null : [e.clientX, e.clientY]
@@ -592,6 +618,11 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     const r = renderer.domElement.getBoundingClientRect()
     puntero.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
     rayo.setFromCamera(puntero, camera)
+    if (oyentesSuelo.size > 0) {
+      const punto = sueloBajoRayo()
+      if (punto) for (const oyente of oyentesSuelo) oyente(punto)
+      return
+    }
     const viva = rayo.intersectObjects([...mallasVivas])[0]
     if (viva?.face) {
       const malla = viva.object as THREE.Mesh
@@ -758,16 +789,54 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     }
   }
 
+  function dibujarTrazo(puntos: readonly number[], cerrado: boolean, token: string) {
+    const p = [...puntos]
+    const lineas = new THREE.LineSegments(
+      segmentos([p], 0.3, cerrado),
+      new THREE.LineBasicMaterial({ transparent: true, depthTest: false }),
+    )
+    const objetos: Array<THREE.Mesh | THREE.LineSegments> = [lineas]
+    if (cerrado && p.length >= 6) {
+      objetos.push(
+        new THREE.Mesh(
+          plano(p, 0.25),
+          new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.28, depthWrite: false, depthTest: false }),
+        ),
+      )
+    }
+    for (const objeto of objetos) {
+      pintablesToken.push([(objeto.material as THREE.MeshBasicMaterial).color, token])
+      objeto.renderOrder = 10
+      scene.add(objeto)
+    }
+    repintar()
+    return () => {
+      for (const objeto of objetos) {
+        scene.remove(objeto)
+        objeto.geometry.dispose()
+        despintar(objeto.material as THREE.MeshBasicMaterial)
+        ;(objeto.material as THREE.Material).dispose()
+      }
+      pedir()
+    }
+  }
+
   function anclar(elemento: HTMLElement, x: number, y: number, alto = 3) {
     const objeto = new CSS2DObject(elemento)
     objeto.position.set(x, alto, -y)
     scene.add(objeto)
     pedir()
-    return () => {
+    const quitar = () => {
       scene.remove(objeto)
       elemento.remove()
       pedir()
     }
+    return Object.assign(quitar, {
+      mover: (nx: number, ny: number) => {
+        objeto.position.set(nx, alto, -ny)
+        pedir()
+      },
+    })
   }
 
   repintar()
@@ -807,6 +876,13 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     ocultarAreas,
     dibujarGeometrias,
     anclar,
+    suelo: sueloEnPantalla,
+    centro: () => ({ x: controles.target.x, y: -controles.target.z }),
+    alPulsarSuelo: (oyente) => {
+      oyentesSuelo.add(oyente)
+      return () => oyentesSuelo.delete(oyente)
+    },
+    dibujarTrazo,
     metrosPorPixel: () => (camera.top - camera.bottom) / camera.zoom / tamano().alto,
     alCambiarCamara: (oyente) => {
       oyentesCamara.add(oyente)
