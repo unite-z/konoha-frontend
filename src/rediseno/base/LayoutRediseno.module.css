@@ -40,6 +40,11 @@
   pointer-events: none;
 }
 
+/* Pantallas de acceso: sin cabecera ni barra inferior, no hay nada que reservar. */
+.raiz[data-navegacion='no'] {
+  padding-block: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .raiz {
     transition: none;

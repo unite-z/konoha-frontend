@@ -87,14 +87,16 @@ export default function IngresoPage() {
       })
       const destinoDelRol =
         sesion.rol.codigo === 'capataz' && destino === PREFIJO_REDISENO ? RUTAS_CAMPO.encargos : destino
+      // `enviando` sigue en true: la transición de vista aplica la navegación un fotograma después, y con la sesión
+      // ya activa el `<Navigate>` de arriba la pisaría (sin fundido y sin el destino del rol).
       navegar(sesion.debe_cambiar_contrasena ? RUTA_CAMBIAR_CONTRASENA : destinoDelRol, { replace: true })
     } catch (causa) {
       setErrorServidor(aErrorApi(causa).detalle)
       setClave('')
+      setEnviando(false)
       document.getElementById(ID_CLAVE)?.focus()
     } finally {
       enCurso.current = false
-      setEnviando(false)
     }
   }
 

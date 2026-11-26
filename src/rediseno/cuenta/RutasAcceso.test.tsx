@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { PERMISOS } from '@/config/permisosCore'
 import { rutaRediseno } from '../rutas'
 import { CLAVE_DISENO_NUEVO } from '../useDisenoNuevo'
 
@@ -15,7 +16,17 @@ vi.mock('@/sesion/ContextoSesion', async (importar) => ({
     cerrarSesion: vi.fn(),
   }),
   useSesionActiva: () => (sesion.estado as { sesion?: unknown }).sesion ?? null,
+  usePermisos: () => (sesion.estado as { sesion?: { permisos: string[] } }).sesion?.permisos ?? null,
 }))
+
+const conInventario = (debeCambiar: boolean) => ({
+  tipo: 'activa',
+  sesion: {
+    usuario: { nombre: 'Robert G.' },
+    permisos: [PERMISOS.consultarInventario],
+    debe_cambiar_contrasena: debeCambiar,
+  },
+})
 
 beforeEach(() => {
   const datos = new Map<string, string>([[CLAVE_DISENO_NUEVO, '1']])
@@ -77,5 +88,23 @@ describe('rutas de cuenta bajo /n (AV-439)', () => {
       sesion: { permisos: [], debe_cambiar_contrasena: true },
     }
     expect(montar('/n/mapa').state.location.pathname).toBe('/cambiar-contrasena')
+  })
+
+  it('sin sesión, el ingreso no muestra la cabecera ni la barra inferior', () => {
+    montar('/n/ingreso')
+    expect(screen.queryByRole('banner')).toBeNull()
+    expect(screen.queryByRole('navigation')).toBeNull()
+  })
+
+  it('con contraseña temporal, el cambio no ofrece navegar a secciones que el servidor no deja usar', () => {
+    sesion.estado = conInventario(true)
+    montar('/n/cambiar-contrasena')
+    expect(screen.queryByRole('navigation', { name: 'Secciones' })).toBeNull()
+  })
+
+  it('con sesión completa, el resto de /n sí lleva la cabecera con sus secciones', () => {
+    sesion.estado = conInventario(false)
+    montar('/n')
+    expect(screen.getByRole('navigation', { name: 'Secciones' })).toBeTruthy()
   })
 })

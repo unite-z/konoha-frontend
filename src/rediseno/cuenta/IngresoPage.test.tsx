@@ -12,6 +12,9 @@ const sesionMock = vi.hoisted(() => ({
   estado: { tipo: 'anonima' } as unknown,
 }))
 const mapa = vi.hoisted(() => ({ useVistaDeMapa: vi.fn() }))
+// Con `diferir`, la navegación con transición se anota pero no se aplica: así se comporta el navegador, que la aplica
+// un fotograma después (`startViewTransition`).
+const transicion = vi.hoisted(() => ({ diferir: false, destinos: [] as unknown[] }))
 
 vi.mock('@/sesion/ContextoSesion', () => ({
   useSesion: () => ({
@@ -19,6 +22,19 @@ vi.mock('@/sesion/ContextoSesion', () => ({
     ingresar: sesionMock.ingresar,
   }),
 }))
+vi.mock('../base/movimiento', async (importar) => {
+  const real = await importar<typeof import('../base/movimiento')>()
+  return {
+    ...real,
+    useNavegarConTransicion: () => {
+      const navegar = real.useNavegarConTransicion()
+      return (...argumentos: Parameters<typeof navegar>) => {
+        transicion.destinos.push(argumentos[0])
+        if (!transicion.diferir) navegar(...argumentos)
+      }
+    },
+  }
+})
 vi.mock('../base/Escenario', () => ({
   useVistaDeMapa: mapa.useVistaDeMapa,
   ATRIBUTO_MAPA_LIBRE: 'data-mapa-libre',
@@ -29,6 +45,8 @@ afterEach(() => {
   sesionMock.ingresar.mockReset()
   sesionMock.estado = { tipo: 'anonima' }
   mapa.useVistaDeMapa.mockReset()
+  transicion.diferir = false
+  transicion.destinos = []
 })
 
 function Destino() {
@@ -149,6 +167,21 @@ describe('IngresoPage del diseño nuevo (AV-439)', () => {
     pintar()
     await completarIngreso('capataz')
     expect((await screen.findByTestId('destino')).textContent).toBe('/operacion-campo/encargos')
+  })
+
+  it('mientras la transición aplica la navegación, la sesión ya activa no la pisa con otro destino', async () => {
+    transicion.diferir = true
+    pintar()
+    sesionMock.ingresar.mockImplementation(() => {
+      sesionMock.estado = { tipo: 'activa', sesion: sesion('capataz') }
+      return Promise.resolve(sesion('capataz'))
+    })
+    const usuario = userEvent.setup()
+    await usuario.type(screen.getByLabelText('Correo institucional'), 'usuario@pucp.edu.pe')
+    await usuario.type(screen.getByLabelText('Contraseña'), 'secreto')
+    await usuario.click(screen.getByRole('button', { name: 'Ingresar' }))
+    expect(transicion.destinos).toEqual(['/operacion-campo/encargos'])
+    expect(screen.queryByTestId('destino')).toBeNull()
   })
 
   it('con contraseña temporal lleva al cambio de contraseña del diseño nuevo', async () => {

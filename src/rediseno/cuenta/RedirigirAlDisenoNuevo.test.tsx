@@ -16,13 +16,17 @@ afterEach(() => {
 })
 
 function Destino() {
-  const { pathname, search } = useLocation()
-  return <p data-testid="destino">{`${pathname}${search}`}</p>
+  const { pathname, search, state } = useLocation()
+  return (
+    <p data-testid="destino" data-perdida={String(Boolean((state as { perdida?: boolean } | null)?.perdida))}>
+      {`${pathname}${search}`}
+    </p>
+  )
 }
 
-function pintar() {
+function pintar(estado?: unknown) {
   render(
-    <MemoryRouter initialEntries={['/ingreso?volver=%2Fpendientes']}>
+    <MemoryRouter initialEntries={[{ pathname: '/ingreso', search: '?volver=%2Fpendientes', state: estado }]}>
       <Routes>
         <Route
           path="/ingreso"
@@ -48,5 +52,11 @@ describe('RedirigirAlDisenoNuevo (AV-439)', () => {
     diseno.encendido = true
     pintar()
     expect(screen.getByTestId('destino').textContent).toBe('/n/ingreso?volver=%2Fpendientes')
+  })
+
+  it('conserva el estado de la navegación: el aviso de sesión terminada llega a /n/ingreso', () => {
+    diseno.encendido = true
+    pintar({ perdida: true })
+    expect(screen.getByTestId('destino').getAttribute('data-perdida')).toBe('true')
   })
 })
