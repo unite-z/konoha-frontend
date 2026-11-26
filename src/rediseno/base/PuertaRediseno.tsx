@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router'
 import Boton, { BotonEnlace } from '@/design-system/Boton'
 import EstadoVacio from '@/design-system/EstadoVacio'
 import { useDisenoNuevo } from '../useDisenoNuevo'
+import estilos from './PuertaRediseno.module.css'
 import { destinoRediseno } from './redirecciones'
 
 /**
@@ -21,18 +22,20 @@ export function PuertaPrefijo() {
   const { encendido, elegir } = useDisenoNuevo()
   if (encendido) return <Outlet />
   return (
-    <EstadoVacio
-      centrado
-      titulo="El diseño nuevo está desactivado"
-      descripcion="Actívalo para verlo. Puedes volver al diseño actual cuando quieras desde Configuración › Apariencia."
-      accion={
-        <>
-          <Boton onClick={() => void elegir(true).catch(() => undefined)}>Activar diseño nuevo</Boton>
-          <BotonEnlace to="/" variante="secundario">
-            Volver al diseño actual
-          </BotonEnlace>
-        </>
-      }
-    />
+    <main>
+      <EstadoVacio
+        centrado
+        titulo="El diseño nuevo está desactivado"
+        descripcion="Actívalo para verlo. Puedes volver al diseño actual cuando quieras desde Configuración › Apariencia."
+        accion={
+          <div className={estilos.acciones}>
+            <Boton onClick={() => void elegir(true).catch(() => undefined)}>Activar diseño nuevo</Boton>
+            <BotonEnlace to="/" variante="secundario">
+              Volver al diseño actual
+            </BotonEnlace>
+          </div>
+        }
+      />
+    </main>
   )
 }
