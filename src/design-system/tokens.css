@@ -89,8 +89,8 @@
 :root {
   --movimiento-rapido: 150ms;
   --movimiento-normal: 280ms;
-  --movimiento-lento: 420ms;
-  --movimiento-vuelo: 760ms;
+  --movimiento-lento: 400ms; /* tope de cualquier transición de interfaz */
+  --movimiento-vuelo: 760ms; /* solo vuelo de cámara del mapa */
   --curva-salida: cubic-bezier(0.32, 0.72, 0, 1);
   --curva-suave: cubic-bezier(0.65, 0, 0.35, 1);
   --curva-muelle: cubic-bezier(0.34, 1.4, 0.64, 1);

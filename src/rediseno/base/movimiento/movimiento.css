@@ -33,18 +33,18 @@
   animation-timing-function: var(--curva-salida);
 }
 
-/* Cabecera y encabezado se quedan quietos: la imagen vieja y la nueva se superponen sin animar. */
+/* Cabecera y encabezado se quedan quietos: se muestra ya la imagen nueva y se oculta la vieja
+   (son de vidrio translúcido: superponer las dos dejaría ver el texto de ambas). */
 ::view-transition-group(cabecera),
-::view-transition-group(encabezado) {
+::view-transition-group(encabezado),
+::view-transition-new(cabecera),
+::view-transition-new(encabezado) {
   animation: none;
 }
 
 ::view-transition-old(cabecera),
-::view-transition-new(cabecera),
-::view-transition-old(encabezado),
-::view-transition-new(encabezado) {
-  animation: none;
-  mix-blend-mode: normal;
+::view-transition-old(encabezado) {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
