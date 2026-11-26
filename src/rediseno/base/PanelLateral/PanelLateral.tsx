@@ -75,9 +75,10 @@ export default function PanelLateral(props: PanelLateralProps) {
   if (!abierto) return null
 
   function tecladoPanel(evento: KeyboardEvent<HTMLElement>) {
-    const objetivo = evento.target as Element
+    // Las teclas de un `<dialog>` abierto dentro (VentanaFlotante) son suyas: ni Esc cierra el panel ni su Tab se desvía.
+    if ((evento.target as Element).closest('dialog')) return
     if (evento.key === 'Escape') {
-      if (!editando && !evento.defaultPrevented && !objetivo.closest('dialog')) onCerrar()
+      if (!editando && !evento.defaultPrevented) onCerrar()
       return
     }
     if (evento.key !== 'Tab' || !esMovil || !panel.current) return
@@ -115,7 +116,7 @@ export default function PanelLateral(props: PanelLateralProps) {
       data-editando={editando || undefined}
       className={estilos.panel}
       onKeyDown={tecladoPanel}
-      // TODO(AV-429): usar los nombres de src/rediseno/base/movimiento/ cuando estén en main.
+      // El módulo pasa `panel(id)` de base/movimiento para el morph fila → panel.
       style={viewTransitionName ? { viewTransitionName } : undefined} // estilo-calculado
     >
       <header className={estilos.cabecera}>
