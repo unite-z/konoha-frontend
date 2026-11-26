@@ -15,6 +15,15 @@ vi.mock('@/sesion/ContextoSesion', async (original) => ({
 
 const datos = new Map<string, string>()
 
+// Las rutas de /n (salvo el ingreso) pasan por RutaProtegida (AV-439): una sesión activa las deja pasar.
+vi.mock('@/sesion/ContextoSesion', async (importar) => ({
+  ...(await importar<typeof import('@/sesion/ContextoSesion')>()),
+  useSesion: () => ({
+    estado: { tipo: 'activa', sesion: { permisos: [], debe_cambiar_contrasena: false } },
+    recargar: () => Promise.resolve(),
+  }),
+}))
+
 beforeEach(() => {
   datos.clear()
   vi.stubGlobal('localStorage', {

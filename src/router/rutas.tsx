@@ -7,6 +7,8 @@
  * Las rutas con nombre y las migas están en `rutasApp.ts`.
  */
 import { createBrowserRouter, Navigate } from 'react-router'
+import { RUTA_CAMBIAR_CONTRASENA, RUTA_INGRESO } from '../rediseno/cuenta/enlaces'
+import RedirigirAlDisenoNuevo from '../rediseno/cuenta/RedirigirAlDisenoNuevo'
 import { conPuertaRediseno, rutaRediseno } from '../rediseno/rutas'
 import LayoutOficina from '../layouts/LayoutOficina/LayoutOficina'
 import PendientesPage from '../pages/sincronizacion/PendientesPage'
@@ -127,16 +129,32 @@ import { BASE_CAMPO, RUTAS_CAMPO } from './rutasCampo'
 const DESCRIPCION_SIN_PLANIFICACION = 'Tu ruta del día y el calendario están en la app móvil.'
 
 export const router = createBrowserRouter([
-  { path: RUTAS_CORE.ingreso, element: <IngresoPage /> }, // RF-T-001
+  rutaRediseno, // AV-420: rutas del diseño nuevo, bajo /n (el ingreso es público; el resto pasa por RutaProtegida)
+  {
+    path: RUTAS_CORE.ingreso, // RF-T-001
+    element: (
+      <RedirigirAlDisenoNuevo destino={RUTA_INGRESO}>
+        <IngresoPage />
+      </RedirigirAlDisenoNuevo>
+    ), // AV-439: con el interruptor encendido en este navegador, lleva a /n/ingreso
+  },
   {
     element: <RutaProtegida permitirContrasenaTemporal />,
-    children: [{ path: RUTAS_CORE.cambiarContrasena, element: <CambioContrasenaPage /> }], // HU-MOD01-003
+    children: [
+      {
+        path: RUTAS_CORE.cambiarContrasena, // HU-MOD01-003
+        element: (
+          <RedirigirAlDisenoNuevo destino={RUTA_CAMBIAR_CONTRASENA}>
+            <CambioContrasenaPage />
+          </RedirigirAlDisenoNuevo>
+        ),
+      },
+    ],
   },
   {
     element: <RutaProtegida />,
     errorElement: <ErrorCargaPantalla />, // AV-367
     children: [
-      rutaRediseno, // AV-420: rutas del diseño nuevo, bajo /n
       {
         element: conPuertaRediseno(<LayoutOficina />), // AV-420: encendido, lleva al diseño nuevo
         children: [

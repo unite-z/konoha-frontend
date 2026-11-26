@@ -1,0 +1,166 @@
+/*
+ * Ingreso y cambio de contraseña del diseño nuevo (RD-63): tarjeta de vidrio denso centrada. El ingreso va sobre el
+ * mapa 3D (el contenedor deja pasar el ratón con `data-mapa-libre`); el cambio de contraseña, sobre fondo liso.
+ */
+.escena {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--space-8) var(--space-4);
+}
+
+.tarjeta {
+  --acceso-ancho: 27.5rem;
+  --radius-tarjeta: calc(var(--radius-lg) * 2);
+
+  width: 100%;
+  max-width: var(--acceso-ancho);
+  padding: var(--space-8);
+  border-radius: var(--radius-tarjeta);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno-denso);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+  color: var(--color-text-primary);
+}
+
+.tarjetaIngreso {
+  --acceso-ancho: 30rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tarjeta {
+    animation: aparecer var(--movimiento-normal) var(--curva-salida);
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-4));
+  }
+}
+
+.marca {
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.marcaLogo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.simbolo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.nombreMarca {
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.campus {
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.titulo,
+.tituloIngreso {
+  margin-top: var(--space-2);
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+}
+
+.tituloIngreso {
+  margin-top: var(--space-4);
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+}
+
+.texto {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.reglas {
+  margin: var(--space-4) 0 0;
+  padding-left: var(--space-6);
+  color: var(--color-text-secondary);
+  font-size: var(--type-leyenda-size);
+  line-height: var(--type-leyenda-line);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.formulario > div:empty {
+  display: none;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tarjetaIngreso .acciones {
+  flex-direction: column;
+}
+
+@media (max-width: 767px) {
+  .escena {
+    padding: var(--space-4);
+  }
+
+  .tarjeta {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .acciones {
+    flex-direction: column-reverse;
+  }
+
+  .tarjetaIngreso .acciones {
+    flex-direction: column;
+  }
+
+  .acciones > * {
+    width: 100%;
+  }
+}
+
+/* Sin `backdrop-filter` o con menos transparencia, el relleno pasa a opaco. */
+@supports not (backdrop-filter: blur(1px)) {
+  .tarjeta {
+    background: var(--color-bg-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tarjeta {
+    background: var(--color-bg-surface);
+    backdrop-filter: none;
+  }
+}
