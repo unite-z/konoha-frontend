@@ -13,6 +13,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js'
 import type { DatosCampus } from '@/types/campus3d'
+import type { GruposAreas } from './areas'
 import { leerPaleta, type ClavePaleta } from './paleta'
 
 export type VistaMapa = 'iso' | 'planta' | 'baja'
@@ -25,8 +26,10 @@ export interface OpcionesEscena {
   animar: boolean
   reducirMovimiento: boolean
   claseEtiqueta: string
-  /** Índice del área pulsada en `datos.areas`, o `null` si se pulsó fuera de las áreas. */
+  /** Índice del área principal pulsada en `datos.areas`, o `null` si se pulsó fuera de las áreas. */
   alSeleccionar: (indice: number | null) => void
+  /** Partes de cada área de varios polígonos (`agruparAreas`). */
+  grupos: GruposAreas
 }
 
 export interface Escena {
@@ -61,6 +64,8 @@ interface Vuelo {
 }
 
 const ALTO = 820
+/** Ancho mínimo visible (m): en pantallas estrechas (móvil en vertical) el campus cabe entero a lo ancho. */
+const ANCHO_MINIMO = 1000
 const RADIO_CAMARA = 1500
 const CONSTRUCCION_S = 1.85
 const SUBIR_S = 0.7
@@ -140,7 +145,8 @@ function cajaDe(p: number[]): { x0: number; x1: number; y0: number; y1: number }
 }
 
 export function crearEscena(opciones: OpcionesEscena): Escena {
-  const { contenedor, datos, reducirMovimiento } = opciones
+  const { contenedor, datos, reducirMovimiento, grupos } = opciones
+  const partesDe = (indice: number) => grupos.partes.get(grupos.principal[indice]) ?? [indice]
   const cortes = reducirMovimiento
   let construido = !opciones.animar || reducirMovimiento
   const tamano = () => ({ ancho: Math.max(1, contenedor.clientWidth), alto: Math.max(1, contenedor.clientHeight) })
@@ -148,6 +154,9 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     const { ancho, alto } = tamano()
     return ancho / alto
   }
+  /** Alto visible de la escena con zoom 1; la escala lleva el zoom de las áreas al mismo encuadre en cualquier pantalla. */
+  const altoVisible = () => Math.max(ALTO, ANCHO_MINIMO / aspecto())
+  const escala = () => altoVisible() / ALTO
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -165,14 +174,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   contenedor.appendChild(capaEtiquetas.domElement)
 
   const scene = new THREE.Scene()
-  const camera = new THREE.OrthographicCamera(
-    (-ALTO * aspecto()) / 2,
-    (ALTO * aspecto()) / 2,
-    ALTO / 2,
-    -ALTO / 2,
-    -5000,
-    5000,
-  )
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -5000, 5000)
   scene.add(new THREE.AmbientLight(0xffffff, 1.9))
   const sol = new THREE.DirectionalLight(0xffffff, 1.3)
   sol.position.set(-300, 500, 200)
@@ -376,7 +378,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   controles.enableDamping = true
   controles.dampingFactor = 0.08
   controles.minZoom = 0.6
-  controles.maxZoom = 12
+  controles.maxZoom = 12 * escala()
   controles.maxPolarAngle = Math.PI * 0.47
   controles.screenSpacePanning = true
 
@@ -452,6 +454,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   function terminarConstruccion() {
     if (construido) return
     construido = true
+    quitarSalto()
     uT.value = 99
     colocarArboles(99)
     for (const m of fundibles) m.opacity = m.userData.final as number
@@ -485,25 +488,30 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   controles.addEventListener('change', pedir)
 
   function ajustarTamano() {
-    const a = aspecto()
-    camera.left = (-ALTO * a) / 2
-    camera.right = (ALTO * a) / 2
-    camera.top = ALTO / 2
-    camera.bottom = -ALTO / 2
+    const alto = altoVisible()
+    camera.left = (-alto * aspecto()) / 2
+    camera.right = (alto * aspecto()) / 2
+    camera.top = alto / 2
+    camera.bottom = -alto / 2
     camera.updateProjectionMatrix()
+    controles.maxZoom = 12 * escala()
     renderer.setSize(tamano().ancho, tamano().alto)
     capaEtiquetas.setSize(tamano().ancho, tamano().alto)
     pedir()
   }
   const observadorTamano = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(ajustarTamano)
   observadorTamano?.observe(contenedor)
+  ajustarTamano()
 
   // --- clic en un área
   const rayo = new THREE.Raycaster()
   const puntero = new THREE.Vector2()
   let abajo: [number, number] | null = null
+  let clicDeSalto = false
   const alBajar = (e: PointerEvent) => {
-    abajo = [e.clientX, e.clientY]
+    // El clic que salta la construcción no elige un área.
+    abajo = clicDeSalto ? null : [e.clientX, e.clientY]
+    clicDeSalto = false
   }
   const alSubir = (e: PointerEvent) => {
     if (!abajo || Math.hypot(e.clientX - abajo[0], e.clientY - abajo[1]) > 4) return
@@ -511,7 +519,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     puntero.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
     rayo.setFromCamera(puntero, camera)
     const cara = rayo.intersectObject(mallaAreas)[0]?.face
-    opciones.alSeleccionar(cara ? mallaAreas.geometry.attributes.area.getX(cara.a) : null)
+    opciones.alSeleccionar(cara ? grupos.principal[mallaAreas.geometry.attributes.area.getX(cara.a)] : null)
   }
   renderer.domElement.addEventListener('pointerdown', alBajar)
   renderer.domElement.addEventListener('pointerup', alSubir)
@@ -520,19 +528,20 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   let antesDelArea: EstadoCamara | null = null
   const marcar = (malla: THREE.Mesh, indice: number | null) => {
     malla.geometry.dispose()
-    malla.geometry = indice === null ? new THREE.BufferGeometry() : plano(datos.areas[indice].p, 0.2)
+    malla.geometry =
+      indice === null ? new THREE.BufferGeometry() : unir(partesDe(indice).map((i) => plano(datos.areas[i].p, 0.2)))
   }
   function irAArea(indice: number | null) {
-    const area = indice === null ? undefined : datos.areas[indice]
-    marcar(seleccion, area ? indice : null)
-    if (!area) {
+    const valido = indice !== null && indice >= 0 && indice < datos.areas.length
+    marcar(seleccion, valido ? indice : null)
+    if (!valido) {
       if (antesDelArea) volar(antesDelArea, 800)
       antesDelArea = null
       pedir()
       return
     }
     antesDelArea ??= estadoCamara()
-    const { x0, x1, y0, y1 } = cajaDe(area.p)
+    const { x0, x1, y0, y1 } = cajaDe(partesDe(indice).flatMap((i) => datos.areas[i].p))
     const tam = Math.max(x1 - x0, y1 - y0, 25)
     const ahora = estadoCamara()
     volar(
@@ -541,7 +550,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
         cz: -(y0 + y1) / 2,
         az: ahora.az + 0.12,
         el: Math.min(ahora.el, 0.78),
-        z: Math.min(9, Math.max(1.8, ALTO / (tam * 3.2))),
+        z: Math.min(9 * escala(), Math.max(1.8, altoVisible() / (tam * 3.2))),
       },
       900,
     )
@@ -550,7 +559,15 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   repintar()
 
   // --- salto de la construcción con clic, tecla o rueda
-  const saltar = () => terminarConstruccion()
+  const saltar = (e: Event) => {
+    clicDeSalto = e.type === 'pointerdown' && e.target instanceof Node && contenedor.contains(e.target)
+    terminarConstruccion()
+  }
+  function quitarSalto() {
+    window.removeEventListener('pointerdown', saltar, { capture: true })
+    window.removeEventListener('keydown', saltar, { capture: true })
+    window.removeEventListener('wheel', saltar, { capture: true })
+  }
   if (!construido) {
     window.addEventListener('pointerdown', saltar, { capture: true })
     window.addEventListener('keydown', saltar, { capture: true })
@@ -606,9 +623,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
       destruida = true
       cancelAnimationFrame(marco)
       observadorTamano?.disconnect()
-      window.removeEventListener('pointerdown', saltar, { capture: true })
-      window.removeEventListener('keydown', saltar, { capture: true })
-      window.removeEventListener('wheel', saltar, { capture: true })
+      quitarSalto()
       renderer.domElement.removeEventListener('pointerdown', alBajar)
       renderer.domElement.removeEventListener('pointerup', alSubir)
       controles.dispose()
@@ -620,6 +635,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
       })
       esfera.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // libera el contexto WebGL: el navegador admite pocos a la vez
       renderer.domElement.remove()
       capaEtiquetas.domElement.remove()
     },

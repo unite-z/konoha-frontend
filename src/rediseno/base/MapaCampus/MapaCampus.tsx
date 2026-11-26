@@ -15,10 +15,11 @@ import { useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type 
 import Boton from '@/design-system/Boton'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoError from '@/design-system/EstadoError'
+import EstadoVacio from '@/design-system/EstadoVacio'
 import type { AreaCampus } from '@/types/campus3d'
 import type { Escena, VistaMapa } from './escena'
 import estilos from './MapaCampus.module.css'
-import { CLAVE_CONSTRUCCION, indiceDeArea, nombreDeArea } from './areas'
+import { agruparAreas, CLAVE_CONSTRUCCION, indiceDeArea, nombreDeArea } from './areas'
 import { observarTema } from './paleta'
 import { useCampus } from './useCampus'
 import { hayWebGL } from './webgl'
@@ -84,13 +85,15 @@ export default function MapaCampus({
     alSeleccionar.current = onSeleccionarArea
   })
 
-  // Áreas en orden alfabético: es el orden de la lista y del foco con flechas.
+  const grupos = useMemo(() => (datos ? agruparAreas(datos) : null), [datos])
+  // Una entrada por área (las de varios polígonos, una vez) en orden alfabético: es el orden de la lista y del foco.
   const lista = useMemo(() => {
-    if (!datos) return []
+    if (!datos || !grupos) return []
     return datos.areas
       .map((area, indice) => ({ area, indice, nombre: nombreDeArea(area) }))
-      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-  }, [datos])
+      .filter(({ indice }) => grupos.principal[indice] === indice)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { numeric: true }))
+  }, [datos, grupos])
 
   const usarEscena = datos !== null && !sinWebGL && !falloEscena
   useEffect(() => {
@@ -111,6 +114,7 @@ export default function MapaCampus({
           reducirMovimiento: reducirMovimiento(),
           claseEtiqueta: estilos.etiqueta,
           alSeleccionar: (indice) => alSeleccionar.current(indice === null ? null : datos.areas[indice]),
+          grupos: agruparAreas(datos),
         })
         vistaAplicada.current = vistaInicial.current
         setEscena(creada)
@@ -154,7 +158,11 @@ export default function MapaCampus({
       volarA: (destino) => {
         if (typeof destino === 'string' && VISTAS.includes(destino)) escena?.irAVista(destino as VistaMapa)
         else if (datos) {
-          const indice = typeof destino === 'object' ? indiceDeArea(datos, destino.id) : indiceDeArea(datos, destino)
+          const posicion = typeof destino === 'object' ? datos.areas.indexOf(destino) : -1
+          const indice = indiceDeArea(
+            datos,
+            typeof destino === 'object' ? (posicion >= 0 ? posicion : destino.id) : destino,
+          )
           if (indice !== null) escena?.irAArea(indice)
         }
       },
@@ -247,7 +255,14 @@ export default function MapaCampus({
           <p role="status">
             Tu navegador no puede mostrar el mapa 3D del campus. Elige un área de la lista para ver su ficha.
           </p>
-          {botonesAreas(true)}
+          {lista.length > 0 ? (
+            botonesAreas(true)
+          ) : (
+            <EstadoVacio
+              titulo="No hay áreas en el mapa"
+              descripcion="Aparecerán cuando se publiquen los datos del campus."
+            />
+          )}
         </div>
         {atribucion}
       </div>

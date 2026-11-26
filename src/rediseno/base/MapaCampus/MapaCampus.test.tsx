@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DatosCampus } from '@/types/campus3d'
-import { CLAVE_CONSTRUCCION, indiceDeArea } from './areas'
+import { agruparAreas, CLAVE_CONSTRUCCION, indiceDeArea, nombreDeArea } from './areas'
 import MapaCampus, { type MapaCampusRef } from './MapaCampus'
 
 const area = (id: string, n: string) => ({
@@ -18,7 +18,13 @@ const area = (id: string, n: string) => ({
 })
 const datos = {
   atribucion: '© OpenStreetMap contributors · OpenFreeMap',
-  areas: [area('b', 'Bosque'), area('a', 'Arboleda'), area('c', 'Cantera')],
+  // La última entrada es un segundo polígono del área «b» (mismo id, sin nombre ni centro), como en los datos reales.
+  areas: [
+    area('b', 'Bosque'),
+    area('a', 'Arboleda'),
+    area('c', 'Cantera'),
+    { id: 'b', n: null, c: null, s: 100, r: '', p: [20, 20, 30, 20, 30, 30] },
+  ],
 } as unknown as DatosCampus
 
 const escena = {
@@ -84,6 +90,23 @@ describe('MapaCampus (AV-424)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Bosque' }))
     expect(alSeleccionar).toHaveBeenCalledWith(datos.areas[0])
     expect(crearEscena).not.toHaveBeenCalled()
+  })
+
+  it('sin WebGL y sin áreas: estado vacío', async () => {
+    hayWebGL.mockReturnValue(false)
+    obtenerCampus3d.mockResolvedValue({ ...datos, areas: [] })
+    render(<MapaCampus onSeleccionarArea={() => {}} />)
+    expect(await screen.findByText('No hay áreas en el mapa')).toBeTruthy()
+  })
+
+  it('un área de varios polígonos sale una vez y sus partes llevan a la principal', async () => {
+    const ref = { current: null as MapaCampusRef | null }
+    render(<MapaCampus ref={ref} onSeleccionarArea={() => {}} />)
+    await waitFor(() => expect(crearEscena).toHaveBeenCalled())
+    expect(crearEscena).toHaveBeenCalledWith(expect.objectContaining({ grupos: agruparAreas(datos) }))
+    expect(screen.getAllByRole('button', { name: 'Bosque', hidden: true })).toHaveLength(1)
+    act(() => ref.current?.volarA(datos.areas[3]))
+    expect(escena.irAArea).toHaveBeenLastCalledWith(0)
   })
 
   it('lista alternativa ordenada por nombre y fuera del orden de tabulación', async () => {
@@ -161,10 +184,24 @@ describe('MapaCampus (AV-424)', () => {
   })
 })
 
-describe('indiceDeArea', () => {
-  it('acepta id o posición y descarta lo que no existe', () => {
+describe('áreas', () => {
+  it('agruparAreas: cada entrada apunta a la principal de su id', () => {
+    const grupos = agruparAreas(datos)
+    expect(grupos.principal).toEqual([0, 1, 2, 0])
+    expect(grupos.partes.get(0)).toEqual([0, 3])
+  })
+
+  it('nombreDeArea: nombre, si no código, si no superficie', () => {
+    expect(nombreDeArea(datos.areas[0])).toBe('Bosque')
+    expect(nombreDeArea({ ...datos.areas[3], c: 'D 14' })).toBe('Área D 14')
+    expect(nombreDeArea(datos.areas[3])).toBe('Área sin código de 100 m²')
+  })
+
+  it('indiceDeArea acepta id o posición, da la principal y descarta lo que no existe', () => {
     expect(indiceDeArea(datos, 'a')).toBe(1)
     expect(indiceDeArea(datos, 2)).toBe(2)
+    expect(indiceDeArea(datos, 3)).toBe(0)
+    expect(indiceDeArea(datos, 1.5)).toBeNull()
     expect(indiceDeArea(datos, 9)).toBeNull()
     expect(indiceDeArea(datos, 'x')).toBeNull()
     expect(indiceDeArea(datos, undefined)).toBeNull()

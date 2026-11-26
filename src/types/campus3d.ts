@@ -25,19 +25,20 @@ export interface EdificioCampus {
 }
 
 export interface AreaCampus {
+  /** Identificador. Un área de varios polígonos repite el id en varias entradas seguidas: solo la primera trae `h` y `ct`. */
   id: string
-  /** Nombre (puede venir vacío). */
-  n: string
-  /** Código del área. */
-  c: string
+  /** Nombre (casi siempre `null`). */
+  n: string | null
+  /** Código del área (puede ser `null`). */
+  c: string | null
   /** Superficie en m². */
   s: number
   /** Tipo de riego. */
   r: string
   p: number[]
-  h: string
-  /** Centro. */
-  ct: [number, number]
+  h?: string
+  /** Centro (solo en la primera entrada de cada id). */
+  ct?: [number, number]
 }
 
 /** [x, y, alto, fuste, radio] */
