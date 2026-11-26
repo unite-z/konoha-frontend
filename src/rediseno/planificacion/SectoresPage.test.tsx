@@ -297,7 +297,6 @@ describe('Sectores · estados', () => {
 describe('Planificación · pestañas sin construir', () => {
   it.each([
     ['/n/planificacion/ciclos', 'Ciclos: en construcción'],
-    ['/n/planificacion/cuadrillas', 'Cuadrillas: en construcción'],
     ['/n/planificacion/reglas', 'Reglas del ciclo: en construcción'],
   ])('%s lleva a «En construcción»', async (ruta, titulo) => {
     const router = createMemoryRouter([{ path: '/n', children: rutasPlanificacion }], { initialEntries: [ruta] })
