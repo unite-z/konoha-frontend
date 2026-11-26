@@ -1,4 +1,4 @@
-/** Filtros de la bandeja en la URL y marcadores del mapa (RD-42). Lógica pura, con pruebas en `incidencias.test.ts`. */
+/** Filtros de la bandeja en la URL y marcadores del mapa (RD-42). Lógica pura, con pruebas en `filtros.test.ts`. */
 import {
   horasAbierta,
   incidenciasDePestana,
@@ -46,6 +46,27 @@ export function paginaDeIncidencias(incidencias: IncidenciaResumen[], filtros: F
   return { delGrupo, filas: delGrupo.slice(inicio, inicio + POR_PAGINA) }
 }
 
+/**
+ * Cambios de la URL para que la fila de `id` quede a la vista: su página dentro del grupo actual o, si el grupo no la
+ * incluye (p. ej. un aviso de plazo con la pestaña «Cerradas»), en «Todas». `null` si ya se ve o no está en la bandeja.
+ */
+export function ubicarIncidencia(
+  incidencias: IncidenciaResumen[],
+  filtros: FiltrosIncidencias,
+  id: number,
+): Record<string, string | null> | null {
+  let grupo = filtros.grupo
+  let indice = incidenciasDePestana(incidencias, grupo).findIndex((i) => i.id === id)
+  if (indice < 0) {
+    grupo = 'todas'
+    indice = incidencias.findIndex((i) => i.id === id)
+  }
+  if (indice < 0) return null
+  const pagina = Math.floor(indice / POR_PAGINA) + 1
+  if (grupo === filtros.grupo && pagina === filtros.pagina) return null
+  return { grupo: grupo === 'todas' ? null : grupo, pagina: pagina > 1 ? String(pagina) : null }
+}
+
 const TONO_POR_ESTADO: Record<IncidenciaResumen['estado'], TonoMarcador> = {
   Registrada: 'neutro',
   Clasificada: 'info',
@@ -84,6 +105,7 @@ export function marcadoresDeIncidencias(
   incidencias: readonly IncidenciaResumen[],
   areaMapa: ReadonlyMap<number, string>,
   ahora: number,
+  seleccionada: number | null = null,
 ): MarcadorMapa[] {
   return incidencias.flatMap((i) => {
     const areaId = i.area_verde_id == null ? undefined : areaMapa.get(i.area_verde_id)
@@ -91,7 +113,7 @@ export function marcadoresDeIncidencias(
     return [
       {
         id: idMarcador(i.id),
-        etiqueta: `${i.codigo} · ${i.tipo} · ${i.espacio}`,
+        etiqueta: `${i.codigo} · ${i.tipo} · ${i.espacio}${i.id === seleccionada ? ' · seleccionada' : ''}`,
         areaId,
         tono: tonoMarcador(i, ahora),
       },

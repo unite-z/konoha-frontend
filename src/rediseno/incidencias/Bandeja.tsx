@@ -3,7 +3,7 @@
  * en la URL y el aviso de 24 h en la fila. Enseña lo que devuelve el servidor (con `PLA.INCIDENCIA.CONSULTAR_TODAS` todas;
  * sin él, las del capataz y su cuadrilla) sin filtrar por alcance en el cliente. Estados de carga, error, vacío y sin acceso.
  */
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Boton from '@/design-system/Boton'
 import CampoFormulario from '@/design-system/CampoFormulario'
 import Estado from '@/design-system/Estado'
@@ -26,7 +26,7 @@ import {
   type PestanaBandeja,
 } from '@/pages/incidencias/bandeja'
 import type { IncidenciaResumen } from '@/types/incidencias'
-import { estiloTransicion } from '../base/movimiento'
+import { estiloTransicion, reducirMovimiento } from '../base/movimiento'
 import {
   LARGO_MAXIMO_BUSQUEDA,
   nombreFilaIncidencia,
@@ -62,8 +62,15 @@ function FilaIncidencia({
   const horas = horasAbierta(i, ahora)
   const estado = ESTADO_INCIDENCIA[i.estado]
   const aviso = superaObjetivo(i, horas)
+  const elemento = useRef<HTMLLIElement>(null)
+  // Elegida desde el mapa o un aviso, la fila puede quedar fuera de la columna: se desplaza hasta ella.
+  useEffect(() => {
+    if (seleccionada)
+      elemento.current?.scrollIntoView?.({ block: 'nearest', behavior: reducirMovimiento() ? 'auto' : 'smooth' })
+  }, [seleccionada])
   return (
     <li
+      ref={elemento}
       className={estilos.fila}
       data-seleccionada={seleccionada || undefined}
       style={estiloTransicion(nombreFilaIncidencia(i.id))} /* estilo-calculado */

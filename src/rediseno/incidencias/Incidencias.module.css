@@ -2,7 +2,7 @@
 .pagina {
   display: flex;
   align-items: flex-start;
-  min-height: calc(100dvh - var(--rediseno-alto-cabecera, 0px));
+  min-height: calc(100dvh - var(--rediseno-alto-cabecera, 0px) - var(--rediseno-alto-barra, 0px));
   padding: var(--space-4);
 }
 

@@ -4,8 +4,8 @@
  * marcador marca la fila y al revés, la cámara vuela al área y «Atrás» deshace el vuelo. El detalle lo construye RD-43.
  * Sin `area_verde_id` en las incidencias (RD-84) o sin polígono del área, la vista funciona sin marcadores.
  */
-import { useCallback, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
 import AvisoTemporal from '@/design-system/AvisoTemporal'
 import { PERMISOS } from '@/config/permisosCore'
@@ -23,7 +23,7 @@ import { estiloTransicion, nombresTransicion, transicionar, useFocoConLaVista } 
 import { useParametroPanel } from '../base/PanelLateral/useParametroPanel'
 import Bandeja from './Bandeja'
 import { PARAM_INCIDENCIA } from './enlaces'
-import { conCambios, filtrosDeUrl, incidenciaDeMarcador, marcadoresDeIncidencias } from './filtros'
+import { conCambios, filtrosDeUrl, incidenciaDeMarcador, marcadoresDeIncidencias, ubicarIncidencia } from './filtros'
 import estilos from './Incidencias.module.css'
 import Plazos from './Plazos'
 
@@ -31,6 +31,7 @@ const CLASES_SELECCION = { seleccion: '--color-info' } as const
 
 function VistaIncidencias({ veTodas, gestiona }: { veTodas: boolean; gestiona: boolean }) {
   const [parametros, setParametros] = useSearchParams()
+  const ubicacion = useLocation()
   const encabezado = useFocoConLaVista<HTMLHeadingElement>()
   const filtros = filtrosDeUrl(parametros)
   const panel = useParametroPanel(PARAM_INCIDENCIA)
@@ -52,7 +53,10 @@ function VistaIncidencias({ veTodas, gestiona }: { veTodas: boolean; gestiona: b
   }, [poligonos.datos])
   const { grupo } = filtros
   const delGrupo = useMemo(() => incidenciasDePestana(incidencias, grupo), [incidencias, grupo])
-  const marcadores = useMemo(() => marcadoresDeIncidencias(delGrupo, areaMapa, ahora), [delGrupo, areaMapa, ahora])
+  const marcadores = useMemo(
+    () => marcadoresDeIncidencias(delGrupo, areaMapa, ahora, seleccionada),
+    [delGrupo, areaMapa, ahora, seleccionada],
+  )
   const alertas = useMemo(() => alertasPlazo(incidencias, ahora), [incidencias, ahora])
 
   const areaElegida = useMemo(() => {
@@ -75,8 +79,20 @@ function VistaIncidencias({ veTodas, gestiona }: { veTodas: boolean; gestiona: b
   )
   useVistaDeMapa({ areaSeleccionada: areaElegida, onSeleccionarArea: alSeleccionarArea })
 
+  // Una incidencia elegida desde el mapa, un aviso de plazo o un enlace (`?incidencia=`) puede estar en otra página o en
+  // otro grupo: una vez por selección, la bandeja salta a donde se ve su fila (sin entrada nueva en el historial).
+  const alineada = useRef<number | null>(null)
+  useEffect(() => {
+    if (seleccionada === null) alineada.current = null
+    if (seleccionada === null || alineada.current === seleccionada || !consulta.datos) return
+    alineada.current = seleccionada
+    const cambios = ubicarIncidencia(consulta.datos, filtros, seleccionada)
+    if (cambios) setParametros(conCambios(parametros, cambios), { replace: true, state: ubicacion.state })
+  }, [seleccionada, consulta.datos, filtros, parametros, setParametros, ubicacion.state])
+
   function cambiarFiltros(cambios: Record<string, string | null>) {
-    setParametros(conCambios(parametros, cambios), { replace: true })
+    // Conserva el estado de la entrada: «Atrás» sigue cerrando la selección abierta desde la bandeja.
+    setParametros(conCambios(parametros, cambios), { replace: true, state: ubicacion.state })
   }
 
   return (

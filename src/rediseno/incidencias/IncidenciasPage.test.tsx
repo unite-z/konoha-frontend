@@ -29,6 +29,21 @@ vi.mock('@/services/api/incidencias', () => ({
 }))
 vi.mock('@/services/api/mapaAsignaciones', () => ({ listarPoligonosMapa: api.listarPoligonosMapa }))
 
+// El escenario real monta Three.js: se registra el área a la que vuela la cámara y el clic en el mapa.
+type OpcionesVista = { areaSeleccionada?: string | number; onSeleccionarArea: (a: { id: string } | null) => void }
+const escenario = vi.hoisted(() => ({
+  vuelo: vi.fn<(area: string | number | undefined) => void>(),
+  seleccionar: null as ((area: { id: string } | null) => void) | null,
+}))
+vi.mock('../base/Escenario', async (original) => ({
+  ...(await original<typeof import('../base/Escenario')>()),
+  useVistaDeMapa: (opciones: OpcionesVista) => {
+    escenario.vuelo(opciones.areaSeleccionada)
+    escenario.seleccionar = opciones.onSeleccionarArea
+    return { volarA: () => undefined, volver: () => undefined }
+  },
+}))
+
 const CONSULTAR = 'PLA.PLANIFICACION.CONSULTAR'
 const TODAS = 'PLA.INCIDENCIA.CONSULTAR_TODAS'
 const GESTIONAR = 'PLA.INCIDENCIA.CLASIFICAR'
@@ -175,6 +190,53 @@ describe('Incidencias · bandeja, plazos y mapa (RD-42)', () => {
     const lista = await screen.findByRole('list', { name: 'Incidencias' })
     expect(within(lista).getAllByRole('button')[0].getAttribute('aria-pressed')).toBe('true')
     await waitFor(() => expect(mapa.escena.pintarAreas).toHaveBeenCalledWith([{ token: '--color-info', indices: [0] }]))
+  })
+
+  it('la cámara vuela al área de la incidencia elegida y «Atrás» deshace el vuelo', async () => {
+    const { enrutador } = montar(rutaIncidencias())
+    const lista = await screen.findByRole('list', { name: 'Incidencias' })
+    await screen.findByRole('button', { name: /INC-002 · Hojarasca/ })
+    expect(escenario.vuelo).toHaveBeenLastCalledWith(undefined)
+    await userEvent.click(within(lista).getAllByRole('button')[1])
+    await waitFor(() => expect(escenario.vuelo).toHaveBeenLastCalledWith('m-2'))
+    expect(screen.getByRole('button', { name: /INC-002 · .* · seleccionada/ })).toBeTruthy()
+    await enrutador.navigate(-1)
+    await waitFor(() => expect(escenario.vuelo).toHaveBeenLastCalledWith(undefined))
+    expect(enrutador.state.location.search).toBe('')
+  })
+
+  it('pulsar un área del mapa elige la incidencia de esa área', async () => {
+    const { enrutador } = montar(rutaIncidencias())
+    await screen.findByRole('list', { name: 'Incidencias' })
+    await waitFor(() => expect(escenario.seleccionar).not.toBeNull())
+    escenario.seleccionar?.({ id: 'm-2' })
+    await waitFor(() => expect(enrutador.state.location.search).toBe('?incidencia=2'))
+  })
+
+  it('un marcador de otra página lleva la bandeja a la página de su fila', async () => {
+    const treinta = Array.from({ length: 30 }, (_, n) => incidencia(n + 1, { area_verde_id: n === 29 ? 12 : 11 }))
+    api.listarIncidencias.mockResolvedValue(treinta)
+    const { enrutador } = montar(rutaIncidencias())
+    await screen.findByRole('list', { name: 'Incidencias' })
+    await userEvent.click(await screen.findByRole('button', { name: /INC-0030 · Hojarasca/ }))
+    await waitFor(() => expect(enrutador.state.location.search).toBe('?incidencia=30&pagina=2'))
+    const lista = screen.getByRole('list', { name: 'Incidencias' })
+    expect(within(lista).getAllByRole('button')).toHaveLength(5)
+    expect(within(lista).getByRole('button', { pressed: true }).textContent).toContain('INC-0030')
+  })
+
+  it('un aviso de plazo fuera de la pestaña abierta lleva a «Todas» con su fila elegida', async () => {
+    permisosSesion.valor = [CONSULTAR, TODAS, GESTIONAR]
+    api.listarIncidencias.mockResolvedValue([
+      incidencia(2, { fecha_registro: hace(30) }),
+      incidencia(5, { estado: 'Cerrada' }),
+    ])
+    const { enrutador } = montar(rutaIncidencias({ grupo: 'cerradas' }))
+    const alertas = await screen.findByRole('list', { name: 'Incidencias con aviso de plazo' })
+    await userEvent.click(within(alertas).getByRole('button', { name: /30 h/ }))
+    await waitFor(() => expect(enrutador.state.location.search).toBe('?incidencia=2'))
+    const lista = screen.getByRole('list', { name: 'Incidencias' })
+    expect(within(lista).getByRole('button', { pressed: true }).textContent).toContain('INC-002')
   })
 
   it('sin área verde en las incidencias (sin RD-84) no hay marcadores y la bandeja funciona', async () => {
