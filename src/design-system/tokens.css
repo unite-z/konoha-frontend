@@ -47,7 +47,42 @@
   --web-nodos-linea: #959ea9;
   --web-nodos-alfa-linea: 0.55;
   --web-nodos-alfa-onda: 0.9;
+  /* Rediseño (AV-413): tokens nuevos; los temas los redefinen */
+  --color-bg-field: #ffffff; /* fondo de campos de formulario */
+  --color-bg-done: #f0f2f5; /* fondo de elementos hechos */
+  --color-neutral: #667892; /* estado neutro */
+  --color-chart: #004ea8; /* serie principal de gráficos */
+  --color-text-on-dark: #ffffff; /* texto sobre superficies oscuras */
   color-scheme: light;
+}
+
+/* Colores del mapa 3D (AV-413): el visor no lleva colores propios, sale de aquí. */
+:root {
+  --mapa-fondo: #eef1f5;
+  --mapa-isla: #f7f8fa;
+  --mapa-cesped: #e3ebe5;
+  --mapa-tinta: #25405f;
+  --mapa-verde: #4f7a5a;
+  --mapa-pared: #eceff3;
+  --mapa-arbol: #e9f0ea;
+  --mapa-sel: #dbe6f3;
+}
+
+/*
+ * Vidrio (Liquid Glass, AV-413). Valores de los estilos de Figma. Con --vidrio-desenfoque va backdrop-filter.
+ * La alternativa opaca está al final del fichero. Claro y cálido heredan estos valores de :root (relleno crema).
+ * --vidrio-borde es un atajo de los cuatro lados; Figma solo pone el borde claro arriba e izquierda, así que quien
+ * lo use debe aplicar --vidrio-borde-claro con border-top y border-left.
+ */
+:root {
+  --vidrio-relleno: rgba(255, 251, 237, 0.42);
+  --vidrio-relleno-denso: rgba(255, 251, 237, 0.66);
+  --vidrio-relleno-lente: rgba(255, 255, 255, 0.55);
+  --vidrio-borde-claro: rgba(255, 255, 255, 0.6);
+  --vidrio-borde: 1px solid var(--vidrio-borde-claro);
+  --vidrio-desenfoque: blur(18px) saturate(1.6);
+  --vidrio-sombra: 0 10px 28px rgba(77, 56, 13, 0.12);
+  --vidrio-sombra-lente: 0 4px 12px rgba(77, 56, 13, 0.14);
 }
 
 /* AV · Dimensiones */
@@ -196,6 +231,59 @@
   --color-border-strong: #c9baa5;
   --color-sidebar-active-bg: #ebe1d2;
   --web-scrim: rgba(42, 33, 24, 0.5);
+  --color-bg-field: #fffcf7;
+  --color-bg-done: #efe8dd;
+  --color-neutral: #7a6a52;
+  --color-chart: #8a5a1c;
+  --color-text-on-dark: #fffcf7;
+  --mapa-fondo: #f6f1ea;
+  --mapa-isla: #fbf7f0;
+  --mapa-cesped: #e9e3d3;
+  --mapa-tinta: #4a3a28;
+  --mapa-verde: #7a7a3a;
+  --mapa-pared: #f2ebdf;
+  --mapa-arbol: #f0eadb;
+  --mapa-sel: #ebe1d2;
+}
+
+/*
+ * Tema «Amarillento» (AV-413): fondo y tarjetas amarillentos, tinta y bordes ocre. Paleta de Figma
+ * («Rediseño · color»). Todos los pares de texto cumplen AA (lo comprueba tokens.test.ts).
+ */
+:root[data-tema='amarillento'] {
+  --color-bg-page: #f3e8bf; /* fondo */
+  --color-bg-surface: #fbf5de; /* tarjeta */
+  --color-bg-field: #fffdf5; /* campo */
+  --color-bg-subtle: #f3eac8; /* hecho */
+  --color-bg-hover: #f3eac8;
+  --color-bg-done: #f3eac8;
+  --color-sidebar-active-bg: #e2cc7e; /* seleccion */
+  --color-border-default: #dccb92; /* borde */
+  --color-border-strong: #857245; /* borde-control */
+  --color-text-primary: #2e2108; /* texto */
+  --color-text-muted: #64522e; /* texto-secundario */
+  --color-text-disabled: #8a7a55;
+  --color-text-on-dark: #fbf5de; /* texto-sobre-oscuro */
+  --color-error: #8a3a18;
+  --color-error-bg: #f6e1d6;
+  --color-success: #4e5a24; /* ok */
+  --color-success-bg: #e8ebd5;
+  --color-warning: #7a5c1c; /* aviso */
+  --color-warning-bg: #f5e3b0;
+  --color-neutral: #7a6a44; /* neutro */
+  --color-chart: #8c6a23; /* grafico */
+  --web-error-border: #dba88f;
+  --web-success-border: #b9c28f;
+  --web-warning-border: #e0c77a;
+  --web-scrim: rgba(46, 33, 8, 0.5);
+  --mapa-fondo: #f3e8bf;
+  --mapa-isla: #f8f0d2;
+  --mapa-cesped: #ece2b6;
+  --mapa-tinta: #5c4317;
+  --mapa-verde: #8c7a2b;
+  --mapa-pared: #f1e4bc;
+  --mapa-arbol: #f4eac4;
+  --mapa-sel: #e2cc7e;
 }
 
 /*
@@ -287,6 +375,25 @@
   --web-nodos-linea: #667892;
   --web-nodos-alfa-linea: 0.5;
   --web-nodos-alfa-onda: 0.85;
+  --color-bg-field: #0b1a33;
+  --color-bg-done: #1b3156;
+  --color-neutral: #a3afc2;
+  --color-chart: #41b9e4;
+  --color-text-on-dark: #f6f7f9;
+  --mapa-fondo: #0b1a33;
+  --mapa-isla: #14284a;
+  --mapa-cesped: #12332f;
+  --mapa-tinta: #c2c9d2;
+  --mapa-verde: #3f9a7a;
+  --mapa-pared: #1b3156;
+  --mapa-arbol: #174238;
+  --mapa-sel: #173059;
+  --vidrio-relleno: rgba(17, 34, 64, 0.5);
+  --vidrio-relleno-denso: rgba(17, 34, 64, 0.72);
+  --vidrio-relleno-lente: rgba(27, 49, 86, 0.6);
+  --vidrio-borde-claro: rgba(255, 255, 255, 0.18);
+  --vidrio-sombra: 0 10px 28px rgba(0, 0, 0, 0.4);
+  --vidrio-sombra-lente: 0 4px 12px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 
@@ -322,4 +429,27 @@
   --color-action-text: #f56eb4;
   --color-sidebar-active-text: #f56eb4;
   --web-focus-ring-color: #f56eb4;
+}
+
+/*
+ * Alternativa opaca del vidrio (AV-413): sin backdrop-filter o con prefers-reduced-transparency el relleno es la
+ * tarjeta sin transparencia y no hay desenfoque. Va al final con más especificidad que los temas.
+ * Degradación aceptada: Safari/iOS anteriores a 18 solo admiten -webkit-backdrop-filter y también reciben la opaca.
+ */
+@supports not (backdrop-filter: blur(1px)) {
+  :root:root:root {
+    --vidrio-relleno: var(--color-bg-surface);
+    --vidrio-relleno-denso: var(--color-bg-surface);
+    --vidrio-relleno-lente: var(--color-bg-surface);
+    --vidrio-desenfoque: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root:root:root {
+    --vidrio-relleno: var(--color-bg-surface);
+    --vidrio-relleno-denso: var(--color-bg-surface);
+    --vidrio-relleno-lente: var(--color-bg-surface);
+    --vidrio-desenfoque: none;
+  }
 }
