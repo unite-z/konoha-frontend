@@ -1,0 +1,56 @@
+/* Transiciones entre vistas (AV-429). Solo transform, opacity y filter; duraciones y curvas de tokens.css. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--movimiento-normal);
+  animation-timing-function: var(--curva-salida);
+}
+
+::view-transition-old(root) {
+  animation-name: movimiento-salir;
+}
+
+::view-transition-new(root) {
+  animation-name: movimiento-entrar;
+}
+
+@keyframes movimiento-salir {
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--space-2) * -1));
+  }
+}
+
+@keyframes movimiento-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+/* Elementos compartidos: morfean de posición y tamaño con la curva de salida. */
+::view-transition-group(*) {
+  animation-duration: var(--movimiento-normal);
+  animation-timing-function: var(--curva-salida);
+}
+
+/* Cabecera y encabezado se quedan quietos: la imagen vieja y la nueva se superponen sin animar. */
+::view-transition-group(cabecera),
+::view-transition-group(encabezado) {
+  animation: none;
+}
+
+::view-transition-old(cabecera),
+::view-transition-new(cabecera),
+::view-transition-old(encabezado),
+::view-transition-new(encabezado) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
