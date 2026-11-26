@@ -78,34 +78,41 @@
   box-shadow: var(--vidrio-sombra);
 }
 
+.selector {
+  padding: var(--space-1);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-vidrio);
+  background: var(--vidrio-relleno-lente);
+  backdrop-filter: var(--vidrio-desenfoque);
+}
+
 .informes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .informe {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  height: 100%;
-  padding: var(--space-3) var(--space-4);
+  display: block;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
-  background: var(--vidrio-relleno-lente);
   color: var(--color-text-primary);
+  font-weight: var(--type-cuerpo-medio-weight);
   text-decoration: none;
 }
 
-.informe:hover,
-.informe[aria-current] {
-  background: var(--vidrio-relleno-denso);
+.informe:hover {
+  background: var(--vidrio-relleno);
 }
 
-.tituloInforme {
-  font-weight: var(--type-cuerpo-medio-weight);
+/* La lente: el fondo del enlace elegido, que se desliza al cambiar de informe. */
+.informe[aria-current] {
+  background: var(--vidrio-relleno-denso);
+  box-shadow: var(--vidrio-sombra);
 }
 
 /* Los gráficos entran con fundido; con «reducir movimiento» aparecen directamente. */

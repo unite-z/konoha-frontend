@@ -1,6 +1,6 @@
 // RF-REP-001 · M6-01, M6-08, M6-09
 import { useState } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { useCatalogosFiltros } from '@/components/reportes-indicadores/useCatalogosFiltros'
 import { PERMISOS, puede } from '@/config/permisosCore'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
@@ -25,6 +25,8 @@ import { rutaMapa } from '../mapa/enlaces'
 import Cifras from './Cifras'
 import SeccionExportaciones from './Exportar/SeccionExportaciones'
 import { PARAMETRO_INDICADOR, PARAMETRO_INFORME } from './enlaces'
+import Informes from './Informes/Informes'
+import { esInformeEnLinea } from './Informes/informesEnLinea'
 import { PanelInforme, SelectorInformes } from './SelectorInformes'
 import PanelIndicador from './PanelIndicador'
 import estilos from './ReportesPage.module.css'
@@ -51,6 +53,24 @@ function Encabezado({ periodo }: { periodo?: string }) {
       </h1>
       {periodo && <p className={estilos.ayuda}>{periodo}</p>}
     </header>
+  )
+}
+
+/** Nombre del contenido que hace fundido cruzado al cambiar de informe; cabecera y selector no se mueven. */
+const CONTENIDO_INFORME = 'contenido-informe'
+
+/** Informe elegido con `?informe=` (RD-60): selector arriba y el informe debajo, con sus filtros en la URL. */
+function ReportesInforme({ clave }: { clave: string }) {
+  const { search } = useLocation()
+  return (
+    <div className={estilos.pagina}>
+      <Encabezado />
+      <SelectorInformes busqueda={search} elegido={clave} />
+      <div style={estiloTransicion(CONTENIDO_INFORME)} /* estilo-calculado */>
+        <Informes clave={clave} />
+      </div>
+      <SeccionExportaciones />
+    </div>
   )
 }
 
@@ -89,6 +109,7 @@ function ReportesContenido() {
   return (
     <div className={estilos.pagina}>
       <Encabezado periodo={periodo} />
+      <SelectorInformes busqueda={search} elegido={informe.valor} />
       <PlantillaReporte
         consulta={consultaConCatalogos}
         filtros={
@@ -168,7 +189,6 @@ function ReportesContenido() {
           {nota}
         </AvisoEnLinea>
       ))}
-      <SelectorInformes busqueda={search} elegido={informe.valor} />
       <SeccionExportaciones />
       <PanelIndicador
         clave={indicador.valor}
@@ -183,6 +203,8 @@ function ReportesContenido() {
 
 export default function ReportesPage() {
   const sesion = useSesionActiva()
+  const [parametros] = useSearchParams()
+  const informe = parametros.get(PARAMETRO_INFORME)
   usePaginaActual(TITULO, [{ texto: TITULO }])
   if (!puede(sesion, PERMISOS.consultarIndicadores)) {
     return (
@@ -195,5 +217,7 @@ export default function ReportesPage() {
       </div>
     )
   }
+  // Con un indicador abierto manda su panel; si no, los informes de este ticket se pintan dentro de la vista.
+  if (esInformeEnLinea(informe) && !parametros.has(PARAMETRO_INDICADOR)) return <ReportesInforme clave={informe} />
   return <ReportesContenido />
 }
