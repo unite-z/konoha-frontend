@@ -67,21 +67,26 @@ describe('PuertaRediseno y rutas /n (AV-420)', () => {
     expect(screen.getByText('Inicio actual')).toBeTruthy()
   })
 
-  it('encendido, «/» redirige a /n conservando la consulta, y las demás rutas antiguas se quedan (RD-05)', () => {
+  it('encendido, «/» redirige a /n conservando la consulta (AV-425)', () => {
     datos.set(CLAVE_DISENO_NUEVO, '1')
     const router = montar('/?area=7')
     expect(router.state.location.pathname).toBe('/n')
     expect(router.state.location.search).toBe('?area=7')
-    expect(screen.getByRole('heading', { name: 'Diseño nuevo: en construcción' })).toBeTruthy()
-    cleanup()
-    montar('/configuracion/apariencia')
-    expect(screen.getByText('Apariencia actual')).toBeTruthy()
   })
 
-  it('una ruta desconocida bajo /n vuelve a /n', () => {
+  it('encendido, la ruta antigua lleva a su vista nueva con la consulta', () => {
+    datos.set(CLAVE_DISENO_NUEVO, '1')
+    const router = montar('/configuracion/apariencia?x=1')
+    expect(router.state.location.pathname).toBe('/n/cuenta')
+    expect(router.state.location.search).toBe('?x=1')
+  })
+
+  it('una ruta desconocida bajo /n muestra «Página no encontrada» dentro del marco nuevo', () => {
     datos.set(CLAVE_DISENO_NUEVO, '1')
     const router = montar('/n/no-existe')
-    expect(router.state.location.pathname).toBe('/n')
+    expect(router.state.location.pathname).toBe('/n/no-existe')
+    expect(screen.getByRole('heading', { name: 'Página no encontrada' })).toBeTruthy()
+    expect(document.documentElement.dataset.tema).toBe('amarillento')
   })
 
   it('al salir del diseño nuevo restaura el tema anterior', () => {
