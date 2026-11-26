@@ -1,0 +1,181 @@
+/* Mapa (RD-17): el plano 3D va detrás (escenario del layout); aquí solo paneles de vidrio. Solo tokens semánticos. */
+.escena {
+  position: fixed;
+  inset: 0;
+  color: var(--color-text-primary);
+}
+
+.sinMapa {
+  max-width: 40rem;
+  margin: var(--space-12) auto;
+  padding-inline: var(--space-4);
+}
+
+.herramientas {
+  --radius-panel: calc(var(--radius-lg) * 2);
+
+  position: absolute;
+  inset-block-start: var(--rediseno-alto-cabecera);
+  inset-inline-start: var(--space-6);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(24rem, calc(100vw - 2 * var(--space-6)));
+  max-height: calc(100dvh - var(--rediseno-alto-cabecera) - var(--rediseno-alto-barra) - var(--space-6));
+  padding: var(--space-4);
+  overflow-y: auto;
+  border-radius: var(--radius-panel);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filtros {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filtros[hidden] {
+  display: none;
+}
+
+.buscador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ejemplares {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ejemplar,
+.filaBoton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--vidrio-relleno-lente);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ejemplar:hover:not(:disabled),
+.filaBoton:hover {
+  background: var(--color-bg-hover);
+}
+
+.ejemplar:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.filaBoton[aria-current='true'] {
+  background: var(--color-action-subtle);
+  color: var(--color-action-text);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.nombre {
+  font-weight: 600;
+}
+
+.secundario {
+  color: var(--color-text-secondary);
+  font-size: var(--type-pequeno-size);
+}
+
+.filaBoton[aria-current='true'] .secundario {
+  color: inherit;
+}
+
+.seleccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--type-pequeno-size);
+}
+
+.leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* La muestra repite el token que `seleccion.ts` (TOKENS_USO) pasa a CapaColores, en el mismo orden. */
+.muestra {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.tono0 {
+  background: var(--color-success);
+}
+
+.tono1 {
+  background: var(--color-info);
+}
+
+.tono2 {
+  background: var(--color-warning);
+}
+
+.tono3 {
+  background: var(--color-chart);
+}
+
+.tono4 {
+  background: var(--color-action-primary);
+}
+
+.tono5 {
+  background: var(--color-neutral);
+}
+
+@media (max-width: 767px) {
+  .herramientas {
+    inset-inline: var(--space-3);
+    width: auto;
+    max-height: 50dvh;
+  }
+}
