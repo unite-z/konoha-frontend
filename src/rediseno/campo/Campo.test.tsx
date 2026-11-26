@@ -237,6 +237,7 @@ describe('Más', () => {
       'Apariencia',
       'Cambiar contraseña',
     ])
+    expect(screen.getByRole('link', { name: 'Cambiar contraseña' }).getAttribute('href')).toBe('/n/cambiar-contrasena')
     await userEvent.setup().click(screen.getByRole('button', { name: 'Cerrar sesión' }))
     expect(cerrarSesion).toHaveBeenCalled()
   })

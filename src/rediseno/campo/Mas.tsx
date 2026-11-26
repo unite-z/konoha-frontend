@@ -7,11 +7,10 @@ import { FolderOpen, KeyRound, LogOut, Map as IconoMapa, Palette, RefreshCw, typ
 import { Link } from 'react-router'
 import { PERMISOS } from '@/config/permisosCore'
 import { tiene } from '@/config/permisosSesion'
-import { RUTAS_CORE } from '@/router/rutasApp'
 import { useSesion, usePermisos, useSesionActiva } from '@/sesion/ContextoSesion'
 import { porSincronizar, useCola } from '@/sincronizacion/cola'
 import { nombresTransicion, estiloTransicion, useFocoConLaVista } from '../base/movimiento'
-import { rutaCuenta } from '../cuenta/enlaces'
+import { rutaCambiarContrasena, rutaCuenta } from '../cuenta/enlaces'
 import { rutaMapa } from '../mapa/enlaces'
 import estilos from './Campo.module.css'
 
@@ -67,7 +66,7 @@ export default function Mas() {
       clave: 'contrasena',
       etiqueta: 'Cambiar contraseña',
       icono: KeyRound,
-      ruta: RUTAS_CORE.cambiarContrasena,
+      ruta: rutaCambiarContrasena(),
       visible: true,
     },
   ]
