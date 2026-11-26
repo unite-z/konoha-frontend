@@ -53,12 +53,10 @@ vi.mock('./FichaEjemplar/FichaEjemplar', () => ({
     ejemplarId: number
     inicial: { codigo: string } | null
     propuestaMuerto?: boolean
-    onCargado?: (e: { area_verde_id: number | null }) => void
     onCerrar: () => void
   }) => (
     <div role="dialog" aria-label={`Ficha ${props.inicial?.codigo ?? props.ejemplarId}`}>
       {props.propuestaMuerto && <p>Propuesta de planta muerta</p>}
-      <button onClick={() => props.onCargado?.({ area_verde_id: 12 })}>Cargar</button>
       <button onClick={props.onCerrar}>Cerrar ficha</button>
     </div>
   ),
@@ -264,14 +262,18 @@ describe('Mapa (RD-17)', () => {
     expect(screen.getByRole('heading', { name: 'Bosque Húmedo', level: 2 })).toBeTruthy()
   })
 
-  it('`?ejemplar=` sin área abre la ficha y, al llegar el ejemplar, abre su área; cerrar la ficha la quita de la URL', async () => {
-    pagina(`${RUTA_MAPA}?ejemplar=9&propuesta=muerto`)
-    expect(await screen.findByRole('dialog', { name: 'Ficha 9' })).toBeTruthy()
+  it('`?area=&ejemplar=&propuesta=muerto` abre la ficha con el ejemplar de la lista; cerrarla limpia la URL', async () => {
+    pagina(`${RUTA_MAPA}?area=12&ejemplar=9&propuesta=muerto`)
+    expect(await screen.findByRole('dialog', { name: `Ficha ${ejemplar.codigo}` })).toBeTruthy()
     expect(screen.getByText('Propuesta de planta muerta')).toBeTruthy()
-    await userEvent.click(screen.getByRole('button', { name: 'Cargar' }))
-    await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toContain('area=12'))
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar ficha' }))
     await waitFor(() => expect(screen.getByTestId('ubicacion').textContent).toBe('?area=12'))
+  })
+
+  it('`?ejemplar=` sin área no abre la ficha: vive sobre el área', async () => {
+    pagina(`${RUTA_MAPA}?ejemplar=9`)
+    expect(await screen.findByRole('heading', { name: 'Mapa del campus' })).toBeTruthy()
+    expect(screen.queryByRole('dialog', { name: /Ficha/ })).toBeNull()
   })
 
   it('un área sin contorno pide sus ejemplares por área', async () => {

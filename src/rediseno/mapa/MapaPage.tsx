@@ -189,7 +189,8 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
         : listarEjemplaresDeArea(areaAbierta ?? 0, signal),
   )
   const llegoLaCamara = useLlegadaCamara(areaAbierta === null ? null : String(areaAbierta))
-  const ejemplarParam = Number(parametros.get(PARAMETROS_MAPA.ejemplar)) || null
+  // La ficha vive sobre un área abierta (`?area=<id>&ejemplar=<id>`): el ejemplar sale de su lista.
+  const ejemplarParam = areaAbierta === null ? null : Number(parametros.get(PARAMETROS_MAPA.ejemplar)) || null
   const ejemplarAbierto =
     ejemplaresArea.datos?.find((e) => e.id === ejemplarParam) ??
     ejemplares.datos?.find((e) => e.id === ejemplarParam) ??
@@ -440,17 +441,16 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           key={ejemplarParam}
           ejemplarId={ejemplarParam}
           inicial={ejemplarAbierto}
+          lista={{
+            cargando: ejemplaresArea.estado === 'cargando' || ejemplaresArea.estado === 'inactivo',
+            error: ejemplaresArea.error,
+            reintentar: ejemplaresArea.reintentar,
+          }}
           propuestaMuerto={parametros.get(PARAMETROS_MAPA.propuesta) === PROPUESTA_PLANTA_MUERTA}
           onCerrar={() => cambiar({ [PARAMETROS_MAPA.ejemplar]: null, [PARAMETROS_MAPA.propuesta]: null }, true, true)}
           onActualizado={() => {
             ejemplaresArea.reintentar()
             ejemplares.reintentar()
-          }}
-          onCargado={(e) => {
-            // `?ejemplar=<id>` sin área: se abre la del ejemplar, que es donde vive su ficha.
-            if (areaAbierta === null && poligonoParam === null && e.area_verde_id !== null) {
-              cambiar({ [PARAMETROS_MAPA.area]: String(e.area_verde_id) })
-            }
           }}
         />
       )}

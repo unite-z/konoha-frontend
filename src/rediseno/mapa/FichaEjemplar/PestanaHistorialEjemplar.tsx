@@ -5,7 +5,7 @@ import EstadoVacio from '@/design-system/EstadoVacio'
 import { useConsulta } from '@/hooks/useConsulta'
 import HistorialEjemplar from '@/pages/inventario/HistorialEjemplar'
 import { listarHistorialActividadesEjemplar, listarHistorialSituacionEjemplar } from '@/services/api/ejemplares'
-import { formatearFecha } from '@/utils/formato'
+import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { estadoLegible, nombreSituacionSingular } from '../PanelArea/formato'
 import estilos from './FichaEjemplar.module.css'
 
@@ -31,13 +31,6 @@ function Actividades({ ejemplarId }: { ejemplarId: number }) {
       </h3>
       {consulta.error?.estado === 403 ? (
         <EstadoSinAcceso nivel={3} />
-      ) : consulta.error?.estado === 404 ? (
-        // Mientras el servidor no publique el endpoint, la ficha sigue sirviendo el resto del historial.
-        <EstadoVacio
-          nivel={3}
-          titulo="Actividades no disponibles"
-          descripcion="El servidor aún no entrega las actividades del ejemplar."
-        />
       ) : consulta.estado === 'error' ? (
         <EstadoError
           nivel={3}
@@ -56,17 +49,18 @@ function Actividades({ ejemplarId }: { ejemplarId: number }) {
       ) : (
         <ol className={estilos.lista} aria-label="Actividades del ejemplar">
           {consulta.datos.map((actividad) => (
-            <li key={actividad.id} className={estilos.entrada}>
-              <strong>{actividad.tipo}</strong>
+            <li key={actividad.actividad_id} className={estilos.entrada}>
+              <strong>{actividad.tipo_actividad}</strong>
               <span className={estilos.secundario}>
                 {[
-                  formatearFecha(actividad.fecha),
-                  actividad.detalle,
-                  actividad.estado ? estadoLegible(actividad.estado) : null,
+                  formatearFechaHora(actividad.fecha_hora_actividad),
+                  actividad.estado_actividad ? estadoLegible(actividad.estado_actividad) : null,
+                  actividad.pendiente_vinculacion ? 'Pendiente de vincular' : null,
                 ]
                   .filter(Boolean)
                   .join(' · ')}
               </span>
+              {actividad.observaciones && <span>{actividad.observaciones}</span>}
             </li>
           ))}
         </ol>

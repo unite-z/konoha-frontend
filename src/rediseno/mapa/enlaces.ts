@@ -58,8 +58,3 @@ export const PROPUESTA_PLANTA_MUERTA = 'muerto'
 export function rutaMapaEjemplarMuerto(areaId: number | string, ejemplarId: number | string): string {
   return `${rutaMapaEjemplar(areaId, ejemplarId)}&${PARAMETROS_MAPA.propuesta}=${PROPUESTA_PLANTA_MUERTA}`
 }
-
-/** Mapa con la ficha del ejemplar abierta sin saber su área (`?ejemplar=<id>`): el mapa abre el área del ejemplar. */
-export function rutaMapaFichaEjemplar(ejemplarId: number | string): string {
-  return `${RUTA_MAPA}?${PARAMETROS_MAPA.ejemplar}=${encodeURIComponent(String(ejemplarId))}`
-}

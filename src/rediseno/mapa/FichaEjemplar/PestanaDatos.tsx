@@ -39,15 +39,16 @@ export default function PestanaDatos({ ejemplar, puedeEditar, onActualizado, onE
     setGuardando(true)
     setError(null)
     setAviso(null)
+    let actualizado = ejemplar
     try {
-      let actualizado = ejemplar
       if (aliasCambiado) actualizado = await cambiarAliasEjemplar(ejemplar.id, alias.trim())
       if (alturaCambiada) actualizado = await guardarAlturaEjemplar(ejemplar.id, Number(altura))
-      onActualizado(actualizado)
       setAviso('Cambios guardados.')
     } catch (causa) {
       setError(aErrorApi(causa).detalle)
     } finally {
+      // Si el alias se guardó y la altura no, el mapa también se entera del alias.
+      if (actualizado !== ejemplar) onActualizado(actualizado)
       setGuardando(false)
     }
   }
@@ -63,6 +64,14 @@ export default function PestanaDatos({ ejemplar, puedeEditar, onActualizado, onE
         elementos={[
           { etiqueta: 'Código', valor: ejemplar.codigo },
           { etiqueta: 'Placa antigua', valor: ejemplar.codigo_placa_antigua },
+          Boolean(ejemplar.referencia_catastro?.trim()) && {
+            etiqueta: 'Referencia de catastro',
+            valor: ejemplar.referencia_catastro,
+          },
+          Boolean(ejemplar.codigo_catastro?.trim()) && {
+            etiqueta: 'Código de catastro',
+            valor: ejemplar.codigo_catastro,
+          },
           {
             etiqueta: 'Especie',
             valor: [ejemplar.especie_nombre_comun, ejemplar.especie_nombre_cientifico].filter(Boolean).join(' · '),
@@ -70,8 +79,9 @@ export default function PestanaDatos({ ejemplar, puedeEditar, onActualizado, onE
           { etiqueta: 'Alias', valor: ejemplar.alias },
           {
             etiqueta: 'Altura',
-            valor: ejemplar.altura_total_m === null ? null : `${ejemplar.altura_total_m} m`,
+            valor: ejemplar.altura_total_m === null ? 'Pendiente de medir' : `${ejemplar.altura_total_m} m`,
           },
+          { etiqueta: 'Sugerencia de poda', valor: sugerenciaPoda(ejemplar.altura_total_m) },
           {
             etiqueta: 'Situación',
             valor: (
@@ -139,24 +149,30 @@ export default function PestanaDatos({ ejemplar, puedeEditar, onActualizado, onE
               {aviso}
             </AvisoEnLinea>
           )}
-          <section className={estilos.seccion} aria-label="Fotografía del ejemplar">
-            <Adjuntos
-              entidad="ejemplar"
-              registroId={ejemplar.id}
-              presentacion="foto"
-              puedeAdjuntar
-              tiposAceptados=".jpg,.jpeg,.png"
-              ayudaCarga="Fotografías JPEG o PNG, de hasta 20 MB."
-              prepararArchivo={(archivo) =>
-                archivo.type === 'image/jpeg' || archivo.type === 'image/png'
-                  ? Promise.resolve(archivo)
-                  : Promise.reject(new Error('Selecciona una fotografía JPEG o PNG.'))
-              }
-              onCambio={() => setRevisionFoto((n) => n + 1)}
-            />
-          </section>
         </>
       )}
+      <section className={estilos.seccion} aria-label="Fotografía del ejemplar">
+        <Adjuntos
+          entidad="ejemplar"
+          registroId={ejemplar.id}
+          presentacion="foto"
+          puedeAdjuntar={puedeEditar}
+          tiposAceptados=".jpg,.jpeg,.png"
+          ayudaCarga="Fotografías JPEG o PNG, de hasta 20 MB."
+          prepararArchivo={(archivo) =>
+            archivo.type === 'image/jpeg' || archivo.type === 'image/png'
+              ? Promise.resolve(archivo)
+              : Promise.reject(new Error('Selecciona una fotografía JPEG o PNG.'))
+          }
+          onCambio={() => setRevisionFoto((n) => n + 1)}
+        />
+      </section>
     </div>
   )
+}
+
+/** Misma regla que la ficha antigua: menos de 5 m, poda menor; 5 m o más, poda de altura mediante proveedor. */
+function sugerenciaPoda(altura: number | null): string {
+  if (altura === null) return 'Pendiente de medir la altura'
+  return altura < 5 ? 'Poda menor · menos de 5 m' : 'Poda de altura mediante proveedor · 5 m o más'
 }

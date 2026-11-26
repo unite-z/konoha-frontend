@@ -16,8 +16,7 @@ import EstadoError from '@/design-system/EstadoError'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
 import EstadoVacio from '@/design-system/EstadoVacio'
 import Pestanas from '@/design-system/Pestanas'
-import { useConsulta } from '@/hooks/useConsulta'
-import { obtenerEjemplar } from '@/services/api/ejemplares'
+import type { ErrorApi } from '@/services/api/cliente'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { EjemplarInventario } from '@/types/ejemplares'
 import { nombreEjemplar } from '@/utils/nombreEjemplar'
@@ -45,15 +44,18 @@ const ACERCAMIENTO = 3
 
 export interface FichaEjemplarProps {
   ejemplarId: number
-  /** Ejemplar ya conocido por la lista del área; si falta, la ficha lo pide por su id. */
+  /**
+   * Ejemplar tomado de la lista del área (o de la búsqueda). El servidor no tiene `GET ejemplares/{id}`: mientras esa
+   * lista carga, falla o no lo trae, la ficha enseña su estado.
+   */
   inicial: EjemplarInventario | null
+  /** Estado de la lista de la que sale el ejemplar. */
+  lista: { cargando: boolean; error: ErrorApi | null; reintentar: () => void }
   /** `&propuesta=muerto`: abre en Situación con la planta muerta por confirmar. */
   propuestaMuerto?: boolean
   onCerrar: () => void
   /** El ejemplar cambió en el servidor: la lista del área y los marcadores se refrescan. */
   onActualizado: (ejemplar: EjemplarInventario) => void
-  /** El ejemplar llegó por su id (no estaba en la lista del área): el mapa abre su área si no hay ninguna. */
-  onCargado?: (ejemplar: EjemplarInventario) => void
 }
 
 /** Pone un `view-transition-name` solo el tiempo que dura el cambio de vista y lo quita. */
@@ -66,10 +68,10 @@ function nombrarUnMomento(elemento: Element | null, nombre: string) {
 export default function FichaEjemplar({
   ejemplarId,
   inicial,
+  lista,
   propuestaMuerto = false,
   onCerrar,
   onActualizado,
-  onCargado,
 }: FichaEjemplarProps) {
   const permisos = usePermisos()
   const [pestana, setPestana] = useState<PestanaFicha>(propuestaMuerto ? 'situacion' : 'datos')
@@ -77,10 +79,7 @@ export default function FichaEjemplar({
   const [actual, setActual] = useState<EjemplarInventario | null>(null)
   // El elemento que abrió la ficha (el marcador): al cerrar, el foco vuelve a él y es el otro extremo de la transición.
   const [origen] = useState(() => document.activeElement)
-  const consulta = useConsulta(inicial ? null : `rd-ficha-ejemplar:${ejemplarId}`, (signal) =>
-    obtenerEjemplar(ejemplarId, signal),
-  )
-  const ejemplar = actual ?? inicial ?? consulta.datos
+  const ejemplar = actual ?? inicial
   const nombre = panel(`ejemplar-${ejemplarId}`)
 
   // La cámara se acerca al árbol; al desmontar la ficha (cerrarla o «Atrás»), vuelve al área.
@@ -101,15 +100,6 @@ export default function FichaEjemplar({
     },
     [origen],
   )
-  const cargado = useRef(onCargado)
-  useEffect(() => {
-    cargado.current = onCargado
-  })
-  const llegado = consulta.datos
-  useEffect(() => {
-    if (llegado) cargado.current?.(llegado)
-  }, [llegado])
-
   function cerrar() {
     nombrarUnMomento(origen, nombre)
     onCerrar()
@@ -132,27 +122,27 @@ export default function FichaEjemplar({
       >
         <ContenidoFicha nombreTransicion={nombre}>
           {!ejemplar ? (
-            consulta.error?.estado === 403 ? (
+            lista.error?.estado === 403 ? (
               <EstadoSinAcceso
                 nivel={3}
                 titulo="No puedes ver este ejemplar"
                 descripcion="El servidor no te permite consultar el inventario."
               />
-            ) : consulta.error?.estado === 404 ? (
-              <EstadoVacio
-                nivel={3}
-                titulo="No se encontró el ejemplar"
-                descripcion="Puede que se haya eliminado o que el enlace no sea correcto."
-              />
-            ) : consulta.estado === 'error' ? (
+            ) : lista.error ? (
               <EstadoError
                 nivel={3}
                 titulo="No pudimos cargar el ejemplar"
-                descripcion={consulta.error?.detalle ?? 'Revisa tu conexión e inténtalo de nuevo.'}
-                onReintentar={consulta.reintentar}
+                descripcion={lista.error.detalle || 'Revisa tu conexión e inténtalo de nuevo.'}
+                onReintentar={lista.reintentar}
               />
-            ) : (
+            ) : lista.cargando ? (
               <EstadoCarga forma="tabla" texto="Cargando el ejemplar…" />
+            ) : (
+              <EstadoVacio
+                nivel={3}
+                titulo="No se encontró el ejemplar"
+                descripcion="No está en el área abierta: puede que se haya movido a otra área o que el enlace no sea correcto."
+              />
             )
           ) : (
             <>

@@ -15,7 +15,6 @@ import FichaEjemplar, { type FichaEjemplarProps } from './FichaEjemplar'
 
 const api = vi.hoisted(() => ({
   permisos: [] as string[],
-  obtenerEjemplar: vi.fn(),
   cambiarAliasEjemplar: vi.fn(),
   guardarAlturaEjemplar: vi.fn(),
   corregirUbicacionEjemplar: vi.fn(),
@@ -27,7 +26,6 @@ const api = vi.hoisted(() => ({
   listarTodasLasAreasVerdes: vi.fn(),
 }))
 vi.mock('@/services/api/ejemplares', () => ({
-  obtenerEjemplar: api.obtenerEjemplar,
   cambiarAliasEjemplar: api.cambiarAliasEjemplar,
   guardarAlturaEjemplar: api.guardarAlturaEjemplar,
   corregirUbicacionEjemplar: api.corregirUbicacionEjemplar,
@@ -42,7 +40,11 @@ vi.mock('@/services/api/mapaAsignaciones', () => ({
 }))
 vi.mock('@/sesion/ContextoSesion', () => ({ usePermisos: () => api.permisos }))
 // La foto y los adjuntos tienen sus propias pruebas; aquí solo importa que aparezcan con permiso.
-vi.mock('@/components/core/Adjuntos', () => ({ default: () => <p>Subir fotografía</p> }))
+vi.mock('@/components/core/Adjuntos', () => ({
+  default: ({ puedeAdjuntar }: { puedeAdjuntar: boolean }) => (
+    <p>{puedeAdjuntar ? 'Subir fotografía' : 'Fotografías guardadas'}</p>
+  ),
+}))
 vi.mock('@/pages/inventario/FotoEjemplar', () => ({ default: () => <p>Foto del ejemplar</p> }))
 
 const datos = {
@@ -114,7 +116,14 @@ function montar(props: Partial<FichaEjemplarProps> = {}) {
   render(
     <MemoryRouter>
       <ContextoMapa value={mapa}>
-        <FichaEjemplar ejemplarId={9} inicial={ejemplar} onCerrar={alCerrar} onActualizado={alActualizar} {...props} />
+        <FichaEjemplar
+          ejemplarId={9}
+          inicial={ejemplar}
+          lista={{ cargando: false, error: null, reintentar: vi.fn() }}
+          onCerrar={alCerrar}
+          onActualizado={alActualizar}
+          {...props}
+        />
       </ContextoMapa>
     </MemoryRouter>,
   )
@@ -131,6 +140,9 @@ describe('FichaEjemplar (RD-21)', () => {
       expect(within(ficha).getByText(texto)).toBeTruthy()
     expect(within(ficha).queryByLabelText('Alias del ejemplar')).toBeNull()
     expect(within(ficha).queryByRole('button', { name: 'Editar ubicación' })).toBeNull()
+    expect(within(ficha).getByText('Poda menor · menos de 5 m')).toBeTruthy()
+    expect(within(ficha).getByText('Fotografías guardadas')).toBeTruthy()
+    expect(within(ficha).queryByText('Subir fotografía')).toBeNull()
     expect(within(ficha).queryByRole('navigation', { name: 'Accesos del ejemplar' })).toBeNull()
     expect(mapa.escena.enfocar).toHaveBeenCalledWith(50, 20, 3)
   })
@@ -182,6 +194,22 @@ describe('FichaEjemplar (RD-21)', () => {
     expect(alActualizar).not.toHaveBeenCalled()
   })
 
+  it('si el alias se guarda y la altura no, el mapa se entera del alias y se ve el error', async () => {
+    const guardado = { ...ejemplar, alias: 'Don Ficus' }
+    api.cambiarAliasEjemplar.mockResolvedValue(guardado)
+    api.guardarAlturaEjemplar.mockRejectedValue(new ErrorApi(400, null, 'La altura no es válida.'))
+    const { alActualizar } = montar()
+    const alias = screen.getByLabelText('Alias del ejemplar')
+    await userEvent.clear(alias)
+    await userEvent.type(alias, 'Don Ficus')
+    const altura = screen.getByLabelText('Altura total (m)')
+    await userEvent.clear(altura)
+    await userEvent.type(altura, '6')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(await screen.findByText('La altura no es válida.')).toBeTruthy()
+    expect(alActualizar).toHaveBeenCalledWith(guardado)
+  })
+
   it('cambia la situación del ejemplar desde la pestaña Situación', async () => {
     api.cambiarSituacionEjemplar.mockResolvedValue({ ...ejemplar, situacion: 'retirado' })
     const { alActualizar } = montar()
@@ -230,7 +258,14 @@ describe('FichaEjemplar (RD-21)', () => {
 
   it('el historial muestra actividades, intervenciones y cambios de situación', async () => {
     api.listarHistorialActividadesEjemplar.mockResolvedValue([
-      { id: 1, fecha: '2026-11-02', tipo: 'Riego', estado: 'finalizada', detalle: null, ejecutor: null },
+      {
+        actividad_id: 1,
+        fecha_hora_actividad: '2026-11-02T09:30:00-05:00',
+        tipo_actividad: 'Riego',
+        observaciones: 'Riego profundo tras la poda',
+        pendiente_vinculacion: false,
+        estado_actividad: 'Verificada',
+      },
     ])
     api.listarHistorialEjemplar.mockImplementation((_id: number, fuente: string) =>
       Promise.resolve(
@@ -253,18 +288,27 @@ describe('FichaEjemplar (RD-21)', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Historial' }))
     const actividades = await screen.findByRole('list', { name: 'Actividades del ejemplar' })
     expect(within(actividades).getByText('Riego')).toBeTruthy()
+    expect(within(actividades).getByText('Riego profundo tras la poda')).toBeTruthy()
+    expect(within(actividades).getByText(/Verificada/)).toBeTruthy()
     expect(await screen.findByText('Poda de formación')).toBeTruthy()
     const cambios = await screen.findByRole('list', { name: 'Cambios de situación del ejemplar' })
     expect(within(cambios).getByText(/Activo → Retirado/)).toBeTruthy()
   })
 
-  it('el historial vacío lo dice y, si el servidor aún no publica las actividades (404), sigue sirviendo el resto', async () => {
-    api.listarHistorialActividadesEjemplar.mockRejectedValue(new ErrorApi(404, null, 'No encontrado'))
+  it('el historial vacío lo dice en cada bloque', async () => {
     montar()
     await userEvent.click(screen.getByRole('tab', { name: 'Historial' }))
-    expect(await screen.findByText('Actividades no disponibles')).toBeTruthy()
+    expect(await screen.findByText('Sin actividades')).toBeTruthy()
     expect(await screen.findByText('Sin cambios de situación')).toBeTruthy()
     expect(await screen.findByText('Sin registros en las fuentes disponibles.')).toBeTruthy()
+  })
+
+  it('si fallan las actividades lo dice sin romper el resto del historial', async () => {
+    api.listarHistorialActividadesEjemplar.mockRejectedValue(new ErrorApi(500, null, 'Fallo del servidor'))
+    montar()
+    await userEvent.click(screen.getByRole('tab', { name: 'Historial' }))
+    expect(await screen.findByText('No pudimos cargar las actividades')).toBeTruthy()
+    expect(await screen.findByText('Sin cambios de situación')).toBeTruthy()
   })
 
   it('si el historial de situación falla enseña el error con reintento', async () => {
@@ -276,34 +320,35 @@ describe('FichaEjemplar (RD-21)', () => {
     expect(await screen.findByText('Sin cambios de situación')).toBeTruthy()
   })
 
-  describe('si no la trae la lista, la ficha pide el ejemplar por su id', () => {
-    it('lo enseña y avisa de su llegada', async () => {
-      api.obtenerEjemplar.mockResolvedValue(ejemplar)
-      const alCargar = vi.fn()
-      montar({ inicial: null, onCargado: alCargar })
+  describe('el ejemplar sale de la lista del área (no hay GET por id)', () => {
+    const lista = (cambios: Partial<FichaEjemplarProps['lista']> = {}) => ({
+      cargando: false,
+      error: null,
+      reintentar: vi.fn(),
+      ...cambios,
+    })
+
+    it('mientras la lista carga enseña la carga', () => {
+      montar({ inicial: null, lista: lista({ cargando: true }) })
       expect(screen.getByText('Cargando el ejemplar…')).toBeTruthy()
-      expect(await screen.findByText('P-77')).toBeTruthy()
-      expect(alCargar).toHaveBeenCalledWith(ejemplar)
     })
 
-    it('sin acceso (403)', async () => {
-      api.obtenerEjemplar.mockRejectedValue(new ErrorApi(403, null, 'Prohibido'))
-      montar({ inicial: null })
-      expect(await screen.findByText('No puedes ver este ejemplar')).toBeTruthy()
+    it('sin acceso (403)', () => {
+      montar({ inicial: null, lista: lista({ error: new ErrorApi(403, null, 'Prohibido') }) })
+      expect(screen.getByText('No puedes ver este ejemplar')).toBeTruthy()
     })
 
-    it('inexistente (404)', async () => {
-      api.obtenerEjemplar.mockRejectedValue(new ErrorApi(404, null, 'No encontrado'))
+    it('si la lista no lo trae, lo dice', () => {
       montar({ inicial: null })
-      expect(await screen.findByText('No se encontró el ejemplar')).toBeTruthy()
+      expect(screen.getByText('No se encontró el ejemplar')).toBeTruthy()
     })
 
-    it('con error del servidor, con reintento', async () => {
-      api.obtenerEjemplar.mockRejectedValueOnce(new ErrorApi(500, null, 'Fallo')).mockResolvedValue(ejemplar)
-      montar({ inicial: null })
-      expect(await screen.findByText('No pudimos cargar el ejemplar')).toBeTruthy()
+    it('con error del servidor, reintenta la lista', async () => {
+      const reintentar = vi.fn()
+      montar({ inicial: null, lista: lista({ error: new ErrorApi(500, null, 'Fallo'), reintentar }) })
+      expect(screen.getByText('No pudimos cargar el ejemplar')).toBeTruthy()
       await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
-      expect(await screen.findByText('P-77')).toBeTruthy()
+      expect(reintentar).toHaveBeenCalled()
     })
   })
 
@@ -346,6 +391,7 @@ describe('FichaEjemplar (RD-21)', () => {
             <FichaEjemplar
               ejemplarId={9}
               inicial={{ ...ejemplar, area_verde_id: null }}
+              lista={{ cargando: false, error: null, reintentar: vi.fn() }}
               onCerrar={vi.fn()}
               onActualizado={vi.fn()}
             />
@@ -380,6 +426,7 @@ describe('FichaEjemplar (RD-21)', () => {
             <FichaEjemplar
               ejemplarId={9}
               inicial={{ ...ejemplar, area_verde_id: null }}
+              lista={{ cargando: false, error: null, reintentar: vi.fn() }}
               onCerrar={vi.fn()}
               onActualizado={vi.fn()}
             />

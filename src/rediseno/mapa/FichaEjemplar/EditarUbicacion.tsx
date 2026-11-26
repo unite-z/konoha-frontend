@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import Boton from '@/design-system/Boton'
 import Selector from '@/design-system/Selector'
@@ -28,6 +28,13 @@ export default function EditarUbicacion({ ejemplar, onGuardada, onCancelar }: Pr
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const areas = useConsulta('rd-ficha-areas', listarTodasLasAreasVerdes)
+  // La ficha se cierra al editar y su `<dialog>` devuelve el foco al marcador con el evento `close`, que llega en otra
+  // tarea: el foco pasa a la barra justo después, para que el teclado siga el trabajo.
+  const titulo = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    const espera = setTimeout(() => titulo.current?.focus(), 0)
+    return () => clearTimeout(espera)
+  }, [])
 
   const validacion = useUbicacionEnMapa(punto ? String(punto.lat) : '', punto ? String(punto.lon) : '', area, true)
   const puntoActual = useMemo<PuntoLonLat | null>(
@@ -77,7 +84,13 @@ export default function EditarUbicacion({ ejemplar, onGuardada, onCancelar }: Pr
 
   return (
     <section className={estilos.barraUbicacion} aria-label={`Editar la ubicación de ${ejemplar.codigo}`}>
-      <h2 className={estilos.tituloBarra}>Editar ubicación · {ejemplar.codigo}</h2>
+      <h2 ref={titulo} tabIndex={-1} className={estilos.tituloBarra}>
+        Editar ubicación · {ejemplar.codigo}
+      </h2>
+      <AvisoEnLinea tono="info" compacto>
+        Corrige aquí el punto registrado. Si el ejemplar se movió de verdad, registra el traslado en Situación para
+        conservar el historial.
+      </AvisoEnLinea>
       <HerramientaPunto punto={punto} onElegir={setPunto} validacion={validacion} puntoActual={puntoActual} />
       {opciones.length > 0 && (
         <Selector
