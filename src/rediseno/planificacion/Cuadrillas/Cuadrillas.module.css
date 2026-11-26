@@ -1,0 +1,284 @@
+/* Cuadrillas (AV-456, RD-34): fondo liso de LayoutRediseno y tarjetas de vidrio. Solo tokens semánticos. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  color: var(--color-text-primary);
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: var(--type-titulo-pagina-size);
+  line-height: var(--type-titulo-pagina-line);
+  font-weight: var(--type-titulo-pagina-weight);
+  letter-spacing: var(--type-titulo-pagina-tracking);
+}
+
+.encabezado h1:focus-visible {
+  outline: none;
+}
+
+.encabezado p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-cuerpo-size);
+  line-height: var(--type-cuerpo-line);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* La lente de la pestaña activa se desliza entre Semana y Lista. */
+.vistas [role='tab'][aria-selected='true'] {
+  view-transition-name: lente-vista-cuadrillas;
+}
+
+.navegacionSemana {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rotuloSemana {
+  min-width: 11rem;
+  text-align: center;
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.vidrio {
+  min-width: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.ayudaTeclado {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+/* Calendario: columna de nombres y siete días. En móvil se desplaza en horizontal dentro de su tarjeta. */
+.contenedorCalendario {
+  overflow-x: auto;
+}
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 52rem;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 9rem repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(var(--carriles, 1), auto);
+  gap: var(--space-1);
+}
+
+.filaCabecera {
+  grid-template-rows: auto;
+}
+
+.celdaNombre {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  padding: var(--space-2);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  overflow-wrap: anywhere;
+}
+
+.celdaDia {
+  padding: var(--space-2);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+}
+
+.celdaDia[data-hoy] {
+  color: var(--color-text-primary);
+  background: var(--vidrio-relleno-lente);
+  border-radius: var(--radius-md);
+}
+
+.celda {
+  grid-row: 1 / -1;
+  min-height: 4.5rem;
+  border-radius: var(--radius-md);
+  background: var(--vidrio-relleno);
+}
+
+.celda[data-hoy] {
+  background: var(--vidrio-relleno-lente);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: var(--space-1);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno-denso);
+  box-shadow: var(--vidrio-sombra-lente);
+  touch-action: none;
+  z-index: 1;
+}
+
+.tarjeta[data-movible] {
+  cursor: grab;
+}
+
+.tarjeta[data-arrastrando] {
+  cursor: grabbing;
+  z-index: 2;
+  box-shadow: var(--vidrio-sombra);
+}
+
+.tarjeta[data-vencido] {
+  background: var(--color-error-bg);
+}
+
+.tarjeta[data-sale-antes] {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.tarjeta[data-sale-despues] {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.abrir {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+
+.abrir:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.tarjetaTitulo {
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  font-weight: var(--type-pequeno-medio-weight);
+  overflow-wrap: anywhere;
+}
+
+.tarjetaDetalle {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+  overflow-wrap: anywhere;
+}
+
+/* Lista */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemLista {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno-denso);
+}
+
+.itemLista[data-vencido] {
+  background: var(--color-error-bg);
+}
+
+@media (max-width: 767px) {
+  .itemLista {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Panel del encargo */
+.datos {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.datos dt {
+  color: var(--color-text-muted);
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.mover h3 {
+  margin: 0;
+  font-size: var(--type-cuerpo-size);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta {
+    transition: none;
+  }
+}

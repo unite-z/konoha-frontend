@@ -10,17 +10,20 @@ import estilos from './OperacionCampo.module.css'
 /** Cambia el periodo y el plazo de un encargo vivo, con la justificación que queda en su historial (AV-405). */
 export function DialogoReprogramar({
   encargo,
+  propuesta,
   onCerrar,
   onGuardado,
 }: {
   encargo: EncargoCampo
+  /** Fechas con las que se abre el formulario (el calendario de Cuadrillas, al soltar un encargo en otro día). */
+  propuesta?: Pick<EncargoCampo, 'fecha_inicio' | 'fecha_fin' | 'plazo_previsto'>
   onCerrar: () => void
   onGuardado: () => void
 }) {
   const directo = encargo.periodicidad === 'Directo'
-  const [inicio, setInicio] = useState(encargo.fecha_inicio)
-  const [fin, setFin] = useState(encargo.fecha_fin)
-  const [plazo, setPlazo] = useState(encargo.plazo_previsto)
+  const [inicio, setInicio] = useState((propuesta ?? encargo).fecha_inicio)
+  const [fin, setFin] = useState((propuesta ?? encargo).fecha_fin)
+  const [plazo, setPlazo] = useState((propuesta ?? encargo).plazo_previsto)
   const [justificacion, setJustificacion] = useState('')
   const [errores, setErrores] = useState<Record<string, string>>({})
   const mutacion = useMutacionCampo()
