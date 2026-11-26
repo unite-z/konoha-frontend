@@ -37,8 +37,6 @@ def centro(P):
 
 
 # Proyección equirrectangular local: origen en el centro del perímetro (se publica en el JSON).
-LAT_REF, LON_REF = -12.0692, -77.0806
-_kx0 = math.cos(math.radians(LAT_REF)) * 111320
 _c = centro(perimetro)
 ORIGEN_LON = round(_c[0], 7)
 ORIGEN_LAT = round(_c[1], 7)
@@ -131,7 +129,7 @@ salida = {
     "fuentes": {"areas_copia": fuentes["areas"]["copia"], "ofm": fuentes["ofm"]["obtenidas"], "osm": fuentes["osm"]["obtenidas"]},
     "campus": L(CAMP, 0.5, "perimetro"),
     "edificios": [], "cesped": [], "canchas": [], "agua": [], "vias": [], "senderos": [],
-    "areas": [], "centros": {}, "huellas": {}, "arboles": [], "etiquetas": [],
+    "areas": [], "arboles": [], "etiquetas": [],
 }
 
 # Alturas de la tesela (para los edificios de OSM sin altura propia).
@@ -195,6 +193,7 @@ for f in ofm:
             destino.append(L(P, 0.5, "cesped" if destino is salida["cesped"] else "canchas" if destino is salida["canchas"] else "agua"))
 
 acum = {}
+primeras = {}
 for f in areas:
     pr = f["properties"]
     ident = pr.get("mapa_id")
@@ -202,15 +201,21 @@ for f in areas:
         P = [m(c) for c in poly[0][:-1]]
         if len(P) < 3:
             continue
-        salida["areas"].append({"id": ident, "n": pr.get("Nombre"), "c": pr.get("código"), "s": round(pr.get("Área") or 0), "r": pr.get("Riego act"), "p": L(P, 0.3, "areas")})
+        entrada = {"id": ident, "n": pr.get("Nombre"), "c": pr.get("código"), "s": round(pr.get("Área") or 0)}
+        entrada["r"] = pr.get("Riego act")
+        entrada["p"] = L(P, 0.3, "areas")
+        salida["areas"].append(entrada)
+        primeras.setdefault(ident, entrada)
         a = abs(area2(P))
         cx, cy = centro(P)
         t = acum.setdefault(ident, [0.0, 0.0, 0.0])
-        t[0] += cx * a; t[1] += cy * a; t[2] += a
+        t[0] += cx * a
+        t[1] += cy * a
+        t[2] += a
     huella = hashlib.sha1(json.dumps(f["geometry"]["coordinates"], separators=(",", ":")).encode()).hexdigest()[:8]
-    salida["huellas"][ident] = huella
+    primeras[ident]["h"] = huella
 for ident, (sx, sy, sa) in acum.items():
-    salida["centros"][ident] = [round(sx / sa, 1), round(sy / sa, 1)]
+    primeras[ident]["ct"] = [round(sx / sa, 1), round(sy / sa, 1)]
 
 for lon, lat, alto, fuste, radio in flora:
     q = m((lon, lat))
