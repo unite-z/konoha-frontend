@@ -13,11 +13,7 @@ import { rutaTareasDeEncargo } from '@/router/rutasCampo'
 import { rutaIncidencia } from '@/router/rutasApp'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { EncargoCampo } from '@/types/operacionCampo'
-import {
-  esJefeCampo,
-  puedeCambiarEstadoEncargo,
-  puedeReprogramarEncargo,
-} from '@/utils/operacionCampo'
+import { esJefeCampo, puedeCambiarEstadoEncargo, puedeReprogramarEncargo } from '@/utils/operacionCampo'
 import { formatearFecha } from '@/utils/formato'
 import { BuscarCampo, TablaCampo } from './ComponentesCampo'
 import { useListadoCampo } from './useCampo'
@@ -25,7 +21,8 @@ import estilos from './OperacionCampo.module.css'
 import Estado from '@/design-system/Estado'
 import { DialogoEncargo } from './DialogoEncargo'
 import { DialogoReprogramar } from './DialogoReprogramar'
-import { DialogoSeguimiento, tonosEncargo } from './DialogoSeguimiento'
+import { DialogoSeguimiento } from './DialogoSeguimiento'
+import { tonosEncargo } from './tonosEncargo'
 
 export default function EncargosPage() {
   usePaginaActual('Encargos', [{ texto: 'Operación de campo' }, { texto: 'Encargos' }])

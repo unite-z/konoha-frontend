@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AreaTexto } from '@/design-system/CampoFormulario'
 import Selector from '@/design-system/Selector'
 import DialogoFormulario from '@/design-system/DialogoFormulario'
-import Estado, { type TonoEstado } from '@/design-system/Estado'
+import Estado from '@/design-system/Estado'
 import { useConsulta } from '@/hooks/useConsulta'
 import { campoApi } from '@/services/api/operacionCampo'
 import type { EncargoCampo, EstadoEncargo } from '@/types/operacionCampo'
@@ -10,15 +10,7 @@ import { formatearFecha, formatearFechaHora } from '@/utils/formato'
 import { EstadoCatalogos } from './ComponentesCampo'
 import { useMutacionCampo } from './useCampo'
 import estilos from './OperacionCampo.module.css'
-
-export const tonosEncargo: Record<EstadoEncargo, TonoEstado> = {
-  'Por completar': 'neutro',
-  'En curso': 'info',
-  Completado: 'exito',
-  Observado: 'aviso',
-  Cancelado: 'error',
-}
-
+import { tonosEncargo } from './tonosEncargo'
 
 const transiciones: Record<EstadoEncargo, EstadoEncargo[]> = {
   'Por completar': ['En curso'],
