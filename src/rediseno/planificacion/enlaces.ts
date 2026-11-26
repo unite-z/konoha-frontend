@@ -53,3 +53,24 @@ export const PARAMETRO_PROPUESTA = 'propuesta'
 export function rutaPlanificacionPropuesta(propuestaId: number): string {
   return `${RUTA_PLANIFICACION}?${PARAMETRO_PROPUESTA}=${propuestaId}`
 }
+
+/** Encargo abierto en el panel (`?encargo_id=`, RD-35). */
+export const PARAMETRO_ENCARGO = 'encargo_id'
+/** `?encargo=nuevo` abre el alta; `&area=<id>` la abre con el espacio puesto (RD-18 la usa desde el Mapa). */
+export const PARAMETRO_ENCARGO_NUEVO = 'encargo'
+export const VALOR_ENCARGO_NUEVO = 'nuevo'
+export const PARAMETRO_AREA_ENCARGO = 'area'
+
+/** Cuadrillas con el panel del encargo abierto (RD-35); Incidencias y el Mapa enlazan con esto. */
+export function rutaEncargo(encargoId: number): string {
+  return `${rutaPlanificacionCuadrillas()}?${PARAMETRO_ENCARGO}=${encargoId}`
+}
+
+/** Cuadrillas con el alta de encargo abierta, con el espacio puesto si se conoce (RD-35). */
+export function rutaEncargoNuevo(areaVerdeId?: number): string {
+  const parametros = new URLSearchParams({
+    [PARAMETRO_ENCARGO_NUEVO]: VALOR_ENCARGO_NUEVO,
+  })
+  if (areaVerdeId !== undefined) parametros.set(PARAMETRO_AREA_ENCARGO, String(areaVerdeId))
+  return `${rutaPlanificacionCuadrillas()}?${parametros.toString()}`
+}
