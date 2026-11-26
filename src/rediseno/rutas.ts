@@ -4,8 +4,9 @@
  * de nombres reserva `.tsx` a los componentes (PascalCase), así que las rutas usan `Component`, `lazy` o `createElement`.
  */
 import { createElement, type ReactNode } from 'react'
-import { Navigate, type RouteObject } from 'react-router'
-import EnConstruccion from './base/EnConstruccion'
+import type { RouteObject } from 'react-router'
+import InicioRediseno from './base/InicioRediseno'
+import NoEncontradoRediseno from './base/NoEncontradoRediseno'
 import LayoutRediseno from './base/LayoutRediseno'
 import PuertaRediseno, { PuertaPrefijo } from './base/PuertaRediseno'
 import { rutasCampo } from './campo/rutas'
@@ -29,7 +30,7 @@ export const rutaRediseno: RouteObject = {
     {
       Component: LayoutRediseno,
       children: [
-        { index: true, element: createElement(EnConstruccion, { seccion: 'Diseño nuevo' }) },
+        { index: true, Component: InicioRediseno },
         ...rutasMapa,
         ...rutasPlanificacion,
         ...rutasIncidencias,
@@ -37,7 +38,7 @@ export const rutaRediseno: RouteObject = {
         ...rutasReportes,
         ...rutasCuenta,
         ...rutasCampo,
-        { path: '*', element: createElement(Navigate, { to: PREFIJO_REDISENO, replace: true }) },
+        { path: '*', Component: NoEncontradoRediseno },
       ],
     },
   ],

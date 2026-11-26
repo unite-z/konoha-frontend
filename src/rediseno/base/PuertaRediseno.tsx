@@ -13,8 +13,8 @@ import { destinoRediseno } from './redirecciones'
 export default function PuertaRediseno({ children }: { children: ReactNode }) {
   const { encendido } = useDisenoNuevo()
   const { pathname, search, hash } = useLocation()
-  const destino = encendido ? destinoRediseno(pathname) : null
-  return destino ? <Navigate to={{ pathname: destino, search, hash }} replace /> : children
+  const destino = encendido ? destinoRediseno(pathname, search) : null
+  return destino ? <Navigate to={{ ...destino, hash }} replace /> : children
 }
 
 /** Puerta de `/n`: encendido deja pasar; apagado o sin elegir, avisa y ofrece activarlo o volver. */
