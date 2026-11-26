@@ -211,8 +211,11 @@ export function confirmarImportacion(id: number): Promise<Importacion> {
 export type ListadoExportable = 'actividades' | 'atenciones' | 'ejemplares'
 
 /** `GET exportaciones/{tipo}/`: el `.xlsx` del listado, con los datos autorizados (RF-T-011). */
-export function exportarListado(listado: ListadoExportable): Promise<Blob> {
-  return descargarCore(`exportaciones/${listado}/`)
+export function exportarListado(
+  listado: ListadoExportable,
+  filtros?: Record<string, string | number | undefined>,
+): Promise<Blob> {
+  return descargarCore(`exportaciones/${listado}/`, undefined, filtros)
 }
 
 export function urlContenidoAdjunto(id: number): string {

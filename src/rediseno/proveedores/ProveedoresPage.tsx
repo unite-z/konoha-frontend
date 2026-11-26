@@ -13,6 +13,8 @@ import type { ContratoMaestro } from '@/types/maestrosTercerizados'
 import { estiloTransicion, nombresTransicion, transicionar, useFocoConLaVista } from '../base/movimiento'
 import PanelLateral from '../base/PanelLateral/PanelLateral'
 import { useParametroPanel } from '../base/PanelLateral/useParametroPanel'
+import Bandeja from './Atenciones/Bandeja'
+import { puedeConsultarAtenciones } from './Atenciones/permisos'
 import { conCambios } from './Contratos/filtros'
 import ListaContratos from './Contratos/ListaContratos'
 import PanelContrato from './Contratos/PanelContrato'
@@ -171,6 +173,7 @@ export default function ProveedoresPage() {
         puedeCrear={puedeGestionar}
         onCrear={crear}
       />
+      {puedeConsultarAtenciones(permisos) && <Bandeja modo="recientes" />}
       {panelAbierto}
       <AvisoTemporal mensaje={aviso} onCerrar={() => setAviso(null)} />
     </div>

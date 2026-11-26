@@ -39,6 +39,10 @@ export function solicitarCore<T>(ruta: string, opciones: OpcionesCore = {}): Pro
 }
 
 /** Descarga un archivo con la sesión y devuelve el blob (los enlaces directos no llevan la cabecera CSRF). */
-export async function descargarCore(ruta: string, signal?: AbortSignal): Promise<Blob> {
-  return (await descargarHttp(ruta, opcionesHttp(ruta, { signal }))).blob
+export async function descargarCore(
+  ruta: string,
+  signal?: AbortSignal,
+  parametros?: Record<string, ValorParametro>,
+): Promise<Blob> {
+  return (await descargarHttp(ruta, opcionesHttp(ruta, { signal, parametros }))).blob
 }

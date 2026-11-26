@@ -1,7 +1,7 @@
 import { Truck } from 'lucide-react'
 import { PERMISOS } from '@/config/permisosCore'
 import type { SeccionRediseno } from '../tipos'
-import { rutaContratos, RUTA_PROVEEDORES } from './enlaces'
+import { rutaAtenciones, rutaContratos, RUTA_PROVEEDORES } from './enlaces'
 
 export const seccionProveedores: SeccionRediseno = {
   id: 'proveedores',
@@ -9,7 +9,10 @@ export const seccionProveedores: SeccionRediseno = {
   icono: Truck,
   ruta: RUTA_PROVEEDORES,
   permisos: [PERMISOS.registrarAtencion, PERMISOS.consultarContratos],
-  pestanas: [{ etiqueta: 'Contratos', ruta: rutaContratos() }],
+  pestanas: [
+    { etiqueta: 'Contratos', ruta: rutaContratos() },
+    { etiqueta: 'Atenciones', ruta: rutaAtenciones() },
+  ],
   movil: [],
   enCabecera: true,
 }
