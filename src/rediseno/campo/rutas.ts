@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import EnConstruccion from '../base/EnConstruccion'
+import IncidenciasPage from './Incidencias/IncidenciasPage'
 import Mas from './Mas'
 import RutaDeHoyPage from './RutaDeHoyPage'
 import Semana from './Semana'
@@ -14,7 +15,7 @@ import {
   SEGMENTO_SEMANA,
 } from './enlaces'
 
-/** Encargos e Incidencias quedan «En construcción» hasta sus tickets (RD-71 y RD-70). */
+/** Encargos queda «En construcción» hasta su ticket (RD-71). */
 export const rutasCampo: RouteObject[] = [
   {
     path: SEGMENTO_CAMPO,
@@ -32,10 +33,7 @@ export const rutasCampo: RouteObject[] = [
         path: SEGMENTO_ENCARGOS,
         element: createElement(EnConstruccion, { seccion: 'Encargos' }),
       },
-      {
-        path: SEGMENTO_INCIDENCIAS,
-        element: createElement(EnConstruccion, { seccion: 'Incidencias' }),
-      },
+      { path: SEGMENTO_INCIDENCIAS, Component: IncidenciasPage },
       { path: SEGMENTO_MAS, Component: Mas },
     ],
   },
