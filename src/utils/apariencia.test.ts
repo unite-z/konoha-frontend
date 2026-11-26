@@ -46,6 +46,15 @@ describe('apariencia (AV-389)', () => {
     expect(html.dataset).toEqual({ tema: 'calido', acento: 'verde' })
   })
 
+  it('el tema amarillento tiene su propio atributo y se recuerda (AV-441)', () => {
+    const html = raiz()
+    aplicarApariencia({ tema: 'amarillento', acento: 'institucional' }, html, true)
+    expect(html.dataset.tema).toBe('amarillento')
+    const almacen = almacenEnMemoria()
+    guardarApariencia({ tema: 'amarillento', acento: 'azul' }, almacen)
+    expect(leerApariencia(almacen).tema).toBe('amarillento')
+  })
+
   it('«según el sistema» sigue lo que prefiere el sistema', () => {
     const html = raiz()
     aplicarApariencia({ tema: 'sistema', acento: 'institucional' }, html, true)

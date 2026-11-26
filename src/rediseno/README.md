@@ -31,6 +31,10 @@ La cabecera (`base/Cabecera/`) y la única barra inferior del móvil (`base/Barr
 5. Se reutiliza `src/services/api/`, `src/utils/` y `src/design-system/` antes de escribir algo nuevo.
 6. Cada PR: menos de 200 líneas sin contar tests, comprobado a 1440 y 390 px con el interruptor encendido.
 
+## Configuración (AV-441)
+
+`/n/cuenta` es `cuenta/ConfiguracionPage`: una sola pantalla con secciones sobre fondo liso, elegidas con `?seccion=` (`rutaConfiguracion(id)`). Las secciones salen de `cuenta/secciones.ts` (`SECCIONES_CONFIGURACION`): cada ticket de Configuración añade la suya con `id`, `etiqueta`, `permisos` por código y su `Componente`; la página solo enseña las que la sesión puede ver, y un enlace directo a otra enseña «Sin acceso». Apariencia ofrece también el tema Amarillento (`utils/apariencia.ts`) y marca el tema que se está viendo, porque `LayoutRediseno` pone el amarillento mientras está montado. Lectura (P-16, tamaño del texto en el navegador) va la última y se quita borrando su entrada.
+
 ## Mapa vivo y capas (AV-426)
 
 `LayoutRediseno` lleva el escenario (`base/Escenario/`): el `MapaCampus` 3D se monta una vez, detrás del contenido, y no se desmonta al navegar. No se monta (ni carga Three.js) hasta la primera vista de mapa.

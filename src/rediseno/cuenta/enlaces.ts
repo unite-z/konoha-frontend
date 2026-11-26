@@ -10,8 +10,16 @@ export const RUTA_INGRESO = `${PREFIJO_REDISENO}/${SEGMENTO_INGRESO}`
 export const RUTA_CAMBIAR_CONTRASENA = `${PREFIJO_REDISENO}/${SEGMENTO_CAMBIAR_CONTRASENA}`
 export const PARAM_VOLVER = 'volver'
 
+/** Sección de Configuración abierta (`?seccion=apariencia`); sin ella, la primera que el permiso deja ver. */
+export const PARAM_SECCION_CONFIGURACION = 'seccion'
+
 export function rutaCuenta(): string {
   return RUTA_CUENTA
+}
+
+/** Configuración (`/n/cuenta`), abierta en la sección `id` si se indica. */
+export function rutaConfiguracion(id?: string): string {
+  return id ? `${RUTA_CUENTA}?${PARAM_SECCION_CONFIGURACION}=${encodeURIComponent(id)}` : RUTA_CUENTA
 }
 
 /** Destino interno tras entrar: nunca el ingreso ni el cambio de contraseña, de ninguno de los dos diseños. */

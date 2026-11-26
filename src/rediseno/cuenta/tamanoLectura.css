@@ -1,0 +1,8 @@
+/* Lectura (P-16): escala del texto elegida en Configuración. Se aplica a toda la interfaz de este navegador. */
+:root[data-lectura-tamano='grande'] {
+  zoom: 1.125;
+}
+
+:root[data-lectura-tamano='muy-grande'] {
+  zoom: 1.25;
+}
