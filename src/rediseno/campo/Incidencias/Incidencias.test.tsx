@@ -26,7 +26,10 @@ vi.mock('@/sesion/ContextoSesion', () => ({
 let lista: IncidenciaResumen[] | ErrorApi
 let seguimiento: SeguimientoIncidencia | ErrorApi
 const duplicados = vi.fn(async (..._a: unknown[]): Promise<unknown[]> => [])
-const registrarIncidencia = vi.fn(async (..._a: unknown[]) => ({ id: 42, codigo: 'INC-2026-042' }))
+const registrarIncidencia = vi.fn(async (..._a: unknown[]) => ({
+  id: 42,
+  codigo: 'INC-2026-042',
+}))
 const sumarReporte = vi.fn(async (..._a: unknown[]) => undefined)
 vi.mock('@/services/api/incidencias', () => ({
   listarMisIncidencias: async () => {
@@ -68,7 +71,9 @@ function incidencia(id: number, tipo: string, estadoInc: IncidenciaResumen['esta
 }
 
 function montar(ruta: string) {
-  const router = createMemoryRouter([{ path: '/n', children: rutasCampo }], { initialEntries: [ruta] })
+  const router = createMemoryRouter([{ path: '/n', children: rutasCampo }], {
+    initialEntries: [ruta],
+  })
   render(<RouterProvider router={router} />)
   return router
 }
@@ -166,14 +171,24 @@ describe('Incidencias del capataz', () => {
     await u.click(screen.getByRole('button', { name: 'Enviar' }))
     expect(await screen.findByText('INC-2026-042 reportada')).toBeTruthy()
     const [cuerpo, archivo, clave] = registrarIncidencia.mock.calls[0]
-    expect(cuerpo).toMatchObject({ tipo: 'Rama caída', espacio: 'Jardín de la Biblioteca', canal: 'App' })
+    expect(cuerpo).toMatchObject({
+      tipo: 'Rama caída',
+      espacio: 'Jardín de la Biblioteca',
+      canal: 'App',
+    })
     expect(archivo).toBeInstanceOf(File)
     expect(typeof clave).toBe('string')
   })
 
   it('con una incidencia abierta en el mismo espacio ofrece añadir a la existente', async () => {
-    duplicados.mockResolvedValue([
-      { id: 9, codigo: 'INC-2026-009', tipo: 'Rama caída', ejemplar: null, fecha_registro: new Date().toISOString() },
+    duplicados.mockResolvedValueOnce([
+      {
+        id: 9,
+        codigo: 'INC-2026-009',
+        tipo: 'Rama caída',
+        ejemplar: null,
+        fecha_registro: new Date().toISOString(),
+      },
     ])
     montar(rutaCampoReportarIncidencia())
     const u = await rellenar()
@@ -197,6 +212,16 @@ describe('Incidencias del capataz', () => {
     expect(pendiente.archivo).toBeTruthy()
     expect((pendiente.carga.cuerpo as { reportado_en: string }).reportado_en).toBe(pendiente.creado_en)
     expect(screen.getByText('Sin conexión · se enviará al reconectar')).toBeTruthy()
+  })
+
+  it('si la red se corta al enviar, el reporte pasa a la cola con la misma clave', async () => {
+    registrarIncidencia.mockRejectedValueOnce(new ErrorApi(0, 'red', 'Sin conexión'))
+    montar(rutaCampoReportarIncidencia())
+    const u = await rellenar()
+    await u.click(screen.getByRole('button', { name: 'Enviar' }))
+    expect(await screen.findByText('Pendiente de enviar')).toBeTruthy()
+    const clave = registrarIncidencia.mock.calls[0][2]
+    expect(leerEstadoCola().pendientes[0].id).toBe(clave)
   })
 
   it('con ?incidencia= abre el seguimiento con estados, tiempo de cierre y evidencia', async () => {

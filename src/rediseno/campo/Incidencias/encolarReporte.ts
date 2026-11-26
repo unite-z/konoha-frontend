@@ -12,7 +12,7 @@ export async function encolarReporte(
   usuarioId: number,
   clave: string,
 ): Promise<string> {
-  const creadoEn = new Date().toISOString()
+  const creadoEn = new Date().toISOString() // fecha-lima-ok: instante absoluto (UTC), la hora real del reporte
   return encolar({
     id: clave,
     tipo: 'incidencia.reporte',

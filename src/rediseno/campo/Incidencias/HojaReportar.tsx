@@ -36,8 +36,8 @@ import { nuevaClave } from '@/sincronizacion/cola'
 import { conCache } from '@/sincronizacion/datosDescargados'
 import type { NuevaIncidencia, PosibleDuplicado } from '@/types/incidencias'
 import { comprimirFotografia } from '@/utils/comprimirFotografia'
-import { panel } from '../../base/movimiento'
-import PanelLateral from '../../base/PanelLateral/PanelLateral'
+import { panel } from '@/rediseno/base/movimiento'
+import PanelLateral from '@/rediseno/base/PanelLateral/PanelLateral'
 import { encolarReporte } from './encolarReporte'
 import { NOMBRE_REPORTAR } from './nombres'
 import { useVistaPrevia } from './useVistaPrevia'
@@ -63,7 +63,10 @@ export default function HojaReportar({ onCerrar, onEnviado }: HojaReportarProps)
   const [descripcion, setDescripcion] = useState('')
   const [mostrarErrores, setMostrarErrores] = useState(false)
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState<{ titulo: string; detalle: string } | null>(null)
+  const [error, setError] = useState<{
+    titulo: string
+    detalle: string
+  } | null>(null)
   const [duplicado, setDuplicado] = useState<PosibleDuplicado | null>(null)
   // Una clave por reporte: reenviarlo (red cortada, cola) no lo duplica.
   const [clave] = useState(nuevaClave)
@@ -98,7 +101,7 @@ export default function HojaReportar({ onCerrar, onEnviado }: HojaReportarProps)
   }
 
   async function aLaCola() {
-    if (!sesion) return
+    if (!sesion) return setEnviando(false)
     try {
       await encolarReporte(cuerpo(), foto, sesion.usuario.id, clave)
       onEnviado('Sin conexión: se enviará al reconectar')
@@ -122,7 +125,9 @@ export default function HojaReportar({ onCerrar, onEnviado }: HojaReportarProps)
       if (causa instanceof ErrorApi && causa.estado === 0) return aLaCola()
       setError({
         titulo:
-          causa instanceof ErrorApi && causa.estado === 403 ? 'No tienes permiso para reportar' : 'No se pudo enviar el reporte',
+          causa instanceof ErrorApi && causa.estado === 403
+            ? 'No tienes permiso para reportar'
+            : 'No se pudo enviar el reporte',
         detalle: causa instanceof Error ? causa.message : 'Inténtalo de nuevo.',
       })
       setEnviando(false)
@@ -217,7 +222,10 @@ export default function HojaReportar({ onCerrar, onEnviado }: HojaReportarProps)
           obligatorio
           valor={espacio}
           opcionTodos="Elige el espacio"
-          opciones={catalogos.datos.espacios.map((e) => ({ valor: e.nombre, texto: e.nombre }))}
+          opciones={catalogos.datos.espacios.map((e) => ({
+            valor: e.nombre,
+            texto: e.nombre,
+          }))}
           onCambiar={(valor) => {
             setEspacio(valor)
             setEjemplar('')

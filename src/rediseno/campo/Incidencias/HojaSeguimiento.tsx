@@ -16,8 +16,8 @@ import { ESTADO_INCIDENCIA } from '@/pages/incidencias/bandeja'
 import { horasHistorial, textoTiempoCierre } from '@/pages/incidencias/detalleIncidencia'
 import { obtenerMiIncidencia } from '@/services/api/incidencias'
 import { hoyLima } from '@/utils/instanteLima'
-import { panel } from '../../base/movimiento'
-import PanelLateral from '../../base/PanelLateral/PanelLateral'
+import { panel } from '@/rediseno/base/movimiento'
+import PanelLateral from '@/rediseno/base/PanelLateral/PanelLateral'
 import estilos from './Incidencias.module.css'
 
 export interface HojaSeguimientoProps {
@@ -63,7 +63,10 @@ export default function HojaSeguimiento({ id, onCerrar }: HojaSeguimientoProps) 
   } else {
     const estado = ESTADO_INCIDENCIA[incidencia.estado]
     const horas = horasHistorial(
-      incidencia.pasos.map((paso) => ({ texto: paso.estado, fecha_hora: paso.fecha_hora })),
+      incidencia.pasos.map((paso) => ({
+        texto: paso.estado,
+        fecha_hora: paso.fecha_hora,
+      })),
       hoyLima(),
     )
     // El estado actual, arriba: verde si se cerró y de acento mientras sigue abierta.
@@ -82,7 +85,10 @@ export default function HojaSeguimiento({ id, onCerrar }: HojaSeguimientoProps) 
         )}
         <ol className={estilos.pasos} aria-label="Seguimiento">
           {incidencia.pasos.map((paso, indice) => (
-            <li key={`${paso.estado}-${paso.fecha_hora}`} className={`${estilos.paso} ${indice === 0 ? claseActual : ''}`}>
+            <li
+              key={`${paso.estado}-${paso.fecha_hora}`}
+              className={`${estilos.paso} ${indice === 0 ? claseActual : ''}`}
+            >
               <span className={estilos.puntoPaso} aria-hidden="true" />
               <span className={estilos.nombrePaso}>
                 {ESTADO_INCIDENCIA[paso.estado].texto}

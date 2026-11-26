@@ -24,11 +24,18 @@ import { ESTADO_INCIDENCIA } from '@/pages/incidencias/bandeja'
 import { cuandoReportada } from '@/pages/incidencias/misIncidencias'
 import { listarMisIncidencias } from '@/services/api/incidencias'
 import { usePermisos } from '@/sesion/ContextoSesion'
-import { conCache } from '@/sincronizacion/datosDescargados'
+import { conCache, descargadoEn } from '@/sincronizacion/datosDescargados'
 import { formatearFechaHora } from '@/utils/formato'
 import { hoyLima } from '@/utils/instanteLima'
-import { estiloTransicion, fila, nombresTransicion, panel, transicionar, useFocoConLaVista } from '../../base/movimiento'
-import { useParametroPanel } from '../../base/PanelLateral/useParametroPanel'
+import {
+  estiloTransicion,
+  fila,
+  nombresTransicion,
+  panel,
+  transicionar,
+  useFocoConLaVista,
+} from '@/rediseno/base/movimiento'
+import { useParametroPanel } from '@/rediseno/base/PanelLateral/useParametroPanel'
 import { PARAM_INCIDENCIA, PARAM_REPORTAR } from '../enlaces'
 import HojaReportar from './HojaReportar'
 import HojaSeguimiento from './HojaSeguimiento'
@@ -110,6 +117,11 @@ export default function IncidenciasPage() {
       <EstadoVacio
         titulo="Aún no has reportado incidencias"
         descripcion="Si ves una rama caída o algo que reparar, repórtalo con una foto."
+        accion={
+          <Boton variante="secundario" onClick={() => transicionar(() => reportar.abrir('1'))}>
+            Reportar incidencia
+          </Boton>
+        }
       />
     )
   } else {
@@ -125,6 +137,7 @@ export default function IncidenciasPage() {
               key={incidencia.id}
               style={abierta === incidencia.id ? undefined : estiloTransicion(fila(incidencia.id))} // estilo-calculado
             >
+              {/* Excepción al sistema (AV-351): fila de vidrio que crece hasta su hoja de seguimiento; no es un botón de acción. */}
               <button
                 type="button"
                 className={`${estilos.fila} ${estilos.filaPulsable}`}
@@ -146,6 +159,7 @@ export default function IncidenciasPage() {
   }
 
   const reportando = reportar.valor !== null
+  const descargada = consulta.datos ? descargadoEn('mis-incidencias') : null
   return (
     <div className={estilos.pagina}>
       <header
@@ -165,11 +179,14 @@ export default function IncidenciasPage() {
       {(!enLinea || enCola > 0) && (
         <div className={estilos.banda} role="status">
           <WifiOff size={16} aria-hidden="true" />
-          <p className={estilos.bandaTitulo}>
-            {enLinea
-              ? `${enCola} ${enCola === 1 ? 'reporte pendiente' : 'reportes pendientes'} de enviar`
-              : 'Sin conexión · se enviará al reconectar'}
-          </p>
+          <div>
+            <p className={estilos.bandaTitulo}>
+              {enLinea
+                ? `${enCola} ${enCola === 1 ? 'reporte pendiente' : 'reportes pendientes'} de enviar`
+                : 'Sin conexión · se enviará al reconectar'}
+            </p>
+            {descargada && <p className={estilos.bandaDetalle}>Lista descargada el {formatearFechaHora(descargada)}</p>}
+          </div>
         </div>
       )}
       {contenido}

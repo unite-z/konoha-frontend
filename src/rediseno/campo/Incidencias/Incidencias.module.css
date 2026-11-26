@@ -48,6 +48,12 @@
   font-weight: var(--type-cuerpo-medio-weight);
 }
 
+.bandaDetalle {
+  color: var(--color-text-muted);
+  font-size: var(--type-pequeno-size);
+  line-height: var(--type-pequeno-line);
+}
+
 .lista {
   display: flex;
   flex-direction: column;
