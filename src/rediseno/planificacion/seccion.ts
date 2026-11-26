@@ -1,7 +1,12 @@
 import { CalendarDays } from 'lucide-react'
 import { PERMISOS } from '@/config/permisosCore'
 import type { SeccionRediseno } from '../tipos'
-import { RUTA_PLANIFICACION } from './enlaces'
+import {
+  RUTA_PLANIFICACION,
+  rutaPlanificacionCiclos,
+  rutaPlanificacionCuadrillas,
+  rutaPlanificacionReglas,
+} from './enlaces'
 
 export const seccionPlanificacion: SeccionRediseno = {
   id: 'planificacion',
@@ -9,7 +14,12 @@ export const seccionPlanificacion: SeccionRediseno = {
   icono: CalendarDays,
   ruta: RUTA_PLANIFICACION,
   permisos: [PERMISOS.consultarPlanificacion],
-  pestanas: [],
+  pestanas: [
+    { etiqueta: 'Sectores', ruta: RUTA_PLANIFICACION },
+    { etiqueta: 'Ciclos', ruta: rutaPlanificacionCiclos() },
+    { etiqueta: 'Cuadrillas', ruta: rutaPlanificacionCuadrillas() },
+    { etiqueta: 'Reglas', ruta: rutaPlanificacionReglas() },
+  ],
   movil: [],
   enCabecera: true,
 }
