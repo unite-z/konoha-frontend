@@ -1,7 +1,8 @@
 /**
  * Atención abierta (RD-53): la ficha de una atención con sus acciones de estado. Fondo liso, sin mapa. El encabezado
  * lleva el nombre de transición de su fila en la bandeja (RD-51) y la línea de estados avanza con una transición corta
- * cuando el servidor confirma un cambio. La ficha es la de `pages/servicios-tercerizados/Ficha` (RD-91).
+ * cuando el servidor confirma un cambio. La ficha es la de `pages/servicios-tercerizados/Ficha` (RD-91). Los informes
+ * del proveedor (adjuntar, subsanar, revisiones) van en `Informes` (RD-54).
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
@@ -24,6 +25,7 @@ import { puedeConsultarAtenciones } from '../Atenciones/permisos'
 import { nombreFilaAtencion } from '../Atenciones/nombres'
 import type { EstadoNavegacionBandeja } from '../Atenciones/FilaAtencion'
 import Acciones from './Acciones'
+import Informes from './Informes'
 import estilos from './AtencionAbierta.module.css'
 
 /** La versión más reciente entre la consultada y la recibida de una operación (misma atención). */
@@ -53,6 +55,9 @@ export default function AtencionAbiertaPage() {
   const [local, setLocal] = useState<Atencion | null>(null)
   const atencion = masReciente(consulta.datos, local)
   const [aviso, setAviso] = useState<string | null>(() => (state as { aviso?: string } | null)?.aviso ?? null)
+  // Sube al registrarse una revisión del informe: recarga la lista de revisiones y la sección de documentos.
+  const [versionInformes, setVersionInformes] = useState(0)
+  const alAdjuntarInforme = useCallback(() => setVersionInformes((v) => v + 1), [])
   const cerrarAviso = useCallback(() => setAviso(null), [setAviso])
   const alActualizar = useCallback((nueva: Atencion) => transicionar(() => setLocal(nueva)), [])
 
@@ -101,10 +106,20 @@ export default function AtencionAbiertaPage() {
       <div className={estilos.cuerpo}>
         <Ficha
           atencion={atencion}
-          versionDocumentos={0}
+          versionDocumentos={versionInformes}
           enfocarTitulo={false}
           acciones={
-            <Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />
+            <>
+              <Informes
+                atencion={atencion}
+                permisos={permisos}
+                version={versionInformes}
+                onActualizada={alActualizar}
+                onReporteAdjunto={alAdjuntarInforme}
+                onExito={setAviso}
+              />
+              <Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />
+            </>
           }
         />
       </div>
