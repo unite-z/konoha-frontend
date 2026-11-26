@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -17,6 +17,8 @@ vi.mock('@/sesion/ContextoSesion', () => ({
 const api = vi.hoisted(() => ({
   listarAtenciones: vi.fn(),
   listarContratos: vi.fn(),
+  listarAreasVerdes: vi.fn(),
+  obtenerAreaVerde: vi.fn(),
   listarContratosMaestro: vi.fn(),
   obtenerContrato: vi.fn(),
   exportarListado: vi.fn(),
@@ -25,6 +27,10 @@ const api = vi.hoisted(() => ({
 vi.mock('@/services/api/tercerizados', () => ({
   listarAtenciones: api.listarAtenciones,
   listarContratos: api.listarContratos,
+  listarAreasVerdes: api.listarAreasVerdes,
+}))
+vi.mock('@/services/api/areasVerdes', () => ({
+  obtenerAreaVerde: api.obtenerAreaVerde,
 }))
 vi.mock('@/services/api/maestrosTercerizados', () => ({
   listarContratosMaestro: api.listarContratosMaestro,
@@ -126,6 +132,61 @@ describe('Proveedores · bandeja de atenciones (RD-51)', () => {
     )
   })
 
+  it('los filtros de fecha y área (RD-85) llegan a la API; un rango invertido se descarta', async () => {
+    api.obtenerAreaVerde.mockResolvedValue({
+      id: 4,
+      nombre: 'Jardín de Letras',
+    })
+    montar(
+      rutaAtenciones({
+        desde: '2026-11-01',
+        hasta: '2026-11-30',
+        area_verde_id: '4',
+      }),
+    )
+    await screen.findByRole('list', { name: 'Atenciones' })
+    expect(api.listarAtenciones).toHaveBeenCalledWith(
+      { desde: '2026-11-01', hasta: '2026-11-30', area_verde_id: 4 },
+      1,
+      expect.anything(),
+    )
+    expect(await screen.findByText('Jardín de Letras')).toBeTruthy()
+    expect((screen.getByLabelText('Desde') as HTMLInputElement).value).toBe('2026-11-01')
+    cleanup()
+    api.listarAtenciones.mockClear()
+    montar(
+      rutaAtenciones({
+        desde: '2026-12-01',
+        hasta: '2026-11-01',
+        area_verde_id: 'x',
+      }),
+    )
+    await screen.findByRole('list', { name: 'Atenciones' })
+    expect(api.listarAtenciones).toHaveBeenCalledWith({}, 1, expect.anything())
+  })
+
+  it('cambiar la fecha la escribe en la URL; «Limpiar filtros» quita también fecha y área', async () => {
+    api.obtenerAreaVerde.mockRejectedValue(new ErrorApi(403, null, 'Prohibido'))
+    const enrutador = montar(rutaAtenciones({ area_verde_id: '4', pagina: '2' }))
+    // Sin permiso para leer el área, se enseña su número.
+    expect(await screen.findByText('Área n.º 4')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Desde'), {
+      target: { value: '2026-11-02' },
+    })
+    await waitFor(() => expect(enrutador.state.location.search).toBe('?area_verde_id=4&desde=2026-11-02'))
+    await userEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    await waitFor(() => expect(enrutador.state.location.search).toBe(''))
+  })
+
+  it('la fila guarda la ruta de vuelta con sus filtros', async () => {
+    const enrutador = montar(rutaAtenciones({ clase: 'Extraordinaria' }))
+    const lista = await screen.findByRole('list', { name: 'Atenciones' })
+    await userEvent.click(within(lista).getAllByRole('link')[0])
+    expect(enrutador.state.location.state).toEqual({
+      volverA: rutaAtenciones({ clase: 'Extraordinaria' }),
+    })
+  })
+
   it('buscar escribe la consulta en la URL y vuelve a la primera página', async () => {
     const enrutador = montar(rutaAtenciones({ pagina: '3' }))
     api.listarAtenciones.mockResolvedValue(pagina(atencion(1)))
@@ -188,6 +249,14 @@ describe('Proveedores · bandeja de atenciones (RD-51)', () => {
     expect(within(lista).getAllByRole('link')).toHaveLength(5)
     expect(screen.getByRole('heading', { name: 'Atenciones recientes' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Ver todas las atenciones' }).getAttribute('href')).toBe(rutaAtenciones())
+  })
+
+  it('quien solo ve atenciones entra a Proveedores por la bandeja', async () => {
+    permisosSesion.valor = [ATENCIONES]
+    const enrutador = montar(RUTA_PROVEEDORES)
+    await waitFor(() => expect(enrutador.state.location.pathname).toBe(rutaAtenciones()))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Atenciones' })).toBeTruthy()
+    expect(api.listarContratosMaestro).not.toHaveBeenCalled()
   })
 
   it('la vista principal no muestra atenciones recientes sin el permiso', async () => {

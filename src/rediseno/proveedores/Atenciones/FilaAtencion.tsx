@@ -9,7 +9,7 @@ import { rutaAtencion } from '../enlaces'
 import estilos from './Atenciones.module.css'
 import { nombreFilaAtencion } from './nombres'
 
-/** Estado que recibe la ficha para volver a la bandeja con los mismos filtros. */
+/** Estado que recibe la ficha (RD-53) para volver a donde se abrió: ruta y consulta, con los mismos filtros. */
 export interface EstadoNavegacionBandeja {
   volverA: string
 }

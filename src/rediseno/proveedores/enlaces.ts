@@ -40,10 +40,20 @@ export function rutaAtencion(id: number): string {
   return `${RUTA_PROVEEDORES}/${SEGMENTO_ATENCIONES}/${id}`
 }
 
-/** Pestaña «Atenciones»: la bandeja con sus filtros (`q`, `estado`, `origen`, `clase`, `contrato_id`, `pagina`) en la URL. */
-export function rutaAtenciones(
-  filtros: Partial<Record<'q' | 'estado' | 'origen' | 'clase' | 'contrato_id' | 'pagina', string>> = {},
-): string {
+/** Claves de la bandeja de atenciones en la URL (las de RD-85: `desde`, `hasta` y `area_verde_id`). */
+export type ParametroAtenciones =
+  | 'q'
+  | 'estado'
+  | 'origen'
+  | 'clase'
+  | 'contrato_id'
+  | 'desde'
+  | 'hasta'
+  | 'area_verde_id'
+  | 'pagina'
+
+/** Pestaña «Atenciones»: la bandeja con sus filtros en la URL. */
+export function rutaAtenciones(filtros: Partial<Record<ParametroAtenciones, string>> = {}): string {
   const consulta = new URLSearchParams()
   for (const [clave, valor] of Object.entries(filtros)) if (valor) consulta.set(clave, valor)
   const texto = consulta.toString()

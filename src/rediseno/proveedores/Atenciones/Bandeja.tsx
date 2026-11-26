@@ -1,7 +1,7 @@
 /**
  * Bandeja de atenciones (RD-51, M5-02). Dos modos:
- * - `completa` (pestaña Atenciones): búsqueda, filtros de estado, origen, clase y contrato, y página (25) en la URL.
- *   «Riesgo» es solo una etiqueta de la fila.
+ * - `completa` (pestaña Atenciones): búsqueda, filtros de estado, origen, clase y contrato, fecha y área (RD-85) y
+ *   página (25) en la URL. «Riesgo» es solo una etiqueta de la fila.
  * - `recientes` (vista principal): las últimas atenciones, sin filtros.
  * Estados de carga, error, vacío y sin acceso (403). Fondo liso: el mapa no interviene.
  */
@@ -17,17 +17,18 @@ import Paginacion from '@/design-system/Paginacion'
 import Selector, { OPCION_TODOS } from '@/design-system/Selector'
 import SelectorBuscable from '@/design-system/SelectorBuscable'
 import { useConsulta } from '@/hooks/useConsulta'
+import { obtenerAreaVerde } from '@/services/api/areasVerdes'
 import { obtenerContrato } from '@/services/api/maestrosTercerizados'
-import { listarAtenciones, listarContratos } from '@/services/api/tercerizados'
-import type { Contrato } from '@/types/tercerizados'
+import { listarAreasVerdes, listarAtenciones, listarContratos } from '@/services/api/tercerizados'
+import type { AreaVerde, Contrato } from '@/types/tercerizados'
 import { ESTADOS_ATENCION, OPCIONES_CLASE, OPCIONES_ORIGEN } from '@/utils/estadosTercerizados'
-import { hayFiltros, LARGO_MAXIMO_BUSQUEDA } from '@/utils/filtrosBandeja'
+import { LARGO_MAXIMO_BUSQUEDA } from '@/utils/filtrosBandeja'
 import { formatearNumero, SIN_VALOR } from '@/utils/formato'
 import { rutaAtenciones } from '../enlaces'
 import estilos from './Atenciones.module.css'
 import BotonExportar from './BotonExportar'
 import FilaAtencion from './FilaAtencion'
-import { conCambios, filtrosDeUrl, POR_PAGINA, RECIENTES } from './filtros'
+import { CLAVES_FILTRO, conCambios, filtrosDeUrl, hayFiltrosAtenciones, POR_PAGINA, RECIENTES } from './filtros'
 
 const OPCIONES_ESTADO = ESTADOS_ATENCION.map((estado) => ({
   valor: estado,
@@ -36,13 +37,15 @@ const OPCIONES_ESTADO = ESTADOS_ATENCION.map((estado) => ({
 
 export type ModoBandeja = 'completa' | 'recientes'
 
+type AreaElegida = Pick<AreaVerde, 'id' | 'nombre'>
+
 /** Lista de filas con carga, error, vacío y sin acceso; la comparten los dos modos. */
 export default function Bandeja({ modo }: { modo: ModoBandeja }) {
   const completa = modo === 'completa'
   const [parametros, setParametros] = useSearchParams()
-  const { search } = useLocation()
+  const { pathname, search } = useLocation()
   const { filtros, pagina } = completa ? filtrosDeUrl(parametros) : { filtros: {}, pagina: 1 }
-  const conFiltros = hayFiltros(filtros)
+  const conFiltros = hayFiltrosAtenciones(filtros)
 
   const consulta = useConsulta(
     JSON.stringify([modo, filtros, pagina]),
@@ -55,6 +58,17 @@ export default function Bandeja({ modo }: { modo: ModoBandeja }) {
     (signal) => obtenerContrato(filtros.contrato_id as number, signal),
   )
   const contratoAplicado: Contrato | null = filtros.contrato_id ? (contratoFiltro.datos ?? null) : null
+  // Lo mismo con el área; si no se puede leer (permiso de inventario), se enseña su número.
+  const areaFiltro = useConsulta(
+    completa && filtros.area_verde_id ? `area-filtro|${filtros.area_verde_id}` : null,
+    (signal) => obtenerAreaVerde(filtros.area_verde_id as number, signal),
+  )
+  const areaAplicada: AreaElegida | null = filtros.area_verde_id
+    ? (areaFiltro.datos ?? {
+        id: filtros.area_verde_id,
+        nombre: `Área n.º ${filtros.area_verde_id}`,
+      })
+    : null
 
   // Borrador de la búsqueda: se aplica al enviar; si la URL cambia, el borrador la refleja.
   const [borrador, setBorrador] = useState(filtros.q ?? '')
@@ -72,13 +86,7 @@ export default function Bandeja({ modo }: { modo: ModoBandeja }) {
   }
 
   function limpiar() {
-    aplicar({
-      q: null,
-      estado: null,
-      origen: null,
-      clase: null,
-      contrato_id: null,
-    })
+    aplicar(Object.fromEntries(CLAVES_FILTRO.map((clave) => [clave, null])))
   }
 
   function buscar(evento: FormEvent<HTMLFormElement>) {
@@ -143,7 +151,7 @@ export default function Bandeja({ modo }: { modo: ModoBandeja }) {
       <>
         <ul className={estilos.lista} aria-label="Atenciones">
           {filas.map((a) => (
-            <FilaAtencion key={a.id} atencion={a} volverA={search} />
+            <FilaAtencion key={a.id} atencion={a} volverA={`${pathname}${search}`} />
           ))}
         </ul>
         {completa && (
@@ -213,6 +221,33 @@ export default function Bandeja({ modo }: { modo: ModoBandeja }) {
               detalleDe={(c) => c.proveedor_nombre ?? SIN_VALOR}
               buscar={(q, signal) => listarContratos({ q: q || undefined }, signal)}
               onCambiar={(contrato) => aplicar({ contrato_id: contrato ? String(contrato.id) : null })}
+            />
+            <SelectorBuscable<AreaElegida>
+              id="atenciones-area"
+              etiqueta="Área verde"
+              ayuda="Busca por nombre"
+              valor={areaAplicada}
+              claveDe={(area) => area.id}
+              textoDe={(area) => area.nombre}
+              buscar={(q, signal) => listarAreasVerdes({ q: q || undefined }, signal)}
+              onCambiar={(area) => aplicar({ area_verde_id: area ? String(area.id) : null })}
+            />
+            <CampoFormulario
+              id="atenciones-desde"
+              etiqueta="Desde"
+              type="date"
+              ayuda="Fecha de inicio o de registro"
+              value={filtros.desde ?? ''}
+              max={filtros.hasta}
+              onChange={(e) => aplicar({ desde: e.target.value || null })}
+            />
+            <CampoFormulario
+              id="atenciones-hasta"
+              etiqueta="Hasta"
+              type="date"
+              value={filtros.hasta ?? ''}
+              min={filtros.desde}
+              onChange={(e) => aplicar({ hasta: e.target.value || null })}
             />
             <div className={estilos.accionesFiltro}>
               <Boton type="submit" variante="secundario">
