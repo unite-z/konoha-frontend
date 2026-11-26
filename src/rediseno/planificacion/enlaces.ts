@@ -45,3 +45,11 @@ export function rutaPlanificacionReglas(): string {
 export function rutaPlanificacionSector(sectorId: number): string {
   return `${RUTA_PLANIFICACION}?sector=${sectorId}`
 }
+
+/** Parámetro del panel de revisión de «Konoha propone» (RD-33); RD-32 lo lee para pintar la capa en el calendario. */
+export const PARAMETRO_PROPUESTA = 'propuesta'
+
+/** Sectores con el panel de revisión de la propuesta de cronograma abierto (RD-33). */
+export function rutaPlanificacionPropuesta(propuestaId: number): string {
+  return `${RUTA_PLANIFICACION}?${PARAMETRO_PROPUESTA}=${propuestaId}`
+}
