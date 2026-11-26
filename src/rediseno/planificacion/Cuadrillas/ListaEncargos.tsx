@@ -1,4 +1,7 @@
-/** Vista «Lista» de Cuadrillas: los encargos con los filtros actuales (modalidad, «Solo vencidos», Desde y Hasta) en la URL. */
+/**
+ * Vista «Lista» de Cuadrillas: los encargos con los filtros actuales (búsqueda, modalidad, «Solo vencidos», Desde y
+ * Hasta) en la URL, como `/operacion-campo/encargos`.
+ */
 import Boton from '@/design-system/Boton'
 import CampoFormulario from '@/design-system/CampoFormulario'
 import Estado from '@/design-system/Estado'
@@ -8,6 +11,7 @@ import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
 import EstadoVacio from '@/design-system/EstadoVacio'
 import Paginacion from '@/design-system/Paginacion'
 import Selector from '@/design-system/Selector'
+import { BuscarCampo } from '@/pages/operacion-campo/ComponentesCampo'
 import { tonosEncargo } from '@/pages/operacion-campo/tonosEncargo'
 import { useListadoCampo } from '@/pages/operacion-campo/useCampo'
 import type { EncargoCampo } from '@/types/operacionCampo'
@@ -17,12 +21,12 @@ import estilos from './Cuadrillas.module.css'
 
 const POR_PAGINA = 25
 const FILTROS = ['periodicidad', 'desde', 'hasta', 'vencidos']
-const SIN_FILTROS = { periodicidad: '', desde: '', hasta: '', vencidos: '' }
+const SIN_FILTROS = { q: '', periodicidad: '', desde: '', hasta: '', vencidos: '' }
 
 export default function ListaEncargos({ abierto, onAbrir }: { abierto: number | null; onAbrir: (id: number) => void }) {
   const listado = useListadoCampo<EncargoCampo>('encargos', FILTROS)
   const { consulta, params, filtrar, pagina, cambiarPagina } = listado
-  const hayFiltros = FILTROS.some((f) => params[f])
+  const hayFiltros = ['q', ...FILTROS].some((f) => params[f])
   let cuerpo
   if (consulta.error?.estado === 403 && !consulta.datos) {
     cuerpo = (
@@ -78,10 +82,16 @@ export default function ListaEncargos({ abierto, onAbrir }: { abierto: number | 
                   {e.descripcion}
                 </Boton>
                 <p className={estilos.tarjetaDetalle}>
-                  {e.cuadrilla_nombre} · {e.tipo_actividad_nombre} · {e.area_verde_nombre}
+                  {e.tipo_actividad_nombre} · {e.area_verde_nombre}
                 </p>
                 <p className={estilos.tarjetaDetalle}>
-                  {e.periodicidad} · plazo {formatearFecha(e.plazo_previsto)}
+                  {e.cuadrilla_nombre} · {e.capataz_nombre}
+                </p>
+                <p className={estilos.tarjetaDetalle}>
+                  {e.periodicidad}
+                  {e.periodicidad !== 'Directo' &&
+                    ` · ${formatearFecha(e.fecha_inicio)} — ${formatearFecha(e.fecha_fin)}`}{' '}
+                  · plazo {formatearFecha(e.plazo_previsto)}
                 </p>
               </div>
               {e.vencido ? (
@@ -99,6 +109,7 @@ export default function ListaEncargos({ abierto, onAbrir }: { abierto: number | 
   return (
     <div className={estilos.vidrio}>
       <div className={estilos.filtros}>
+        <BuscarCampo valor={String(params.q ?? '')} onBuscar={(q) => filtrar({ q })} />
         <Selector
           id="cuadrillas-modalidad"
           etiqueta="Modalidad"

@@ -50,6 +50,7 @@
 
 .rotuloSemana {
   min-width: 11rem;
+  white-space: nowrap;
   text-align: center;
   font-size: var(--type-pequeno-size);
   line-height: var(--type-pequeno-line);
@@ -79,6 +80,16 @@
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: var(--space-3);
   align-items: end;
+}
+
+/* En móvil la semana va en su línea y los botones debajo, para dejar sitio a las pestañas. */
+@media (max-width: 767px) {
+  .rotuloSemana {
+    flex-basis: 100%;
+    order: -1;
+    min-width: 0;
+    text-align: left;
+  }
 }
 
 /* Calendario: columna de nombres y siete días. En móvil se desplaza en horizontal dentro de su tarjeta. */
@@ -153,12 +164,13 @@
   border-left: var(--vidrio-borde);
   background: var(--vidrio-relleno-denso);
   box-shadow: var(--vidrio-sombra-lente);
-  touch-action: none;
   z-index: 1;
 }
 
+/* Solo la tarjeta que se arrastra retiene el gesto táctil; las de solo lectura dejan desplazar el calendario. */
 .tarjeta[data-movible] {
   cursor: grab;
+  touch-action: none;
 }
 
 .tarjeta[data-arrastrando] {

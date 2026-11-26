@@ -8,6 +8,7 @@ import Estado from '@/design-system/Estado'
 import { tonosEncargo } from '@/pages/operacion-campo/tonosEncargo'
 import type { CuadrillaCampo, EncargoCampo } from '@/types/operacionCampo'
 import type { FechaIso } from '@/types/comun'
+import { formatearFecha } from '@/utils/formato'
 import { puedeReprogramarEncargo } from '@/utils/operacionCampo'
 import { estiloTransicion, fila } from '@/rediseno/base/movimiento'
 import estilos from './Cuadrillas.module.css'
@@ -93,7 +94,7 @@ export default function CalendarioSemanal(props: CalendarioSemanalProps) {
   }
 
   return (
-    <div className={estilos.calendario} role="group" aria-label={`Encargos de la semana del ${lunes}`}>
+    <div className={estilos.calendario} role="group" aria-label={`Encargos de la semana del ${formatearFecha(lunes)}`}>
       <div className={`${estilos.fila} ${estilos.filaCabecera}`}>
         <span className={estilos.celdaNombre}>Cuadrilla</span>
         {dias.map((d) => (
@@ -126,7 +127,11 @@ export default function CalendarioSemanal(props: CalendarioSemanalProps) {
           ))}
           {f.tarjetas.map(({ encargo, posicion, carril }) => {
             const movible = puedeMover && puedeReprogramarEncargo(encargo.estado)
-            const esAbierto = abierto === encargo.id
+            const colocacion = {
+              gridColumn: `${posicion.columna + 2} / span ${posicion.largo}`,
+              gridRow: carril + 1,
+              ...(abierto === encargo.id ? {} : estiloTransicion(fila(encargo.id))),
+            }
             return (
               <article
                 key={encargo.id}
@@ -138,11 +143,7 @@ export default function CalendarioSemanal(props: CalendarioSemanalProps) {
                 data-sale-antes={posicion.seSaleAntes || undefined}
                 data-sale-despues={posicion.seSaleDespues || undefined}
                 {...(movible ? arrastre.propsDe(encargo.id) : {})}
-                style={{
-                  gridColumn: `${posicion.columna + 2} / span ${posicion.largo}`,
-                  gridRow: carril + 1,
-                  ...(esAbierto ? {} : estiloTransicion(fila(encargo.id))),
-                }} // estilo-calculado
+                style={colocacion} // estilo-calculado
               >
                 {/* Excepción al sistema (AV-351): la tarjeta entera es el botón que abre el panel y se mueve con Alt + flechas. */}
                 <button

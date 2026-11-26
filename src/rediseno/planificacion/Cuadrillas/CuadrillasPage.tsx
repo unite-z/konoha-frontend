@@ -48,6 +48,8 @@ export default function CuadrillasPage() {
   const permisos = usePermisos()
   const puedeVer = tiene(permisos, PERMISOS.consultarCuadrillas)
   const jefe = esJefeCampo(permisos)
+  const puedeVerIncidencia =
+    tiene(permisos, PERMISOS.consultarPlanificacion) && tiene(permisos, PERMISOS.registrarIncidencia)
   const [parametros, setParametros] = useSearchParams()
   const panel = useParametroPanel(PARAMETRO_ENCARGO)
   const foco = useFocoConLaVista<HTMLHeadingElement>()
@@ -56,7 +58,9 @@ export default function CuadrillasPage() {
   const [cancelados, setCancelados] = useState(0)
   const [aviso, setAviso] = useState<string | null>(null)
   const [confirmando, setConfirmando] = useState<CambioDeCuadrilla | null>(null)
-  const [reprogramando, setReprogramando] = useState<{ encargo: EncargoCampo; dias: number } | null>(null)
+  const [reprogramando, setReprogramando] = useState<{ encargo: EncargoCampo; dias: number; pedido: number } | null>(
+    null,
+  )
 
   const hoy = hoyLima()
   const lunes = semanaPedida(parametros.get(PARAMETRO_SEMANA), hoy)
@@ -89,7 +93,7 @@ export default function CuadrillasPage() {
       const nombre = cuadrillas.datos?.find((c) => c.id === movimiento.cuadrillaId)?.nombre ?? 'la cuadrilla elegida'
       setConfirmando({ encargo, movimiento, nombre })
     } else {
-      setReprogramando({ encargo, dias: movimiento.dias })
+      setReprogramando({ encargo, dias: movimiento.dias, pedido: Date.now() })
     }
   }
 
@@ -107,6 +111,7 @@ export default function CuadrillasPage() {
           setReprogramando({
             encargo: { ...encargo, cuadrilla_id: movimiento.cuadrillaId, cuadrilla_nombre: nombre },
             dias: movimiento.dias,
+            pedido: Date.now(),
           })
         }
       },
@@ -217,7 +222,7 @@ export default function CuadrillasPage() {
         <p>
           {jefe
             ? 'Encargos de la semana por cuadrilla. Arrástralos a otro día o cuadrilla, o muévelos con Alt y las flechas.'
-            : 'Encargos de la semana de tu cuadrilla, en solo lectura.'}
+            : 'Encargos de la semana por cuadrilla, en solo lectura.'}
         </p>
       </header>
       {mutacion.error && <AvisoEnLinea tono="error">{mutacion.error.detalle}</AvisoEnLinea>}
@@ -244,9 +249,10 @@ export default function CuadrillasPage() {
       {idAbierto !== null && (
         <PanelEncargo
           id={idAbierto}
-          cargados={listaEncargos}
+          cargados={vista === 'semana' ? (encargos.datos ?? (encargos.estado === 'error' ? [] : null)) : []}
           cuadrillas={listaCuadrillas}
           puedeMover={jefe}
+          puedeVerIncidencia={puedeVerIncidencia}
           onCerrar={panel.cerrar}
           onMover={pedirMovimiento}
         />
@@ -265,6 +271,8 @@ export default function CuadrillasPage() {
       />
       {reprogramando && (
         <DialogoReprogramar
+          // Cada movimiento monta un diálogo nuevo: si el navegador lo cerró sin avisar (Escape repetido), no se reutiliza.
+          key={reprogramando.pedido}
           encargo={reprogramando.encargo}
           propuesta={fechasDesplazadas(reprogramando.encargo, reprogramando.dias)}
           onCerrar={() => {

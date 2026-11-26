@@ -234,6 +234,33 @@ describe('CuadrillasPage', () => {
     )
   })
 
+  it('la lista conserva la búsqueda de la pantalla actual en la URL', async () => {
+    const usuario = userEvent.setup()
+    api.campoApi.mockResolvedValue({ count: 1, results: [podar], next: null, previous: null })
+    const router = montar('/n/planificacion/cuadrillas?vista=lista')
+    await screen.findByText('Podar el seto')
+    await usuario.type(screen.getByLabelText('Buscar'), 'seto')
+    await usuario.click(screen.getByRole('button', { name: 'Buscar' }))
+    await waitFor(() => expect(router.state.location.search).toContain('q=seto'))
+    expect(api.campoApi).toHaveBeenLastCalledWith(
+      'encargos/',
+      expect.objectContaining({ parametros: expect.objectContaining({ q: 'seto' }) }),
+    )
+  })
+
+  it('el panel enlaza con la incidencia de origen solo con los permisos de la pantalla actual', async () => {
+    api.todosCampo.mockResolvedValue([{ ...podar, incidencia_origen_id: 77 }])
+    api.permisos = [...JEFE, 'PLA.PLANIFICACION.CONSULTAR', 'PLA.INCIDENCIA.REGISTRAR']
+    montar(`${SEMANA}&encargo_id=5`)
+    const enlace = await screen.findByRole('link', { name: /Ver incidencia de origen/ })
+    expect(enlace.getAttribute('href')).toMatch(/\/77$/)
+    cleanup()
+    api.permisos = JEFE
+    montar(`${SEMANA}&encargo_id=5`)
+    await screen.findByRole('heading', { name: 'Encargo 5' })
+    expect(screen.queryByRole('link', { name: /Ver incidencia de origen/ })).toBeNull()
+  })
+
   it('la lista sin resultados ofrece limpiar los filtros', async () => {
     api.campoApi.mockResolvedValue({ count: 0, results: [], next: null, previous: null })
     montar('/n/planificacion/cuadrillas?vista=lista&periodicidad=Directo')

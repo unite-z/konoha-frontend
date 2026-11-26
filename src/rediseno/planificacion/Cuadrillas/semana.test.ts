@@ -72,6 +72,20 @@ describe('semana', () => {
     })
   })
 
+  it('en el directo solo mueve el plazo (y el fin), no el inicio', () => {
+    const directo = {
+      periodicidad: 'Directo' as const,
+      fecha_inicio: '2026-11-20',
+      fecha_fin: '2026-11-25',
+      plazo_previsto: '2026-11-25',
+    }
+    expect(fechasDesplazadas(directo, -3)).toEqual({
+      fecha_inicio: '2026-11-20',
+      fecha_fin: '2026-11-22',
+      plazo_previsto: '2026-11-22',
+    })
+  })
+
   it('reparte en carriles los encargos que se solapan', () => {
     expect(
       asignarCarriles([

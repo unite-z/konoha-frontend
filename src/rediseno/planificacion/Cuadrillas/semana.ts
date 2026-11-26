@@ -85,15 +85,20 @@ export function posicionEnSemana(
   }
 }
 
-/** Periodo y plazo nuevos al desplazar el encargo `dias` días, como los pide `DialogoReprogramar`. */
+/**
+ * Periodo y plazo nuevos al desplazar el encargo `dias` días, como los pide `DialogoReprogramar`. El directo solo
+ * mueve su plazo (y el fin, que es el plazo): su inicio no se reprograma y debe seguir validando contra el plazo.
+ */
 export function fechasDesplazadas(
-  e: Pick<EncargoCampo, 'fecha_inicio' | 'fecha_fin' | 'plazo_previsto'>,
+  e: Pick<EncargoCampo, 'periodicidad' | 'fecha_inicio' | 'fecha_fin' | 'plazo_previsto'>,
   dias: number,
 ): { fecha_inicio: FechaIso; fecha_fin: FechaIso; plazo_previsto: FechaIso } {
+  const plazo = sumarDias(e.plazo_previsto, dias)
+  if (e.periodicidad === 'Directo') return { fecha_inicio: e.fecha_inicio, fecha_fin: plazo, plazo_previsto: plazo }
   return {
     fecha_inicio: sumarDias(e.fecha_inicio, dias),
     fecha_fin: sumarDias(e.fecha_fin, dias),
-    plazo_previsto: sumarDias(e.plazo_previsto, dias),
+    plazo_previsto: plazo,
   }
 }
 
