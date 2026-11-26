@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLAVE_DISENO_NUEVO } from '../usarDisenoNuevo'
+import { CLAVE_DISENO_NUEVO } from '../useDisenoNuevo'
 import InterruptorDisenoNuevo from './InterruptorDisenoNuevo'
 
 const datos = new Map<string, string>()

@@ -4,19 +4,19 @@ Todo lo del rediseño vive aquí. Las rutas cuelgan del prefijo temporal `/n` (`
 
 ## Interruptor
 
-`useDisenoNuevo()` guarda tres estados: sin elegir, encendido y apagado. Sin elegir cuenta como apagado hasta RD-78. Se guarda en el navegador (`av:diseno-nuevo`) y, si la sesión trae `diseno_nuevo` (AV-414), también en la cuenta. Manda lo elegido en el navegador; si no hay nada, la cuenta.
+`useDisenoNuevo()` (`useDisenoNuevo.ts`) guarda tres estados: sin elegir, encendido y apagado. Sin elegir cuenta como apagado hasta RD-78. Se guarda en el navegador (`av:diseno-nuevo`) y en la cuenta (`apariencia.diseno_nuevo` de la sesión y del `PUT auth/apariencia/`, AV-414) si el backend lo admite. Manda lo elegido en el navegador; si no hay nada, la cuenta. Como ese `PUT` reemplaza la apariencia entera, Apariencia le añade `camposCuenta` al guardar el tema o el acento.
 
 - Apagado o sin elegir: ninguna ruta actual cambia y `/n/…` muestra un aviso con «Activar diseño nuevo».
-- Encendido: `PuertaRediseno` redirige las rutas antiguas a su equivalente `/n/…` (hasta RD-05, solo `/`).
+- Encendido: `PuertaRediseno` envuelve el layout actual y lleva cada ruta antigua a su equivalente `/n/…` según `base/redirecciones.ts`, conservando la consulta. Hasta RD-05 la tabla solo tiene `/`; RD-05 la completa sin tocar el router. `/ingreso` se envuelve cuando exista su equivalente en `/n` (hoy `/n` exige sesión).
 
 ## Estructura
 
-| Ruta | Qué es |
-|---|---|
-| `rutas.tsx` | Agregador: importa las 7 `rutas.tsx` de módulo. No se edita desde los módulos |
-| `registro.ts` | Reúne los `seccion.ts`: etiqueta, icono, permisos por código, pestañas y entradas de móvil |
-| `base/` | Piezas compartidas, una carpeta por pieza (`base/<Pieza>/`). Congelada tras la Puerta 2 |
-| `{mapa,planificacion,incidencias,proveedores,reportes,cuenta,campo}/` | Un módulo cada una, con `rutas.tsx`, `enlaces.ts` y `seccion.ts` |
+| Ruta                                                                  | Qué es                                                                                     |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `rutas.tsx`                                                           | Agregador: importa las 7 `rutas.tsx` de módulo. No se edita desde los módulos              |
+| `registro.ts`                                                         | Reúne los `seccion.ts`: etiqueta, icono, permisos por código, pestañas y entradas de móvil |
+| `base/`                                                               | Piezas compartidas, una carpeta por pieza (`base/<Pieza>/`). Congelada tras la Puerta 2    |
+| `{mapa,planificacion,incidencias,proveedores,reportes,cuenta,campo}/` | Un módulo cada una, con `rutas.tsx`, `enlaces.ts` y `seccion.ts`                           |
 
 Cuenta y campo no son secciones de la cabecera (`enCabecera: false`).
 

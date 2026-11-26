@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { PuertaRediseno, rutaRediseno } from '../rutas'
-import { CLAVE_DISENO_NUEVO } from '../usarDisenoNuevo'
+import { conPuertaRediseno, rutaRediseno } from '../rutas'
+import { CLAVE_DISENO_NUEVO } from '../useDisenoNuevo'
 
 const datos = new Map<string, string>()
 
@@ -27,12 +27,12 @@ function montar(ruta: string) {
     [
       rutaRediseno,
       {
-        path: '/',
-        element: (
-          <PuertaRediseno>
-            <p>Inicio actual</p>
-          </PuertaRediseno>
-        ),
+        // Como en `src/router/rutas.tsx`: la puerta envuelve el layout actual.
+        element: conPuertaRediseno(<Outlet />),
+        children: [
+          { path: '/', element: <p>Inicio actual</p> },
+          { path: '/configuracion/apariencia', element: <p>Apariencia actual</p> },
+        ],
       },
     ],
     { initialEntries: [ruta] },
@@ -60,11 +60,21 @@ describe('PuertaRediseno y rutas /n (AV-420)', () => {
     expect(screen.getByText('Inicio actual')).toBeTruthy()
   })
 
-  it('encendido, «/» redirige a /n', () => {
+  it('encendido, «/» redirige a /n conservando la consulta, y las demás rutas antiguas se quedan (RD-05)', () => {
     datos.set(CLAVE_DISENO_NUEVO, '1')
-    const router = montar('/')
+    const router = montar('/?area=7')
     expect(router.state.location.pathname).toBe('/n')
+    expect(router.state.location.search).toBe('?area=7')
     expect(screen.getByRole('heading', { name: 'Diseño nuevo: en construcción' })).toBeTruthy()
+    cleanup()
+    montar('/configuracion/apariencia')
+    expect(screen.getByText('Apariencia actual')).toBeTruthy()
+  })
+
+  it('una ruta desconocida bajo /n vuelve a /n', () => {
+    datos.set(CLAVE_DISENO_NUEVO, '1')
+    const router = montar('/n/no-existe')
+    expect(router.state.location.pathname).toBe('/n')
   })
 
   it('al salir del diseño nuevo restaura el tema anterior', () => {

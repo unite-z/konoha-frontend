@@ -2,10 +2,11 @@
  * Agregador de rutas del diseño nuevo (AV-420). Cuelgan de `/n`, están montadas siempre y no dependen del
  * interruptor. Cada módulo edita solo su `rutas.tsx`; este fichero no se toca desde los módulos.
  */
+import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import EnConstruccion from './base/EnConstruccion'
 import LayoutRediseno from './base/LayoutRediseno'
-import { PuertaPrefijo } from './base/PuertaRediseno'
+import PuertaRediseno, { PuertaPrefijo } from './base/PuertaRediseno'
 import { rutasCampo } from './campo/rutas'
 import { rutasCuenta } from './cuenta/rutas'
 import { rutasIncidencias } from './incidencias/rutas'
@@ -15,7 +16,10 @@ import { rutasPlanificacion } from './planificacion/rutas'
 import { rutasProveedores } from './proveedores/rutas'
 import { rutasReportes } from './reportes/rutas'
 
-export { default as PuertaRediseno } from './base/PuertaRediseno'
+/** El layout actual dentro de `PuertaRediseno`: encendido, sus rutas llevan al diseño nuevo (`base/redirecciones.ts`). */
+export function conPuertaRediseno(layout: ReactNode) {
+  return <PuertaRediseno>{layout}</PuertaRediseno>
+}
 
 export const rutaRediseno: RouteObject = {
   path: PREFIJO_REDISENO,

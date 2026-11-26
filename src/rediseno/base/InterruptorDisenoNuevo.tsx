@@ -4,7 +4,7 @@ import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import { BotonEnlace } from '@/design-system/Boton'
 import GrupoOpciones, { type OpcionGrupo } from '@/design-system/GrupoOpciones'
 import { RUTA_REDISENO } from '../prefijo'
-import { useDisenoNuevo } from '../usarDisenoNuevo'
+import { useDisenoNuevo } from '../useDisenoNuevo'
 
 const OPCIONES: OpcionGrupo<'si' | 'no'>[] = [
   { valor: 'si', texto: 'Encendido' },
@@ -24,7 +24,12 @@ export default function InterruptorDisenoNuevo() {
         etiqueta="Diseño nuevo"
         opciones={OPCIONES}
         valor={valor}
-        onCambiar={(v) => elegir(v === 'si').then(() => setSinGuardar(false), () => setSinGuardar(true))}
+        onCambiar={(v) =>
+          elegir(v === 'si').then(
+            () => setSinGuardar(false),
+            () => setSinGuardar(true),
+          )
+        }
         segmentado
       />
       {sinGuardar && (

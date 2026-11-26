@@ -55,11 +55,6 @@ export function guardarAparienciaCuenta(apariencia: AparienciaCuenta): Promise<A
   return solicitarCore('auth/apariencia/', { metodo: 'PUT', cuerpo: apariencia })
 }
 
-/** `PUT auth/apariencia/` con la preferencia «Diseño nuevo» (AV-414), junto al tema y el acento vigentes. */
-export function guardarDisenoNuevoCuenta(apariencia: AparienciaCuenta, disenoNuevo: boolean): Promise<AparienciaCuenta> {
-  return guardarAparienciaCuenta({ ...apariencia, diseno_nuevo: disenoNuevo })
-}
-
 // --- Usuarios y roles (RF-T-002 y RF-T-003) ------------------------------------------------------------
 
 export interface FiltrosUsuarios {

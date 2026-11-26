@@ -1,17 +1,19 @@
 import type { ReactNode } from 'react'
-import { Navigate, Outlet } from 'react-router'
+import { Navigate, Outlet, useLocation } from 'react-router'
 import Boton, { BotonEnlace } from '@/design-system/Boton'
 import EstadoVacio from '@/design-system/EstadoVacio'
-import { PREFIJO_REDISENO } from '../prefijo'
-import { useDisenoNuevo } from '../usarDisenoNuevo'
+import { useDisenoNuevo } from '../useDisenoNuevo'
+import { destinoRediseno } from './redirecciones'
 
 /**
- * Con el interruptor encendido, la ruta antigua que envuelve lleva a su equivalente `/n/…`; apagado o sin elegir,
- * la deja como está. Hasta RD-05 solo se envuelve `/`.
+ * Envuelve el layout actual. Con el interruptor encendido, cada ruta antigua con equivalente en `redirecciones.ts`
+ * lleva a su `/n/…` y conserva la consulta; apagado o sin elegir, todo queda como está.
  */
 export default function PuertaRediseno({ children }: { children: ReactNode }) {
   const { encendido } = useDisenoNuevo()
-  return encendido ? <Navigate to={PREFIJO_REDISENO} replace /> : children
+  const { pathname, search, hash } = useLocation()
+  const destino = encendido ? destinoRediseno(pathname) : null
+  return destino ? <Navigate to={{ pathname: destino, search, hash }} replace /> : children
 }
 
 /** Puerta de `/n`: encendido deja pasar; apagado o sin elegir, avisa y ofrece activarlo o volver. */

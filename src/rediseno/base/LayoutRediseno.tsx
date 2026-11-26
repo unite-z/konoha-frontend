@@ -14,8 +14,8 @@ export default function LayoutRediseno() {
     }
   }, [])
   return (
-    <div className={estilos.raiz}>
+    <main className={estilos.raiz}>
       <Outlet />
-    </div>
+    </main>
   )
 }

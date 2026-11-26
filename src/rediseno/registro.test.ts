@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PERMISOS } from '@/config/permisosCore'
+import * as rutasApp from '@/router/rutasApp'
+import * as rutasCampo from '@/router/rutasCampo'
 import { PREFIJO_REDISENO } from './prefijo'
 import { SECCIONES_REDISENO, seccionesDeCabecera, seccionesVisibles } from './registro'
 
@@ -34,5 +36,18 @@ describe('registro del diseño nuevo (AV-420)', () => {
     expect(seccionesDeCabecera([PERMISOS.consultarIndicadores]).map((s) => s.id)).toEqual(['reportes'])
     expect(seccionesVisibles([]).map((s) => s.id)).toEqual(['cuenta'])
     expect(seccionesVisibles([PERMISOS.consultarCuadrillas]).map((s) => s.id)).toEqual(['cuenta', 'campo'])
+  })
+
+  it('ninguna ruta actual cae bajo /n', () => {
+    const actuales: string[] = []
+    const recoger = (valor: unknown) => {
+      if (typeof valor === 'string') actuales.push(valor)
+      else if (valor && typeof valor === 'object') Object.values(valor).forEach(recoger)
+    }
+    recoger({ ...rutasApp, ...rutasCampo })
+    expect(actuales).toContain(rutasApp.RUTAS_CORE.ingreso)
+    expect(actuales).toContain(rutasApp.RUTAS_CORE.configuracionApariencia)
+    const choques = actuales.filter((r) => r === PREFIJO_REDISENO || r.startsWith(`${PREFIJO_REDISENO}/`))
+    expect(choques).toEqual([])
   })
 })
