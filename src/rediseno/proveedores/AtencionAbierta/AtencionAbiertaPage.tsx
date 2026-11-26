@@ -5,7 +5,7 @@
  * del proveedor (adjuntar, subsanar, revisiones) van en `Informes` (RD-54).
  */
 import { useCallback, useState } from 'react'
-import { useLocation, useParams } from 'react-router'
+import { useLocation, useParams, useSearchParams } from 'react-router'
 import AvisoTemporal from '@/design-system/AvisoTemporal'
 import { BotonEnlace } from '@/design-system/Boton'
 import EstadoCarga from '@/design-system/EstadoCarga'
@@ -20,12 +20,14 @@ import { obtenerAtencion } from '@/services/api/tercerizados'
 import { usePermisos } from '@/sesion/ContextoSesion'
 import type { Atencion } from '@/types/tercerizados'
 import { codigoCorto } from '@/utils/estadosTercerizados'
-import { rutaAtenciones } from '../enlaces'
+import { PARAM_EVIDENCIA, rutaAtenciones } from '../enlaces'
 import { puedeConsultarAtenciones } from '../Atenciones/permisos'
 import { nombreFilaAtencion } from '../Atenciones/nombres'
 import type { EstadoNavegacionBandeja } from '../Atenciones/FilaAtencion'
 import Acciones from './Acciones'
+import EvidenciaKonoha from './EvidenciaKonoha'
 import Informes from './Informes'
+import { plantaDeAtencion } from './plantaAtencion'
 import estilos from './AtencionAbierta.module.css'
 
 /** La versión más reciente entre la consultada y la recibida de una operación (misma atención). */
@@ -43,6 +45,7 @@ function rutaVolver(estado: unknown): string {
 export default function AtencionAbiertaPage() {
   const { id: parametro } = useParams()
   const { state } = useLocation()
+  const [consultaUrl] = useSearchParams()
   const id = parametro && /^\d{1,9}$/.test(parametro) ? Number(parametro) : null
   const permisos = usePermisos()
   const puede = puedeConsultarAtenciones(permisos)
@@ -117,6 +120,11 @@ export default function AtencionAbiertaPage() {
                 onActualizada={alActualizar}
                 onReporteAdjunto={alAdjuntarInforme}
                 onExito={setAviso}
+              />
+              <EvidenciaKonoha
+                objetivo={{ tipo: 'atencion', id: atencion.id }}
+                plantaAtencion={plantaDeAtencion(atencion)}
+                abiertoInicial={consultaUrl.get(PARAM_EVIDENCIA) === '1'}
               />
               <Acciones atencion={atencion} permisos={permisos} onActualizada={alActualizar} onExito={setAviso} />
             </>

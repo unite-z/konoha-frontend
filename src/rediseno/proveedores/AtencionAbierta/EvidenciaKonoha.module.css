@@ -1,0 +1,139 @@
+/* «Konoha revisó la evidencia» (RD-55): bloque de vidrio dentro de la ficha y revisión desplegada. Solo tokens. */
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  margin-top: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+@media (max-width: 767px) {
+  .bloque {
+    padding: var(--space-4);
+  }
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cabecera h2 {
+  margin: 0;
+  font-size: var(--type-titulo-seccion-size);
+  line-height: var(--type-titulo-seccion-line);
+  font-weight: var(--type-titulo-seccion-weight);
+  color: var(--color-text-primary);
+}
+
+.ultima {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .ultima {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--type-cuerpo-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.detalle {
+  margin: 0;
+  font-size: var(--type-pequeno-size);
+  color: var(--color-text-secondary);
+}
+
+.nota {
+  margin: 0;
+  font-size: var(--type-pequeno-size);
+  color: var(--color-text-secondary);
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.motivos {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-6);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.hueco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.comentario {
+  display: block;
+  margin-top: var(--space-2);
+}
+
+/* La revisión se despliega con un fundido; las hipótesis entran una tras otra (cascada corta). */
+.despliegue {
+  animation: evidencia-despliega var(--movimiento-normal) var(--curva-salida);
+}
+
+/* Solo las tarjetas, no las evidencias que llevan dentro. */
+.cascada li:not(li li) {
+  animation: evidencia-despliega var(--movimiento-normal) var(--curva-salida) backwards;
+}
+
+.cascada li:not(li li):nth-child(2) {
+  animation-delay: var(--movimiento-rapido);
+}
+
+.cascada li:not(li li):nth-child(3) {
+  animation-delay: calc(var(--movimiento-rapido) * 2);
+}
+
+.cascada li:not(li li):nth-child(n + 4) {
+  animation-delay: calc(var(--movimiento-rapido) * 3);
+}
+
+@keyframes evidencia-despliega {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .despliegue,
+  .cascada li:not(li li) {
+    animation: none;
+  }
+}

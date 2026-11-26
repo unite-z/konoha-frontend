@@ -71,3 +71,20 @@ export function rutaSubirInforme(atencionId?: number): string {
   const base = `${RUTA_PROVEEDORES}/${SEGMENTO_INFORMES}/${SEGMENTO_SUBIR_INFORME}`
   return atencionId === undefined ? base : `${base}?${PARAM_ATENCION}=${atencionId}`
 }
+
+export const SEGMENTO_FITOSANITARIO = 'fitosanitario'
+/** Punto de entrada `?ejemplar_id=<id>` de `/proveedores/fitosanitario`: el análisis de evidencia de ese ejemplar (RD-55). */
+export const PARAM_EJEMPLAR = 'ejemplar_id'
+/** Con `?evidencia=1` la ficha de la atención abre la revisión del último análisis de evidencia (RD-55). */
+export const PARAM_EVIDENCIA = 'evidencia'
+
+/** Control fitosanitario; con `ejemplar_id`, el análisis de evidencia de ese ejemplar («Analizar fotos» de la ficha del Mapa). */
+export function rutaFitosanitario(ejemplarId?: number): string {
+  const base = `${RUTA_PROVEEDORES}/${SEGMENTO_FITOSANITARIO}`
+  return ejemplarId === undefined ? base : `${base}?${PARAM_EJEMPLAR}=${ejemplarId}`
+}
+
+/** Ficha de la atención con la revisión de su evidencia abierta (`?atencion_id=` de `/proveedores/fitosanitario`). */
+export function rutaEvidenciaAtencion(id: number): string {
+  return `${rutaAtencion(id)}?${PARAM_EVIDENCIA}=1`
+}
