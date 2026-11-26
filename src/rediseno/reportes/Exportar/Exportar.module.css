@@ -1,0 +1,19 @@
+/* Exportaciones: tarjeta de vidrio sobre el fondo liso de Reportes. */
+.seccion {
+  --radius-vidrio: calc(var(--radius-lg) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-top: var(--vidrio-borde);
+  border-left: var(--vidrio-borde);
+  border-radius: var(--radius-vidrio);
+  background: var(--vidrio-relleno);
+  backdrop-filter: var(--vidrio-desenfoque);
+  box-shadow: var(--vidrio-sombra);
+}
+
+.barra {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -31,6 +31,10 @@ vi.mock('@/sincronizacion/datosDescargados', () => ({
 vi.mock('@/components/reportes-indicadores/useCatalogosFiltros', () => ({
   useCatalogosFiltros: () => ({ espacios: [], tiposServicio: [], reintentar: () => {} }),
 }))
+vi.mock('@/services/api/exportaciones', () => ({
+  listarTiposExportables: vi.fn().mockResolvedValue([]),
+  listarExportaciones: vi.fn().mockResolvedValue({ count: 0, next: null, previous: null, results: [] }),
+}))
 vi.mock('@/services/api/reportesGestion', () => ({ obtenerPanel: vi.fn(), obtenerDetalleIndicador: vi.fn() }))
 
 const NOMBRES: [ResultadoIndicador['clave'], string, string, string | null][] = [
