@@ -20,6 +20,8 @@ EXCLUIDOS = [
     ":(exclude,glob)src/test/**",
     ":(exclude,glob)**/package-lock.json",
     ":(exclude,glob)mock-data/**",
+    ":(exclude,glob)public/datos/campus-3d.json",
+    ":(exclude,glob)scripts/campus-3d/datos/**",
     ":(exclude,glob)docs/**",
     ":(exclude,glob)**/*.md",
 ]

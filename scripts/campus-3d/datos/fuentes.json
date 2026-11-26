@@ -1,0 +1,14 @@
+{
+  "areas": {
+    "fichero": "public/datos/areas-verdes.geojson",
+    "copia": "2026-11-25"
+  },
+  "ofm": {
+    "teselas": "OpenFreeMap (planet), z14",
+    "obtenidas": "2026-11-24"
+  },
+  "osm": {
+    "consulta": "Overpass API: way[building] y amenity=university dentro del campus PUCP",
+    "obtenidas": "2026-11-24"
+  }
+}
