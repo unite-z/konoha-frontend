@@ -66,6 +66,14 @@ describe('MapaCampus (AV-424)', () => {
     expect(screen.getByText(/OpenStreetMap contributors/)).toBeTruthy()
   })
 
+  it('publica la escena y los datos para las capas y avisa con null al destruirse', async () => {
+    const alTenerEscena = vi.fn()
+    const { unmount } = render(<MapaCampus onSeleccionarArea={() => {}} onEscena={alTenerEscena} />)
+    await waitFor(() => expect(alTenerEscena).toHaveBeenCalledWith({ escena, datos }))
+    unmount()
+    expect(alTenerEscena).toHaveBeenLastCalledWith(null)
+  })
+
   it('la construcción no se repite en la misma sesión ni con reducir movimiento', async () => {
     sessionStorage.setItem(CLAVE_CONSTRUCCION, '1')
     render(<MapaCampus onSeleccionarArea={() => {}} />)
@@ -165,6 +173,10 @@ describe('MapaCampus (AV-424)', () => {
     expect(escena.irAArea).toHaveBeenLastCalledWith(0)
     act(() => ref.current?.volver())
     expect(escena.irAArea).toHaveBeenLastCalledWith(null)
+
+    // Un id que no está en el campus base se pasa tal cual: puede ser una geometría viva (AV-426).
+    rerender(<MapaCampus ref={ref} onSeleccionarArea={() => {}} areaSeleccionada="nueva" vista="planta" />)
+    expect(escena.irAArea).toHaveBeenLastCalledWith('nueva')
   })
 
   it('pausa la escena con activo=false y la destruye al desmontar', async () => {

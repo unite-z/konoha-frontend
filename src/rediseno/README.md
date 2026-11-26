@@ -28,3 +28,11 @@ Cuenta y campo no son secciones de la cabecera (`enCabecera: false`).
 4. Solo tokens semánticos (`--color-*`, `--vidrio-*`, `--mapa-*`); el tema amarillento lo pone `LayoutRediseno` mientras está montado.
 5. Se reutiliza `src/services/api/`, `src/utils/` y `src/design-system/` antes de escribir algo nuevo.
 6. Cada PR: menos de 200 líneas sin contar tests, comprobado a 1440 y 390 px con el interruptor encendido.
+
+## Mapa vivo y capas (AV-426)
+
+`LayoutRediseno` lleva el escenario (`base/Escenario/`): el `MapaCampus` 3D se monta una vez, detrás del contenido, y no se desmonta al navegar. No se monta (ni carga Three.js) hasta la primera vista de mapa.
+
+- Una vista de mapa llama a `useVistaDeMapa({ areaSeleccionada, vista, onSeleccionarArea })`. Con alguna activa el mapa se ve; sin ninguna se difumina y deja de dibujar, pero sigue en memoria. Devuelve `volarA` y `volver`.
+- Con el mapa detrás, `main` es transparente y deja pasar el ratón; los elementos de la vista lo reciben. Un contenedor que ocupe toda la pantalla lleva `data-mapa-libre` (`ATRIBUTO_MAPA_LIBRE`).
+- Las capas se componen desde la vista del módulo, con sus datos: `CapaColores` (`mapa_id → clase` y `clase → token CSS`), `CapaMarcadores` (por lon/lat o por área; agrupa los solapados, despliega los que el zoom no separa y se maneja con teclado) y `CapaGeometrias` (áreas nuevas o cambiadas de `GET /inventario/mapa/geometria`, una sola petición en caché; el `areaSeleccionada` de `useVistaDeMapa` vuela también a ellas). Memoriza (`useMemo`) los objetos y listas que les pases.
