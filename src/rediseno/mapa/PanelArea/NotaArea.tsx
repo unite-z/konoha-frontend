@@ -21,7 +21,7 @@ export default function NotaArea({ resumen }: { resumen: ResumenArea }) {
     },
     atencion && {
       etiqueta: 'Última atención',
-      valor: [atencion.titulo, formatearFecha(atencion.fecha)].filter(Boolean).join(' · '),
+      valor: [atencion.titulo, atencion.fecha ? formatearFecha(atencion.fecha) : null].filter(Boolean).join(' · '),
     },
   ].filter((l): l is { etiqueta: string; valor: string } => Boolean(l))
 

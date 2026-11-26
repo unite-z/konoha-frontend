@@ -39,11 +39,14 @@ describe('cargarResumenArea', () => {
       { situacion: 'muerto' },
     ])
     mocks.listarHistorialSectorArea.mockResolvedValue([
-      { id: 1, sector_id: 1, sector_nombre: 'Sector A', fecha_inicio: '2026-01-01', fecha_fin: null },
+      { id: 1, sector_id: 2, sector_nombre: 'Sector B', fecha_inicio: '2025-03-01', fecha_fin: '2026-01-01' },
+      { id: 2, sector_id: 1, sector_nombre: 'Sector A', fecha_inicio: '2026-01-01', fecha_fin: null },
     ])
     mocks.solicitarPlanificacion.mockResolvedValue([
       { estado: 'Registrada' },
       { estado: 'Cerrada' },
+      { estado: 'Atendida' },
+      { estado: 'Descartada' },
       { estado: 'EnAtencion' },
     ])
     const resumen = await cargarResumenArea(3, true)
@@ -53,7 +56,10 @@ describe('cargarResumenArea', () => {
     )
     expect(resumen.ejemplares_por_situacion).toEqual({ activo: 2, muerto: 1 })
     expect(resumen.incidencias_abiertas).toBe(2)
-    expect(resumen.historial.results[0]).toMatchObject({ tipo: 'cambio_sector', titulo: 'Sector A' })
+    expect(resumen.historial.results).toMatchObject([
+      { tipo: 'cambio_sector', id: 2, titulo: 'Asignada al sector Sector A', estado: 'vigente' },
+      { tipo: 'cambio_sector', id: 1, titulo: 'Asignada al sector Sector B', estado: 'finalizada' },
+    ])
   })
 
   it('sin permiso de incidencias o con su llamada caída, no inventa el dato', async () => {

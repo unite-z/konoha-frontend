@@ -136,6 +136,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           [PARAMETROS_MAPA.area]: String(areaId),
           [PARAMETROS_MAPA.poligono]: null,
           [PARAMETROS_MAPA.ejemplar]: null,
+          [PARAMETROS_MAPA.editar]: null,
         },
         hayAbierta,
         viewTransition,
@@ -149,6 +150,7 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           [PARAMETROS_MAPA.area]: null,
           [PARAMETROS_MAPA.poligono]: null,
           [PARAMETROS_MAPA.ejemplar]: null,
+          [PARAMETROS_MAPA.editar]: null,
         },
         true,
         true,
@@ -407,9 +409,11 @@ function VistaMapa({ puedeRegistrar, puedeVincularMapa }: { puedeRegistrar: bool
           key={areaAbierta}
           areaId={areaAbierta}
           nombreProvisional={nombreAbierta}
-          tieneContorno={indice.mapaIdDeArea.has(areaAbierta)}
+          tieneContorno={cargandoBase || indice.mapaIdDeArea.has(areaAbierta)}
           ejemplares={ejemplaresArea}
           onElegirEjemplar={(e) => abrirFichaEjemplar(e.id)}
+          edicionPedida={parametros.get(PARAMETROS_MAPA.editar) === '1'}
+          onSalirDeEdicion={() => cambiar({ [PARAMETROS_MAPA.editar]: null })}
           onCerrar={quitarSeleccion}
         />
       )}

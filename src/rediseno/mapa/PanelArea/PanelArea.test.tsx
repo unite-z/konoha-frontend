@@ -76,7 +76,7 @@ const resumenBase: ResumenArea = {
         fecha: '2026-09-01T08:00:00-05:00',
         titulo: 'Rama caída',
         detalle: null,
-        estado: 'Cerrada',
+        estado: 'EnAtencion',
       },
     ],
   },
@@ -94,6 +94,7 @@ const ejemplar = (id: number, extra: Partial<EjemplarInventario> = {}): Ejemplar
     situacion: 'activo',
     latitud: -12,
     longitud: -77,
+    area_verde_id: 12,
     ...extra,
   }) as EjemplarInventario
 
@@ -117,7 +118,14 @@ const JEFE = [
   PERMISOS.registrarAtencion,
 ]
 
-function montar(opciones: { ejemplares?: ResultadoConsulta<EjemplarInventario[]>; onElegir?: () => void } = {}) {
+function montar(
+  opciones: {
+    ejemplares?: ResultadoConsulta<EjemplarInventario[]>
+    onElegir?: () => void
+    edicionPedida?: boolean
+    onSalirDeEdicion?: () => void
+  } = {},
+) {
   const {
     ejemplares = consulta({ datos: [ejemplar(1), ejemplar(2, { alias: 'Robertito', codigo_placa_antigua: 'P-77' })] }),
   } = opciones
@@ -129,6 +137,8 @@ function montar(opciones: { ejemplares?: ResultadoConsulta<EjemplarInventario[]>
         tieneContorno
         ejemplares={ejemplares}
         onElegirEjemplar={opciones.onElegir ?? (() => undefined)}
+        edicionPedida={opciones.edicionPedida}
+        onSalirDeEdicion={opciones.onSalirDeEdicion}
         onCerrar={() => undefined}
       />
     </MemoryRouter>,
@@ -195,6 +205,24 @@ describe('PanelArea (RD-18)', () => {
     expect(screen.getByText('Ningún ejemplar coincide')).toBeTruthy()
   })
 
+  it('Ejemplares avisa de los que el contorno trae vinculados a otra área o a ninguna', async () => {
+    montar({
+      ejemplares: consulta({
+        datos: [
+          ejemplar(1),
+          ejemplar(2, { area_verde_id: 40, area_verde_nombre: 'Jardín de Letras' }),
+          ejemplar(3, { area_verde_id: null, latitud: null, longitud: null }),
+        ],
+      }),
+    })
+    await userEvent.click(await screen.findByRole('tab', { name: 'Ejemplares' }))
+    const lista = screen.getByRole('list', { name: 'Ejemplares del área' })
+    const [propio, ajeno, suelto] = within(lista).getAllByRole('button')
+    expect(propio.textContent).not.toMatch(/vinculado|sin área/)
+    expect(ajeno.textContent).toContain('vinculado a Jardín de Letras')
+    expect(suelto.textContent).toContain('sin coordenadas · sin área vinculada')
+  })
+
   it('Ejemplares: vacío, carga, error con reintento y sin acceso', async () => {
     const reintentar = vi.fn()
     const { unmount } = montar({ ejemplares: consulta({ datos: [] }) })
@@ -226,6 +254,9 @@ describe('PanelArea (RD-18)', () => {
     const historial = screen.getByRole('list', { name: 'Historial del área' })
     expect(within(historial).getByText('Cambio de sector')).toBeTruthy()
     expect(within(historial).getByText('Rama caída')).toBeTruthy()
+    // Los estados en código se leen como texto.
+    expect(within(historial).getByText(/· Vigente$/)).toBeTruthy()
+    expect(within(historial).getByText(/· En atención$/)).toBeTruthy()
     unmount()
 
     api.cargarResumenArea.mockResolvedValue({
@@ -287,6 +318,14 @@ describe('PanelArea (RD-18)', () => {
     expect(programar.getAttribute('aria-expanded')).toBe('true')
     expect(href('Encargo a una cuadrilla')).toBe(`${rutaPlanificacionCuadrillas()}?encargo=nuevo&area=12`)
     expect(href('Ciclo de servicios')).toBe(rutaPlanificacionProgramar())
+  })
+
+  it('«Editar» (&editar=1) avisa de que la edición está en construcción y deja volver al área', async () => {
+    const salir = vi.fn()
+    montar({ edicionPedida: true, onSalirDeEdicion: salir })
+    expect(await screen.findByText('La edición del área desde el mapa está en construcción.')).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Volver al área' }))
+    expect(salir).toHaveBeenCalled()
   })
 
   it('cada acción aparece solo con su permiso', async () => {

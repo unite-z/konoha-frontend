@@ -2,7 +2,7 @@ import Boton from '@/design-system/Boton'
 import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import EstadoVacio from '@/design-system/EstadoVacio'
 import { formatearFecha } from '@/utils/formato'
-import { nombreTipoHistorial } from './formato'
+import { estadoLegible, nombreTipoHistorial } from './formato'
 import type { HistorialArea } from './useHistorialArea'
 import estilos from './PanelArea.module.css'
 
@@ -25,7 +25,13 @@ export default function PestanaHistorial({ historial }: { historial: HistorialAr
             <span className={estilos.etiquetaTipo}>{nombreTipoHistorial(entrada)}</span>
             <span className={estilos.nombre}>{entrada.titulo}</span>
             <span className={estilos.secundario}>
-              {[formatearFecha(entrada.fecha), entrada.detalle, entrada.estado].filter(Boolean).join(' · ')}
+              {[
+                entrada.fecha ? formatearFecha(entrada.fecha) : null,
+                entrada.detalle,
+                entrada.estado ? estadoLegible(entrada.estado) : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </span>
           </li>
         ))}

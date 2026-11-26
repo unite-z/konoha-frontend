@@ -5,6 +5,7 @@
  */
 import { PERMISOS } from '@/config/permisosCore'
 import { tiene } from '@/config/permisosSesion'
+import AvisoEnLinea from '@/design-system/AvisoEnLinea'
 import EstadoCarga from '@/design-system/EstadoCarga'
 import EstadoError from '@/design-system/EstadoError'
 import EstadoSinAcceso from '@/design-system/EstadoSinAcceso'
@@ -29,6 +30,9 @@ interface Props {
   tieneContorno: boolean
   ejemplares: ResultadoConsulta<EjemplarInventario[]>
   onElegirEjemplar: (ejemplar: EjemplarInventario) => void
+  /** «Editar» abierto (`&editar=1`): hasta que RD-19 traiga el formulario, el panel lo dice en lugar de no hacer nada. */
+  edicionPedida?: boolean
+  onSalirDeEdicion?: () => void
   onCerrar: () => void
 }
 
@@ -40,6 +44,8 @@ export default function PanelArea({
   tieneContorno,
   ejemplares,
   onElegirEjemplar,
+  edicionPedida = false,
+  onSalirDeEdicion,
   onCerrar,
 }: Props) {
   const permisos = usePermisos()
@@ -60,7 +66,7 @@ export default function PanelArea({
         {
           valor: 'ejemplares',
           texto: 'Ejemplares',
-          contenido: <PestanaEjemplares ejemplares={ejemplares} onElegir={onElegirEjemplar} />,
+          contenido: <PestanaEjemplares areaId={areaId} ejemplares={ejemplares} onElegir={onElegirEjemplar} />,
         },
         { valor: 'historial', texto: 'Historial', contenido: <PestanaHistorial historial={historial} /> },
       ]
@@ -79,6 +85,15 @@ export default function PanelArea({
       pie={<AccionesArea areaId={areaId} permisos={permisos} />}
       viewTransitionName={panel(areaId)}
     >
+      {datos && edicionPedida && (
+        <AvisoEnLinea
+          tono="info"
+          compacto
+          accion={onSalirDeEdicion ? { texto: 'Volver al área', onClick: onSalirDeEdicion } : undefined}
+        >
+          La edición del área desde el mapa está en construcción.
+        </AvisoEnLinea>
+      )}
       {!datos &&
         (resumen.error?.estado === 403 ? (
           <EstadoSinAcceso

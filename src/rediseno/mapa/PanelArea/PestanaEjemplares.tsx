@@ -11,6 +11,8 @@ import { nombreSituacionSingular } from './formato'
 import estilos from './PanelArea.module.css'
 
 interface Props {
+  /** Área abierta: el contorno puede traer ejemplares vinculados a otra área o a ninguna, y se avisa. */
+  areaId: number
   ejemplares: ResultadoConsulta<EjemplarInventario[]>
   /** Abre la ficha flotante del ejemplar sin cerrar el panel. */
   onElegir: (ejemplar: EjemplarInventario) => void
@@ -26,20 +28,27 @@ function textoBuscable(e: EjemplarInventario): string {
   )
 }
 
-function descripcion(e: EjemplarInventario): string {
+function vinculo(e: EjemplarInventario, areaId: number): string | null {
+  if (e.area_verde_id === null) return 'sin área vinculada'
+  if (e.area_verde_id !== areaId) return `vinculado a ${e.area_verde_nombre ?? 'otra área'}`
+  return null
+}
+
+function descripcion(e: EjemplarInventario, areaId: number): string {
   const especie = e.especie_nombre_comun ?? e.especie_nombre_cientifico ?? 'Sin especie'
   return [
     especie,
     e.codigo_placa_antigua ? `placa ${e.codigo_placa_antigua}` : null,
     nombreSituacionSingular(e.situacion),
     e.latitud === null || e.longitud === null ? 'sin coordenadas' : null,
+    vinculo(e, areaId),
   ]
     .filter(Boolean)
     .join(' · ')
 }
 
 /** Ejemplares del área con buscador por nombre, código, placa antigua o especie. */
-export default function PestanaEjemplares({ ejemplares, onElegir }: Props) {
+export default function PestanaEjemplares({ areaId, ejemplares, onElegir }: Props) {
   const id = useId()
   const [texto, setTexto] = useState('')
   const lista = ejemplares.datos
@@ -104,7 +113,7 @@ export default function PestanaEjemplares({ ejemplares, onElegir }: Props) {
               {/* Excepción al sistema (AV-351): fila de lista que abre la ficha del ejemplar; no es un botón de acción. */}
               <button type="button" className={estilos.filaEjemplar} onClick={() => onElegir(e)}>
                 <span className={estilos.nombre}>{nombreEjemplar(e.codigo, e.alias)}</span>
-                <span className={estilos.secundario}>{descripcion(e)}</span>
+                <span className={estilos.secundario}>{descripcion(e, areaId)}</span>
               </button>
             </li>
           ))}

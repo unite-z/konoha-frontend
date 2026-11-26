@@ -11,7 +11,8 @@ import { solicitarTercerizados } from './clienteTercerizados'
 import { listarEjemplaresDeArea } from './ejemplares'
 
 const BASE = '/api/v1/inventario'
-const ESTADOS_CERRADOS = ['Cerrada', 'Descartada']
+/** Los mismos que el resumen agregado no cuenta como abiertas. */
+const ESTADOS_NO_ABIERTOS = ['Atendida', 'Cerrada', 'Descartada']
 
 /** `GET areas-verdes/{id}/resumen?page=`: una sola llamada con la ficha, los indicadores y el historial. */
 export function obtenerResumenArea(areaId: number, pagina = 1, signal?: AbortSignal): Promise<ResumenArea> {
@@ -46,18 +47,23 @@ export async function resumenConLlamadasActuales(
   ])
   const porSituacion: Record<string, number> = {}
   for (const e of ejemplares ?? []) porSituacion[e.situacion] = (porSituacion[e.situacion] ?? 0) + 1
-  const cambios: EntradaHistorialArea[] = (sectores ?? []).map((s) => ({
-    tipo: 'cambio_sector',
-    id: s.id,
-    fecha: s.fecha_inicio,
-    titulo: s.sector_nombre,
-    detalle: s.fecha_fin ? `Hasta el ${s.fecha_fin}` : 'Sector actual',
-    estado: s.fecha_fin ? 'finalizada' : 'vigente',
-  }))
+  // Como las entradas `cambio_sector` del resumen agregado, de la más reciente a la más antigua.
+  const cambios: EntradaHistorialArea[] = [...(sectores ?? [])]
+    .sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio))
+    .map((s) => ({
+      tipo: 'cambio_sector',
+      id: s.id,
+      fecha: s.fecha_inicio,
+      titulo: `Asignada al sector ${s.sector_nombre}`,
+      detalle: null,
+      estado: s.fecha_fin ? 'finalizada' : 'vigente',
+    }))
   return {
     area,
     ejemplares_por_situacion: ejemplares ? porSituacion : null,
-    incidencias_abiertas: incidencias ? incidencias.filter((i) => !ESTADOS_CERRADOS.includes(i.estado)).length : null,
+    incidencias_abiertas: incidencias
+      ? incidencias.filter((i) => !ESTADOS_NO_ABIERTOS.includes(i.estado)).length
+      : null,
     ultima_atencion: null,
     proxima_actividad: null,
     prioridad_validada: null,
