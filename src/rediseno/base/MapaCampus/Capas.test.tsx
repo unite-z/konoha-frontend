@@ -87,6 +87,27 @@ describe('CapaMarcadores (AV-426)', () => {
     expect(mapa.escena.enfocar).toHaveBeenCalledWith(55, 5, 2.4)
   })
 
+  it('un grupo que el zoom no separa (misma área) se despliega en sus botones y Escape lo pliega', async () => {
+    const mapa = mapaFalso(datos)
+    const alActivar = vi.fn()
+    const mismaArea: MarcadorMapa[] = [
+      { id: 'm1', etiqueta: 'Incidencia 1', areaId: 'a' },
+      { id: 'm2', etiqueta: 'Incidencia 2', areaId: 'a' },
+    ]
+    render(conMapa(mapa, <CapaMarcadores marcadores={mismaArea} onActivar={alActivar} />))
+    const grupo = await screen.findByRole('button', { name: /2 marcadores en esta zona/ })
+    expect(grupo.getAttribute('aria-expanded')).toBe('false')
+    grupo.focus()
+    await userEvent.keyboard('{Enter}')
+    expect(mapa.escena.enfocar).not.toHaveBeenCalled()
+    const primero = await screen.findByRole('button', { name: 'Incidencia 1' })
+    expect(document.activeElement).toBe(primero)
+    await userEvent.keyboard('{Tab}{Enter}')
+    expect(alActivar).toHaveBeenCalledWith(mismaArea[1])
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toMatch(/2 marcadores/))
+  })
+
   it('al acercar el zoom los marcadores se separan', async () => {
     const mapa = mapaFalso(datos)
     mapa.escena.metrosPorPixel.mockReturnValue(10)
@@ -134,22 +155,16 @@ describe('CapaGeometrias (AV-426)', () => {
     const mapa = mapaFalso(datos)
     const alSeleccionar = vi.fn()
     const alEstado = vi.fn()
-    const { rerender } = render(
-      conMapa(mapa, <CapaGeometrias onSeleccionarArea={alSeleccionar} onEstado={alEstado} areaSeleccionada="nueva" />),
-    )
+    render(conMapa(mapa, <CapaGeometrias onSeleccionarArea={alSeleccionar} onEstado={alEstado} />))
     await waitFor(() => expect(mapa.escena.dibujarGeometrias).toHaveBeenCalledTimes(1))
     expect(cargar).toHaveBeenCalledTimes(1)
     expect(alEstado).toHaveBeenLastCalledWith(
       'listo',
       expect.arrayContaining([expect.objectContaining({ id: 'nueva' })]),
     )
-    expect(mapa.seleccionar).toHaveBeenCalledWith('nueva')
     const alPulsar = (mapa.escena.dibujarGeometrias.mock.calls[0] as unknown as [unknown, (id: string) => void])[1]
     alPulsar('nueva')
     expect(alSeleccionar).toHaveBeenCalledWith(expect.objectContaining({ id: 'nueva', n: 'Jardín nuevo' }))
-
-    rerender(conMapa(mapa, <CapaGeometrias onSeleccionarArea={alSeleccionar} onEstado={alEstado} />))
-    expect(mapa.seleccionar).toHaveBeenLastCalledWith(null)
   })
 
   it('oculta la versión antigua de un área cambiada y la restituye al desmontarse', async () => {

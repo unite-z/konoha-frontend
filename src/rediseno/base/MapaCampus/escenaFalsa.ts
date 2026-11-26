@@ -7,7 +7,6 @@ import type { MapaListo } from './contexto'
 export function escenaFalsa() {
   const quitarCapa = vi.fn()
   const oyentes = new Set<() => void>()
-  const seleccionar = vi.fn()
   const quitarGeometrias = vi.fn()
   const restituir = vi.fn()
   const anclajes: Array<{ elemento: HTMLElement; x: number; y: number }> = []
@@ -15,7 +14,7 @@ export function escenaFalsa() {
     repintar: vi.fn(),
     pintarAreas: vi.fn(() => quitarCapa),
     ocultarAreas: vi.fn(() => restituir),
-    dibujarGeometrias: vi.fn(() => ({ seleccionar, quitar: quitarGeometrias })),
+    dibujarGeometrias: vi.fn(() => quitarGeometrias),
     anclar: vi.fn((elemento: HTMLElement, x: number, y: number) => {
       anclajes.push({ elemento, x, y })
       document.body.appendChild(elemento)
@@ -36,7 +35,7 @@ export function escenaFalsa() {
     pausar: vi.fn(),
     destruir: vi.fn(),
   } satisfies Escena
-  return { escena, quitarCapa, quitarGeometrias, restituir, seleccionar, anclajes, oyentes }
+  return { escena, quitarCapa, quitarGeometrias, restituir, anclajes, oyentes }
 }
 
 export function mapaFalso(datos: DatosCampus): MapaListo & ReturnType<typeof escenaFalsa> {

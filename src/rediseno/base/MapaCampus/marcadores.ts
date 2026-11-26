@@ -25,6 +25,8 @@ export interface GrupoMarcadores {
   clave: string
   x: number
   y: number
+  /** Distancia máxima (m) de un miembro al centro: con 0 el zoom no los separa (p. ej., varios en la misma área). */
+  dispersion: number
   marcadores: MarcadorMapa[]
 }
 
@@ -61,6 +63,7 @@ export function agruparMarcadores(puntos: readonly PuntoMarcador[], radio: numbe
       .join('|'),
     x: g.x,
     y: g.y,
+    dispersion: Math.max(...g.puntos.map((p) => Math.hypot(p.x - g.x, p.y - g.y))),
     marcadores: g.puntos.map((p) => p.marcador),
   }))
 }

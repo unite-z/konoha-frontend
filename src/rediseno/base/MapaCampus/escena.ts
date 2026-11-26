@@ -44,20 +44,20 @@ export interface GeometriaViva {
   anillos: readonly number[][]
 }
 
-export interface GeometriasDibujadas {
-  /** Resalta la geometría con ese id (o ninguna) como las áreas del campus base. */
-  seleccionar: (id: string | null) => void
-  quitar: () => void
-}
-
 export interface Escena {
   repintar: () => void
   /** Colorea áreas por token CSS sin regenerar el campus. Devuelve la función que quita la capa. */
   pintarAreas: (grupos: readonly GrupoColor[]) => () => void
-  /** Oculta el borde de las áreas del campus base (posiciones en `datos.areas`). Devuelve la función que las restituye. */
+  /**
+   * Oculta áreas del campus base (posiciones en `datos.areas`): su borde, su clic y su marca. Si hay una geometría viva
+   * con su id, la selección, el foco y los colores usan esa. Devuelve la función que las restituye.
+   */
   ocultarAreas: (indices: readonly number[]) => () => void
-  /** Dibuja huellas nuevas o cambiadas; se eligen con clic como las del campus base (`alPulsar` recibe su id). */
-  dibujarGeometrias: (geometrias: readonly GeometriaViva[], alPulsar: (id: string) => void) => GeometriasDibujadas
+  /**
+   * Dibuja huellas nuevas o cambiadas; se eligen con clic como las del campus base (`alPulsar` recibe su id) y
+   * `irAArea(id)` vuela a ellas y las marca. Devuelve la función que las quita.
+   */
+  dibujarGeometrias: (geometrias: readonly GeometriaViva[], alPulsar: (id: string) => void) => () => void
   /** Cuelga un elemento HTML de un punto (metros) sobre el suelo. Devuelve la función que lo retira. */
   anclar: (elemento: HTMLElement, x: number, y: number, alto?: number) => () => void
   /** Metros de escena por píxel de pantalla con el zoom actual. */
@@ -67,8 +67,11 @@ export interface Escena {
   /** Vuela a un punto (metros), acercando por `factor`. */
   enfocar: (x: number, y: number, factor?: number) => void
   irAVista: (vista: VistaMapa) => void
-  /** Vuela al área; con `null` deshace el vuelo y vuelve a donde estaba la cámara. */
-  irAArea: (indice: number | null) => void
+  /**
+   * Vuela al área (posición en `datos.areas`, o id de una geometría viva: si aún no está dibujada, vuela al dibujarla);
+   * con `null` deshace el vuelo y vuelve a donde estaba la cámara.
+   */
+  irAArea: (destino: number | string | null) => void
   /** Marca el área con foco de teclado, sin mover la cámara. */
   resaltar: (indice: number | null) => void
   desplazar: (dx: number, dy: number) => void
@@ -323,6 +326,14 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   scene.add(mallaAreas)
   const ocultaciones = new Set<ReadonlySet<number>>()
   const estaOculta = (indice: number) => [...ocultaciones].some((c) => c.has(indice))
+  /** Geometrías vivas dibujadas (id → anillos): sustituyen a las áreas ocultas con el mismo id. */
+  const vivas = new Map<string, readonly number[][]>()
+  /** Huellas con las que se marca o colorea un destino: las vivas si el área está oculta o es nueva. */
+  const huellasDe = (destino: number | string): readonly number[][] => {
+    if (typeof destino === 'string') return vivas.get(destino) ?? []
+    if (!estaOculta(destino)) return partesDe(destino).map((i) => datos.areas[i].p)
+    return vivas.get(datos.areas[destino].id) ?? []
+  }
   const construirBordes = () =>
     unir(
       datos.areas.flatMap((a, i) =>
@@ -599,24 +610,39 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
 
   // --- vistas y áreas
   let antesDelArea: EstadoCamara | null = null
-  const marcar = (malla: THREE.Mesh, indice: number | null) => {
+  let destinoSeleccion: number | string | null = null
+  let destinoFoco: number | null = null
+  /** Capas de `pintarAreas` vivas: se rehacen si cambian las áreas ocultas. */
+  const capasColor = new Set<{ indices: readonly number[]; malla: THREE.Mesh }>()
+  const marcar = (malla: THREE.Mesh, destino: number | string | null) => {
     malla.geometry.dispose()
-    malla.geometry =
-      indice === null || estaOculta(indice)
-        ? new THREE.BufferGeometry()
-        : unir(partesDe(indice).map((i) => plano(datos.areas[i].p, 0.2)))
+    malla.geometry = unir((destino === null ? [] : huellasDe(destino)).map((p) => plano(p, 0.2)))
   }
-  function irAArea(indice: number | null) {
-    const valido = indice !== null && indice >= 0 && indice < datos.areas.length
-    marcar(seleccion, valido ? indice : null)
-    if (!valido) {
+  /** Repinta marcas y colores cuando cambian las áreas ocultas o las geometrías vivas. */
+  function rehacerSustituidas() {
+    marcar(seleccion, destinoSeleccion)
+    marcar(foco, destinoFoco)
+    for (const capa of capasColor) {
+      capa.malla.geometry.dispose()
+      capa.malla.geometry = geometriaColor(capa.indices)
+    }
+    pedir()
+  }
+  function irAArea(destino: number | string | null) {
+    const valido = typeof destino === 'string' || (destino !== null && destino >= 0 && destino < datos.areas.length)
+    destinoSeleccion = valido ? destino : null
+    marcar(seleccion, destinoSeleccion)
+    const huellas = destinoSeleccion === null ? [] : huellasDe(destinoSeleccion)
+    if (huellas.length === 0) {
+      // Un id vivo que aún no se ha dibujado espera a `dibujarGeometrias`; si no, se deshace el vuelo.
+      if (typeof destinoSeleccion === 'string') return
       if (antesDelArea) volar(antesDelArea, 800)
       antesDelArea = null
       pedir()
       return
     }
     antesDelArea ??= estadoCamara()
-    const { x0, x1, y0, y1 } = cajaDe(partesDe(indice).flatMap((i) => datos.areas[i].p))
+    const { x0, x1, y0, y1 } = cajaDe(huellas.flat())
     const tam = Math.max(x1 - x0, y1 - y0, 25)
     const ahora = estadoCamara()
     volar(
@@ -632,8 +658,20 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
   }
 
   // --- capas públicas (AV-426): colores, geometrías vivas y marcadores. Reciben los datos del módulo.
+  function geometriaColor(indices: readonly number[]) {
+    const ids = new Set<string>()
+    const huellas = indices.flatMap((i) => {
+      if (!estaOculta(i)) return [datos.areas[i].p]
+      const id = datos.areas[i].id
+      if (ids.has(id)) return []
+      ids.add(id)
+      return [...huellasDe(i)]
+    })
+    return unir(huellas.map((p) => plano(p, 0.16)))
+  }
+
   function pintarAreas(grupoColores: readonly GrupoColor[]) {
-    const mallas = grupoColores
+    const capas = grupoColores
       .filter((g) => g.indices.length > 0)
       .map(({ indices, token }) => {
         const material = new THREE.MeshBasicMaterial({
@@ -645,17 +683,19 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
           polygonOffsetUnits: -2,
         })
         pintablesToken.push([material.color, token])
-        const malla = new THREE.Mesh(unir(indices.map((i) => plano(datos.areas[i].p, 0.16))), material)
-        scene.add(malla)
-        return malla
+        const capa = { indices, malla: new THREE.Mesh(geometriaColor(indices), material) }
+        capasColor.add(capa)
+        scene.add(capa.malla)
+        return capa
       })
     repintar()
     return () => {
-      for (const malla of mallas) {
-        scene.remove(malla)
-        malla.geometry.dispose()
-        despintar(malla.material as THREE.MeshBasicMaterial)
-        ;(malla.material as THREE.MeshBasicMaterial).dispose()
+      for (const capa of capas) {
+        capasColor.delete(capa)
+        scene.remove(capa.malla)
+        capa.malla.geometry.dispose()
+        despintar(capa.malla.material as THREE.MeshBasicMaterial)
+        ;(capa.malla.material as THREE.MeshBasicMaterial).dispose()
       }
       pedir()
     }
@@ -667,7 +707,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     const reconstruir = () => {
       mallaBordes.geometry.dispose()
       mallaBordes.geometry = construirBordes()
-      pedir()
+      rehacerSustituidas()
     }
     reconstruir()
     return () => {
@@ -676,10 +716,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     }
   }
 
-  function dibujarGeometrias(
-    geometrias: readonly GeometriaViva[],
-    alPulsar: (id: string) => void,
-  ): GeometriasDibujadas {
+  function dibujarGeometrias(geometrias: readonly GeometriaViva[], alPulsar: (id: string) => void) {
     const anillos = geometrias.flatMap((g, i) => g.anillos.map((p) => ({ p, i })))
     const relleno = new THREE.Mesh(
       unir(anillos.map(({ p }) => plano(p, 0.13))),
@@ -701,27 +738,23 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
       new THREE.MeshBasicMaterial({ visible: false }),
     )
     eleccion.userData = { alPulsar, ids: geometrias.map((g) => g.id) }
-    const marca = new THREE.Mesh(new THREE.BufferGeometry(), marcaMaterial(0.85))
-    scene.add(relleno, lineas, eleccion, marca)
+    scene.add(relleno, lineas, eleccion)
     mallasVivas.add(eleccion)
+    for (const g of geometrias) vivas.set(g.id, g.anillos)
     repintar()
-    return {
-      seleccionar: (id) => {
-        marca.geometry.dispose()
-        const destino = geometrias.find((g) => g.id === id)
-        marca.geometry = destino ? unir(destino.anillos.map((p) => plano(p, 0.2))) : new THREE.BufferGeometry()
-        pedir()
-      },
-      quitar: () => {
-        mallasVivas.delete(eleccion)
-        for (const objeto of [relleno, lineas, eleccion, marca]) {
-          scene.remove(objeto)
-          objeto.geometry.dispose()
-          despintar(objeto.material as THREE.MeshBasicMaterial)
-          ;(objeto.material as THREE.Material).dispose()
-        }
-        pedir()
-      },
+    rehacerSustituidas()
+    // Si la vista ya pedía un área viva que no estaba dibujada, ahora sí se vuela a ella.
+    if (typeof destinoSeleccion === 'string' && vivas.has(destinoSeleccion)) irAArea(destinoSeleccion)
+    return () => {
+      mallasVivas.delete(eleccion)
+      for (const g of geometrias) if (vivas.get(g.id) === g.anillos) vivas.delete(g.id)
+      for (const objeto of [relleno, lineas, eleccion]) {
+        scene.remove(objeto)
+        objeto.geometry.dispose()
+        despintar(objeto.material as THREE.MeshBasicMaterial)
+        ;(objeto.material as THREE.Material).dispose()
+      }
+      rehacerSustituidas()
     }
   }
 
@@ -786,6 +819,7 @@ export function crearEscena(opciones: OpcionesEscena): Escena {
     irAVista: (vista) => volar(vistaDe(vista)),
     irAArea,
     resaltar: (indice) => {
+      destinoFoco = indice
       marcar(foco, indice)
       pedir()
     },

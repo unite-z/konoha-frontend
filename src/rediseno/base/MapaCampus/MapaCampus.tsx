@@ -156,9 +156,11 @@ export default function MapaCampus({
   }, [escena, vista])
 
   const indiceSeleccionado = datos ? indiceDeArea(datos, areaSeleccionada) : null
+  // Un id que no está en el campus base puede ser una geometría viva (CapaGeometrias): la escena la busca por id.
+  const destino = indiceSeleccionado ?? (typeof areaSeleccionada === 'string' ? areaSeleccionada : null)
   useEffect(() => {
-    escena?.irAArea(indiceSeleccionado)
-  }, [escena, indiceSeleccionado])
+    escena?.irAArea(destino)
+  }, [escena, destino])
 
   useEffect(() => {
     escena?.resaltar(foco)

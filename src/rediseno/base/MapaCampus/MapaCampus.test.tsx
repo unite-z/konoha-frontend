@@ -173,6 +173,10 @@ describe('MapaCampus (AV-424)', () => {
     expect(escena.irAArea).toHaveBeenLastCalledWith(0)
     act(() => ref.current?.volver())
     expect(escena.irAArea).toHaveBeenLastCalledWith(null)
+
+    // Un id que no está en el campus base se pasa tal cual: puede ser una geometría viva (AV-426).
+    rerender(<MapaCampus ref={ref} onSeleccionarArea={() => {}} areaSeleccionada="nueva" vista="planta" />)
+    expect(escena.irAArea).toHaveBeenLastCalledWith('nueva')
   })
 
   it('pausa la escena con activo=false y la destruye al desmontar', async () => {

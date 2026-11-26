@@ -31,6 +31,8 @@ describe('agruparMarcadores (AV-426)', () => {
     expect(grupos[0].x).toBeCloseTo(2.5)
     expect(grupos[0].clave).toBe('a|b')
     expect(grupos[1].clave).toBe('c')
+    expect(grupos[0].dispersion).toBeCloseTo(2.5)
+    expect(grupos[1].dispersion).toBe(0)
   })
 
   it('con menos radio (más zoom) se separan', () => {

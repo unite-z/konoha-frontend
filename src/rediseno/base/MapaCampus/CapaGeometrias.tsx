@@ -1,7 +1,8 @@
 /**
  * CapaGeometrias (AV-426): dibuja, proyectadas sobre el campus, las áreas nuevas o cambiadas que publica
  * `GET /inventario/mapa/geometria`; las versiones antiguas se ocultan. Se eligen con clic como las del campus base
- * (`onSeleccionarArea` recibe un `AreaCampus`). La petición es única y está en caché; se pide cuando el navegador está
+ * (`onSeleccionarArea` recibe un `AreaCampus`) y, como ellas, el `areaSeleccionada` de `useVistaDeMapa` vuela a la
+ * geometría y la marca. La petición es única y está en caché; se pide cuando el navegador está
  * ocioso, así que no retrasa el primer pintado. Si el endpoint falla (o no existe: 404) el campus base sigue igual y
  * `onEstado` recibe `'error'`.
  */
@@ -19,8 +20,6 @@ import {
 export type EstadoGeometrias = 'cargando' | 'listo' | 'error'
 
 export interface CapaGeometriasProps {
-  /** `id` (`mapa_id`) de la geometría seleccionada. */
-  areaSeleccionada?: string
   onSeleccionarArea?: (area: AreaCampus) => void
   onEstado?: (estado: EstadoGeometrias, geometrias: readonly GeometriaDetectada[]) => void
 }
@@ -34,20 +33,17 @@ const cuandoOcioso = (tarea: () => void): (() => void) => {
   return () => clearTimeout(id)
 }
 
-export default function CapaGeometrias({ areaSeleccionada, onSeleccionarArea, onEstado }: CapaGeometriasProps) {
+export default function CapaGeometrias({ onSeleccionarArea, onEstado }: CapaGeometriasProps) {
   const mapa = useMapa()
   const escena = mapa?.escena
   const datos = mapa?.datos
   const [resultado, setResultado] = useState<ResultadoGeometrias | null>(null)
   const alSeleccionar = useRef(onSeleccionarArea)
   const alEstado = useRef(onEstado)
-  const dibujadas = useRef<{ seleccionar: (id: string | null) => void } | null>(null)
-  const seleccionPendiente = useRef(areaSeleccionada)
 
   useEffect(() => {
     alSeleccionar.current = onSeleccionarArea
     alEstado.current = onEstado
-    seleccionPendiente.current = areaSeleccionada
   })
 
   useEffect(() => {
@@ -76,22 +72,15 @@ export default function CapaGeometrias({ areaSeleccionada, onSeleccionarArea, on
     if (!escena || !resultado || resultado.geometrias.length === 0) return
     const { geometrias, ocultar } = resultado
     const restituir = escena.ocultarAreas(ocultar)
-    const capa = escena.dibujarGeometrias(geometrias, (id) => {
+    const quitar = escena.dibujarGeometrias(geometrias, (id) => {
       const elegida = geometrias.find((g) => g.id === id)
       if (elegida) alSeleccionar.current?.(areaDeGeometria(elegida))
     })
-    dibujadas.current = capa
-    capa.seleccionar(seleccionPendiente.current ?? null)
     return () => {
-      dibujadas.current = null
-      capa.quitar()
+      quitar()
       restituir()
     }
   }, [escena, resultado])
-
-  useEffect(() => {
-    dibujadas.current?.seleccionar(areaSeleccionada ?? null)
-  }, [areaSeleccionada])
 
   return null
 }
